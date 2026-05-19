@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rikiki · starter</title>
+<link rel="stylesheet" href="./tokens.css">
+<script type="module" src="./dist/index.js"></script>
+</head>
+<body>
+
+<deck-root>
+
+  <!-- T1 · COVER ─────────────────────────────────────────────── -->
+  <deck-cover
+    brand="rikiki · starter"
+    speaker="Your name"
+    duration="~25 min"
+    audience="Your audience">
+    <h1>Deck <span class="accent">title</span></h1>
+    <p class="sub">Subtitle or opening question</p>
+  </deck-cover>
+
+  <!-- T2 · SECTION ───────────────────────────────────────────── -->
+  <deck-section num="Section 1">
+    <h1>A first<br>chapter</h1>
+  </deck-section>
+
+  <!-- T3 · HERO with code block ──────────────────────────────── -->
+  <deck-hero eyebrow="Topic">
+    <h1 slot="title">Headline · sharp claim</h1>
+    <p slot="lead" class="lead">One sentence that frames why this slide matters. Keep it short.</p>
+    <deck-code lang="js" hero>
+      // Drop a code sample here.
+      // It is syntax-highlighted client-side · no build step.
+      const greet = (name) => `Hello, ${name}!`;
+
+      greet('world');
+    </deck-code>
+  </deck-hero>
+
+  <!-- T4 · SPLIT, 2 cards ────────────────────────────────────── -->
+  <deck-split eyebrow="Compare">
+    <h1 slot="title">Two takes, side by side</h1>
+    <div slot="left">
+      <deck-card color="red">
+        <h3>Problem</h3>
+        <deck-md>
+          Describe the broken thing. **Be specific** about what fails,
+          when, and the size of the blast radius.
+        </deck-md>
+      </deck-card>
+    </div>
+    <div slot="right">
+      <deck-card color="green">
+        <h3>Fix</h3>
+        <deck-md>
+          State the smallest change that addresses the problem.
+          Mention the trade-off you accept on purpose.
+        </deck-md>
+      </deck-card>
+    </div>
+  </deck-split>
+
+  <!-- T5 · HERO + DETAIL ─────────────────────────────────────── -->
+  <deck-hero-detail eyebrow="Deep dive">
+    <h1 slot="title">One thing at a time</h1>
+    <p slot="lead" class="lead">A focused snippet with two short notes underneath.</p>
+    <deck-code lang="ts" hero>
+      import { something } from './module';
+
+      export function run() {
+        return something();
+      }
+    </deck-code>
+    <deck-card slot="left" color="yellow">
+      <h3>What changes</h3>
+      <deck-md>
+        Plain-language summary of the **observable** difference.
+      </deck-md>
+    </deck-card>
+    <deck-card slot="right" color="orange">
+      <h3>What stays</h3>
+      <deck-md>
+        The contract you keep · API surface, public types, IDs.
+      </deck-md>
+    </deck-card>
+  </deck-hero-detail>
+
+  <!-- HOOK · dark centered punchline ─────────────────────────── -->
+  <deck-hook kicker="The number that matters">
+    <p class="display">~1 second</p>
+    <p class="caption on-dark">describe the unit · who pays the cost, and when</p>
+    <deck-callout type="danger">
+      <strong>Concrete consequence</strong> users feel, before any mitigation.
+    </deck-callout>
+  </deck-hook>
+
+  <!-- T4 · SPLIT, 3 cards ────────────────────────────────────── -->
+  <deck-split eyebrow="Actions" cols="3">
+    <h1 slot="title">Three levers</h1>
+    <deck-card slot="a" color="yellow">
+      <h3>① Lever one</h3>
+      <deck-md>
+        Smallest, cheapest action. Always start here.
+      </deck-md>
+    </deck-card>
+    <deck-card slot="b" color="orange">
+      <h3>② Lever two</h3>
+      <deck-md>
+        The audit step. Surface the data before changing anything.
+      </deck-md>
+    </deck-card>
+    <deck-card slot="c" color="green">
+      <h3>③ Lever three</h3>
+      <deck-md>
+        The structural change · last, because it costs the most.
+      </deck-md>
+    </deck-card>
+  </deck-split>
+
+</deck-root>
+
+</body>
+</html>

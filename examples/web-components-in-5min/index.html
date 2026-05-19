@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Web Components in 5 Minutes · Rikiki example</title>
+<link rel="stylesheet" href="../../rikiki/tokens.css">
+<script type="module" src="../../rikiki/dist/index.js"></script>
+<script>
+  if (location.search.includes('live') || location.search.includes('dev')) {
+    import('../../rikiki/dist/livereload.js');
+  }
+</script>
+<style>
+  /* Make body text more readable in this example */
+  deck-md, deck-callout, .card-text, deck-card p, deck-card li {
+    font-size: 1.05rem !important;
+    line-height: 1.6 !important;
+  }
+  deck-card h3 { font-size: 1.45rem !important; }
+  .lead { font-size: 1.15rem !important; }
+
+  /* Numbered badges for slide 3 */
+  .step-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: var(--icon-xl); height: var(--icon-xl);
+    border-radius: 50%;
+    font: 900 1.6rem/1 var(--sans);
+    margin-bottom: var(--sp-3);
+  }
+  .step-num.n1 { background: var(--surface-info-strong); color: var(--text-info); }
+  .step-num.n2 { background: var(--surface-ok); color: var(--green); }
+  .step-num.n3 { background: var(--surface-warn); color: var(--orange); }
+
+  /* Adoption logos grid */
+  .logo-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-3);
+  }
+  .logo-tile {
+    background: var(--surface-card); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: var(--sp-3);
+    text-align: center; font-weight: 700;
+    color: var(--text); box-shadow: var(--shadow-card);
+    font-size: 1rem;
+  }
+  .logo-tile small { display: block; color: var(--muted); font-size: 0.8rem; font-weight: 400; margin-top: 4px; }
+
+  /* Tiny live example used inside slide 9 */
+  .live-frame {
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: var(--sp-4);
+    display: flex; align-items: center; justify-content: center;
+    min-height: 0;
+  }
+  .live-frame demo-callout {
+    display: flex; align-items: center; gap: var(--sp-3);
+    padding: var(--sp-3) var(--sp-4);
+    background: rgba(247,203,68,0.10);
+    border: 1px solid rgba(247,203,68,0.45);
+    border-radius: var(--r-md);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 1.05rem;
+  }
+
+  /* Compact mermaid for in-slide diagrams */
+  deck-mermaid[inline] { max-height: 38vh !important; }
+</style>
+</head>
+<body>
+
+<deck-root>
+
+<!-- 1 · Cover -->
+<deck-cover
+  brand="rikiki · examples"
+  duration="5 minutes"               duration-label="Length"
+  audience="JS developers"           audience-label="Audience"
+  runtime="Any modern browser"       runtime-label="Runtime">
+  <h1>Web Components<br><span class="accent">in 5 minutes</span></h1>
+  <p slot="sub">Custom Elements, Shadow DOM, slots and CSS theming · the standards your browser already supports.</p>
+</deck-cover>
+
+<!-- 2 · Section opener -->
+<deck-section num="Why"><h1>Why this <em>still</em> matters</h1></deck-section>
+
+<!-- 3 · The pitch -->
+<deck-hero eyebrow="Standards">
+  <h1 slot="title">Three things frameworks never deliver</h1>
+  <deck-grid cols="3" gap="4" fill>
+    <deck-card color="yellow">
+      <span class="step-num n1">①</span>
+      <h3>Stable specs</h3>
+      <deck-md>Custom Elements and Shadow DOM are **W3C standards since 2018**. They will outlive every JS framework currently popular.</deck-md>
+    </deck-card>
+    <deck-card color="green">
+      <span class="step-num n2">②</span>
+      <h3>Framework-agnostic</h3>
+      <deck-md>Drop a Web Component into **React, Vue, Svelte, Angular or vanilla HTML**. No adapter. Your library has one audience: the web.</deck-md>
+    </deck-card>
+    <deck-card color="orange">
+      <span class="step-num n3">③</span>
+      <h3>Zero build</h3>
+      <deck-md>Open an HTML file. The browser handles it. No bundler, no transpiler, no `node_modules` to resurrect in 2031.</deck-md>
+    </deck-card>
+  </deck-grid>
+</deck-hero>
+
+<!-- 4 · Custom Elements 101 -->
+<deck-hero-detail eyebrow="Step 1">
+  <h1 slot="title">Custom Elements 101</h1>
+  <deck-code lang="js" hero step-groups='[[1,2,3,4,5],[7],[1,2,3,4,5,6,7]]'>
+    class Greeting extends HTMLElement {
+      connectedCallback() {
+        this.textContent = `Hello, ${this.getAttribute('name') ?? 'world'}!`;
+      }
+    }
+
+    customElements.define('hello-world', Greeting);
+  </deck-code>
+  <deck-md slot="left">
+    - Extend `HTMLElement` like any DOM API
+    - `connectedCallback()` fires when the element is attached
+    - `customElements.define(tag, Class)` registers globally
+    - Tag **must contain a dash** · that's the spec
+  </deck-md>
+  <deck-mermaid inline slot="right">
+    graph LR
+    A["customElements<br/>.define()"]:::reg --> B[constructor]
+    B --> C[connectedCallback]
+    C --> D[("element live<br/>in DOM")]
+    D -.-> E[attribute<br/>Changed<br/>Callback]
+    D -.-> F[disconnected<br/>Callback]
+    classDef reg fill:#F7CB44,stroke:#c9a000,color:#0a0a0a,font-weight:bold
+  </deck-mermaid>
+</deck-hero-detail>
+
+<!-- 5 · Shadow DOM -->
+<deck-hero-detail eyebrow="Step 2">
+  <h1 slot="title">Shadow DOM · isolation</h1>
+  <deck-code lang="js" hero>
+    class Card extends HTMLElement {
+      constructor() {
+        super();
+        this.attachShadow({ mode: 'open' }).innerHTML = `
+          &lt;style&gt;p { color: red; font: 700 1rem/1.4 system-ui; }&lt;/style&gt;
+          &lt;p&gt;Sealed off from the outside world.&lt;/p&gt;
+        `;
+      }
+    }
+    customElements.define('private-card', Card);
+  </deck-code>
+  <deck-md slot="left">
+    - `attachShadow({ mode: 'open' })` builds an **isolated tree**
+    - Styles **don't leak out**, page CSS **doesn't leak in**
+    - No more `!important` wars, no BEM, no CSS modules
+  </deck-md>
+  <deck-mermaid inline slot="right">
+    graph TB
+    P["page CSS<br/>p { color: green }"]:::page -.-x|"blocked"| H[host element]
+    H --> S{{Shadow root}}
+    S --> ST["local style<br/>p { color: red }"]:::local
+    S --> D["&lt;p&gt;Sealed off.&lt;/p&gt;"]:::local
+    classDef page fill:#dc2626,stroke:#7f1d1d,color:#fff
+    classDef local fill:#16a34a,stroke:#14532d,color:#fff
+  </deck-mermaid>
+</deck-hero-detail>
+
+<!-- 6 · Slots -->
+<deck-hero-detail eyebrow="Step 3">
+  <h1 slot="title">Slots · composition by design</h1>
+  <deck-code lang="html" hero>
+    &lt;!-- Author defines slots in shadow DOM --&gt;
+    &lt;header&gt;&lt;slot name="title"&gt;&lt;/slot&gt;&lt;/header&gt;
+    &lt;main&gt;&lt;slot&gt;&lt;/slot&gt;&lt;/main&gt;
+
+    &lt;!-- Consumer fills them with light DOM --&gt;
+    &lt;my-panel&gt;
+      &lt;h2 slot="title"&gt;Settings&lt;/h2&gt;
+      &lt;p&gt;Body goes to the default slot.&lt;/p&gt;
+    &lt;/my-panel&gt;
+  </deck-code>
+  <deck-md slot="left">
+    - Light DOM children are **projected** into named slots
+    - Author defines the structure · consumer fills the content
+    - Fallback content goes inside the `<slot>` element
+  </deck-md>
+  <deck-mermaid inline slot="right">
+    graph LR
+    C["&lt;my-panel&gt;<br/>&lt;h2 slot='title'&gt;…&lt;/h2&gt;<br/>&lt;p&gt;…&lt;/p&gt;<br/>&lt;/my-panel&gt;"]:::light --> P{Projection}
+    P -->|"slot='title'"| T["&lt;slot name='title'&gt;"]:::shadow
+    P -->|"default"| D["&lt;slot&gt;"]:::shadow
+    classDef light fill:#F7CB44,stroke:#c9a000,color:#0a0a0a
+    classDef shadow fill:#0a0a0a,stroke:#F7CB44,color:#F7CB44
+  </deck-mermaid>
+</deck-hero-detail>
+
+<!-- 7 · CSS Custom Properties -->
+<deck-hero-detail eyebrow="Step 4">
+  <h1 slot="title">CSS Custom Properties cross the Shadow DOM</h1>
+  <deck-code lang="css" hero>
+    /* Inside the component's shadow root */
+    :host {
+      background: var(--card-bg, white);
+      color: var(--card-fg, black);
+    }
+
+    /* From the consuming page */
+    my-card { --card-bg: #0a0a0a; --card-fg: #f7cb44; }
+  </deck-code>
+  <deck-md slot="left">
+    - CSS variables **pierce** the Shadow DOM boundary
+    - The component declares its theming surface via `var(--name, default)`
+    - The consumer overrides whichever ones they want
+    - This is how `rikiki` is fully themable in ~5 values
+  </deck-md>
+  <deck-mermaid inline slot="right">
+    graph TD
+    A["page CSS<br/>my-card { --card-bg: #0a0a0a }"]:::page -->|"inherited<br/>through tree"| H[host element]
+    H -->|"crosses boundary"| S{{Shadow DOM}}
+    S --> R[":host {<br/>background: var(--card-bg)<br/>}"]:::shadow
+    classDef page fill:#F7CB44,stroke:#c9a000,color:#0a0a0a
+    classDef shadow fill:#0a0a0a,stroke:#F7CB44,color:#F7CB44
+  </deck-mermaid>
+</deck-hero-detail>
+
+<!-- 8 · Lit in 30 lines -->
+<deck-hero eyebrow="Sugar layer">
+  <h1 slot="title">Lit in 30 lines · what we actually write</h1>
+  <deck-code lang="js" hero step-groups='[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]]'>
+    import { LitElement, html, css } from 'lit';
+
+    export class MyCounter extends LitElement {
+      static styles = css`
+        button { font: 700 1rem/1 var(--sans); padding: 0.5rem 1rem; }
+      `;
+      static properties = { count: { type: Number } };
+
+      constructor() { super(); this.count = 0; }
+
+      render() {
+        return html`
+          &lt;button @click=${() => this.count++}&gt;
+            ${this.count}
+          &lt;/button&gt;
+        `;
+      }
+    }
+    customElements.define('my-counter', MyCounter);
+  </deck-code>
+  <deck-card center>
+    <deck-stack gap="1" align="center">
+      <deck-punch size="lead" weight="700">Reactive properties. Scoped styles. Declarative templates.</deck-punch>
+      <deck-punch size="lead" weight="700" tone="info">~5 KB gzipped at runtime.</deck-punch>
+    </deck-stack>
+  </deck-card>
+</deck-hero>
+
+<!-- 9 · A real working component, embedded live -->
+<deck-hero-detail eyebrow="Live">
+  <h1 slot="title">A real component, running right here</h1>
+  <div class="live-frame">
+    <demo-callout type="info">
+      <strong>This is a custom element</strong> · defined below and used directly in the slide.
+    </demo-callout>
+  </div>
+  <deck-md slot="left">
+    - ~20 lines of JS define `&lt;demo-callout&gt;` (script at the bottom of this HTML)
+    - The browser parsed it before you noticed
+    - Open DevTools on this slide · expand the Shadow DOM
+  </deck-md>
+  <deck-callout slot="right" type="ok">
+    Every <code>&lt;deck-*&gt;</code> in this deck is exactly this pattern. Nothing magical, nothing hidden.
+  </deck-callout>
+</deck-hero-detail>
+
+<!-- 10 · Adoption -->
+<deck-hero eyebrow="Reality check">
+  <h1 slot="title">Already shipping at scale</h1>
+  <deck-stack gap="4" fill>
+    <deck-kicker>In production today</deck-kicker>
+    <div class="logo-grid">
+      <div class="logo-tile">YouTube<small>Polymer era · billions of views</small></div>
+      <div class="logo-tile">GitHub<small>Primer design system</small></div>
+      <div class="logo-tile">Salesforce<small>Lightning Web Components</small></div>
+      <div class="logo-tile">Microsoft Edge<small>browser UI itself</small></div>
+      <div class="logo-tile">Photoshop Web<small>Adobe Spectrum</small></div>
+      <div class="logo-tile">Figma<small>plugins UI</small></div>
+    </div>
+    <deck-callout type="ok">
+      <strong>Browser support is universal.</strong> Custom Elements v1 + Shadow DOM v1 + ES Modules + CSS Custom Properties · <strong>100% of modern browsers</strong> since 2018 · Chromium, Firefox, Safari, Edge.
+    </deck-callout>
+  </deck-stack>
+</deck-hero>
+
+<!-- 11 · Closing -->
+<deck-hook kicker="One more thing">
+  <p class="caption on-dark">Stop fighting your framework.</p>
+  <h1 style="font-size:var(--fs-hook-q); color:var(--yellow); margin:var(--sp-3) 0; line-height:1.1">Start with the platform.</h1>
+  <p class="caption on-dark">Resources: <strong>lit.dev</strong> · <strong>MDN / Web Components</strong> · <strong>custom-elements-everywhere.com</strong></p>
+</deck-hook>
+
+</deck-root>
+
+<!-- Inline custom element for slide 9 · 22 lines, no framework -->
+<script>
+  class DemoCallout extends HTMLElement {
+    static observedAttributes = ['type'];
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' }).innerHTML = `
+        <style>
+          :host { display: inline-flex; }
+          ::slotted(strong) { color: #c98a00; }
+        </style>
+        <slot></slot>
+      `;
+    }
+    attributeChangedCallback() {
+      // Could re-theme based on type; left as-is for brevity.
+    }
+  }
+  customElements.define('demo-callout', DemoCallout);
+</script>
+
+</body>
+</html>

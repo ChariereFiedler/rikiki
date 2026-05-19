@@ -1,0 +1,50 @@
+{
+  "name": "rikiki",
+  "version": "0.1.0-pre",
+  "description": "A tiny Lit Web Components framework for technical presentations · zero-build for consumers, TypeScript for contributors.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./tokens.css": "./tokens.css",
+    "./themes/rikiki.css": "./themes/rikiki.css",
+    "./themes/siliceum.css": "./themes/siliceum.css",
+    "./livereload": "./dist/livereload.js",
+    "./dist/*": "./dist/*"
+  },
+  "files": [
+    "dist",
+    "tokens.css",
+    "themes",
+    "fonts",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node build.mjs && tsc --emitDeclarationOnly",
+    "watch": "node build.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "lit": "^3.3.3",
+    "typescript": "^5.6.0"
+  },
+  "peerDependencies": {
+    "lit": "^3.3.3"
+  },
+  "keywords": [
+    "lit",
+    "web-components",
+    "presentation",
+    "slides",
+    "deck",
+    "rikiki"
+  ],
+  "license": "MIT"
+}

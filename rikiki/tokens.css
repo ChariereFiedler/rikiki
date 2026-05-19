@@ -1,0 +1,10 @@
+/* ════════════════════════════════════════════════════════════════
+   RIKIKI · tokens entry point
+   Importing this file gives you the default Rikiki theme (tropical
+   greens & mango on paper, Unbounded + Inter + Space Mono via Google
+   Fonts). To pick a different look, import a theme directly:
+       <link rel="stylesheet" href="rikiki/themes/siliceum.css">
+   instead of this file.
+   ════════════════════════════════════════════════════════════════ */
+
+@import url('./themes/rikiki.css');

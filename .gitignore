@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Local-only client deck, not part of the OSS project
+js-loading/
+
+# Playwright
+test-results/
+playwright-report/
+loop-shots/
+
+# Build / cache
+.cache/
+.parcel-cache/
+
+# Note: rikiki/dist/ IS versioned (zero-build promise for consumers).
+# Other dist/ folders elsewhere remain ignored:
+**/build/dist/
+examples/*/dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Slidev (legacy)
+.slidev/

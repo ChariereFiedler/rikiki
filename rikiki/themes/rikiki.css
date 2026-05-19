@@ -1,0 +1,269 @@
+/* ════════════════════════════════════════════════════════════════
+   RIKIKI · Rikiki theme (default)
+   Tropical-jungle palette inspired by tordu-jardin.fr · acid greens,
+   mango orange, orchid pink on a deep nocturnal navy. Display in
+   Unbounded, body in Inter, mono in Space Mono · all from Google
+   Fonts so you don't have to host anything.
+   ════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400..900&family=Inter:wght@400..700&family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  /* ── Palette · paper mode (default for slides) ─────── */
+  --bg:      #faf8f5;   /* paper */
+  --card:    #f0ede8;   /* paper-mid */
+  --border:  #e0dbd4;   /* paper-rule */
+  --dark:    #06080f;   /* void · for inverted surfaces */
+
+  --text:    #2a2520;   /* ink */
+  --soft:    #4a4540;   /* ink-mid */
+  --muted:   #7a7570;   /* ink-light */
+
+  /* Accents · tropical, saturated.
+     Mango is the primary brand accent (CTA, focus, title underlines), in line
+     with the tordu-jardin distribution where mango outnumbers every other
+     accent ~10:1. Lime stays available as a secondary organic punch. */
+  --yellow:       #f07020;   /* mango · primary accent */
+  --yellow-soft:  rgba(240, 112, 32, 0.18);
+
+  --red:    #e84828;     /* ember */
+  --green:  #00c8a0;     /* helico */
+  --orange: #e8581a;     /* mango pushed warmer · for orange-coded cards */
+  --purple: #c050e0;     /* orchid */
+  --lime:   #b8e830;     /* lime · secondary acid punch */
+  --cyan:   #00ddb0;     /* canary */
+
+  /* Semantic surfaces & borders */
+  --surface-bad:    rgba(232, 72, 40, 0.10);
+  --border-bad:     rgba(232, 72, 40, 0.45);
+  --surface-ok:     rgba(0, 200, 160, 0.10);
+  --border-ok:      rgba(0, 200, 160, 0.45);
+  --surface-warn:   rgba(232, 88, 26, 0.10);
+  --border-warn:    rgba(232, 88, 26, 0.40);
+  --surface-info-faint:  rgba(240, 112, 32, 0.06);
+  --surface-info:        rgba(240, 112, 32, 0.12);
+  --surface-info-strong: rgba(240, 112, 32, 0.20);
+  --border-info:         rgba(240, 112, 32, 0.50);
+  --text-info:           #b65820;
+
+  /* Neutral surfaces */
+  --surface-card:   #ffffff;
+  --surface-soft:   #f0ede8;
+  --surface-tint:        rgba(42, 37, 32, 0.04);
+  --surface-tint-strong: rgba(42, 37, 32, 0.07);
+
+  /* On-dark (used by deck-cover, deck-section, deck-hook) */
+  --on-dark-text:    #e8e4f0;   /* white */
+  --on-dark-muted:   rgba(232, 228, 240, 0.55);
+  --on-dark-soft:    rgba(232, 228, 240, 0.72);
+  --on-dark-faint:   rgba(232, 228, 240, 0.32);
+  --on-dark-surface: rgba(232, 228, 240, 0.05);
+  --on-dark-border:  rgba(232, 228, 240, 0.12);
+
+  /* Deep nocturnal layers (cover/section background) */
+  --void:    #06080f;
+  --deep:    #0a0e18;
+  --layer:   #0f1422;
+  --bark:    #161c2e;
+  --wire:    #1e2840;
+  --mold:    #263350;
+
+  /* ── Type families ──────────────────────────────────── */
+  --sans:    'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --display: 'Unbounded', 'Inter', system-ui, sans-serif;
+  --mono:    'Space Mono', 'JetBrains Mono', ui-monospace, monospace;
+
+  /* ── Spacing (base 0.5rem, ratio ~1.5) ──────────────── */
+  --sp-1: 0.5rem;
+  --sp-2: 0.75rem;
+  --sp-3: 1rem;
+  --sp-4: 1.5rem;
+  --sp-5: 2.25rem;
+  --sp-6: 3.5rem;
+
+  /* ── Type scale ────────────────────────────────────── */
+  --fs-display: 2.8rem;
+  --fs-section: 2.4rem;
+  --fs-h1:      1.85rem;
+  --fs-h2:      1.3rem;
+  --fs-lead:    1rem;
+  --fs-body:    0.92rem;
+  --fs-small:   0.8rem;
+  --fs-micro:   0.7rem;
+  --fs-mono:    0.88rem;
+  --fs-mono-sm: 0.8rem;
+
+  /* ── Radii ─────────────────────────────────────────── */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-pill: 9999px;
+
+  /* ── Icon sizes ────────────────────────────────────── */
+  --icon-xs: 16px;
+  --icon-sm: 22px;
+  --icon-md: 28px;
+  --icon-lg: 40px;
+  --icon-xl: 56px;
+  --icon-2xl: 72px;
+
+  /* ── Hair gaps ─────────────────────────────────────── */
+  --gap-hair: 4px;
+  --gap-xs:   6px;
+
+  /* ── Display sizes for big numbers / hooks ─────────── */
+  --fs-stat:    clamp(3.5rem, 7vw, 5.5rem);
+  --fs-hook-q:  clamp(2.2rem, 4.5vw, 3.8rem);
+  --fs-big:     2.4rem;
+  --fs-mega:    2rem;
+  --fs-strong:  1.4rem;
+
+  /* ── Semantic opacities ────────────────────────────── */
+  --opacity-faint: 0.5;
+  --opacity-soft:  0.7;
+
+  /* ── Shadows ───────────────────────────────────────── */
+  --shadow-card:  0 1px 3px rgba(6, 8, 15, 0.06), 0 4px 12px rgba(6, 8, 15, 0.06);
+  --shadow-hover: 0 2px 6px rgba(6, 8, 15, 0.10), 0 8px 20px rgba(6, 8, 15, 0.10);
+
+  /* ── Slide padding ─────────────────────────────────── */
+  --slide-pad-y: 2rem;
+  --slide-pad-x: 4rem;
+
+  /* ── Title block height ────────────────────────────── */
+  --title-block: 4.5rem;
+}
+
+/* ── Minimal reset ─────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+body, h1, h2, h3, h4, p, ul, ol, li, blockquote, pre, table, td, th,
+figure, dl, dd { margin: 0; padding: 0; }
+html { font-size: clamp(14px, 2.35vh, 42px); }
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); }
+body { font-family: var(--sans); color: var(--text); }
+
+/* ── Light-DOM helpers (apply to slotted children) ──── */
+.accent { color: var(--yellow); }
+.accent-red    { color: var(--red); }
+.accent-orange { color: var(--orange); }
+.accent-green  { color: var(--green); }
+.accent-purple { color: var(--purple); }
+.accent-lime   { color: var(--lime); }
+.sub      { font-size: var(--fs-h2); color: var(--on-dark-soft); line-height: 1.45; max-width: 60ch; }
+.display  { font-family: var(--display); font-size: clamp(3rem, 7vw, 5.5rem); font-weight: 900; line-height: 1.05; letter-spacing: -0.03em; }
+.display.danger { color: var(--red); }
+.caption.on-dark { color: var(--on-dark-soft); font-size: var(--fs-lead); }
+.lead     { font-size: var(--fs-lead); color: var(--muted); line-height: 1.5; max-width: 75ch; }
+
+/* ── Slide titles (h1 in light DOM, slotted) ───────── */
+deck-hero > h1,
+deck-split > h1,
+deck-hero-detail > h1 {
+  font-family: var(--display);
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.022em;
+  line-height: 1.15;
+  margin-bottom: var(--sp-4);
+  padding-bottom: var(--sp-2);
+  border-bottom: 3px solid var(--yellow);
+  display: inline-block;
+  align-self: flex-start;
+}
+/* Cover · XL title on dark */
+deck-cover > h1 {
+  font-family: var(--display);
+  font-size: clamp(3.6rem, 9vw, 8.5rem);
+  font-weight: 900;
+  color: var(--on-dark-text);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  margin-bottom: var(--sp-4);
+}
+/* Section · centered accent title */
+deck-section > h1 {
+  font-family: var(--display);
+  font-size: var(--fs-section);
+  font-weight: 900;
+  color: var(--yellow);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  max-width: 18ch;
+  text-align: center;
+}
+deck-section > h1 em { color: var(--on-dark-soft); font-style: normal; font-weight: 700; }
+
+/* ── Slotted sub-headings ───────────────────────────── */
+deck-cover > .sub, deck-cover > p.sub {
+  display: block;
+  font-size: var(--fs-h2);
+  color: var(--on-dark-soft);
+  margin-bottom: var(--sp-6);
+  max-width: 60ch;
+  line-height: 1.45;
+}
+
+deck-hero > .lead,
+deck-split > .lead,
+deck-hero-detail > .lead {
+  display: block;
+  font-size: var(--fs-lead);
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: var(--sp-4);
+  max-width: 75ch;
+}
+
+/* ── Inline code in light DOM (slotted) ─────────────── */
+deck-hero code, deck-split code, deck-hero-detail code, deck-md code {
+  font-family: var(--mono);
+  font-size: var(--fs-mono-sm);
+  background: var(--surface-tint);
+  padding: 2px 6px;
+  border-radius: var(--r-sm);
+  color: var(--text);
+}
+deck-code code { all: unset; }
+
+/* ── Light-DOM utility blocks ───────────────────────── */
+.card-text {
+  font-size: var(--fs-body);
+  color: var(--soft);
+  line-height: 1.55;
+  margin: 0;
+}
+
+table.dense {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--fs-body);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--surface-card);
+  box-shadow: var(--shadow-card);
+}
+table.dense th {
+  text-align: left;
+  padding: 10px var(--sp-3);
+  color: var(--muted);
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-soft);
+}
+table.dense td {
+  padding: 10px var(--sp-3);
+  border-bottom: 1px solid var(--border);
+  color: var(--soft);
+  line-height: 1.4;
+}
+table.dense tr:last-child td { border-bottom: none; }
+table.dense td.ok  { color: var(--green);  font-weight: 700; }
+table.dense td.no  { color: var(--red); }
+table.dense td.meh { color: var(--orange); }
