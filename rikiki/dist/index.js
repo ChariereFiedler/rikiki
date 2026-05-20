@@ -1,118 +1,4 @@
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __decorateClass = (decorators, target, key, kind) => {
-  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
-  for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
-      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result) __defProp(target, key, result);
-  return result;
-};
-
-// src/deck-root.ts
-import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-var DeckRoot = class extends LitElement {
-  constructor() {
-    super();
-    // Flat list of all <deck-*> children (excluding deck-root itself)
-    this.slides = [];
-    // 2D index · chapters are bounded by <deck-section> elements
-    this.chapters = [];
-    this._onHash = () => {
-      this._readHash(false);
-    };
-    this._onKey = (e) => {
-      if (e.target && e.target.matches?.("input,textarea,[contenteditable]")) return;
-      if (this.overview) {
-        if (e.key === "Escape" || e.key === "o" || e.key === "O") {
-          e.preventDefault();
-          this.overview = false;
-          return;
-        }
-        if (e.key === "Enter") {
-          e.preventDefault();
-          this.overview = false;
-          return;
-        }
-        return;
-      }
-      if (e.key === "?" || e.key === "h" || e.key === "H") {
-        this._toggleHelp();
-        return;
-      }
-      if (e.key === "Escape") {
-        this._closeHelp();
-        return;
-      }
-      if (e.key === "o" || e.key === "O") {
-        e.preventDefault();
-        this.overview = true;
-        return;
-      }
-      if (e.key === "Home") {
-        this._goTo(0);
-        return;
-      }
-      if (e.key === "End") {
-        this._goTo(this.slides.length - 1);
-        return;
-      }
-      if (e.key === " " || e.key === "PageDown") {
-        e.preventDefault();
-        this._advance();
-        return;
-      }
-      if (e.key === "PageUp") {
-        e.preventDefault();
-        this._back();
-        return;
-      }
-      if (this._has2DNav()) {
-        const { c, i } = this._coords(this.current);
-        if (e.key === "ArrowRight") {
-          e.preventDefault();
-          if (c + 1 < this.chapters.length) this._goToCoords(c + 1, 0);
-          else this._advance();
-          return;
-        }
-        if (e.key === "ArrowLeft") {
-          e.preventDefault();
-          if (c - 1 >= 0) this._goToCoords(c - 1, 0);
-          else this._back();
-          return;
-        }
-        if (e.key === "ArrowDown") {
-          e.preventDefault();
-          const chap = this.chapters[c];
-          if (chap && i + 1 < chap.slides.length) this._goToCoords(c, i + 1);
-          else this._advance();
-          return;
-        }
-        if (e.key === "ArrowUp") {
-          e.preventDefault();
-          if (i - 1 >= 0) this._goToCoords(c, i - 1);
-          else this._back();
-          return;
-        }
-      } else {
-        if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-          e.preventDefault();
-          this._advance();
-          return;
-        }
-        if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-          e.preventDefault();
-          this._back();
-          return;
-        }
-      }
-    };
-    this.current = 0;
-    this.step = 0;
-    this.overview = false;
-  }
-  static {
-    this.styles = css`
+var Be=Object.defineProperty;var qe=Object.getOwnPropertyDescriptor;var t=(l,o,e,r)=>{for(var s=r>1?void 0:r?qe(o,e):o,i=l.length-1,n;i>=0;i--)(n=l[i])&&(s=(r?n(o,e,s):n(s))||s);return r&&s&&Be(o,e,s),s};import{LitElement as Ue,html as fe,css as Oe}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";var ee=class extends Ue{constructor(){super();this.slides=[];this.chapters=[];this._onHash=()=>{this._readHash(!1)};this._onKey=e=>{if(!(e.target&&e.target.matches?.("input,textarea,[contenteditable]"))){if(this.overview){if(e.key==="Escape"||e.key==="o"||e.key==="O"){e.preventDefault(),this.overview=!1;return}if(e.key==="Enter"){e.preventDefault(),this.overview=!1;return}return}if(e.key==="?"||e.key==="h"||e.key==="H"){this._toggleHelp();return}if(e.key==="Escape"){this._closeHelp();return}if(e.key==="o"||e.key==="O"){e.preventDefault(),this.overview=!0;return}if(e.key==="Home"){this._goTo(0);return}if(e.key==="End"){this._goTo(this.slides.length-1);return}if(e.key===" "||e.key==="PageDown"){e.preventDefault(),this._advance();return}if(e.key==="PageUp"){e.preventDefault(),this._back();return}if(this._has2DNav()){let{c:r,i:s}=this._coords(this.current);if(e.key==="ArrowRight"){e.preventDefault(),r+1<this.chapters.length?this._goToCoords(r+1,0):this._advance();return}if(e.key==="ArrowLeft"){e.preventDefault(),r-1>=0?this._goToCoords(r-1,0):this._back();return}if(e.key==="ArrowDown"){e.preventDefault();let i=this.chapters[r];i&&s+1<i.slides.length?this._goToCoords(r,s+1):this._advance();return}if(e.key==="ArrowUp"){e.preventDefault(),s-1>=0?this._goToCoords(r,s-1):this._back();return}}else{if(e.key==="ArrowRight"||e.key==="ArrowDown"){e.preventDefault(),this._advance();return}if(e.key==="ArrowLeft"||e.key==="ArrowUp"){e.preventDefault(),this._back();return}}}};this.current=0,this.step=0,this.overview=!1}static{this.styles=Oe`
     :host {
       display: block;
       width: 100vw;
@@ -316,277 +202,21 @@ var DeckRoot = class extends LitElement {
       pointer-events: none;
     }
     :host(:not([overview])) #overview-grid { display: none; }
-  `;
-  }
-  static {
-    this.properties = {
-      current: { type: Number, state: true },
-      step: { type: Number, state: true },
-      overview: { type: Boolean, reflect: true }
-    };
-  }
-  firstUpdated() {
-    this.slides = Array.from(this.querySelectorAll(":scope > *")).filter(
-      (el) => el.tagName?.toLowerCase().startsWith("deck-") && el.tagName?.toLowerCase() !== "deck-root"
-    );
-    this._buildChapters();
-    this._readHash(true);
-    this._applyActive();
-    this._applyStep();
-    this._updateUI();
-    this.requestUpdate();
-    window.addEventListener("keydown", this._onKey);
-    window.addEventListener("hashchange", this._onHash);
-  }
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    window.removeEventListener("keydown", this._onKey);
-    window.removeEventListener("hashchange", this._onHash);
-  }
-  /** Group slides into chapters bounded by <deck-section> markers. */
-  _buildChapters() {
-    this.chapters = [];
-    let current = null;
-    this.slides.forEach((slide, i) => {
-      const isSection = slide.tagName?.toLowerCase() === "deck-section";
-      if (isSection || !current) {
-        current = { startIdx: i, slides: [slide] };
-        this.chapters.push(current);
-      } else {
-        current.slides.push(slide);
-      }
-    });
-  }
-  /** Whether 2D nav is enabled (i.e. at least one chapter has multiple slides). */
-  _has2DNav() {
-    return this.chapters.some((c) => c.slides.length > 1) && this.chapters.length > 1;
-  }
-  /** Convert flat index → {chapter, intra-chapter index}. */
-  _coords(flatIdx) {
-    for (let c = 0; c < this.chapters.length; c++) {
-      const chap = this.chapters[c];
-      const local = flatIdx - chap.startIdx;
-      if (local >= 0 && local < chap.slides.length) return { c, i: local };
-    }
-    return { c: 0, i: 0 };
-  }
-  _flatFromCoords(c, i) {
-    const chap = this.chapters[c];
-    if (!chap) return 0;
-    return chap.startIdx + Math.max(0, Math.min(chap.slides.length - 1, i));
-  }
-  _readHash(initial) {
-    const h = location.hash;
-    const m2D = h.match(/^#(\d+)\.(\d+)(?:s(\d+))?$/);
-    const m1D = h.match(/^#(\d+)(?:\.(\d+))?$/);
-    let target = this.current;
-    let stepTarget = this.step;
-    if (this._has2DNav() && m2D) {
-      const c = parseInt(m2D[1], 10) - 1;
-      const i = parseInt(m2D[2], 10) - 1;
-      target = this._flatFromCoords(Math.max(0, c), Math.max(0, i));
-      stepTarget = m2D[3] ? parseInt(m2D[3], 10) : 0;
-    } else if (m1D) {
-      target = parseInt(m1D[1], 10) - 1;
-      stepTarget = m1D[2] ? parseInt(m1D[2], 10) : 0;
-    } else {
-      return;
-    }
-    if (target === this.current && stepTarget === this.step && !initial) return;
-    this.current = Math.max(0, Math.min(this.slides.length - 1, target));
-    this.step = Math.max(0, stepTarget);
-    if (!initial) {
-      this._applyActive();
-      this._applyStep();
-      this._updateUI();
-    }
-  }
-  _writeHash() {
-    const h = `#${this.current + 1}` + (this.step > 0 ? `.${this.step}` : "");
-    if (location.hash !== h) history.replaceState(null, "", h);
-  }
-  _toggleHelp() {
-    const o = this.renderRoot.querySelector("#kb-overlay");
-    o?.classList.toggle("open");
-  }
-  _closeHelp() {
-    this.renderRoot.querySelector("#kb-overlay")?.classList.remove("open");
-  }
-  _maxSteps() {
-    const s = this.slides[this.current];
-    if (!s) return 0;
-    const direct = parseInt(s.getAttribute("steps") || s.dataset?.["steps"] || "0", 10);
-    if (direct > 0) return direct;
-    const code = s.querySelector("deck-code[step-groups]");
-    if (code) {
-      try {
-        return JSON.parse(code.getAttribute("step-groups")).length;
-      } catch {
-      }
-    }
-    return 0;
-  }
-  _advance() {
-    const max = this._maxSteps();
-    if (this.step < max) {
-      this.step++;
-      this._applyStep();
-      this._updateUI();
-      this._writeHash();
-    } else if (this.current < this.slides.length - 1) {
-      this._goTo(this.current + 1);
-    }
-  }
-  _back() {
-    if (this.step > 0) {
-      this.step--;
-      this._applyStep();
-      this._updateUI();
-      this._writeHash();
-    } else if (this.current > 0) {
-      this._goTo(this.current - 1);
-      this.step = this._maxSteps();
-      this._applyStep();
-      this._updateUI();
-      this._writeHash();
-    }
-  }
-  _goTo(n) {
-    this.current = Math.max(0, Math.min(this.slides.length - 1, n));
-    this.step = 0;
-    this._applyActive();
-    this._applyStep();
-    this._updateUI();
-    this._writeHash();
-  }
-  _goToCoords(c, i) {
-    const clampedC = Math.max(0, Math.min(this.chapters.length - 1, c));
-    const chap = this.chapters[clampedC];
-    if (!chap) return;
-    const clampedI = Math.max(0, Math.min(chap.slides.length - 1, i));
-    this._goTo(this._flatFromCoords(clampedC, clampedI));
-  }
-  _applyActive() {
-    this.slides.forEach((s, i) => {
-      if (i === this.current) s.setAttribute("active", "");
-      else s.removeAttribute("active");
-    });
-    const active = this.slides[this.current];
-    const win = window;
-    if (active && win.mermaid) {
-      active.querySelectorAll("deck-mermaid:not([rendered])").forEach((el) => el.render?.());
-    }
-  }
-  _applyStep() {
-    const slide = this.slides[this.current];
-    if (!slide) return;
-    slide.applyStep?.(this.step);
-    slide.querySelectorAll("*").forEach((el) => el.applyStep?.(this.step));
-    slide.querySelectorAll("[data-step-block]").forEach((el) => {
-      const n = parseInt(el.dataset["stepBlock"], 10);
-      el.style.transition = "opacity 0.25s ease";
-      el.style.opacity = this.step === 0 || n <= this.step ? "1" : "0.15";
-    });
-  }
-  _updateUI() {
-    const total = this.slides.length;
-    const n = this.current + 1;
-    const progress = this.renderRoot.querySelector("#progress");
-    const counter = this.renderRoot.querySelector("#counter");
-    const dots = this.renderRoot.querySelector("#step-dots");
-    if (progress) progress.style.width = n / total * 100 + "%";
-    if (counter) counter.textContent = `${n} / ${total}`;
-    const max = this._maxSteps();
-    if (dots) {
-      dots.innerHTML = max === 0 ? "" : Array.from(
-        { length: max },
-        (_, i) => `<div class="dot${i < this.step ? " active" : ""}"></div>`
-      ).join("");
-    }
-  }
-  updated() {
-    this._updateUI();
-    this._renderOverviewIfActive();
-  }
-  /** Inject tokens.css into our shadow root so cloned slides get the
-   *  light-DOM-only styling (deck-cover > h1, .lead, .sub, etc.). */
-  _ensureOverviewTokens() {
-    if (this.renderRoot.querySelector("link[data-overview-tokens]")) return;
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.dataset["overviewTokens"] = "1";
-    link.href = new URL("../tokens.css", import.meta.url).href;
-    this.renderRoot.appendChild(link);
-  }
-  _renderOverviewIfActive() {
-    if (!this.overview) return;
-    const grid = this.renderRoot.querySelector("#overview-grid");
-    if (!grid) return;
-    grid.innerHTML = "";
-    this._ensureOverviewTokens();
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    grid.style.setProperty("--ov-thumb-w", `${vw}px`);
-    grid.style.setProperty("--ov-thumb-h", `${vh}px`);
-    requestAnimationFrame(() => {
-      const cellW = grid.querySelector(".ov-cell")?.clientWidth ?? 360;
-      grid.style.setProperty("--overview-scale", String(cellW / vw));
-    });
-    this.chapters.forEach((chap) => {
-      const row = document.createElement("div");
-      row.className = "ov-row";
-      const label = document.createElement("span");
-      label.className = "ov-row-label";
-      const first = chap.slides[0];
-      const h1 = first?.querySelector("h1");
-      const sectionTitle = h1 ? Array.from(h1.childNodes).map((n) => n.nodeName === "BR" ? " " : n.textContent || "").join("").replace(/\s+/g, " ").trim() : "";
-      label.textContent = sectionTitle || `Slide ${chap.startIdx + 1}`;
-      row.appendChild(label);
-      chap.slides.forEach((slide, j) => {
-        if (j > 0) {
-          const conn = document.createElement("div");
-          conn.className = "ov-connector";
-          row.appendChild(conn);
-        }
-        const idx = chap.startIdx + j;
-        const cell = document.createElement("div");
-        cell.className = "ov-cell";
-        if (idx === this.current) cell.dataset["current"] = "1";
-        const thumb = document.createElement("div");
-        thumb.className = "ov-thumb";
-        const clone = slide.cloneNode(true);
-        clone.setAttribute("active", "");
-        thumb.appendChild(clone);
-        cell.appendChild(thumb);
-        const num = document.createElement("span");
-        num.className = "ov-cell-label";
-        num.textContent = String(idx + 1);
-        cell.appendChild(num);
-        cell.addEventListener("click", () => {
-          this.overview = false;
-          this._goTo(idx);
-        });
-        row.appendChild(cell);
-      });
-      grid.appendChild(row);
-    });
-  }
-  render() {
-    return html`
+  `}static{this.properties={current:{type:Number,state:!0},step:{type:Number,state:!0},overview:{type:Boolean,reflect:!0}}}firstUpdated(){this.slides=Array.from(this.querySelectorAll(":scope > *")).filter(e=>e.tagName?.toLowerCase().startsWith("deck-")&&e.tagName?.toLowerCase()!=="deck-root"),this._buildChapters(),this._readHash(!0),this._applyActive(),this._applyStep(),this._updateUI(),this.requestUpdate(),window.addEventListener("keydown",this._onKey),window.addEventListener("hashchange",this._onHash)}disconnectedCallback(){super.disconnectedCallback(),window.removeEventListener("keydown",this._onKey),window.removeEventListener("hashchange",this._onHash)}_buildChapters(){this.chapters=[];let e=null;this.slides.forEach((r,s)=>{r.tagName?.toLowerCase()==="deck-section"||!e?(e={startIdx:s,slides:[r]},this.chapters.push(e)):e.slides.push(r)})}_has2DNav(){return this.chapters.some(e=>e.slides.length>1)&&this.chapters.length>1}_coords(e){for(let r=0;r<this.chapters.length;r++){let s=this.chapters[r],i=e-s.startIdx;if(i>=0&&i<s.slides.length)return{c:r,i}}return{c:0,i:0}}_flatFromCoords(e,r){let s=this.chapters[e];return s?s.startIdx+Math.max(0,Math.min(s.slides.length-1,r)):0}_readHash(e){let r=location.hash,s=r.match(/^#(\d+)\.(\d+)(?:s(\d+))?$/),i=r.match(/^#(\d+)(?:\.(\d+))?$/),n=this.current,a=this.step;if(this._has2DNav()&&s){let v=parseInt(s[1],10)-1,c=parseInt(s[2],10)-1;n=this._flatFromCoords(Math.max(0,v),Math.max(0,c)),a=s[3]?parseInt(s[3],10):0}else if(i)n=parseInt(i[1],10)-1,a=i[2]?parseInt(i[2],10):0;else return;n===this.current&&a===this.step&&!e||(this.current=Math.max(0,Math.min(this.slides.length-1,n)),this.step=Math.max(0,a),e||(this._applyActive(),this._applyStep(),this._updateUI()))}_writeHash(){let e=`#${this.current+1}`+(this.step>0?`.${this.step}`:"");location.hash!==e&&history.replaceState(null,"",e)}_toggleHelp(){this.renderRoot.querySelector("#kb-overlay")?.classList.toggle("open")}_closeHelp(){this.renderRoot.querySelector("#kb-overlay")?.classList.remove("open")}_maxSteps(){let e=this.slides[this.current];if(!e)return 0;let r=parseInt(e.getAttribute("steps")||e.dataset?.steps||"0",10);if(r>0)return r;let s=e.querySelector("deck-code[step-groups]");if(s)try{return JSON.parse(s.getAttribute("step-groups")).length}catch{}return 0}_advance(){let e=this._maxSteps();this.step<e?(this.step++,this._applyStep(),this._updateUI(),this._writeHash()):this.current<this.slides.length-1&&this._goTo(this.current+1)}_back(){this.step>0?(this.step--,this._applyStep(),this._updateUI(),this._writeHash()):this.current>0&&(this._goTo(this.current-1),this.step=this._maxSteps(),this._applyStep(),this._updateUI(),this._writeHash())}_goTo(e){this.current=Math.max(0,Math.min(this.slides.length-1,e)),this.step=0,this._applyActive(),this._applyStep(),this._updateUI(),this._writeHash()}_goToCoords(e,r){let s=Math.max(0,Math.min(this.chapters.length-1,e)),i=this.chapters[s];if(!i)return;let n=Math.max(0,Math.min(i.slides.length-1,r));this._goTo(this._flatFromCoords(s,n))}_applyActive(){this.slides.forEach((s,i)=>{i===this.current?s.setAttribute("active",""):s.removeAttribute("active")});let e=this.slides[this.current];e&&window.mermaid&&e.querySelectorAll("deck-mermaid:not([rendered])").forEach(s=>s.render?.())}_applyStep(){let e=this.slides[this.current];e&&(e.applyStep?.(this.step),e.querySelectorAll("*").forEach(r=>r.applyStep?.(this.step)),e.querySelectorAll("[data-step-block]").forEach(r=>{let s=parseInt(r.dataset.stepBlock,10);r.style.transition="opacity 0.25s ease",r.style.opacity=this.step===0||s<=this.step?"1":"0.15"}))}_updateUI(){let e=this.slides.length,r=this.current+1,s=this.renderRoot.querySelector("#progress"),i=this.renderRoot.querySelector("#counter"),n=this.renderRoot.querySelector("#step-dots");s&&(s.style.width=r/e*100+"%"),i&&(i.textContent=`${r} / ${e}`);let a=this._maxSteps();n&&(n.innerHTML=a===0?"":Array.from({length:a},(v,c)=>`<div class="dot${c<this.step?" active":""}"></div>`).join(""))}updated(){this._updateUI(),this._renderOverviewIfActive()}_ensureOverviewTokens(){if(this.renderRoot.querySelector("link[data-overview-tokens]"))return;let e=document.createElement("link");e.rel="stylesheet",e.dataset.overviewTokens="1",e.href=new URL("../tokens.css",import.meta.url).href,this.renderRoot.appendChild(e)}_renderOverviewIfActive(){if(!this.overview)return;let e=this.renderRoot.querySelector("#overview-grid");if(!e)return;e.innerHTML="",this._ensureOverviewTokens();let r=window.innerWidth,s=window.innerHeight;e.style.setProperty("--ov-thumb-w",`${r}px`),e.style.setProperty("--ov-thumb-h",`${s}px`),requestAnimationFrame(()=>{let i=e.querySelector(".ov-cell")?.clientWidth??360;e.style.setProperty("--overview-scale",String(i/r))}),this.chapters.forEach(i=>{let n=document.createElement("div");n.className="ov-row";let a=document.createElement("span");a.className="ov-row-label";let c=i.slides[0]?.querySelector("h1"),Re=c?Array.from(c.childNodes).map(G=>G.nodeName==="BR"?" ":G.textContent||"").join("").replace(/\s+/g," ").trim():"";a.textContent=Re||`Slide ${i.startIdx+1}`,n.appendChild(a),i.slides.forEach((G,ve)=>{if(ve>0){let ge=document.createElement("div");ge.className="ov-connector",n.appendChild(ge)}let X=i.startIdx+ve,z=document.createElement("div");z.className="ov-cell",X===this.current&&(z.dataset.current="1");let Q=document.createElement("div");Q.className="ov-thumb";let he=G.cloneNode(!0);he.setAttribute("active",""),Q.appendChild(he),z.appendChild(Q);let D=document.createElement("span");D.className="ov-cell-label",D.textContent=String(X+1),z.appendChild(D),z.addEventListener("click",()=>{this.overview=!1,this._goTo(X)}),n.appendChild(z)}),e.appendChild(n)})}render(){return fe`
       <div id="progress"></div>
       <div id="counter"></div>
       <div id="step-dots"></div>
       <div id="kb-hint">
         <kbd>←</kbd><kbd>→</kbd>
-        ${this._has2DNav() ? html`<kbd>↑</kbd><kbd>↓</kbd>` : ""}
+        ${this._has2DNav()?fe`<kbd>↑</kbd><kbd>↓</kbd>`:""}
         <span>·</span>
         <kbd>O</kbd>
         <span>·</span>
         <kbd>?</kbd>
       </div>
       <div id="overview-grid"></div>
-      <div id="kb-overlay" @click="${() => this._closeHelp()}">
-        <div class="kb-card" @click="${(e) => e.stopPropagation()}">
+      <div id="kb-overlay" @click="${()=>this._closeHelp()}">
+        <div class="kb-card" @click="${e=>e.stopPropagation()}">
           <div class="kb-card-header">
             <h3>Keyboard shortcuts</h3>
             <span class="esc"><kbd>Esc</kbd> to close</span>
@@ -603,18 +233,7 @@ var DeckRoot = class extends LitElement {
         </div>
       </div>
       <slot></slot>
-    `;
-  }
-};
-customElements.define("deck-root", DeckRoot);
-
-// src/deck-cover.ts
-import { LitElement as LitElement2, html as html2, css as css3 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-
-// src/shared-styles.ts
-import { css as css2 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-var slideShell = css2`
+    `}};customElements.define("deck-root",ee);import{LitElement as We,html as N,css as Ze}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as Ke,property as m}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";import{css as te}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";var Fe=te`
   :host {
     display: none;
     position: absolute;
@@ -627,8 +246,7 @@ var slideShell = css2`
     color: var(--text);
   }
   :host([active]) { display: flex; }
-`;
-var typo = css2`
+`,Ge=te`
   h1 {
     font-size: var(--fs-h1);
     font-weight: 700;
@@ -658,8 +276,7 @@ var typo = css2`
     border-radius: var(--r-sm);
     color: var(--text);
   }
-`;
-var helpers = css2`
+`,Je=te`
   .lbl {
     display: inline-block;
     padding: 4px 12px;
@@ -705,47 +322,20 @@ var helpers = css2`
     color: var(--muted);
     margin-bottom: var(--sp-2);
   }
-`;
-var slideBase = [slideShell, typo, helpers];
-
-// src/deck-cover.ts
-var DeckCover = class extends LitElement2 {
-  render() {
-    const parts = (this.brand ?? "").split("\xB7").map((s) => s.trim()).filter(Boolean);
-    const brandName = parts[0] ?? "";
-    const context = parts.slice(1).join(" \xB7 ");
-    const items = [
-      this.speaker && { l: this.speakerLabel ?? "Pr\xE9sent\xE9 par", v: this.speaker },
-      this.company && { l: this.companyLabel ?? "Entreprise", v: this.company },
-      this.duration && { l: this.durationLabel ?? "Dur\xE9e", v: this.duration },
-      this.audience && { l: this.audienceLabel ?? "Audience", v: this.audience },
-      this.runtime && { l: this.runtimeLabel ?? "Runtime", v: this.runtime }
-    ].filter((x) => !!x);
-    const hasMark = !!this.brandSrc;
-    return html2`
+`,p=[Fe,Ge,Je];var d=class extends We{render(){let o=(this.brand??"").split("\xB7").map(n=>n.trim()).filter(Boolean),e=o[0]??"",r=o.slice(1).join(" \xB7 "),s=[this.speaker&&{l:this.speakerLabel??"Pr\xE9sent\xE9 par",v:this.speaker},this.company&&{l:this.companyLabel??"Entreprise",v:this.company},this.duration&&{l:this.durationLabel??"Dur\xE9e",v:this.duration},this.audience&&{l:this.audienceLabel??"Audience",v:this.audience},this.runtime&&{l:this.runtimeLabel??"Runtime",v:this.runtime}].filter(n=>!!n),i=!!this.brandSrc;return N`
       <div class="brand" part="brand">
-        ${hasMark ? html2`<span class="brand-tile"><img src="${this.brandSrc}" alt="${brandName}"></span>` : ""}
-        ${brandName ? html2`<span class="brand-name">${brandName}</span>` : ""}
-        ${context ? html2`<span class="brand-context">${context}</span>` : ""}
+        ${i?N`<span class="brand-tile"><img src="${this.brandSrc}" alt="${e}"></span>`:""}
+        ${e?N`<span class="brand-name">${e}</span>`:""}
+        ${r?N`<span class="brand-context">${r}</span>`:""}
       </div>
       <slot></slot>
-      ${items.length ? html2`
+      ${s.length?N`
         <div class="meta" part="meta">
-          ${items.map((i) => html2`
-            <div class="meta-item"><strong>${i.l}</strong><span>${i.v}</span></div>
+          ${s.map(n=>N`
+            <div class="meta-item"><strong>${n.l}</strong><span>${n.v}</span></div>
           `)}
-        </div>` : ""}
-    `;
-  }
-};
-/* Tokens:
-     --deck-cover-bg          slide background          (defaults to --dark)
-     --deck-cover-text        primary on-dark text      (--on-dark-text)
-     --deck-cover-soft        soft on-dark text         (--on-dark-soft)
-     --deck-cover-muted       very soft on-dark text    (--on-dark-muted)
-     --deck-cover-faint       faintest on-dark text     (--on-dark-faint)
-     --deck-cover-border      meta separator border     (--on-dark-border) */
-DeckCover.styles = [...slideBase, css3`
+        </div>`:""}
+    `}};d.styles=[...p,Ze`
     :host {
       background: var(--deck-cover-bg, var(--dark));
       justify-content: center;
@@ -802,65 +392,10 @@ DeckCover.styles = [...slideBase, css3`
       color: var(--deck-cover-text, var(--on-dark-text));
       font-size: var(--fs-body); font-weight: 600;
     }
-  `];
-__decorateClass([
-  property({ type: String })
-], DeckCover.prototype, "brand", 2);
-__decorateClass([
-  property({ type: String, attribute: "brand-src" })
-], DeckCover.prototype, "brandSrc", 2);
-__decorateClass([
-  property({ type: String })
-], DeckCover.prototype, "speaker", 2);
-__decorateClass([
-  property({ type: String })
-], DeckCover.prototype, "company", 2);
-__decorateClass([
-  property({ type: String })
-], DeckCover.prototype, "duration", 2);
-__decorateClass([
-  property({ type: String })
-], DeckCover.prototype, "audience", 2);
-__decorateClass([
-  property({ type: String })
-], DeckCover.prototype, "runtime", 2);
-__decorateClass([
-  property({ type: String, attribute: "speaker-label" })
-], DeckCover.prototype, "speakerLabel", 2);
-__decorateClass([
-  property({ type: String, attribute: "company-label" })
-], DeckCover.prototype, "companyLabel", 2);
-__decorateClass([
-  property({ type: String, attribute: "duration-label" })
-], DeckCover.prototype, "durationLabel", 2);
-__decorateClass([
-  property({ type: String, attribute: "audience-label" })
-], DeckCover.prototype, "audienceLabel", 2);
-__decorateClass([
-  property({ type: String, attribute: "runtime-label" })
-], DeckCover.prototype, "runtimeLabel", 2);
-DeckCover = __decorateClass([
-  customElement("deck-cover")
-], DeckCover);
-
-// src/deck-section.ts
-import { LitElement as LitElement3, html as html3, css as css4 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement as customElement2, property as property2 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var DeckSection = class extends LitElement3 {
-  render() {
-    return html3`
-      ${this.num ? html3`<div class="sec-num" part="num">${this.num}</div>` : ""}
+  `],t([m({type:String})],d.prototype,"brand",2),t([m({type:String,attribute:"brand-src"})],d.prototype,"brandSrc",2),t([m({type:String})],d.prototype,"speaker",2),t([m({type:String})],d.prototype,"company",2),t([m({type:String})],d.prototype,"duration",2),t([m({type:String})],d.prototype,"audience",2),t([m({type:String})],d.prototype,"runtime",2),t([m({type:String,attribute:"speaker-label"})],d.prototype,"speakerLabel",2),t([m({type:String,attribute:"company-label"})],d.prototype,"companyLabel",2),t([m({type:String,attribute:"duration-label"})],d.prototype,"durationLabel",2),t([m({type:String,attribute:"audience-label"})],d.prototype,"audienceLabel",2),t([m({type:String,attribute:"runtime-label"})],d.prototype,"runtimeLabel",2),d=t([Ke("deck-cover")],d);import{LitElement as Ye,html as ue,css as Ve}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as Xe,property as Qe}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var $=class extends Ye{render(){return ue`
+      ${this.num?ue`<div class="sec-num" part="num">${this.num}</div>`:""}
       <slot></slot>
-    `;
-  }
-};
-/* Tokens:
-     --deck-section-bg          (defaults to --dark)
-     --deck-section-num-color   small section number      (--on-dark-faint)
-     --deck-section-rule-color  line on each side         (--on-dark-border)
-     --deck-section-title-color (defaults to --yellow)
-     --deck-section-em-color    italic inside h1          (--on-dark-soft) */
-DeckSection.styles = [...slideBase, css4`
+    `}};$.styles=[...p,Ve`
     :host {
       background: var(--deck-section-bg, var(--dark));
       color: var(--on-dark-text);
@@ -890,28 +425,12 @@ DeckSection.styles = [...slideBase, css4`
       color: var(--deck-section-em-color, var(--on-dark-soft));
       font-style: normal; font-weight: 700;
     }
-  `];
-__decorateClass([
-  property2({ type: String })
-], DeckSection.prototype, "num", 2);
-DeckSection = __decorateClass([
-  customElement2("deck-section")
-], DeckSection);
-
-// src/deck-hero.ts
-import { LitElement as LitElement4, html as html4, css as css5 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement as customElement3, property as property3 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var DeckHero = class extends LitElement4 {
-  render() {
-    return html4`
-      ${this.eyebrow ? html4`<span class="lbl">${this.eyebrow}</span>` : ""}
+  `],t([Qe({type:String})],$.prototype,"num",2),$=t([Xe("deck-section")],$);import{LitElement as De,html as be,css as et}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as tt,property as rt}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var H=class extends De{render(){return be`
+      ${this.eyebrow?be`<span class="lbl">${this.eyebrow}</span>`:""}
       <slot name="title"></slot>
       <slot name="lead"></slot>
       <div class="body" part="body"><slot></slot></div>
-    `;
-  }
-};
-DeckHero.styles = [...slideBase, css5`
+    `}};H.styles=[...p,et`
     :host { justify-content: flex-start; }
     .body {
       flex: 1; min-height: 0;
@@ -926,49 +445,21 @@ DeckHero.styles = [...slideBase, css5`
     ::slotted(pre),
     ::slotted(svg),
     ::slotted(.hero-main) { max-height: 100%; flex: 0 1 auto; }
-  `];
-__decorateClass([
-  property3({ type: String })
-], DeckHero.prototype, "eyebrow", 2);
-DeckHero = __decorateClass([
-  customElement3("deck-hero")
-], DeckHero);
-
-// src/deck-split.ts
-import { LitElement as LitElement5, html as html5, css as css6 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement as customElement4, property as property4 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var DeckSplit = class extends LitElement5 {
-  /** Map '1'..'6' to var(--sp-N); fall through to raw values otherwise. */
-  _resolveSp(v) {
-    const n = parseInt(v, 10);
-    if (!Number.isNaN(n) && n >= 1 && n <= 6) return `var(--sp-${n})`;
-    return v;
-  }
-  updated() {
-    if (this.gap) this.style.setProperty("--_gap", this._resolveSp(this.gap));
-    if (this.colGap) this.style.setProperty("--_col-gap", this._resolveSp(this.colGap));
-  }
-  render() {
-    const hasA = this.querySelector('[slot="a"]');
-    const isThree = this.cols === "3" || !!hasA;
-    return html5`
-      ${this.eyebrow ? html5`<span class="lbl">${this.eyebrow}</span>` : ""}
+  `],t([rt({type:String})],H.prototype,"eyebrow",2),H=t([tt("deck-hero")],H);import{LitElement as st,html as J,css as ot}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as at,property as W}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var f=class extends st{_resolveSp(o){let e=parseInt(o,10);return!Number.isNaN(e)&&e>=1&&e<=6?`var(--sp-${e})`:o}updated(){this.gap&&this.style.setProperty("--_gap",this._resolveSp(this.gap)),this.colGap&&this.style.setProperty("--_col-gap",this._resolveSp(this.colGap))}render(){let o=this.querySelector('[slot="a"]'),e=this.cols==="3"||!!o;return J`
+      ${this.eyebrow?J`<span class="lbl">${this.eyebrow}</span>`:""}
       <slot name="title"></slot>
       <slot name="lead"></slot>
       <div class="body" part="body">
-        ${isThree ? html5`
+        ${e?J`
           <div class="col" part="col"><slot name="a"></slot></div>
           <div class="col" part="col"><slot name="b"></slot></div>
           <div class="col" part="col"><slot name="c"></slot></div>
-        ` : html5`
+        `:J`
           <div class="col" part="col"><slot name="left"></slot></div>
           <div class="col" part="col"><slot name="right"></slot></div>
         `}
       </div>
-    `;
-  }
-};
-DeckSplit.styles = [...slideBase, css6`
+    `}};f.styles=[...p,ot`
     :host { justify-content: flex-start; }
     .body {
       flex: 1; min-height: 0;
@@ -987,30 +478,8 @@ DeckSplit.styles = [...slideBase, css6`
       overflow: hidden;
     }
     .col.center { justify-content: center; }
-  `];
-__decorateClass([
-  property4({ type: String })
-], DeckSplit.prototype, "eyebrow", 2);
-__decorateClass([
-  property4({ type: String })
-], DeckSplit.prototype, "cols", 2);
-__decorateClass([
-  property4({ type: String })
-], DeckSplit.prototype, "gap", 2);
-__decorateClass([
-  property4({ type: String, attribute: "col-gap" })
-], DeckSplit.prototype, "colGap", 2);
-DeckSplit = __decorateClass([
-  customElement4("deck-split")
-], DeckSplit);
-
-// src/deck-hero-detail.ts
-import { LitElement as LitElement6, html as html6, css as css7 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement as customElement5, property as property5 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var DeckHeroDetail = class extends LitElement6 {
-  render() {
-    return html6`
-      ${this.eyebrow ? html6`<span class="lbl">${this.eyebrow}</span>` : ""}
+  `],t([W({type:String})],f.prototype,"eyebrow",2),t([W({type:String})],f.prototype,"cols",2),t([W({type:String})],f.prototype,"gap",2),t([W({type:String,attribute:"col-gap"})],f.prototype,"colGap",2),f=t([at("deck-split")],f);import{LitElement as it,html as ye,css as nt}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as lt,property as dt}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var I=class extends it{render(){return ye`
+      ${this.eyebrow?ye`<span class="lbl">${this.eyebrow}</span>`:""}
       <slot name="title"></slot>
       <slot name="lead"></slot>
       <div class="hero" part="hero"><slot></slot></div>
@@ -1018,10 +487,7 @@ var DeckHeroDetail = class extends LitElement6 {
         <div class="col"><slot name="left"></slot></div>
         <div class="col"><slot name="right"></slot></div>
       </div>
-    `;
-  }
-};
-DeckHeroDetail.styles = [...slideBase, css7`
+    `}};I.styles=[...p,nt`
     :host { justify-content: flex-start; }
     /* The hero (code/chart) gets at least half the available height; .detail
        (bullets + diagram) is capped at ~40%. Without these caps a tall mermaid
@@ -1051,33 +517,12 @@ DeckHeroDetail.styles = [...slideBase, css7`
       min-height: 0;
       overflow: hidden;
     }
-  `];
-__decorateClass([
-  property5({ type: String })
-], DeckHeroDetail.prototype, "eyebrow", 2);
-DeckHeroDetail = __decorateClass([
-  customElement5("deck-hero-detail")
-], DeckHeroDetail);
-
-// src/deck-hook.ts
-import { LitElement as LitElement7, html as html7, css as css8 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement as customElement6, property as property6 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var DeckHook = class extends LitElement7 {
-  render() {
-    return html7`
+  `],t([dt({type:String})],I.prototype,"eyebrow",2),I=t([lt("deck-hero-detail")],I);import{LitElement as ct,html as xe,css as pt}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as mt,property as vt}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var j=class extends ct{render(){return xe`
       <div class="body" part="body">
-        ${this.kicker ? html7`<span class="kicker on-dark">${this.kicker}</span>` : ""}
+        ${this.kicker?xe`<span class="kicker on-dark">${this.kicker}</span>`:""}
         <slot></slot>
       </div>
-    `;
-  }
-};
-/* Tokens:
-     --deck-hook-bg               (defaults to --dark)
-     --deck-hook-display-color    (defaults to --yellow)
-     --deck-hook-caption-color    (defaults to --on-dark-muted)
-     --deck-hook-gap              vertical gap between elements */
-DeckHook.styles = [...slideBase, css8`
+    `}};j.styles=[...p,pt`
     :host {
       background: var(--deck-hook-bg, var(--dark));
       color: var(--on-dark-text);
@@ -1101,41 +546,9 @@ DeckHook.styles = [...slideBase, css8`
       font-size: var(--fs-lead);
       color: var(--deck-hook-caption-color, var(--on-dark-muted));
     }
-  `];
-__decorateClass([
-  property6({ type: String })
-], DeckHook.prototype, "kicker", 2);
-DeckHook = __decorateClass([
-  customElement6("deck-hook")
-], DeckHook);
-
-// src/deck-md.ts
-import { LitElement as LitElement8, html as html8, css as css9 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement as customElement7, state } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-import { marked } from "https://cdn.jsdelivr.net/npm/marked@12/+esm";
-marked.setOptions({ gfm: true, breaks: false });
-var DeckMd = class extends LitElement8 {
-  constructor() {
-    super(...arguments);
-    this._html = "";
-  }
-  connectedCallback() {
-    super.connectedCallback();
-    this._parse();
-  }
-  _parse() {
-    const raw = this.textContent ?? "";
-    const lines = raw.split("\n");
-    const indent = lines.filter((l) => l.trim().length > 0).reduce((min, l) => Math.min(min, l.match(/^ */)?.[0].length ?? 0), Infinity);
-    const cleaned = indent === Infinity ? raw : lines.map((l) => l.slice(indent)).join("\n");
-    this._html = marked.parse(cleaned.trim());
-    this.textContent = "";
-  }
-  render() {
-    return html8`<div class="content" .innerHTML="${this._html}"></div>`;
-  }
-};
-DeckMd.styles = css9`
+  `],t([vt({type:String})],j.prototype,"kicker",2),j=t([mt("deck-hook")],j);import{LitElement as ht,html as gt,css as ft}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as ut,state as bt}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";import{marked as ke}from"https://cdn.jsdelivr.net/npm/marked@12/+esm";ke.setOptions({gfm:!0,breaks:!1});var A=class extends ht{constructor(){super(...arguments);this._html=""}connectedCallback(){super.connectedCallback(),this._parse()}_parse(){let e=this.textContent??"",r=e.split(`
+`),s=r.filter(n=>n.trim().length>0).reduce((n,a)=>Math.min(n,a.match(/^ */)?.[0].length??0),1/0),i=s===1/0?e:r.map(n=>n.slice(s)).join(`
+`);this._html=ke.parse(i.trim()),this.textContent=""}render(){return gt`<div class="content" .innerHTML="${this._html}"></div>`}};A.styles=ft`
     :host { display: block; color: var(--soft); font-family: var(--sans); }
     h1, h2, h3, h4 { color: var(--text); font-weight: 700; letter-spacing: -0.01em; }
     h2 { font-size: var(--fs-h2); margin-bottom: var(--sp-2); }
@@ -1174,112 +587,8 @@ DeckMd.styles = css9`
     }
     hr { border: none; border-top: 1px solid var(--border); margin: var(--sp-4) 0; }
     .content { display: contents; }
-  `;
-__decorateClass([
-  state()
-], DeckMd.prototype, "_html", 2);
-DeckMd = __decorateClass([
-  customElement7("deck-md")
-], DeckMd);
-
-// src/deck-code.ts
-import { LitElement as LitElement9, html as html9, css as css10 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement as customElement8, property as property7, state as state2 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-function highlight(src, lang) {
-  let s = src.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const placeholders = [];
-  const stash = (cls, text) => {
-    const id = "P" + placeholders.length + "E";
-    placeholders.push('<span class="' + cls + '">' + text + "</span>");
-    return id;
-  };
-  const isHtml = lang === "html" || lang === "xml" || lang === "svg";
-  const isCss = lang === "css" || lang === "scss" || lang === "less";
-  if (isHtml) {
-    s = s.replace(/(&lt;!--[\s\S]*?--&gt;)/g, (m) => stash("cmt", m));
-    s = s.replace(/(&lt;!doctype[^&]*&gt;)/gi, (m) => stash("cmt", m));
-    s = s.replace(/("[^"]*"|'[^']*')/g, (m) => stash("str", m));
-    s = s.replace(
-      /(&lt;\/?)([a-zA-Z][a-zA-Z0-9:-]*)/g,
-      (_, lt, tag) => lt + stash("kw", tag)
-    );
-    s = s.replace(/\b([a-zA-Z][a-zA-Z0-9-]*)(?==)/g, (m) => stash("prop", m));
-  } else if (isCss) {
-    s = s.replace(/(\/\*[\s\S]*?\*\/)/g, (m) => stash("cmt", m));
-    s = s.replace(/("[^"]*"|'[^']*')/g, (m) => stash("str", m));
-    s = s.replace(/([a-zA-Z-]+)(?=\s*:)/g, (m) => stash("prop", m));
-    s = s.replace(/(#[0-9a-fA-F]{3,8})\b/g, (m) => stash("num", m));
-    s = s.replace(
-      /\b(\d+(?:\.\d+)?)(px|rem|em|%|vh|vw|vmin|vmax|s|ms|deg)?/g,
-      (_, n, u) => stash("num", n + (u ?? ""))
-    );
-  } else {
-    s = s.replace(/(\/\/[^\n]*)/g, (m) => stash("cmt", m));
-    s = s.replace(/(['"`])((?:\\.|(?!\1)[^\\])*)\1/g, (m) => stash("str", m));
-    s = s.replace(
-      /\b(const|let|var|function|return|if|else|for|while|class|extends|new|export|import|from|as|await|async|of|in|typeof|instanceof|true|false|null|undefined)\b/g,
-      (m) => stash("kw", m)
-    );
-    s = s.replace(/\b(\d+(?:\.\d+)?)\b/g, (m) => stash("num", m));
-  }
-  s = s.replace(/P(\d+)E/g, (_, i) => placeholders[+i] ?? "");
-  return s;
-}
-var DeckCode = class extends LitElement9 {
-  constructor() {
-    super(...arguments);
-    this.lang = "";
-    this.hero = false;
-    this.nested = false;
-    this._html = "";
-    this._groups = null;
-  }
-  connectedCallback() {
-    super.connectedCallback();
-    this._highlight();
-    try {
-      this._groups = JSON.parse(this.getAttribute("step-groups") ?? "null");
-    } catch {
-      this._groups = null;
-    }
-  }
-  _highlight() {
-    const raw = this.textContent ?? "";
-    const lines = raw.split("\n");
-    while (lines.length && !lines[0].trim()) lines.shift();
-    while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
-    const indent = lines.filter((l) => l.trim().length > 0).reduce((min, l) => Math.min(min, l.match(/^ */)?.[0].length ?? 0), Infinity);
-    const cleaned = indent === Infinity ? lines : lines.map((l) => l.slice(indent));
-    this._html = cleaned.map(
-      (line, i) => '<span class="line" data-line="' + (i + 1) + '">' + highlight(line || " ", this.lang) + "</span>"
-    ).join("");
-  }
-  /** Public API · called by deck-root when stepping through code groups. */
-  applyStep(n) {
-    if (!this._groups) return;
-    const lines = this.shadowRoot?.querySelectorAll(".line");
-    if (!lines) return;
-    if (n === 0) {
-      lines.forEach((l) => l.classList.remove("dim", "lit"));
-    } else {
-      const active = this._groups[Math.min(n - 1, this._groups.length - 1)] ?? [];
-      lines.forEach((l) => {
-        const num = parseInt(l.dataset["line"] ?? "0", 10);
-        l.classList.toggle("lit", active.includes(num));
-        l.classList.toggle("dim", !active.includes(num));
-      });
-    }
-  }
-  render() {
-    return html9`<pre><code .innerHTML="${this._html}"></code></pre>`;
-  }
-};
-/* Customization tokens:
-     --deck-code-bg / -border / -text
-     --deck-code-radius / -padding-y / -padding-x
-     --deck-code-syntax-{kw,str,num,cmt,ty,prop,fn}
-   All default to the theme's --code-* tokens. */
-DeckCode.styles = css10`
+  `,t([bt()],A.prototype,"_html",2),A=t([ut("deck-md")],A);import{LitElement as yt,html as xt,css as kt}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as wt,property as Z,state as _t}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";function Et(l,o){let e=l.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"),r=[],s=(a,v)=>{let c="P"+r.length+"E";return r.push('<span class="'+a+'">'+v+"</span>"),c};return o==="html"||o==="xml"||o==="svg"?(e=e.replace(/(&lt;!--[\s\S]*?--&gt;)/g,a=>s("cmt",a)),e=e.replace(/(&lt;!doctype[^&]*&gt;)/gi,a=>s("cmt",a)),e=e.replace(/("[^"]*"|'[^']*')/g,a=>s("str",a)),e=e.replace(/(&lt;\/?)([a-zA-Z][a-zA-Z0-9:-]*)/g,(a,v,c)=>v+s("kw",c)),e=e.replace(/\b([a-zA-Z][a-zA-Z0-9-]*)(?==)/g,a=>s("prop",a))):o==="css"||o==="scss"||o==="less"?(e=e.replace(/(\/\*[\s\S]*?\*\/)/g,a=>s("cmt",a)),e=e.replace(/("[^"]*"|'[^']*')/g,a=>s("str",a)),e=e.replace(/([a-zA-Z-]+)(?=\s*:)/g,a=>s("prop",a)),e=e.replace(/(#[0-9a-fA-F]{3,8})\b/g,a=>s("num",a)),e=e.replace(/\b(\d+(?:\.\d+)?)(px|rem|em|%|vh|vw|vmin|vmax|s|ms|deg)?/g,(a,v,c)=>s("num",v+(c??"")))):(e=e.replace(/(\/\/[^\n]*)/g,a=>s("cmt",a)),e=e.replace(/(['"`])((?:\\.|(?!\1)[^\\])*)\1/g,a=>s("str",a)),e=e.replace(/\b(const|let|var|function|return|if|else|for|while|class|extends|new|export|import|from|as|await|async|of|in|typeof|instanceof|true|false|null|undefined)\b/g,a=>s("kw",a)),e=e.replace(/\b(\d+(?:\.\d+)?)\b/g,a=>s("num",a))),e=e.replace(/P(\d+)E/g,(a,v)=>r[+v]??""),e}var h=class extends yt{constructor(){super(...arguments);this.lang="";this.hero=!1;this.nested=!1;this._html="";this._groups=null}connectedCallback(){super.connectedCallback(),this._highlight();try{this._groups=JSON.parse(this.getAttribute("step-groups")??"null")}catch{this._groups=null}}_highlight(){let r=(this.textContent??"").split(`
+`);for(;r.length&&!r[0].trim();)r.shift();for(;r.length&&!r[r.length-1].trim();)r.pop();let s=r.filter(n=>n.trim().length>0).reduce((n,a)=>Math.min(n,a.match(/^ */)?.[0].length??0),1/0),i=s===1/0?r:r.map(n=>n.slice(s));this._html=i.map((n,a)=>'<span class="line" data-line="'+(a+1)+'">'+Et(n||" ",this.lang)+"</span>").join("")}applyStep(e){if(!this._groups)return;let r=this.shadowRoot?.querySelectorAll(".line");if(r)if(e===0)r.forEach(s=>s.classList.remove("dim","lit"));else{let s=this._groups[Math.min(e-1,this._groups.length-1)]??[];r.forEach(i=>{let n=parseInt(i.dataset.line??"0",10);i.classList.toggle("lit",s.includes(n)),i.classList.toggle("dim",!s.includes(n))})}}render(){return xt`<pre><code .innerHTML="${this._html}"></code></pre>`}};h.styles=kt`
     :host {
       display: block;
       background: var(--deck-code-bg, var(--code-bg));
@@ -1312,50 +621,14 @@ DeckCode.styles = css10`
     .cmt  { color: var(--deck-code-syntax-cmt,  var(--code-cmt)); font-style: italic; }
     .ty   { color: var(--deck-code-syntax-ty,   var(--code-ty)); }
     .prop { color: var(--deck-code-syntax-prop, var(--code-prop)); }
-  `;
-__decorateClass([
-  property7({ type: String })
-], DeckCode.prototype, "lang", 2);
-__decorateClass([
-  property7({ type: Boolean, reflect: true })
-], DeckCode.prototype, "hero", 2);
-__decorateClass([
-  property7({ type: Boolean, reflect: true })
-], DeckCode.prototype, "nested", 2);
-__decorateClass([
-  property7({ type: String, attribute: "step-groups" })
-], DeckCode.prototype, "stepGroups", 2);
-__decorateClass([
-  state2()
-], DeckCode.prototype, "_html", 2);
-DeckCode = __decorateClass([
-  customElement8("deck-code")
-], DeckCode);
-
-// src/deck-callout.ts
-import { LitElement as LitElement10, html as html10, css as css11 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement as customElement9, property as property8 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var ICONS = {
-  info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
-  warn: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
-  danger: '<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>',
-  ok: '<path d="M20 6 9 17l-5-5"/>'
-};
-var DeckCallout = class extends LitElement10 {
-  render() {
-    const t = this.type ?? "info";
-    const icon = ICONS[t] ?? ICONS.info;
-    return html10`
+  `,t([Z({type:String})],h.prototype,"lang",2),t([Z({type:Boolean,reflect:!0})],h.prototype,"hero",2),t([Z({type:Boolean,reflect:!0})],h.prototype,"nested",2),t([Z({type:String,attribute:"step-groups"})],h.prototype,"stepGroups",2),t([_t()],h.prototype,"_html",2),h=t([wt("deck-code")],h);import{LitElement as St,html as Tt,css as Lt}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as Mt,property as zt}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var we={info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',warn:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',danger:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>',ok:'<path d="M20 6 9 17l-5-5"/>'},P=class extends St{render(){let o=this.type??"info",e=we[o]??we.info;return Tt`
       <div class="icon-box">
         <svg viewBox="0 0 24 24" fill="none"
              stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-             .innerHTML="${icon}"></svg>
+             .innerHTML="${e}"></svg>
       </div>
       <div class="content"><slot></slot></div>
-    `;
-  }
-};
-DeckCallout.styles = css11`
+    `}};P.styles=Lt`
     :host {
       display: flex; gap: var(--sp-3);
       padding: var(--deck-callout-padding-y, var(--sp-3)) var(--deck-callout-padding-x, var(--sp-4));
@@ -1394,28 +667,7 @@ DeckCallout.styles = css11`
       background: var(--surface-tint); padding: 2px 6px;
       border-radius: var(--r-sm); color: var(--text);
     }
-  `;
-__decorateClass([
-  property8({ type: String })
-], DeckCallout.prototype, "type", 2);
-DeckCallout = __decorateClass([
-  customElement9("deck-callout")
-], DeckCallout);
-
-// src/deck-card.ts
-import { LitElement as LitElement11, html as html11, css as css12 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement as customElement10, property as property9 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var DeckCard = class extends LitElement11 {
-  constructor() {
-    super(...arguments);
-    this.center = false;
-    this.compact = false;
-  }
-  render() {
-    return html11`<slot></slot>`;
-  }
-};
-DeckCard.styles = css12`
+  `,t([zt({type:String})],P.prototype,"type",2),P=t([Mt("deck-callout")],P);import{LitElement as Nt,html as $t,css as Ht}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as It,property as re}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var k=class extends Nt{constructor(){super(...arguments);this.center=!1;this.compact=!1}render(){return $t`<slot></slot>`}};k.styles=Ht`
     :host {
       display: flex; flex-direction: column;
       gap: var(--sp-2);
@@ -1449,91 +701,9 @@ DeckCard.styles = css12`
     ::slotted(strong) { color: var(--text); font-weight: 700; }
     :host([center])  { text-align: center; align-items: center; }
     :host([compact]) { padding: var(--sp-2) var(--sp-3); }
-  `;
-__decorateClass([
-  property9({ type: String })
-], DeckCard.prototype, "color", 2);
-__decorateClass([
-  property9({ type: Boolean })
-], DeckCard.prototype, "center", 2);
-__decorateClass([
-  property9({ type: Boolean })
-], DeckCard.prototype, "compact", 2);
-DeckCard = __decorateClass([
-  customElement10("deck-card")
-], DeckCard);
-
-// src/deck-mermaid.ts
-import { LitElement as LitElement12, html as html12, css as css13 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement as customElement11, property as property10, state as state3 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var mermaidReady = false;
-async function ensureMermaid() {
-  if (mermaidReady) return;
-  if (!window.mermaid) {
-    await new Promise((res, rej) => {
-      const s = document.createElement("script");
-      s.src = "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js";
-      s.onload = () => res();
-      s.onerror = () => rej(new Error("mermaid failed to load"));
-      document.head.appendChild(s);
-    });
-  }
-  window.mermaid.initialize({
-    startOnLoad: false,
-    theme: "dark",
-    themeVariables: {
-      background: "#0f0f10",
-      mainBkg: "#2a2a2a",
-      nodeBorder: "#555",
-      lineColor: "#777",
-      textColor: "#e5e5e5",
-      fontSize: "13px",
-      edgeLabelBackground: "#111"
-    },
-    flowchart: { curve: "basis", htmlLabels: true, padding: 12 },
-    securityLevel: "loose"
-  });
-  mermaidReady = true;
-}
-var mermaidId = 0;
-var DeckMermaid = class extends LitElement12 {
-  constructor() {
-    super(...arguments);
-    this.rendered = false;
-    this._svg = "";
-    this._source = "";
-  }
-  connectedCallback() {
-    super.connectedCallback();
-    this._source = (this.textContent ?? "").trim();
-    const lines = this._source.split("\n");
-    const indent = lines.filter((l) => l.trim()).reduce((m, l) => Math.min(m, l.match(/^ */)?.[0].length ?? 0), Infinity);
-    if (indent < Infinity) this._source = lines.map((l) => l.slice(indent)).join("\n");
-    this._render();
-  }
-  async _render() {
-    if (!this._source) return;
-    await ensureMermaid();
-    const id = `mmd-${++mermaidId}`;
-    try {
-      const { svg } = await window.mermaid.render(id, this._source);
-      this._svg = svg;
-      this.rendered = true;
-    } catch (e) {
-      console.error("Mermaid render error", e);
-      const msg = e instanceof Error ? e.message : String(e);
-      this._svg = `<pre style="color:#f87171">${msg}</pre>`;
-    }
-  }
-  render() {
-    return html12`<div class="canvas" .innerHTML="${this._svg}"></div>`;
-  }
-};
-/* Tokens:
-     --deck-mermaid-bg / -border / -radius / -padding
-   Defaults to the --code-* theme tokens · diagrams sit on the same
-   dark surface as code blocks for visual consistency. */
-DeckMermaid.styles = css13`
+  `,t([re({type:String})],k.prototype,"color",2),t([re({type:Boolean})],k.prototype,"center",2),t([re({type:Boolean})],k.prototype,"compact",2),k=t([It("deck-card")],k);import{LitElement as jt,html as At,css as Pt}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as Ct,property as Rt,state as Bt}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var _e=!1;async function qt(){_e||(window.mermaid||await new Promise((l,o)=>{let e=document.createElement("script");e.src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js",e.onload=()=>l(),e.onerror=()=>o(new Error("mermaid failed to load")),document.head.appendChild(e)}),window.mermaid.initialize({startOnLoad:!1,theme:"dark",themeVariables:{background:"#0f0f10",mainBkg:"#2a2a2a",nodeBorder:"#555",lineColor:"#777",textColor:"#e5e5e5",fontSize:"13px",edgeLabelBackground:"#111"},flowchart:{curve:"basis",htmlLabels:!0,padding:12},securityLevel:"loose"}),_e=!0)}var Ut=0,_=class extends jt{constructor(){super(...arguments);this.rendered=!1;this._svg="";this._source=""}connectedCallback(){super.connectedCallback(),this._source=(this.textContent??"").trim();let e=this._source.split(`
+`),r=e.filter(s=>s.trim()).reduce((s,i)=>Math.min(s,i.match(/^ */)?.[0].length??0),1/0);r<1/0&&(this._source=e.map(s=>s.slice(r)).join(`
+`)),this._render()}async _render(){if(!this._source)return;await qt();let e=`mmd-${++Ut}`;try{let{svg:r}=await window.mermaid.render(e,this._source);this._svg=r,this.rendered=!0}catch(r){console.error("Mermaid render error",r);let s=r instanceof Error?r.message:String(r);this._svg=`<pre style="color:#f87171">${s}</pre>`}}render(){return At`<div class="canvas" .innerHTML="${this._svg}"></div>`}};_.styles=Pt`
     :host {
       display: flex; align-items: center; justify-content: center;
       background: var(--deck-mermaid-bg, var(--code-bg));
@@ -1549,44 +719,16 @@ DeckMermaid.styles = css13`
     .canvas svg { width: 100% !important; height: auto !important; max-width: 100% !important; max-height: 60vh; }
     :host([compact]) .canvas { max-width: 60%; }
     :host([compact]) .canvas svg { max-height: 22vh; }
-  `;
-__decorateClass([
-  property10({ type: Boolean, reflect: true })
-], DeckMermaid.prototype, "rendered", 2);
-__decorateClass([
-  state3()
-], DeckMermaid.prototype, "_svg", 2);
-DeckMermaid = __decorateClass([
-  customElement11("deck-mermaid")
-], DeckMermaid);
-
-// src/deck-step-list.ts
-import { LitElement as LitElement13, html as html13, css as css14 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement as customElement12, property as property11 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var DeckStepList = class extends LitElement13 {
-  render() {
-    return html13`<slot></slot>`;
-  }
-};
-DeckStepList.styles = css14`
+  `,t([Rt({type:Boolean,reflect:!0})],_.prototype,"rendered",2),t([Bt()],_.prototype,"_svg",2),_=t([Ct("deck-mermaid")],_);import{LitElement as Se,html as se,css as Te}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as Le,property as Ee}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var B=class extends Se{render(){return se`<slot></slot>`}};B.styles=Te`
     :host {
       display: flex; flex-direction: column;
       gap: var(--gap-xs);
     }
-  `;
-DeckStepList = __decorateClass([
-  customElement12("deck-step-list")
-], DeckStepList);
-var DeckStep = class extends LitElement13 {
-  render() {
-    return html13`
+  `,B=t([Le("deck-step-list")],B);var E=class extends Se{render(){return se`
       <span class="step-num">${this.n}</span>
       <span class="label"><slot></slot></span>
-      ${this.note ? html13`<span class="chip">${this.note}</span>` : ""}
-    `;
-  }
-};
-DeckStep.styles = css14`
+      ${this.note?se`<span class="chip">${this.note}</span>`:""}
+    `}};E.styles=Te`
     :host {
       display: flex; align-items: center; gap: var(--sp-3);
       background: var(--surface-card);
@@ -1619,44 +761,12 @@ DeckStep.styles = css14`
       border-radius: var(--r-pill);
       font: 600 var(--fs-small)/1.4 var(--sans);
     }
-  `;
-__decorateClass([
-  property11({ type: String })
-], DeckStep.prototype, "n", 2);
-__decorateClass([
-  property11({ type: String })
-], DeckStep.prototype, "note", 2);
-DeckStep = __decorateClass([
-  customElement12("deck-step")
-], DeckStep);
-
-// src/deck-metric.ts
-import { LitElement as LitElement14, html as html14, css as css15 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement as customElement13, property as property12 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var DeckMetricList = class extends LitElement14 {
-  render() {
-    return html14`<slot></slot>`;
-  }
-};
-DeckMetricList.styles = css15`
+  `,t([Ee({type:String})],E.prototype,"n",2),t([Ee({type:String})],E.prototype,"note",2),E=t([Le("deck-step")],E);import{LitElement as Me,html as ze,css as Ne}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as $e,property as oe}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var q=class extends Me{render(){return ze`<slot></slot>`}};q.styles=Ne`
     :host { display: flex; flex-direction: column; gap: var(--sp-2); }
-  `;
-DeckMetricList = __decorateClass([
-  customElement13("deck-metric-list")
-], DeckMetricList);
-var DeckMetric = class extends LitElement14 {
-  constructor() {
-    super(...arguments);
-    this.mono = false;
-  }
-  render() {
-    return html14`
-      <span class="label ${this.mono ? "mono" : ""}"><slot></slot></span>
-      <span class="value" data-severity="${this.severity ?? ""}">${this.value}</span>
-    `;
-  }
-};
-DeckMetric.styles = css15`
+  `,q=t([$e("deck-metric-list")],q);var w=class extends Me{constructor(){super(...arguments);this.mono=!1}render(){return ze`
+      <span class="label ${this.mono?"mono":""}"><slot></slot></span>
+      <span class="value" data-severity="${this.severity??""}">${this.value}</span>
+    `}};w.styles=Ne`
     :host {
       display: flex; justify-content: space-between; align-items: center;
       background: var(--surface-card);
@@ -1675,50 +785,15 @@ DeckMetric.styles = css15`
     .value[data-severity="warn"] { color: var(--orange); }
     .value[data-severity="ok"]   { color: var(--green); }
     .value[data-severity="info"] { color: var(--text-info); }
-  `;
-__decorateClass([
-  property12({ type: String })
-], DeckMetric.prototype, "value", 2);
-__decorateClass([
-  property12({ type: String })
-], DeckMetric.prototype, "severity", 2);
-__decorateClass([
-  property12({ type: Boolean })
-], DeckMetric.prototype, "mono", 2);
-DeckMetric = __decorateClass([
-  customElement13("deck-metric")
-], DeckMetric);
-
-// src/deck-tier-list.ts
-import { LitElement as LitElement15, html as html15, css as css16 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement as customElement14, property as property13 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var DeckTierList = class extends LitElement15 {
-  render() {
-    return html15`<slot></slot>`;
-  }
-};
-DeckTierList.styles = css16`
+  `,t([oe({type:String})],w.prototype,"value",2),t([oe({type:String})],w.prototype,"severity",2),t([oe({type:Boolean})],w.prototype,"mono",2),w=t([$e("deck-metric")],w);import{LitElement as ae,html as ie,css as ne}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as le,property as K}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var U=class extends ae{render(){return ie`<slot></slot>`}};U.styles=ne`
     :host { display: flex; flex-direction: column; gap: var(--gap-xs); }
-  `;
-DeckTierList = __decorateClass([
-  customElement14("deck-tier-list")
-], DeckTierList);
-var DeckTier = class extends LitElement15 {
-  constructor() {
-    super(...arguments);
-    this.hot = false;
-  }
-  render() {
-    return html15`
+  `,U=t([le("deck-tier-list")],U);var u=class extends ae{constructor(){super(...arguments);this.hot=!1}render(){return ie`
       <div class="head">
         <span class="name">${this.name}</span>
-        <span class="speed" data-severity="${this.severity ?? (this.hot ? "hot" : "")}">${this.speed}</span>
+        <span class="speed" data-severity="${this.severity??(this.hot?"hot":"")}">${this.speed}</span>
       </div>
       <div class="desc"><slot></slot></div>
-    `;
-  }
-};
-DeckTier.styles = css16`
+    `}};u.styles=ne`
     :host {
       display: flex; flex-direction: column; gap: var(--gap-hair);
       background: var(--surface-card);
@@ -1743,48 +818,14 @@ DeckTier.styles = css16`
     .speed[data-severity="ok"]    { color: var(--green); }
     :host([hot]) .speed { color: var(--yellow); }
     .desc { font-size: var(--fs-small); color: var(--muted); line-height: 1.4; }
-  `;
-__decorateClass([
-  property13({ type: String })
-], DeckTier.prototype, "name", 2);
-__decorateClass([
-  property13({ type: String })
-], DeckTier.prototype, "speed", 2);
-__decorateClass([
-  property13({ type: String })
-], DeckTier.prototype, "severity", 2);
-__decorateClass([
-  property13({ type: Boolean, reflect: true })
-], DeckTier.prototype, "hot", 2);
-DeckTier = __decorateClass([
-  customElement14("deck-tier")
-], DeckTier);
-var DeckTierArrow = class extends LitElement15 {
-  render() {
-    return html15`<slot></slot>`;
-  }
-};
-DeckTierArrow.styles = css16`
+  `,t([K({type:String})],u.prototype,"name",2),t([K({type:String})],u.prototype,"speed",2),t([K({type:String})],u.prototype,"severity",2),t([K({type:Boolean,reflect:!0})],u.prototype,"hot",2),u=t([le("deck-tier")],u);var O=class extends ae{render(){return ie`<slot></slot>`}};O.styles=ne`
     :host {
       display: block; text-align: center;
       color: var(--muted); opacity: var(--opacity-soft);
       font-size: var(--fs-micro);
       padding: 2px 0;
     }
-  `;
-DeckTierArrow = __decorateClass([
-  customElement14("deck-tier-arrow")
-], DeckTierArrow);
-
-// src/deck-badge.ts
-import { LitElement as LitElement16, html as html16, css as css17 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement as customElement15, property as property14 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var DeckBadge = class extends LitElement16 {
-  render() {
-    return html16`<slot></slot>`;
-  }
-};
-DeckBadge.styles = css17`
+  `,O=t([le("deck-tier-arrow")],O);import{LitElement as Ot,html as Ft,css as Gt}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as Jt,property as Wt}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var C=class extends Ot{render(){return Ft`<slot></slot>`}};C.styles=Gt`
     :host {
       display: inline-block;
       padding: var(--deck-badge-padding-y, var(--sp-1)) var(--deck-badge-padding-x, var(--sp-3));
@@ -1800,19 +841,7 @@ DeckBadge.styles = css17`
     :host([type="ok"])   { --deck-badge-bg: var(--surface-ok);           --deck-badge-fg: var(--green);     --deck-badge-border: var(--border-ok); }
     :host([type="info"]) { --deck-badge-bg: var(--surface-info-strong);  --deck-badge-fg: var(--text-info); --deck-badge-border: var(--border-info); }
     :host([type="warn"]) { --deck-badge-bg: var(--surface-warn);         --deck-badge-fg: var(--orange);    --deck-badge-border: var(--border-warn); }
-  `;
-__decorateClass([
-  property14({ type: String })
-], DeckBadge.prototype, "type", 2);
-DeckBadge = __decorateClass([
-  customElement15("deck-badge")
-], DeckBadge);
-
-// src/deck-kicker.ts
-import { LitElement as LitElement17, html as html17, css as css18 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-var DeckKicker = class extends LitElement17 {
-  static {
-    this.styles = css18`
+  `,t([Wt({type:String})],C.prototype,"type",2),C=t([Jt("deck-badge")],C);import{LitElement as Zt,html as Kt,css as Yt}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";var de=class extends Zt{static{this.styles=Yt`
     :host {
       display: block;
       font: 700 var(--fs-micro)/1.2 var(--sans);
@@ -1822,51 +851,7 @@ var DeckKicker = class extends LitElement17 {
       margin-bottom: var(--sp-2);
     }
     :host([on-dark]) { color: var(--on-dark-muted); }
-  `;
-  }
-  render() {
-    return html17`<slot></slot>`;
-  }
-};
-customElements.define("deck-kicker", DeckKicker);
-
-// src/deck-stack.ts
-import { LitElement as LitElement18, html as html18, css as css19 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement as customElement16, property as property15 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var JUSTIFY = {
-  start: "flex-start",
-  center: "center",
-  end: "flex-end",
-  between: "space-between",
-  around: "space-around"
-};
-var ALIGN = {
-  start: "flex-start",
-  center: "center",
-  end: "flex-end",
-  stretch: "stretch"
-};
-var DeckStack = class extends LitElement18 {
-  updated() {
-    if (this.gap) {
-      const n = parseInt(this.gap, 10);
-      if (!Number.isNaN(n) && n >= 1 && n <= 6) {
-        this.style.setProperty("--_gap", `var(--sp-${n})`);
-      } else {
-        this.style.setProperty("--_gap", this.gap);
-      }
-    } else {
-      this.style.removeProperty("--_gap");
-    }
-    this.style.setProperty("--_dir", this.direction === "row" ? "row" : "column");
-    if (this.align) this.style.setProperty("--_align", ALIGN[this.align] ?? this.align);
-    if (this.justify) this.style.setProperty("--_justify", JUSTIFY[this.justify] ?? this.justify);
-  }
-  render() {
-    return html18`<slot></slot>`;
-  }
-};
-DeckStack.styles = css19`
+  `}render(){return Kt`<slot></slot>`}};customElements.define("deck-kicker",de);import{LitElement as Vt,html as Xt,css as Qt}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as Dt,property as Y}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var er={start:"flex-start",center:"center",end:"flex-end",between:"space-between",around:"space-around"},tr={start:"flex-start",center:"center",end:"flex-end",stretch:"stretch"},b=class extends Vt{updated(){if(this.gap){let o=parseInt(this.gap,10);!Number.isNaN(o)&&o>=1&&o<=6?this.style.setProperty("--_gap",`var(--sp-${o})`):this.style.setProperty("--_gap",this.gap)}else this.style.removeProperty("--_gap");this.style.setProperty("--_dir",this.direction==="row"?"row":"column"),this.align&&this.style.setProperty("--_align",tr[this.align]??this.align),this.justify&&this.style.setProperty("--_justify",er[this.justify]??this.justify)}render(){return Xt`<slot></slot>`}};b.styles=Qt`
     :host {
       display: flex;
       flex-direction: var(--_dir, column);
@@ -1877,62 +862,7 @@ DeckStack.styles = css19`
       min-height: 0;
     }
     :host([fill]) { flex: 1 1 auto; }
-  `;
-__decorateClass([
-  property15({ type: String })
-], DeckStack.prototype, "gap", 2);
-__decorateClass([
-  property15({ type: String })
-], DeckStack.prototype, "direction", 2);
-__decorateClass([
-  property15({ type: String })
-], DeckStack.prototype, "align", 2);
-__decorateClass([
-  property15({ type: String })
-], DeckStack.prototype, "justify", 2);
-DeckStack = __decorateClass([
-  customElement16("deck-stack")
-], DeckStack);
-
-// src/deck-grid.ts
-import { LitElement as LitElement19, html as html19, css as css20 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement as customElement17, property as property16 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var MAP = {
-  start: "start",
-  center: "center",
-  end: "end",
-  stretch: "stretch"
-};
-function expandTracks(value) {
-  if (!value) return null;
-  const n = parseInt(value, 10);
-  if (!Number.isNaN(n) && String(n) === value.trim() && n >= 1 && n <= 12) {
-    return `repeat(${n}, minmax(0, 1fr))`;
-  }
-  return value;
-}
-function expandGap(value) {
-  if (!value) return null;
-  const n = parseInt(value, 10);
-  if (!Number.isNaN(n) && n >= 1 && n <= 6) return `var(--sp-${n})`;
-  return value;
-}
-var DeckGrid = class extends LitElement19 {
-  updated() {
-    const cols = expandTracks(this.cols);
-    const rows = expandTracks(this.rows);
-    const gap = expandGap(this.gap);
-    if (cols) this.style.setProperty("--_cols", cols);
-    if (rows) this.style.setProperty("--_rows", rows);
-    if (gap) this.style.setProperty("--_gap", gap);
-    if (this.align) this.style.setProperty("--_align", MAP[this.align] ?? this.align);
-    if (this.justify) this.style.setProperty("--_justify", MAP[this.justify] ?? this.justify);
-  }
-  render() {
-    return html19`<slot></slot>`;
-  }
-};
-DeckGrid.styles = css20`
+  `,t([Y({type:String})],b.prototype,"gap",2),t([Y({type:String})],b.prototype,"direction",2),t([Y({type:String})],b.prototype,"align",2),t([Y({type:String})],b.prototype,"justify",2),b=t([Dt("deck-stack")],b);import{LitElement as rr,html as sr,css as or}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as ar,property as F}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var He={start:"start",center:"center",end:"end",stretch:"stretch"};function Ie(l){if(!l)return null;let o=parseInt(l,10);return!Number.isNaN(o)&&String(o)===l.trim()&&o>=1&&o<=12?`repeat(${o}, minmax(0, 1fr))`:l}function ir(l){if(!l)return null;let o=parseInt(l,10);return!Number.isNaN(o)&&o>=1&&o<=6?`var(--sp-${o})`:l}var g=class extends rr{updated(){let o=Ie(this.cols),e=Ie(this.rows),r=ir(this.gap);o&&this.style.setProperty("--_cols",o),e&&this.style.setProperty("--_rows",e),r&&this.style.setProperty("--_gap",r),this.align&&this.style.setProperty("--_align",He[this.align]??this.align),this.justify&&this.style.setProperty("--_justify",He[this.justify]??this.justify)}render(){return sr`<slot></slot>`}};g.styles=or`
     :host {
       display: grid;
       grid-template-columns: var(--_cols, 1fr);
@@ -1944,62 +874,7 @@ DeckGrid.styles = css20`
       min-height: 0;
     }
     :host([fill]) { flex: 1 1 auto; height: 100%; }
-  `;
-__decorateClass([
-  property16({ type: String })
-], DeckGrid.prototype, "cols", 2);
-__decorateClass([
-  property16({ type: String })
-], DeckGrid.prototype, "rows", 2);
-__decorateClass([
-  property16({ type: String })
-], DeckGrid.prototype, "gap", 2);
-__decorateClass([
-  property16({ type: String })
-], DeckGrid.prototype, "align", 2);
-__decorateClass([
-  property16({ type: String })
-], DeckGrid.prototype, "justify", 2);
-DeckGrid = __decorateClass([
-  customElement17("deck-grid")
-], DeckGrid);
-
-// src/deck-punch.ts
-import { LitElement as LitElement20, html as html20, css as css21 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement as customElement18, property as property17 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var TONES = {
-  warn: "var(--orange)",
-  danger: "var(--red)",
-  ok: "var(--green)",
-  info: "var(--yellow)",
-  muted: "var(--muted)",
-  accent: "var(--yellow)"
-};
-var SIZES = {
-  lead: "var(--fs-lead)",
-  big: "var(--fs-big)",
-  mega: "var(--fs-mega)",
-  stat: "var(--fs-stat)",
-  display: "clamp(2.6rem, 6vw, 5rem)"
-};
-var DeckPunch = class extends LitElement20 {
-  updated() {
-    if (this.tone && TONES[this.tone]) {
-      this.style.setProperty("--_color", TONES[this.tone]);
-    } else {
-      this.style.removeProperty("--_color");
-    }
-    if (this.size && SIZES[this.size]) {
-      this.style.setProperty("--_size", SIZES[this.size]);
-    } else {
-      this.style.removeProperty("--_size");
-    }
-  }
-  render() {
-    return html20`<slot></slot>`;
-  }
-};
-DeckPunch.styles = css21`
+  `,t([F({type:String})],g.prototype,"cols",2),t([F({type:String})],g.prototype,"rows",2),t([F({type:String})],g.prototype,"gap",2),t([F({type:String})],g.prototype,"align",2),t([F({type:String})],g.prototype,"justify",2),g=t([ar("deck-grid")],g);import{LitElement as nr,html as lr,css as dr}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as cr,property as V}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var je={warn:"var(--orange)",danger:"var(--red)",ok:"var(--green)",info:"var(--yellow)",muted:"var(--muted)",accent:"var(--yellow)"},Ae={lead:"var(--fs-lead)",big:"var(--fs-big)",mega:"var(--fs-mega)",stat:"var(--fs-stat)",display:"clamp(2.6rem, 6vw, 5rem)"},y=class extends nr{updated(){this.tone&&je[this.tone]?this.style.setProperty("--_color",je[this.tone]):this.style.removeProperty("--_color"),this.size&&Ae[this.size]?this.style.setProperty("--_size",Ae[this.size]):this.style.removeProperty("--_size")}render(){return lr`<slot></slot>`}};y.styles=dr`
     :host {
       display: block;
       margin: 0;
@@ -2016,52 +891,11 @@ DeckPunch.styles = css21`
     :host([weight="800"]) { font-weight: 800; }
     :host([align="center"]) { text-align: center; }
     :host([align="right"])  { text-align: right; }
-  `;
-__decorateClass([
-  property17({ type: String })
-], DeckPunch.prototype, "tone", 2);
-__decorateClass([
-  property17({ type: String })
-], DeckPunch.prototype, "size", 2);
-__decorateClass([
-  property17({ type: String, reflect: true })
-], DeckPunch.prototype, "weight", 2);
-__decorateClass([
-  property17({ type: String, reflect: true })
-], DeckPunch.prototype, "align", 2);
-DeckPunch = __decorateClass([
-  customElement18("deck-punch")
-], DeckPunch);
-
-// src/deck-stat.ts
-import { LitElement as LitElement21, html as html21, css as css22 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement as customElement19, property as property18 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var TONES2 = {
-  yellow: "var(--yellow)",
-  orange: "var(--orange)",
-  green: "var(--green)",
-  red: "var(--red)",
-  purple: "var(--purple)",
-  lime: "var(--lime)",
-  cyan: "var(--cyan)"
-};
-var DeckStat = class extends LitElement21 {
-  updated() {
-    if (this.tone) {
-      this.style.setProperty("--_c", TONES2[this.tone] ?? this.tone);
-    } else {
-      this.style.removeProperty("--_c");
-    }
-  }
-  render() {
-    return html21`
-      ${this.num ? html21`<div class="num" part="num">${this.num}</div>` : ""}
+  `,t([V({type:String})],y.prototype,"tone",2),t([V({type:String})],y.prototype,"size",2),t([V({type:String,reflect:!0})],y.prototype,"weight",2),t([V({type:String,reflect:!0})],y.prototype,"align",2),y=t([cr("deck-punch")],y);import{LitElement as pr,html as Pe,css as mr}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as vr,property as Ce}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var hr={yellow:"var(--yellow)",orange:"var(--orange)",green:"var(--green)",red:"var(--red)",purple:"var(--purple)",lime:"var(--lime)",cyan:"var(--cyan)"},S=class extends pr{updated(){this.tone?this.style.setProperty("--_c",hr[this.tone]??this.tone):this.style.removeProperty("--_c")}render(){return Pe`
+      ${this.num?Pe`<div class="num" part="num">${this.num}</div>`:""}
       <slot name="claim"></slot>
       <div class="body" part="body"><slot></slot></div>
-    `;
-  }
-};
-DeckStat.styles = css22`
+    `}};S.styles=mr`
     :host {
       display: flex; flex-direction: column;
       gap: var(--sp-2);
@@ -2099,26 +933,7 @@ DeckStat.styles = css22`
       background: var(--surface-tint); color: var(--text);
       padding: 2px 6px; border-radius: var(--r-sm);
     }
-  `;
-__decorateClass([
-  property18({ type: String })
-], DeckStat.prototype, "num", 2);
-__decorateClass([
-  property18({ type: String })
-], DeckStat.prototype, "tone", 2);
-DeckStat = __decorateClass([
-  customElement19("deck-stat")
-], DeckStat);
-
-// src/deck-shortcut.ts
-import { LitElement as LitElement22, html as html22, css as css23 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement as customElement20, property as property19 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var DeckKbd = class extends LitElement22 {
-  render() {
-    return html22`<slot></slot>`;
-  }
-};
-DeckKbd.styles = css23`
+  `,t([Ce({type:String})],S.prototype,"num",2),t([Ce({type:String})],S.prototype,"tone",2),S=t([vr("deck-stat")],S);import{LitElement as ce,html as L,css as pe}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as me,property as M}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var R=class extends ce{render(){return L`<slot></slot>`}};R.styles=pe`
     :host {
       display: inline-flex; align-items: center; justify-content: center;
       background: var(--surface-card);
@@ -2142,28 +957,15 @@ DeckKbd.styles = css23`
       color: var(--dark);
       border-color: rgba(0,0,0,0.15);
     }
-  `;
-__decorateClass([
-  property19({ type: String })
-], DeckKbd.prototype, "tone", 2);
-DeckKbd = __decorateClass([
-  customElement20("deck-kbd")
-], DeckKbd);
-var DeckShortcut = class extends LitElement22 {
-  render() {
-    const keyTokens = (this.keys ?? "").trim().split(/\s+/).filter(Boolean);
-    return html22`
+  `,t([M({type:String})],R.prototype,"tone",2),R=t([me("deck-kbd")],R);var x=class extends ce{render(){let o=(this.keys??"").trim().split(/\s+/).filter(Boolean);return L`
       <span class="keys" part="keys">
-        ${keyTokens.map((k) => html22`<span class="k">${k}</span>`)}
+        ${o.map(e=>L`<span class="k">${e}</span>`)}
       </span>
       <div class="body" part="body">
-        ${this.label ? html22`<div class="label">${this.label}</div>` : ""}
-        ${this.note ? html22`<div class="note">${this.note}</div>` : html22`<div class="note"><slot></slot></div>`}
+        ${this.label?L`<div class="label">${this.label}</div>`:""}
+        ${this.note?L`<div class="note">${this.note}</div>`:L`<div class="note"><slot></slot></div>`}
       </div>
-    `;
-  }
-};
-DeckShortcut.styles = css23`
+    `}};x.styles=pe`
     :host {
       display: flex; align-items: center; gap: var(--sp-3);
       padding: var(--sp-2) 0;
@@ -2193,35 +995,7 @@ DeckShortcut.styles = css23`
     }
     :host([tone="accent"]) .keys .k { background: var(--yellow); color: var(--dark); border-color: rgba(0,0,0,0.15); }
     :host([tone="ok"])     .keys .k { background: var(--green);  color: var(--dark); border-color: rgba(0,0,0,0.15); }
-  `;
-__decorateClass([
-  property19({ type: String })
-], DeckShortcut.prototype, "keys", 2);
-__decorateClass([
-  property19({ type: String })
-], DeckShortcut.prototype, "label", 2);
-__decorateClass([
-  property19({ type: String })
-], DeckShortcut.prototype, "note", 2);
-__decorateClass([
-  property19({ type: String })
-], DeckShortcut.prototype, "tone", 2);
-DeckShortcut = __decorateClass([
-  customElement20("deck-shortcut")
-], DeckShortcut);
-var DeckShortcutList = class extends LitElement22 {
-  updated() {
-    if (this.colGap) {
-      const n = parseInt(this.colGap, 10);
-      const v = !Number.isNaN(n) && n >= 1 && n <= 6 ? `var(--sp-${n})` : this.colGap;
-      this.style.setProperty("--_col-gap", v);
-    }
-  }
-  render() {
-    return html22`<slot></slot>`;
-  }
-};
-DeckShortcutList.styles = css23`
+  `,t([M({type:String})],x.prototype,"keys",2),t([M({type:String})],x.prototype,"label",2),t([M({type:String})],x.prototype,"note",2),t([M({type:String})],x.prototype,"tone",2),x=t([me("deck-shortcut")],x);var T=class extends ce{updated(){if(this.colGap){let o=parseInt(this.colGap,10),e=!Number.isNaN(o)&&o>=1&&o<=6?`var(--sp-${o})`:this.colGap;this.style.setProperty("--_col-gap",e)}}render(){return L`<slot></slot>`}};T.styles=pe`
     :host {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -2232,14 +1006,4 @@ DeckShortcutList.styles = css23`
     ::slotted(deck-shortcut) {
       border-bottom: 1px solid var(--border);
     }
-  `;
-__decorateClass([
-  property19({ type: String })
-], DeckShortcutList.prototype, "cols", 2);
-__decorateClass([
-  property19({ type: String, attribute: "col-gap" })
-], DeckShortcutList.prototype, "colGap", 2);
-DeckShortcutList = __decorateClass([
-  customElement20("deck-shortcut-list")
-], DeckShortcutList);
-//# sourceMappingURL=index.js.map
+  `,t([M({type:String})],T.prototype,"cols",2),t([M({type:String,attribute:"col-gap"})],T.prototype,"colGap",2),T=t([me("deck-shortcut-list")],T);

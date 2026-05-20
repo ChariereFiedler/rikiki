@@ -1,50 +1,4 @@
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __decorateClass = (decorators, target, key, kind) => {
-  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
-  for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
-      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result) __defProp(target, key, result);
-  return result;
-};
-
-// src/deck-punch.ts
-import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var TONES = {
-  warn: "var(--orange)",
-  danger: "var(--red)",
-  ok: "var(--green)",
-  info: "var(--yellow)",
-  muted: "var(--muted)",
-  accent: "var(--yellow)"
-};
-var SIZES = {
-  lead: "var(--fs-lead)",
-  big: "var(--fs-big)",
-  mega: "var(--fs-mega)",
-  stat: "var(--fs-stat)",
-  display: "clamp(2.6rem, 6vw, 5rem)"
-};
-var DeckPunch = class extends LitElement {
-  updated() {
-    if (this.tone && TONES[this.tone]) {
-      this.style.setProperty("--_color", TONES[this.tone]);
-    } else {
-      this.style.removeProperty("--_color");
-    }
-    if (this.size && SIZES[this.size]) {
-      this.style.setProperty("--_size", SIZES[this.size]);
-    } else {
-      this.style.removeProperty("--_size");
-    }
-  }
-  render() {
-    return html`<slot></slot>`;
-  }
-};
-DeckPunch.styles = css`
+var p=Object.defineProperty;var d=Object.getOwnPropertyDescriptor;var r=(n,i,a,o)=>{for(var t=o>1?void 0:o?d(i,a):i,l=n.length-1,c;l>=0;l--)(c=n[l])&&(t=(o?c(i,a,t):c(t))||t);return o&&t&&p(i,a,t),t};import{LitElement as v,html as y,css as m}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as f,property as s}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var g={warn:"var(--orange)",danger:"var(--red)",ok:"var(--green)",info:"var(--yellow)",muted:"var(--muted)",accent:"var(--yellow)"},h={lead:"var(--fs-lead)",big:"var(--fs-big)",mega:"var(--fs-mega)",stat:"var(--fs-stat)",display:"clamp(2.6rem, 6vw, 5rem)"},e=class extends v{updated(){this.tone&&g[this.tone]?this.style.setProperty("--_color",g[this.tone]):this.style.removeProperty("--_color"),this.size&&h[this.size]?this.style.setProperty("--_size",h[this.size]):this.style.removeProperty("--_size")}render(){return y`<slot></slot>`}};e.styles=m`
     :host {
       display: block;
       margin: 0;
@@ -61,23 +15,4 @@ DeckPunch.styles = css`
     :host([weight="800"]) { font-weight: 800; }
     :host([align="center"]) { text-align: center; }
     :host([align="right"])  { text-align: right; }
-  `;
-__decorateClass([
-  property({ type: String })
-], DeckPunch.prototype, "tone", 2);
-__decorateClass([
-  property({ type: String })
-], DeckPunch.prototype, "size", 2);
-__decorateClass([
-  property({ type: String, reflect: true })
-], DeckPunch.prototype, "weight", 2);
-__decorateClass([
-  property({ type: String, reflect: true })
-], DeckPunch.prototype, "align", 2);
-DeckPunch = __decorateClass([
-  customElement("deck-punch")
-], DeckPunch);
-export {
-  DeckPunch
-};
-//# sourceMappingURL=deck-punch.js.map
+  `,r([s({type:String})],e.prototype,"tone",2),r([s({type:String})],e.prototype,"size",2),r([s({type:String,reflect:!0})],e.prototype,"weight",2),r([s({type:String,reflect:!0})],e.prototype,"align",2),e=r([f("deck-punch")],e);export{e as DeckPunch};

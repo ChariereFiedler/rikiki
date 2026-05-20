@@ -1,43 +1,8 @@
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __decorateClass = (decorators, target, key, kind) => {
-  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
-  for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
-      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result) __defProp(target, key, result);
-  return result;
-};
-
-// src/deck-stat.ts
-import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var TONES = {
-  yellow: "var(--yellow)",
-  orange: "var(--orange)",
-  green: "var(--green)",
-  red: "var(--red)",
-  purple: "var(--purple)",
-  lime: "var(--lime)",
-  cyan: "var(--cyan)"
-};
-var DeckStat = class extends LitElement {
-  updated() {
-    if (this.tone) {
-      this.style.setProperty("--_c", TONES[this.tone] ?? this.tone);
-    } else {
-      this.style.removeProperty("--_c");
-    }
-  }
-  render() {
-    return html`
-      ${this.num ? html`<div class="num" part="num">${this.num}</div>` : ""}
+var v=Object.defineProperty;var p=Object.getOwnPropertyDescriptor;var a=(n,t,s,o)=>{for(var e=o>1?void 0:o?p(t,s):t,l=n.length-1,i;l>=0;l--)(i=n[l])&&(e=(o?i(t,s,e):i(e))||e);return o&&e&&v(t,s,e),e};import{LitElement as c,html as d,css as g}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as y,property as m}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var f={yellow:"var(--yellow)",orange:"var(--orange)",green:"var(--green)",red:"var(--red)",purple:"var(--purple)",lime:"var(--lime)",cyan:"var(--cyan)"},r=class extends c{updated(){this.tone?this.style.setProperty("--_c",f[this.tone]??this.tone):this.style.removeProperty("--_c")}render(){return d`
+      ${this.num?d`<div class="num" part="num">${this.num}</div>`:""}
       <slot name="claim"></slot>
       <div class="body" part="body"><slot></slot></div>
-    `;
-  }
-};
-DeckStat.styles = css`
+    `}};r.styles=g`
     :host {
       display: flex; flex-direction: column;
       gap: var(--sp-2);
@@ -75,17 +40,4 @@ DeckStat.styles = css`
       background: var(--surface-tint); color: var(--text);
       padding: 2px 6px; border-radius: var(--r-sm);
     }
-  `;
-__decorateClass([
-  property({ type: String })
-], DeckStat.prototype, "num", 2);
-__decorateClass([
-  property({ type: String })
-], DeckStat.prototype, "tone", 2);
-DeckStat = __decorateClass([
-  customElement("deck-stat")
-], DeckStat);
-export {
-  DeckStat
-};
-//# sourceMappingURL=deck-stat.js.map
+  `,a([m({type:String})],r.prototype,"num",2),a([m({type:String})],r.prototype,"tone",2),r=a([y("deck-stat")],r);export{r as DeckStat};

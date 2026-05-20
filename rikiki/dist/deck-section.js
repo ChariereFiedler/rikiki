@@ -1,21 +1,4 @@
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __decorateClass = (decorators, target, key, kind) => {
-  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
-  for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
-      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result) __defProp(target, key, result);
-  return result;
-};
-
-// src/deck-section.ts
-import { LitElement, html, css as css2 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-
-// src/shared-styles.ts
-import { css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-var slideShell = css`
+var p=Object.defineProperty;var f=Object.getOwnPropertyDescriptor;var l=(a,o,n,r)=>{for(var e=r>1?void 0:r?f(o,n):o,s=a.length-1,i;s>=0;s--)(i=a[s])&&(e=(r?i(o,n,e):i(e))||e);return r&&e&&p(o,n,e),e};import{LitElement as x,html as m,css as b}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as u,property as k}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";import{css as c}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";var g=c`
   :host {
     display: none;
     position: absolute;
@@ -28,8 +11,7 @@ var slideShell = css`
     color: var(--text);
   }
   :host([active]) { display: flex; }
-`;
-var typo = css`
+`,v=c`
   h1 {
     font-size: var(--fs-h1);
     font-weight: 700;
@@ -59,8 +41,7 @@ var typo = css`
     border-radius: var(--r-sm);
     color: var(--text);
   }
-`;
-var helpers = css`
+`,h=c`
   .lbl {
     display: inline-block;
     padding: 4px 12px;
@@ -106,25 +87,10 @@ var helpers = css`
     color: var(--muted);
     margin-bottom: var(--sp-2);
   }
-`;
-var slideBase = [slideShell, typo, helpers];
-
-// src/deck-section.ts
-var DeckSection = class extends LitElement {
-  render() {
-    return html`
-      ${this.num ? html`<div class="sec-num" part="num">${this.num}</div>` : ""}
+`,d=[g,v,h];var t=class extends x{render(){return m`
+      ${this.num?m`<div class="sec-num" part="num">${this.num}</div>`:""}
       <slot></slot>
-    `;
-  }
-};
-/* Tokens:
-     --deck-section-bg          (defaults to --dark)
-     --deck-section-num-color   small section number      (--on-dark-faint)
-     --deck-section-rule-color  line on each side         (--on-dark-border)
-     --deck-section-title-color (defaults to --yellow)
-     --deck-section-em-color    italic inside h1          (--on-dark-soft) */
-DeckSection.styles = [...slideBase, css2`
+    `}};t.styles=[...d,b`
     :host {
       background: var(--deck-section-bg, var(--dark));
       color: var(--on-dark-text);
@@ -154,14 +120,4 @@ DeckSection.styles = [...slideBase, css2`
       color: var(--deck-section-em-color, var(--on-dark-soft));
       font-style: normal; font-weight: 700;
     }
-  `];
-__decorateClass([
-  property({ type: String })
-], DeckSection.prototype, "num", 2);
-DeckSection = __decorateClass([
-  customElement("deck-section")
-], DeckSection);
-export {
-  DeckSection
-};
-//# sourceMappingURL=deck-section.js.map
+  `],l([k({type:String})],t.prototype,"num",2),t=l([u("deck-section")],t);export{t as DeckSection};

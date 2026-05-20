@@ -1,41 +1,13 @@
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __decorateClass = (decorators, target, key, kind) => {
-  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
-  for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
-      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result) __defProp(target, key, result);
-  return result;
-};
-
-// src/deck-step-list.ts
-import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var DeckStepList = class extends LitElement {
-  render() {
-    return html`<slot></slot>`;
-  }
-};
-DeckStepList.styles = css`
+var g=Object.defineProperty;var u=Object.getOwnPropertyDescriptor;var s=(t,o,l,n)=>{for(var r=n>1?void 0:n?u(o,l):o,i=t.length-1,d;i>=0;i--)(d=t[i])&&(r=(n?d(o,l,r):d(r))||r);return n&&r&&g(o,l,r),r};import{LitElement as v,html as p,css as f}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as m,property as c}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var e=class extends v{render(){return p`<slot></slot>`}};e.styles=f`
     :host {
       display: flex; flex-direction: column;
       gap: var(--gap-xs);
     }
-  `;
-DeckStepList = __decorateClass([
-  customElement("deck-step-list")
-], DeckStepList);
-var DeckStep = class extends LitElement {
-  render() {
-    return html`
+  `,e=s([m("deck-step-list")],e);var a=class extends v{render(){return p`
       <span class="step-num">${this.n}</span>
       <span class="label"><slot></slot></span>
-      ${this.note ? html`<span class="chip">${this.note}</span>` : ""}
-    `;
-  }
-};
-DeckStep.styles = css`
+      ${this.note?p`<span class="chip">${this.note}</span>`:""}
+    `}};a.styles=f`
     :host {
       display: flex; align-items: center; gap: var(--sp-3);
       background: var(--surface-card);
@@ -68,18 +40,4 @@ DeckStep.styles = css`
       border-radius: var(--r-pill);
       font: 600 var(--fs-small)/1.4 var(--sans);
     }
-  `;
-__decorateClass([
-  property({ type: String })
-], DeckStep.prototype, "n", 2);
-__decorateClass([
-  property({ type: String })
-], DeckStep.prototype, "note", 2);
-DeckStep = __decorateClass([
-  customElement("deck-step")
-], DeckStep);
-export {
-  DeckStep,
-  DeckStepList
-};
-//# sourceMappingURL=deck-step-list.js.map
+  `,s([c({type:String})],a.prototype,"n",2),s([c({type:String})],a.prototype,"note",2),a=s([m("deck-step")],a);export{a as DeckStep,e as DeckStepList};

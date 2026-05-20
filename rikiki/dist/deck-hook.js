@@ -1,21 +1,4 @@
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __decorateClass = (decorators, target, key, kind) => {
-  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
-  for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
-      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result) __defProp(target, key, result);
-  return result;
-};
-
-// src/deck-hook.ts
-import { LitElement, html, css as css2 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-
-// src/shared-styles.ts
-import { css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-var slideShell = css`
+var m=Object.defineProperty;var v=Object.getOwnPropertyDescriptor;var n=(a,r,i,t)=>{for(var o=t>1?void 0:t?v(r,i):r,l=a.length-1,s;l>=0;l--)(s=a[l])&&(o=(t?s(r,i,o):s(o))||o);return t&&o&&m(r,i,o),o};import{LitElement as x,html as p,css as b}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as k,property as y}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";import{css as d}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";var f=d`
   :host {
     display: none;
     position: absolute;
@@ -28,8 +11,7 @@ var slideShell = css`
     color: var(--text);
   }
   :host([active]) { display: flex; }
-`;
-var typo = css`
+`,g=d`
   h1 {
     font-size: var(--fs-h1);
     font-weight: 700;
@@ -59,8 +41,7 @@ var typo = css`
     border-radius: var(--r-sm);
     color: var(--text);
   }
-`;
-var helpers = css`
+`,h=d`
   .lbl {
     display: inline-block;
     padding: 4px 12px;
@@ -106,26 +87,12 @@ var helpers = css`
     color: var(--muted);
     margin-bottom: var(--sp-2);
   }
-`;
-var slideBase = [slideShell, typo, helpers];
-
-// src/deck-hook.ts
-var DeckHook = class extends LitElement {
-  render() {
-    return html`
+`,c=[f,g,h];var e=class extends x{render(){return p`
       <div class="body" part="body">
-        ${this.kicker ? html`<span class="kicker on-dark">${this.kicker}</span>` : ""}
+        ${this.kicker?p`<span class="kicker on-dark">${this.kicker}</span>`:""}
         <slot></slot>
       </div>
-    `;
-  }
-};
-/* Tokens:
-     --deck-hook-bg               (defaults to --dark)
-     --deck-hook-display-color    (defaults to --yellow)
-     --deck-hook-caption-color    (defaults to --on-dark-muted)
-     --deck-hook-gap              vertical gap between elements */
-DeckHook.styles = [...slideBase, css2`
+    `}};e.styles=[...c,b`
     :host {
       background: var(--deck-hook-bg, var(--dark));
       color: var(--on-dark-text);
@@ -149,14 +116,4 @@ DeckHook.styles = [...slideBase, css2`
       font-size: var(--fs-lead);
       color: var(--deck-hook-caption-color, var(--on-dark-muted));
     }
-  `];
-__decorateClass([
-  property({ type: String })
-], DeckHook.prototype, "kicker", 2);
-DeckHook = __decorateClass([
-  customElement("deck-hook")
-], DeckHook);
-export {
-  DeckHook
-};
-//# sourceMappingURL=deck-hook.js.map
+  `],n([y({type:String})],e.prototype,"kicker",2),e=n([k("deck-hook")],e);export{e as DeckHook};

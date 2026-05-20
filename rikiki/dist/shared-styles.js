@@ -1,6 +1,4 @@
-// src/shared-styles.ts
-import { css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-var slideShell = css`
+import{css as o}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";var t=o`
   :host {
     display: none;
     position: absolute;
@@ -13,8 +11,7 @@ var slideShell = css`
     color: var(--text);
   }
   :host([active]) { display: flex; }
-`;
-var typo = css`
+`,r=o`
   h1 {
     font-size: var(--fs-h1);
     font-weight: 700;
@@ -44,8 +41,7 @@ var typo = css`
     border-radius: var(--r-sm);
     color: var(--text);
   }
-`;
-var helpers = css`
+`,e=o`
   .lbl {
     display: inline-block;
     padding: 4px 12px;
@@ -91,12 +87,4 @@ var helpers = css`
     color: var(--muted);
     margin-bottom: var(--sp-2);
   }
-`;
-var slideBase = [slideShell, typo, helpers];
-export {
-  helpers,
-  slideBase,
-  slideShell,
-  typo
-};
-//# sourceMappingURL=shared-styles.js.map
+`,l=[t,r,e];export{e as helpers,l as slideBase,t as slideShell,r as typo};

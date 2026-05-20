@@ -1,23 +1,4 @@
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __decorateClass = (decorators, target, key, kind) => {
-  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
-  for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
-      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result) __defProp(target, key, result);
-  return result;
-};
-
-// src/deck-shortcut.ts
-import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var DeckKbd = class extends LitElement {
-  render() {
-    return html`<slot></slot>`;
-  }
-};
-DeckKbd.styles = css`
+var m=Object.defineProperty;var x=Object.getOwnPropertyDescriptor;var e=(d,r,t,p)=>{for(var s=p>1?void 0:p?x(r,t):r,c=d.length-1,g;c>=0;c--)(g=d[c])&&(s=(p?g(r,t,s):g(s))||s);return p&&s&&m(r,t,s),s};import{LitElement as v,html as n,css as b}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as y,property as l}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var i=class extends v{render(){return n`<slot></slot>`}};i.styles=b`
     :host {
       display: inline-flex; align-items: center; justify-content: center;
       background: var(--surface-card);
@@ -41,28 +22,15 @@ DeckKbd.styles = css`
       color: var(--dark);
       border-color: rgba(0,0,0,0.15);
     }
-  `;
-__decorateClass([
-  property({ type: String })
-], DeckKbd.prototype, "tone", 2);
-DeckKbd = __decorateClass([
-  customElement("deck-kbd")
-], DeckKbd);
-var DeckShortcut = class extends LitElement {
-  render() {
-    const keyTokens = (this.keys ?? "").trim().split(/\s+/).filter(Boolean);
-    return html`
+  `,e([l({type:String})],i.prototype,"tone",2),i=e([y("deck-kbd")],i);var o=class extends v{render(){let r=(this.keys??"").trim().split(/\s+/).filter(Boolean);return n`
       <span class="keys" part="keys">
-        ${keyTokens.map((k) => html`<span class="k">${k}</span>`)}
+        ${r.map(t=>n`<span class="k">${t}</span>`)}
       </span>
       <div class="body" part="body">
-        ${this.label ? html`<div class="label">${this.label}</div>` : ""}
-        ${this.note ? html`<div class="note">${this.note}</div>` : html`<div class="note"><slot></slot></div>`}
+        ${this.label?n`<div class="label">${this.label}</div>`:""}
+        ${this.note?n`<div class="note">${this.note}</div>`:n`<div class="note"><slot></slot></div>`}
       </div>
-    `;
-  }
-};
-DeckShortcut.styles = css`
+    `}};o.styles=b`
     :host {
       display: flex; align-items: center; gap: var(--sp-3);
       padding: var(--sp-2) 0;
@@ -92,35 +60,7 @@ DeckShortcut.styles = css`
     }
     :host([tone="accent"]) .keys .k { background: var(--yellow); color: var(--dark); border-color: rgba(0,0,0,0.15); }
     :host([tone="ok"])     .keys .k { background: var(--green);  color: var(--dark); border-color: rgba(0,0,0,0.15); }
-  `;
-__decorateClass([
-  property({ type: String })
-], DeckShortcut.prototype, "keys", 2);
-__decorateClass([
-  property({ type: String })
-], DeckShortcut.prototype, "label", 2);
-__decorateClass([
-  property({ type: String })
-], DeckShortcut.prototype, "note", 2);
-__decorateClass([
-  property({ type: String })
-], DeckShortcut.prototype, "tone", 2);
-DeckShortcut = __decorateClass([
-  customElement("deck-shortcut")
-], DeckShortcut);
-var DeckShortcutList = class extends LitElement {
-  updated() {
-    if (this.colGap) {
-      const n = parseInt(this.colGap, 10);
-      const v = !Number.isNaN(n) && n >= 1 && n <= 6 ? `var(--sp-${n})` : this.colGap;
-      this.style.setProperty("--_col-gap", v);
-    }
-  }
-  render() {
-    return html`<slot></slot>`;
-  }
-};
-DeckShortcutList.styles = css`
+  `,e([l({type:String})],o.prototype,"keys",2),e([l({type:String})],o.prototype,"label",2),e([l({type:String})],o.prototype,"note",2),e([l({type:String})],o.prototype,"tone",2),o=e([y("deck-shortcut")],o);var a=class extends v{updated(){if(this.colGap){let r=parseInt(this.colGap,10),t=!Number.isNaN(r)&&r>=1&&r<=6?`var(--sp-${r})`:this.colGap;this.style.setProperty("--_col-gap",t)}}render(){return n`<slot></slot>`}};a.styles=b`
     :host {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -131,19 +71,4 @@ DeckShortcutList.styles = css`
     ::slotted(deck-shortcut) {
       border-bottom: 1px solid var(--border);
     }
-  `;
-__decorateClass([
-  property({ type: String })
-], DeckShortcutList.prototype, "cols", 2);
-__decorateClass([
-  property({ type: String, attribute: "col-gap" })
-], DeckShortcutList.prototype, "colGap", 2);
-DeckShortcutList = __decorateClass([
-  customElement("deck-shortcut-list")
-], DeckShortcutList);
-export {
-  DeckKbd,
-  DeckShortcut,
-  DeckShortcutList
-};
-//# sourceMappingURL=deck-shortcut.js.map
+  `,e([l({type:String})],a.prototype,"cols",2),e([l({type:String,attribute:"col-gap"})],a.prototype,"colGap",2),a=e([y("deck-shortcut-list")],a);export{i as DeckKbd,o as DeckShortcut,a as DeckShortcutList};

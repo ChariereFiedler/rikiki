@@ -1,41 +1,6 @@
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __decorateClass = (decorators, target, key, kind) => {
-  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
-  for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
-      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result) __defProp(target, key, result);
-  return result;
-};
-
-// src/deck-md.ts
-import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement, state } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-import { marked } from "https://cdn.jsdelivr.net/npm/marked@12/+esm";
-marked.setOptions({ gfm: true, breaks: false });
-var DeckMd = class extends LitElement {
-  constructor() {
-    super(...arguments);
-    this._html = "";
-  }
-  connectedCallback() {
-    super.connectedCallback();
-    this._parse();
-  }
-  _parse() {
-    const raw = this.textContent ?? "";
-    const lines = raw.split("\n");
-    const indent = lines.filter((l) => l.trim().length > 0).reduce((min, l) => Math.min(min, l.match(/^ */)?.[0].length ?? 0), Infinity);
-    const cleaned = indent === Infinity ? raw : lines.map((l) => l.slice(indent)).join("\n");
-    this._html = marked.parse(cleaned.trim());
-    this.textContent = "";
-  }
-  render() {
-    return html`<div class="content" .innerHTML="${this._html}"></div>`;
-  }
-};
-DeckMd.styles = css`
+var c=Object.defineProperty;var p=Object.getOwnPropertyDescriptor;var d=(s,n,o,e)=>{for(var r=e>1?void 0:e?p(n,o):n,i=s.length-1,t;i>=0;i--)(t=s[i])&&(r=(e?t(n,o,r):t(r))||r);return e&&r&&c(n,o,r),r};import{LitElement as v,html as f,css as g}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as h,state as b}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";import{marked as l}from"https://cdn.jsdelivr.net/npm/marked@12/+esm";l.setOptions({gfm:!0,breaks:!1});var a=class extends v{constructor(){super(...arguments);this._html=""}connectedCallback(){super.connectedCallback(),this._parse()}_parse(){let o=this.textContent??"",e=o.split(`
+`),r=e.filter(t=>t.trim().length>0).reduce((t,m)=>Math.min(t,m.match(/^ */)?.[0].length??0),1/0),i=r===1/0?o:e.map(t=>t.slice(r)).join(`
+`);this._html=l.parse(i.trim()),this.textContent=""}render(){return f`<div class="content" .innerHTML="${this._html}"></div>`}};a.styles=g`
     :host { display: block; color: var(--soft); font-family: var(--sans); }
     h1, h2, h3, h4 { color: var(--text); font-weight: 700; letter-spacing: -0.01em; }
     h2 { font-size: var(--fs-h2); margin-bottom: var(--sp-2); }
@@ -74,14 +39,4 @@ DeckMd.styles = css`
     }
     hr { border: none; border-top: 1px solid var(--border); margin: var(--sp-4) 0; }
     .content { display: contents; }
-  `;
-__decorateClass([
-  state()
-], DeckMd.prototype, "_html", 2);
-DeckMd = __decorateClass([
-  customElement("deck-md")
-], DeckMd);
-export {
-  DeckMd
-};
-//# sourceMappingURL=deck-md.js.map
+  `,d([b()],a.prototype,"_html",2),a=d([h("deck-md")],a);export{a as DeckMd};

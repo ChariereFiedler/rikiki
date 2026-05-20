@@ -1,21 +1,4 @@
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __decorateClass = (decorators, target, key, kind) => {
-  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
-  for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
-      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result) __defProp(target, key, result);
-  return result;
-};
-
-// src/deck-hero.ts
-import { LitElement, html, css as css2 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-
-// src/shared-styles.ts
-import { css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-var slideShell = css`
+var m=Object.defineProperty;var f=Object.getOwnPropertyDescriptor;var n=(a,o,s,r)=>{for(var t=r>1?void 0:r?f(o,s):o,l=a.length-1,i;l>=0;l--)(i=a[l])&&(t=(r?i(o,s,t):i(t))||t);return r&&t&&m(o,s,t),t};import{LitElement as x,html as p,css as b}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as y,property as u}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";import{css as d}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";var g=d`
   :host {
     display: none;
     position: absolute;
@@ -28,8 +11,7 @@ var slideShell = css`
     color: var(--text);
   }
   :host([active]) { display: flex; }
-`;
-var typo = css`
+`,v=d`
   h1 {
     font-size: var(--fs-h1);
     font-weight: 700;
@@ -59,8 +41,7 @@ var typo = css`
     border-radius: var(--r-sm);
     color: var(--text);
   }
-`;
-var helpers = css`
+`,h=d`
   .lbl {
     display: inline-block;
     padding: 4px 12px;
@@ -106,21 +87,12 @@ var helpers = css`
     color: var(--muted);
     margin-bottom: var(--sp-2);
   }
-`;
-var slideBase = [slideShell, typo, helpers];
-
-// src/deck-hero.ts
-var DeckHero = class extends LitElement {
-  render() {
-    return html`
-      ${this.eyebrow ? html`<span class="lbl">${this.eyebrow}</span>` : ""}
+`,c=[g,v,h];var e=class extends x{render(){return p`
+      ${this.eyebrow?p`<span class="lbl">${this.eyebrow}</span>`:""}
       <slot name="title"></slot>
       <slot name="lead"></slot>
       <div class="body" part="body"><slot></slot></div>
-    `;
-  }
-};
-DeckHero.styles = [...slideBase, css2`
+    `}};e.styles=[...c,b`
     :host { justify-content: flex-start; }
     .body {
       flex: 1; min-height: 0;
@@ -135,14 +107,4 @@ DeckHero.styles = [...slideBase, css2`
     ::slotted(pre),
     ::slotted(svg),
     ::slotted(.hero-main) { max-height: 100%; flex: 0 1 auto; }
-  `];
-__decorateClass([
-  property({ type: String })
-], DeckHero.prototype, "eyebrow", 2);
-DeckHero = __decorateClass([
-  customElement("deck-hero")
-], DeckHero);
-export {
-  DeckHero
-};
-//# sourceMappingURL=deck-hero.js.map
+  `],n([u({type:String})],e.prototype,"eyebrow",2),e=n([y("deck-hero")],e);export{e as DeckHero};

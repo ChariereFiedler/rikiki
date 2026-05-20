@@ -1,28 +1,4 @@
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __decorateClass = (decorators, target, key, kind) => {
-  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
-  for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
-      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result) __defProp(target, key, result);
-  return result;
-};
-
-// src/deck-card.ts
-import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var DeckCard = class extends LitElement {
-  constructor() {
-    super(...arguments);
-    this.center = false;
-    this.compact = false;
-  }
-  render() {
-    return html`<slot></slot>`;
-  }
-};
-DeckCard.styles = css`
+var i=Object.defineProperty;var g=Object.getOwnPropertyDescriptor;var a=(s,e,l,t)=>{for(var o=t>1?void 0:t?g(e,l):e,n=s.length-1,d;n>=0;n--)(d=s[n])&&(o=(t?d(e,l,o):d(o))||o);return t&&o&&i(e,l,o),o};import{LitElement as v,html as f,css as p}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as b,property as c}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var r=class extends v{constructor(){super(...arguments);this.center=!1;this.compact=!1}render(){return f`<slot></slot>`}};r.styles=p`
     :host {
       display: flex; flex-direction: column;
       gap: var(--sp-2);
@@ -56,20 +32,4 @@ DeckCard.styles = css`
     ::slotted(strong) { color: var(--text); font-weight: 700; }
     :host([center])  { text-align: center; align-items: center; }
     :host([compact]) { padding: var(--sp-2) var(--sp-3); }
-  `;
-__decorateClass([
-  property({ type: String })
-], DeckCard.prototype, "color", 2);
-__decorateClass([
-  property({ type: Boolean })
-], DeckCard.prototype, "center", 2);
-__decorateClass([
-  property({ type: Boolean })
-], DeckCard.prototype, "compact", 2);
-DeckCard = __decorateClass([
-  customElement("deck-card")
-], DeckCard);
-export {
-  DeckCard
-};
-//# sourceMappingURL=deck-card.js.map
+  `,a([c({type:String})],r.prototype,"color",2),a([c({type:Boolean})],r.prototype,"center",2),a([c({type:Boolean})],r.prototype,"compact",2),r=a([b("deck-card")],r);export{r as DeckCard};

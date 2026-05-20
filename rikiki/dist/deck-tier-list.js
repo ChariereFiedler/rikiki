@@ -1,44 +1,12 @@
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __decorateClass = (decorators, target, key, kind) => {
-  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
-  for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
-      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result) __defProp(target, key, result);
-  return result;
-};
-
-// src/deck-tier-list.ts
-import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var DeckTierList = class extends LitElement {
-  render() {
-    return html`<slot></slot>`;
-  }
-};
-DeckTierList.styles = css`
+var h=Object.defineProperty;var g=Object.getOwnPropertyDescriptor;var t=(a,o,i,l)=>{for(var r=l>1?void 0:l?g(o,i):o,v=a.length-1,p;v>=0;v--)(p=a[v])&&(r=(l?p(o,i,r):p(r))||r);return l&&r&&h(o,i,r),r};import{LitElement as c,html as m,css as y}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as f,property as n}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var s=class extends c{render(){return m`<slot></slot>`}};s.styles=y`
     :host { display: flex; flex-direction: column; gap: var(--gap-xs); }
-  `;
-DeckTierList = __decorateClass([
-  customElement("deck-tier-list")
-], DeckTierList);
-var DeckTier = class extends LitElement {
-  constructor() {
-    super(...arguments);
-    this.hot = false;
-  }
-  render() {
-    return html`
+  `,s=t([f("deck-tier-list")],s);var e=class extends c{constructor(){super(...arguments);this.hot=!1}render(){return m`
       <div class="head">
         <span class="name">${this.name}</span>
-        <span class="speed" data-severity="${this.severity ?? (this.hot ? "hot" : "")}">${this.speed}</span>
+        <span class="speed" data-severity="${this.severity??(this.hot?"hot":"")}">${this.speed}</span>
       </div>
       <div class="desc"><slot></slot></div>
-    `;
-  }
-};
-DeckTier.styles = css`
+    `}};e.styles=y`
     :host {
       display: flex; flex-direction: column; gap: var(--gap-hair);
       background: var(--surface-card);
@@ -63,41 +31,11 @@ DeckTier.styles = css`
     .speed[data-severity="ok"]    { color: var(--green); }
     :host([hot]) .speed { color: var(--yellow); }
     .desc { font-size: var(--fs-small); color: var(--muted); line-height: 1.4; }
-  `;
-__decorateClass([
-  property({ type: String })
-], DeckTier.prototype, "name", 2);
-__decorateClass([
-  property({ type: String })
-], DeckTier.prototype, "speed", 2);
-__decorateClass([
-  property({ type: String })
-], DeckTier.prototype, "severity", 2);
-__decorateClass([
-  property({ type: Boolean, reflect: true })
-], DeckTier.prototype, "hot", 2);
-DeckTier = __decorateClass([
-  customElement("deck-tier")
-], DeckTier);
-var DeckTierArrow = class extends LitElement {
-  render() {
-    return html`<slot></slot>`;
-  }
-};
-DeckTierArrow.styles = css`
+  `,t([n({type:String})],e.prototype,"name",2),t([n({type:String})],e.prototype,"speed",2),t([n({type:String})],e.prototype,"severity",2),t([n({type:Boolean,reflect:!0})],e.prototype,"hot",2),e=t([f("deck-tier")],e);var d=class extends c{render(){return m`<slot></slot>`}};d.styles=y`
     :host {
       display: block; text-align: center;
       color: var(--muted); opacity: var(--opacity-soft);
       font-size: var(--fs-micro);
       padding: 2px 0;
     }
-  `;
-DeckTierArrow = __decorateClass([
-  customElement("deck-tier-arrow")
-], DeckTierArrow);
-export {
-  DeckTier,
-  DeckTierArrow,
-  DeckTierList
-};
-//# sourceMappingURL=deck-tier-list.js.map
+  `,d=t([f("deck-tier-arrow")],d);export{e as DeckTier,d as DeckTierArrow,s as DeckTierList};

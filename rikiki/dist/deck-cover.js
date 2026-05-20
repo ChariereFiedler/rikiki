@@ -1,21 +1,4 @@
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __decorateClass = (decorators, target, key, kind) => {
-  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
-  for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
-      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result) __defProp(target, key, result);
-  return result;
-};
-
-// src/deck-cover.ts
-import { LitElement, html, css as css2 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-
-// src/shared-styles.ts
-import { css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-var slideShell = css`
+var g=Object.defineProperty;var b=Object.getOwnPropertyDescriptor;var e=(p,n,o,s)=>{for(var a=s>1?void 0:s?b(n,o):n,d=p.length-1,i;d>=0;d--)(i=p[d])&&(a=(s?i(n,o,a):i(a))||a);return s&&a&&g(n,o,a),a};import{LitElement as u,html as l,css as x}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as y,property as r}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";import{css as c}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";var v=c`
   :host {
     display: none;
     position: absolute;
@@ -28,8 +11,7 @@ var slideShell = css`
     color: var(--text);
   }
   :host([active]) { display: flex; }
-`;
-var typo = css`
+`,f=c`
   h1 {
     font-size: var(--fs-h1);
     font-weight: 700;
@@ -59,8 +41,7 @@ var typo = css`
     border-radius: var(--r-sm);
     color: var(--text);
   }
-`;
-var helpers = css`
+`,h=c`
   .lbl {
     display: inline-block;
     padding: 4px 12px;
@@ -106,47 +87,20 @@ var helpers = css`
     color: var(--muted);
     margin-bottom: var(--sp-2);
   }
-`;
-var slideBase = [slideShell, typo, helpers];
-
-// src/deck-cover.ts
-var DeckCover = class extends LitElement {
-  render() {
-    const parts = (this.brand ?? "").split("\xB7").map((s) => s.trim()).filter(Boolean);
-    const brandName = parts[0] ?? "";
-    const context = parts.slice(1).join(" \xB7 ");
-    const items = [
-      this.speaker && { l: this.speakerLabel ?? "Pr\xE9sent\xE9 par", v: this.speaker },
-      this.company && { l: this.companyLabel ?? "Entreprise", v: this.company },
-      this.duration && { l: this.durationLabel ?? "Dur\xE9e", v: this.duration },
-      this.audience && { l: this.audienceLabel ?? "Audience", v: this.audience },
-      this.runtime && { l: this.runtimeLabel ?? "Runtime", v: this.runtime }
-    ].filter((x) => !!x);
-    const hasMark = !!this.brandSrc;
-    return html`
+`,m=[v,f,h];var t=class extends u{render(){let n=(this.brand??"").split("\xB7").map(i=>i.trim()).filter(Boolean),o=n[0]??"",s=n.slice(1).join(" \xB7 "),a=[this.speaker&&{l:this.speakerLabel??"Pr\xE9sent\xE9 par",v:this.speaker},this.company&&{l:this.companyLabel??"Entreprise",v:this.company},this.duration&&{l:this.durationLabel??"Dur\xE9e",v:this.duration},this.audience&&{l:this.audienceLabel??"Audience",v:this.audience},this.runtime&&{l:this.runtimeLabel??"Runtime",v:this.runtime}].filter(i=>!!i),d=!!this.brandSrc;return l`
       <div class="brand" part="brand">
-        ${hasMark ? html`<span class="brand-tile"><img src="${this.brandSrc}" alt="${brandName}"></span>` : ""}
-        ${brandName ? html`<span class="brand-name">${brandName}</span>` : ""}
-        ${context ? html`<span class="brand-context">${context}</span>` : ""}
+        ${d?l`<span class="brand-tile"><img src="${this.brandSrc}" alt="${o}"></span>`:""}
+        ${o?l`<span class="brand-name">${o}</span>`:""}
+        ${s?l`<span class="brand-context">${s}</span>`:""}
       </div>
       <slot></slot>
-      ${items.length ? html`
+      ${a.length?l`
         <div class="meta" part="meta">
-          ${items.map((i) => html`
+          ${a.map(i=>l`
             <div class="meta-item"><strong>${i.l}</strong><span>${i.v}</span></div>
           `)}
-        </div>` : ""}
-    `;
-  }
-};
-/* Tokens:
-     --deck-cover-bg          slide background          (defaults to --dark)
-     --deck-cover-text        primary on-dark text      (--on-dark-text)
-     --deck-cover-soft        soft on-dark text         (--on-dark-soft)
-     --deck-cover-muted       very soft on-dark text    (--on-dark-muted)
-     --deck-cover-faint       faintest on-dark text     (--on-dark-faint)
-     --deck-cover-border      meta separator border     (--on-dark-border) */
-DeckCover.styles = [...slideBase, css2`
+        </div>`:""}
+    `}};t.styles=[...m,x`
     :host {
       background: var(--deck-cover-bg, var(--dark));
       justify-content: center;
@@ -203,47 +157,4 @@ DeckCover.styles = [...slideBase, css2`
       color: var(--deck-cover-text, var(--on-dark-text));
       font-size: var(--fs-body); font-weight: 600;
     }
-  `];
-__decorateClass([
-  property({ type: String })
-], DeckCover.prototype, "brand", 2);
-__decorateClass([
-  property({ type: String, attribute: "brand-src" })
-], DeckCover.prototype, "brandSrc", 2);
-__decorateClass([
-  property({ type: String })
-], DeckCover.prototype, "speaker", 2);
-__decorateClass([
-  property({ type: String })
-], DeckCover.prototype, "company", 2);
-__decorateClass([
-  property({ type: String })
-], DeckCover.prototype, "duration", 2);
-__decorateClass([
-  property({ type: String })
-], DeckCover.prototype, "audience", 2);
-__decorateClass([
-  property({ type: String })
-], DeckCover.prototype, "runtime", 2);
-__decorateClass([
-  property({ type: String, attribute: "speaker-label" })
-], DeckCover.prototype, "speakerLabel", 2);
-__decorateClass([
-  property({ type: String, attribute: "company-label" })
-], DeckCover.prototype, "companyLabel", 2);
-__decorateClass([
-  property({ type: String, attribute: "duration-label" })
-], DeckCover.prototype, "durationLabel", 2);
-__decorateClass([
-  property({ type: String, attribute: "audience-label" })
-], DeckCover.prototype, "audienceLabel", 2);
-__decorateClass([
-  property({ type: String, attribute: "runtime-label" })
-], DeckCover.prototype, "runtimeLabel", 2);
-DeckCover = __decorateClass([
-  customElement("deck-cover")
-], DeckCover);
-export {
-  DeckCover
-};
-//# sourceMappingURL=deck-cover.js.map
+  `],e([r({type:String})],t.prototype,"brand",2),e([r({type:String,attribute:"brand-src"})],t.prototype,"brandSrc",2),e([r({type:String})],t.prototype,"speaker",2),e([r({type:String})],t.prototype,"company",2),e([r({type:String})],t.prototype,"duration",2),e([r({type:String})],t.prototype,"audience",2),e([r({type:String})],t.prototype,"runtime",2),e([r({type:String,attribute:"speaker-label"})],t.prototype,"speakerLabel",2),e([r({type:String,attribute:"company-label"})],t.prototype,"companyLabel",2),e([r({type:String,attribute:"duration-label"})],t.prototype,"durationLabel",2),e([r({type:String,attribute:"audience-label"})],t.prototype,"audienceLabel",2),e([r({type:String,attribute:"runtime-label"})],t.prototype,"runtimeLabel",2),t=e([y("deck-cover")],t);export{t as DeckCover};

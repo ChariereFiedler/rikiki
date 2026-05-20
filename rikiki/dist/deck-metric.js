@@ -1,41 +1,9 @@
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __decorateClass = (decorators, target, key, kind) => {
-  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
-  for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
-      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result) __defProp(target, key, result);
-  return result;
-};
-
-// src/deck-metric.ts
-import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var DeckMetricList = class extends LitElement {
-  render() {
-    return html`<slot></slot>`;
-  }
-};
-DeckMetricList.styles = css`
+var c=Object.defineProperty;var u=Object.getOwnPropertyDescriptor;var r=(s,o,n,l)=>{for(var a=l>1?void 0:l?u(o,n):o,i=s.length-1,d;i>=0;i--)(d=s[i])&&(a=(l?d(o,n,a):d(a))||a);return l&&a&&c(o,n,a),a};import{LitElement as m,html as p,css as f}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as y,property as v}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var t=class extends m{render(){return p`<slot></slot>`}};t.styles=f`
     :host { display: flex; flex-direction: column; gap: var(--sp-2); }
-  `;
-DeckMetricList = __decorateClass([
-  customElement("deck-metric-list")
-], DeckMetricList);
-var DeckMetric = class extends LitElement {
-  constructor() {
-    super(...arguments);
-    this.mono = false;
-  }
-  render() {
-    return html`
-      <span class="label ${this.mono ? "mono" : ""}"><slot></slot></span>
-      <span class="value" data-severity="${this.severity ?? ""}">${this.value}</span>
-    `;
-  }
-};
-DeckMetric.styles = css`
+  `,t=r([y("deck-metric-list")],t);var e=class extends m{constructor(){super(...arguments);this.mono=!1}render(){return p`
+      <span class="label ${this.mono?"mono":""}"><slot></slot></span>
+      <span class="value" data-severity="${this.severity??""}">${this.value}</span>
+    `}};e.styles=f`
     :host {
       display: flex; justify-content: space-between; align-items: center;
       background: var(--surface-card);
@@ -54,21 +22,4 @@ DeckMetric.styles = css`
     .value[data-severity="warn"] { color: var(--orange); }
     .value[data-severity="ok"]   { color: var(--green); }
     .value[data-severity="info"] { color: var(--text-info); }
-  `;
-__decorateClass([
-  property({ type: String })
-], DeckMetric.prototype, "value", 2);
-__decorateClass([
-  property({ type: String })
-], DeckMetric.prototype, "severity", 2);
-__decorateClass([
-  property({ type: Boolean })
-], DeckMetric.prototype, "mono", 2);
-DeckMetric = __decorateClass([
-  customElement("deck-metric")
-], DeckMetric);
-export {
-  DeckMetric,
-  DeckMetricList
-};
-//# sourceMappingURL=deck-metric.js.map
+  `,r([v({type:String})],e.prototype,"value",2),r([v({type:String})],e.prototype,"severity",2),r([v({type:Boolean})],e.prototype,"mono",2),e=r([y("deck-metric")],e);export{e as DeckMetric,t as DeckMetricList};

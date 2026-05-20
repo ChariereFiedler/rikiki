@@ -1,21 +1,4 @@
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __decorateClass = (decorators, target, key, kind) => {
-  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
-  for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
-      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result) __defProp(target, key, result);
-  return result;
-};
-
-// src/deck-hero-detail.ts
-import { LitElement, html, css as css2 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-
-// src/shared-styles.ts
-import { css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-var slideShell = css`
+var m=Object.defineProperty;var h=Object.getOwnPropertyDescriptor;var n=(a,o,l,r)=>{for(var e=r>1?void 0:r?h(o,l):o,s=a.length-1,i;s>=0;s--)(i=a[s])&&(e=(r?i(o,l,e):i(e))||e);return r&&e&&m(o,l,e),e};import{LitElement as x,html as p,css as b}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as u,property as y}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";import{css as d}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";var f=d`
   :host {
     display: none;
     position: absolute;
@@ -28,8 +11,7 @@ var slideShell = css`
     color: var(--text);
   }
   :host([active]) { display: flex; }
-`;
-var typo = css`
+`,v=d`
   h1 {
     font-size: var(--fs-h1);
     font-weight: 700;
@@ -59,8 +41,7 @@ var typo = css`
     border-radius: var(--r-sm);
     color: var(--text);
   }
-`;
-var helpers = css`
+`,g=d`
   .lbl {
     display: inline-block;
     padding: 4px 12px;
@@ -106,14 +87,8 @@ var helpers = css`
     color: var(--muted);
     margin-bottom: var(--sp-2);
   }
-`;
-var slideBase = [slideShell, typo, helpers];
-
-// src/deck-hero-detail.ts
-var DeckHeroDetail = class extends LitElement {
-  render() {
-    return html`
-      ${this.eyebrow ? html`<span class="lbl">${this.eyebrow}</span>` : ""}
+`,c=[f,v,g];var t=class extends x{render(){return p`
+      ${this.eyebrow?p`<span class="lbl">${this.eyebrow}</span>`:""}
       <slot name="title"></slot>
       <slot name="lead"></slot>
       <div class="hero" part="hero"><slot></slot></div>
@@ -121,10 +96,7 @@ var DeckHeroDetail = class extends LitElement {
         <div class="col"><slot name="left"></slot></div>
         <div class="col"><slot name="right"></slot></div>
       </div>
-    `;
-  }
-};
-DeckHeroDetail.styles = [...slideBase, css2`
+    `}};t.styles=[...c,b`
     :host { justify-content: flex-start; }
     /* The hero (code/chart) gets at least half the available height; .detail
        (bullets + diagram) is capped at ~40%. Without these caps a tall mermaid
@@ -154,14 +126,4 @@ DeckHeroDetail.styles = [...slideBase, css2`
       min-height: 0;
       overflow: hidden;
     }
-  `];
-__decorateClass([
-  property({ type: String })
-], DeckHeroDetail.prototype, "eyebrow", 2);
-DeckHeroDetail = __decorateClass([
-  customElement("deck-hero-detail")
-], DeckHeroDetail);
-export {
-  DeckHeroDetail
-};
-//# sourceMappingURL=deck-hero-detail.js.map
+  `],n([y({type:String})],t.prototype,"eyebrow",2),t=n([u("deck-hero-detail")],t);export{t as DeckHeroDetail};

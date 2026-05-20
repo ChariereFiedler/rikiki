@@ -37,6 +37,10 @@ const cdnRewrite = {
   },
 };
 
+// Production build is minified. Use `--watch` for an unminified dev build with
+// sourcemaps. The `--dev` flag forces the same dev-style output for one-shots.
+const isDev = process.argv.includes('--watch') || process.argv.includes('--dev');
+
 const config = {
   entryPoints,
   outdir: OUT,
@@ -46,7 +50,9 @@ const config = {
   bundle: true,                 // resolve relative imports + apply plugin
   splitting: false,
   outExtension: { '.js': '.js' },
-  sourcemap: true,
+  sourcemap: isDev,
+  minify: !isDev,
+  legalComments: 'none',
   plugins: [cdnRewrite],
   // Keep each component its own file (no chunk merging since splitting is off
   // and entryPoints is the full src/*.ts list).

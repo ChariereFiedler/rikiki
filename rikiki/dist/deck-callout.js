@@ -1,38 +1,11 @@
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __decorateClass = (decorators, target, key, kind) => {
-  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
-  for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
-      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result) __defProp(target, key, result);
-  return result;
-};
-
-// src/deck-callout.ts
-import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
-var ICONS = {
-  info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
-  warn: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
-  danger: '<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>',
-  ok: '<path d="M20 6 9 17l-5-5"/>'
-};
-var DeckCallout = class extends LitElement {
-  render() {
-    const t = this.type ?? "info";
-    const icon = ICONS[t] ?? ICONS.info;
-    return html`
+var s=Object.defineProperty;var v=Object.getOwnPropertyDescriptor;var n=(d,e,a,t)=>{for(var r=t>1?void 0:t?v(e,a):e,c=d.length-1,l;c>=0;c--)(l=d[c])&&(r=(t?l(e,a,r):l(r))||r);return t&&r&&s(e,a,r),r};import{LitElement as p,html as k,css as u}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as g,property as f}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var i={info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',warn:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',danger:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>',ok:'<path d="M20 6 9 17l-5-5"/>'},o=class extends p{render(){let e=this.type??"info",a=i[e]??i.info;return k`
       <div class="icon-box">
         <svg viewBox="0 0 24 24" fill="none"
              stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-             .innerHTML="${icon}"></svg>
+             .innerHTML="${a}"></svg>
       </div>
       <div class="content"><slot></slot></div>
-    `;
-  }
-};
-DeckCallout.styles = css`
+    `}};o.styles=u`
     :host {
       display: flex; gap: var(--sp-3);
       padding: var(--deck-callout-padding-y, var(--sp-3)) var(--deck-callout-padding-x, var(--sp-4));
@@ -71,14 +44,4 @@ DeckCallout.styles = css`
       background: var(--surface-tint); padding: 2px 6px;
       border-radius: var(--r-sm); color: var(--text);
     }
-  `;
-__decorateClass([
-  property({ type: String })
-], DeckCallout.prototype, "type", 2);
-DeckCallout = __decorateClass([
-  customElement("deck-callout")
-], DeckCallout);
-export {
-  DeckCallout
-};
-//# sourceMappingURL=deck-callout.js.map
+  `,n([f({type:String})],o.prototype,"type",2),o=n([g("deck-callout")],o);export{o as DeckCallout};
