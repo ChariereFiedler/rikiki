@@ -1,0 +1,19 @@
+---
+// Three-column container for <Stat /> · same proportions as the
+// deck-stat row used in the rikiki-tour example.
+---
+
+<div class="grid">
+  <slot />
+</div>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-5);
+  }
+  @media (max-width: 720px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>

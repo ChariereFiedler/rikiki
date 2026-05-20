@@ -1,0 +1,61 @@
+---
+// Sticky top nav · brand chip + section anchors + GitHub link.
+---
+
+<nav class="nav">
+  <a href="#top" class="brand">
+    <span class="brand-mark">●</span>
+    <span class="brand-name">rikiki</span>
+  </a>
+
+  <div class="links">
+    <a href="#why">Why</a>
+    <a href="#anatomy">Anatomy</a>
+    <a href="#library">Library</a>
+    <a href="#themes">Themes</a>
+    <a href="#quickstart">Quickstart</a>
+    <a href="https://github.com" class="cta">Source ↗</a>
+  </div>
+</nav>
+
+<style>
+  .nav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: var(--sp-3) var(--sp-5);
+    background: rgba(250, 248, 245, 0.85);
+    backdrop-filter: blur(12px) saturate(1.2);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: var(--fs-small);
+  }
+  .brand {
+    display: inline-flex; align-items: center; gap: 8px;
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 700;
+  }
+  .brand-mark { color: var(--mango); font-size: 1.3rem; line-height: 1; }
+  .brand-name {
+    font-family: var(--display); font-weight: 800;
+    letter-spacing: -0.01em; font-size: 1.05rem;
+  }
+  .links { display: inline-flex; align-items: center; gap: var(--sp-4); }
+  .links a {
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+  .links a:hover { color: var(--text); text-decoration: none; }
+  .links .cta {
+    color: var(--dark);
+    background: var(--mango);
+    padding: 6px 12px;
+    border-radius: var(--r-pill);
+    font-weight: 700;
+  }
+  .links .cta:hover { color: var(--dark); }
+  @media (max-width: 640px) {
+    .links a:not(.cta) { display: none; }
+  }
+</style>

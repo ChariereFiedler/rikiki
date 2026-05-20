@@ -1,0 +1,77 @@
+---
+// Static code block · derived from <deck-code> (same dark surface + syntax
+// colors). We highlight at build time here, not at runtime, since this is
+// purely a marketing snippet · no need to ship a highlighter.
+interface Props {
+  lang?: 'html' | 'js' | 'ts' | 'css';
+  code: string;
+  label?: string;
+}
+const { lang = 'html', code, label } = Astro.props;
+
+function highlight(src: string, lang: string): string {
+  let s = src.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  // Stash injected spans behind opaque placeholders so later passes can't see
+  // (and re-highlight) the class="..." attributes inside them.
+  const stash: string[] = [];
+  const put = (cls: string, text: string): string => {
+    const id = `P${stash.length}E`;
+    stash.push(`<span class="${cls}">${text}</span>`);
+    return id;
+  };
+
+  if (lang === 'html') {
+    s = s.replace(/(&lt;!--[\s\S]*?--&gt;)/g, (m) => put('cmt', m));
+    s = s.replace(/(&lt;!doctype[^&]*&gt;)/gi, (m) => put('cmt', m));
+    s = s.replace(/("[^"]*"|'[^']*')/g, (m) => put('str', m));
+    s = s.replace(/(&lt;\/?)([a-zA-Z][a-zA-Z0-9:-]*)/g,
+      (_m, lt: string, tag: string) => lt + put('kw', tag));
+    s = s.replace(/\b([a-zA-Z][a-zA-Z0-9-]*)(?==)/g, (m) => put('prop', m));
+  } else if (lang === 'js' || lang === 'ts') {
+    s = s.replace(/(\/\/[^\n]*)/g, (m) => put('cmt', m));
+    s = s.replace(/(['"`])((?:\\.|(?!\1)[^\\])*)\1/g, (m) => put('str', m));
+    s = s.replace(/\b(const|let|var|function|return|if|else|class|extends|new|export|import|from|as|await|async|of|in|typeof|true|false|null|undefined)\b/g,
+      (m) => put('kw', m));
+  }
+  return s.replace(/P(\d+)E/g, (_m, i: string) => stash[+i] ?? '');
+}
+const highlighted = highlight(code.trim(), lang);
+---
+
+<figure class="code">
+  {label && <figcaption class="label">{label}</figcaption>}
+  <pre><code set:html={highlighted}></code></pre>
+</figure>
+
+<style>
+  .code {
+    margin: 0;
+    display: flex; flex-direction: column;
+    gap: var(--sp-2);
+  }
+  .label {
+    font: 700 var(--fs-micro)/1 var(--mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  pre {
+    margin: 0;
+    background: #0f0f10;
+    color: #f4f4f5;
+    border: 1px solid #232325;
+    border-radius: var(--r-md);
+    padding: var(--sp-4);
+    overflow: auto;
+    font-family: var(--mono);
+    font-size: 0.92rem;
+    line-height: 1.7;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+  code { display: block; }
+  pre :global(.kw)   { color: #c792ea; }
+  pre :global(.str)  { color: #c3e88d; }
+  pre :global(.prop) { color: #80cbc4; }
+  pre :global(.cmt)  { color: #546e7a; font-style: italic; }
+  pre :global(.num)  { color: #f78c6c; }
+</style>

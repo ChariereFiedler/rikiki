@@ -1,0 +1,59 @@
+---
+interface Props {
+  id?: string;
+  eyebrow?: string;
+  title: string;
+  tone?: 'paper' | 'dark';
+}
+const { id, eyebrow, title, tone = 'paper' } = Astro.props;
+---
+
+<section id={id} class={`section ${tone}`}>
+  <div class="inner">
+    {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+    <h2 class="title" set:html={title}></h2>
+    <div class="body">
+      <slot />
+    </div>
+  </div>
+</section>
+
+<style>
+  .section {
+    padding: var(--sp-7) var(--sp-5);
+  }
+  .section.dark {
+    background: var(--dark);
+    color: var(--on-dark-text);
+  }
+  .inner {
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    display: table;             /* hugs content but breaks the flow before title */
+    padding: 4px 10px;
+    background: var(--mango);
+    color: var(--dark);
+    border-radius: var(--r-pill);
+    font: 700 var(--fs-micro)/1 var(--mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: var(--sp-3);
+  }
+  .title {
+    font-family: var(--display);
+    font-size: var(--fs-mega);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    color: var(--text);
+    margin-bottom: var(--sp-5);
+    padding-bottom: var(--sp-2);
+    border-bottom: 4px solid var(--mango);
+    display: inline-block;
+    align-self: flex-start;
+  }
+  .dark .title { color: var(--on-dark-text); }
+  .body { margin-top: var(--sp-4); }
+</style>

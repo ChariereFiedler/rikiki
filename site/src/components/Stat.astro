@@ -1,0 +1,55 @@
+---
+// Big-number block · derived from <deck-stat>.
+interface Props {
+  num: string;
+  claim: string;
+  tone?: 'mango' | 'helico' | 'orchid' | 'lime' | 'ember';
+}
+const { num, claim, tone = 'mango' } = Astro.props;
+---
+
+<article class={`stat ${tone}`}>
+  <div class="num">{num}</div>
+  <h3 class="claim" set:html={claim}></h3>
+  <p class="body"><slot /></p>
+</article>
+
+<style>
+  .stat {
+    display: flex; flex-direction: column;
+    gap: var(--sp-2);
+    padding: var(--sp-4) var(--sp-3);
+    border-left: 4px solid var(--_c, var(--mango));
+    min-width: 0;
+  }
+  .stat.mango  { --_c: var(--mango); }
+  .stat.helico { --_c: var(--helico); }
+  .stat.orchid { --_c: var(--orchid); }
+  .stat.lime   { --_c: var(--lime); }
+  .stat.ember  { --_c: var(--ember); }
+
+  .num {
+    font-family: var(--display);
+    font-size: clamp(3rem, 6vw, 5rem);
+    font-weight: 900;
+    line-height: 0.9;
+    color: var(--_c, var(--mango));
+    letter-spacing: -0.04em;
+  }
+  .claim {
+    font-family: var(--display);
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+  .body {
+    font-size: var(--fs-body);
+    color: var(--muted);
+    line-height: 1.5;
+    margin-top: var(--sp-2);
+  }
+  .body :global(strong) { color: var(--text); font-weight: 700; }
+</style>

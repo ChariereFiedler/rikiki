@@ -1,0 +1,86 @@
+---
+// Two theme mockups side-by-side · static visual, no interactivity.
+// Mirrors slide 14 of the rikiki-tour deck.
+---
+
+<div class="themes">
+  <article class="card rikiki">
+    <header>
+      <h3>rikiki · default</h3>
+      <span class="pill">active</span>
+    </header>
+    <p>
+      Tropical-jungle palette · <b>mango</b> primary, <b>helico</b> teal, <b>orchid</b>, <b>lime</b>.
+      Unbounded + Inter + Space Mono via Google Fonts.
+    </p>
+    <pre><code>&lt;link rel="stylesheet"
+      href="rikiki/tokens.css"&gt;</code></pre>
+  </article>
+
+  <article class="card siliceum">
+    <header>
+      <h3>siliceum · warm paper</h3>
+    </header>
+    <p>
+      Warm paper palette · <code>#F7CB44</code> yellow accent, Source Sans Pro +
+      JetBrains Mono, self-hosted woff2.
+    </p>
+    <pre><code>&lt;link rel="stylesheet"
+      href="rikiki/themes/siliceum.css"&gt;</code></pre>
+  </article>
+</div>
+
+<style>
+  .themes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-4);
+  }
+  @media (max-width: 720px) {
+    .themes { grid-template-columns: 1fr; }
+  }
+  .card {
+    position: relative;
+    padding: var(--sp-5);
+    border-radius: var(--r-lg);
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(6,8,15,0.04), 0 4px 12px rgba(6,8,15,0.04);
+  }
+  .card.rikiki  { background: rgba(240, 112, 32, 0.08); border-color: rgba(240, 112, 32, 0.40); }
+  .card.siliceum { background: rgba(247, 203, 68, 0.10); border-color: rgba(247, 203, 68, 0.45); }
+  header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: var(--sp-3);
+  }
+  h3 {
+    font: 800 var(--fs-h2) / 1.1 var(--display);
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .pill {
+    background: var(--mango);
+    color: var(--dark);
+    padding: 3px 9px;
+    border-radius: var(--r-pill);
+    font: 700 var(--fs-micro)/1 var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  p {
+    font-size: var(--fs-body);
+    color: var(--soft);
+    line-height: 1.6;
+    margin: 0 0 var(--sp-4);
+  }
+  p :global(b) { color: var(--text); }
+  pre {
+    margin: 0;
+    background: #0f0f10;
+    color: #f4f4f5;
+    border-radius: var(--r-md);
+    padding: var(--sp-3) var(--sp-4);
+    font: 0.85rem/1.6 var(--mono);
+    overflow: auto;
+  }
+  code { display: block; }
+</style>

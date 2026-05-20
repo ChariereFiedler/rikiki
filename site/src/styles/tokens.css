@@ -1,0 +1,93 @@
+/* ════════════════════════════════════════════════════════════════
+   Rikiki site · design tokens
+   Mirrors the framework's `themes/rikiki.css` so the marketing site
+   speaks the same visual language as the decks it ships.
+   ════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400..900&family=Inter:wght@400..700&family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  /* Surfaces */
+  --bg:      #faf8f5;
+  --card:    #f0ede8;
+  --border:  #e0dbd4;
+  --dark:    #06080f;
+  --deep:    #0a0e18;
+  --layer:   #0f1422;
+
+  /* Text */
+  --text:    #2a2520;
+  --soft:    #4a4540;
+  --muted:   #7a7570;
+
+  /* Accents · tropical-jungle */
+  --mango:   #f07020;   /* primary */
+  --helico:  #00c8a0;
+  --orchid:  #c050e0;
+  --lime:    #b8e830;
+  --ember:   #e84828;
+
+  /* On-dark */
+  --on-dark-text:    #e8e4f0;
+  --on-dark-soft:    rgba(232, 228, 240, 0.72);
+  --on-dark-muted:   rgba(232, 228, 240, 0.55);
+  --on-dark-faint:   rgba(232, 228, 240, 0.32);
+  --on-dark-border:  rgba(232, 228, 240, 0.12);
+
+  /* Type */
+  --sans:    'Inter', system-ui, sans-serif;
+  --display: 'Unbounded', 'Inter', sans-serif;
+  --mono:    'Space Mono', ui-monospace, monospace;
+
+  /* Spacing */
+  --sp-1: 0.5rem;
+  --sp-2: 0.75rem;
+  --sp-3: 1rem;
+  --sp-4: 1.5rem;
+  --sp-5: 2.25rem;
+  --sp-6: 3.5rem;
+  --sp-7: 5rem;
+
+  /* Radii */
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-pill: 9999px;
+
+  /* Type scale */
+  --fs-display: clamp(3rem, 7vw, 5.5rem);
+  --fs-mega:    clamp(2rem, 4.5vw, 3.5rem);
+  --fs-h2:      clamp(1.4rem, 2.2vw, 2rem);
+  --fs-lead:    1.15rem;
+  --fs-body:    1rem;
+  --fs-small:   0.88rem;
+  --fs-micro:   0.72rem;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body, h1, h2, h3, h4, p, ul, ol, li, blockquote, pre, figure, dl, dd { margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--sans);
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a { color: var(--mango); text-decoration: none; }
+a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+
+code, kbd {
+  font-family: var(--mono);
+  font-size: 0.92em;
+}
+code {
+  background: rgba(42, 37, 32, 0.06);
+  padding: 2px 6px;
+  border-radius: 5px;
+}
+
+::selection { background: var(--mango); color: var(--on-dark-text); }

@@ -1,0 +1,145 @@
+---
+import Base       from '../layouts/Base.astro';
+import Nav        from '../components/Nav.astro';
+import Hero       from '../components/Hero.astro';
+import Section    from '../components/Section.astro';
+import Stat       from '../components/Stat.astro';
+import StatGrid   from '../components/StatGrid.astro';
+import Card       from '../components/Card.astro';
+import CardGrid   from '../components/CardGrid.astro';
+import CodeBlock  from '../components/CodeBlock.astro';
+import ThemeSwap  from '../components/ThemeSwap.astro';
+import Hook       from '../components/Hook.astro';
+import Footer     from '../components/Footer.astro';
+
+const anatomyCode = `<deck-hero eyebrow="Module">
+  <h1 slot="title">Side effects</h1>
+  <p slot="lead" class="lead">
+    A module can act on import.
+  </p>
+  <deck-code lang="ts" hero>
+    import './polyfill';
+  </deck-code>
+</deck-hero>`;
+
+const quickstartCode = `<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="rikiki/tokens.css">
+  <script type="module" src="rikiki/dist/index.js"></script>
+</head>
+<body>
+  <deck-root>
+    <deck-cover brand="my-talk">
+      <h1>Hello, <span class="accent">world</span>.</h1>
+    </deck-cover>
+    <deck-hero eyebrow="One slide">
+      <h1 slot="title">That's all you need.</h1>
+      <deck-md>Write **markdown**, drop &lt;deck-*&gt; blocks, navigate with arrows.</deck-md>
+    </deck-hero>
+  </deck-root>
+</body>
+</html>`;
+---
+
+<Base>
+  <Nav />
+  <Hero />
+
+  <!-- ── Why ────────────────────────────────────────── -->
+  <Section id="why" eyebrow="Why" title="Three on-purpose constraints">
+    <StatGrid>
+      <Stat num="01" claim={`Open <code>index.html</code>`} tone="mango">
+        No build, no dev server, no toolchain. <strong>A deck is a folder.</strong>
+      </Stat>
+      <Stat num="02" claim="Alive in 2031" tone="helico">
+        Web standards only · Custom Elements, Shadow DOM, ES Modules, CSS variables.
+      </Stat>
+      <Stat num="03" claim="~11 KB gzip" tone="lime">
+        Lit + 23 components. <strong>Anything bigger is opt-in.</strong>
+      </Stat>
+    </StatGrid>
+  </Section>
+
+  <!-- ── Anatomy ────────────────────────────────────── -->
+  <Section id="anatomy" eyebrow="Anatomy" title="A slide is just HTML">
+    <CardGrid cols={2}>
+      <CodeBlock label="Source · index.html" lang="html" code={anatomyCode} />
+      <div class="notes">
+        <Card title="Layouts">
+          <p><code>&lt;deck-hero&gt;</code> and friends provide structure · title, lead, body.</p>
+        </Card>
+        <Card title="Slots">
+          <p><code>slot="title"</code>, <code>slot="lead"</code>, <code>slot="left"</code>, <code>slot="right"</code>.</p>
+        </Card>
+        <Card title="Atoms">
+          <p><code>&lt;deck-code&gt;</code>, <code>&lt;deck-md&gt;</code>, <code>&lt;deck-callout&gt;</code>, <code>&lt;deck-card&gt;</code>, <code>&lt;deck-mermaid&gt;</code>.</p>
+        </Card>
+      </div>
+    </CardGrid>
+  </Section>
+
+  <!-- ── Library ────────────────────────────────────── -->
+  <Section id="library" eyebrow="Library" title="Six layouts, six jobs">
+    <CardGrid cols={3}>
+      <Card title="<deck-cover>"><p>Opening slide · XL title on dark, optional brand mark, meta block.</p></Card>
+      <Card title="<deck-section>"><p>Chapter separator · number + centered title on dark.</p></Card>
+      <Card title="<deck-hero>"><p>One focal block · code, table, mermaid, big stat.</p></Card>
+      <Card title="<deck-split>"><p>Two or three columns · <code>cols="1-1"</code>, <code>"1-2"</code>, <code>"3"</code>.</p></Card>
+      <Card title="<deck-hero-detail>"><p>Hero on top, two detail cards below.</p></Card>
+      <Card title="<deck-hook>"><p>Centered punchline on dark · the take-home line.</p></Card>
+    </CardGrid>
+    <p class="more">
+      Plus 17 atoms · <code>md</code>, <code>code</code>, <code>callout</code>,
+      <code>card</code>, <code>mermaid</code>, <code>stat</code>, <code>badge</code>,
+      <code>metric</code>, <code>tier-list</code>, <code>step-list</code>,
+      <code>kicker</code>, <code>stack</code>, <code>grid</code>, <code>punch</code>,
+      <code>shortcut</code>, <code>kbd</code>, <code>punch</code>.
+    </p>
+  </Section>
+
+  <!-- ── Themes ─────────────────────────────────────── -->
+  <Section id="themes" eyebrow="Two themes" title="Pick a look · one link, one swap">
+    <ThemeSwap />
+    <p class="more">
+      Every component reads its colors, type and spacing from CSS custom
+      properties. To make a third theme, copy <code>themes/rikiki.css</code>,
+      change the values, ship it.
+    </p>
+  </Section>
+
+  <!-- ── Quickstart ─────────────────────────────────── -->
+  <Section id="quickstart" eyebrow="60 seconds, no install" title="A deck, end to end">
+    <CodeBlock label="my-talk/index.html" lang="html" code={quickstartCode} />
+    <p class="more">
+      Drop this file on any static host · GitHub Pages, S3, Netlify, your local
+      <code>python -m http.server</code>. No build, no environment.
+    </p>
+  </Section>
+
+  <Hook
+    kicker="The whole point"
+    punch={`Source <span class="accent">=</span> output.`}
+    caption="A deck is a folder · open it in 2031, edit one character, give it again."
+  />
+
+  <Footer />
+</Base>
+
+<style>
+  .notes {
+    display: flex; flex-direction: column;
+    gap: var(--sp-3);
+  }
+  .more {
+    margin-top: var(--sp-5);
+    font-size: var(--fs-body);
+    color: var(--muted);
+    line-height: 1.65;
+    max-width: 75ch;
+  }
+  .more code {
+    color: var(--text);
+  }
+</style>

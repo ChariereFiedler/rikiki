@@ -1,0 +1,22 @@
+---
+interface Props {
+  cols?: 2 | 3;
+}
+const { cols = 3 } = Astro.props;
+---
+
+<div class={`grid cols-${cols}`}>
+  <slot />
+</div>
+
+<style>
+  .grid {
+    display: grid;
+    gap: var(--sp-4);
+  }
+  .cols-2 { grid-template-columns: 1fr 1fr; }
+  .cols-3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 720px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
