@@ -1,19 +1,41 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+
 // src/deck-metric.ts
 import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 var DeckMetricList = class extends LitElement {
-  static {
-    this.styles = css`
-    :host { display: flex; flex-direction: column; gap: var(--sp-2); }
-  `;
-  }
   render() {
     return html`<slot></slot>`;
   }
 };
-customElements.define("deck-metric-list", DeckMetricList);
+DeckMetricList.styles = css`
+    :host { display: flex; flex-direction: column; gap: var(--sp-2); }
+  `;
+DeckMetricList = __decorateClass([
+  customElement("deck-metric-list")
+], DeckMetricList);
 var DeckMetric = class extends LitElement {
-  static {
-    this.styles = css`
+  constructor() {
+    super(...arguments);
+    this.mono = false;
+  }
+  render() {
+    return html`
+      <span class="label ${this.mono ? "mono" : ""}"><slot></slot></span>
+      <span class="value" data-severity="${this.severity ?? ""}">${this.value}</span>
+    `;
+  }
+};
+DeckMetric.styles = css`
     :host {
       display: flex; justify-content: space-between; align-items: center;
       background: var(--surface-card);
@@ -33,22 +55,18 @@ var DeckMetric = class extends LitElement {
     .value[data-severity="ok"]   { color: var(--green); }
     .value[data-severity="info"] { color: var(--text-info); }
   `;
-  }
-  static {
-    this.properties = {
-      value: { type: String },
-      severity: { type: String },
-      mono: { type: Boolean }
-    };
-  }
-  render() {
-    return html`
-      <span class="label ${this.mono ? "mono" : ""}"><slot></slot></span>
-      <span class="value" data-severity="${this.severity || ""}">${this.value}</span>
-    `;
-  }
-};
-customElements.define("deck-metric", DeckMetric);
+__decorateClass([
+  property({ type: String })
+], DeckMetric.prototype, "value", 2);
+__decorateClass([
+  property({ type: String })
+], DeckMetric.prototype, "severity", 2);
+__decorateClass([
+  property({ type: Boolean })
+], DeckMetric.prototype, "mono", 2);
+DeckMetric = __decorateClass([
+  customElement("deck-metric")
+], DeckMetric);
 export {
   DeckMetric,
   DeckMetricList

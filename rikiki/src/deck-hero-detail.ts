@@ -9,8 +9,10 @@
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 import { slideBase } from './shared-styles.js';
 
+@customElement('deck-hero-detail')
 export class DeckHeroDetail extends LitElement {
   static override styles = [...slideBase, css`
     :host { justify-content: flex-start; }
@@ -44,7 +46,7 @@ export class DeckHeroDetail extends LitElement {
     }
   `];
 
-  static override properties = { eyebrow: { type: String } };
+  @property({ type: String }) eyebrow?: string;
 
   override render() {
     return html`
@@ -60,4 +62,8 @@ export class DeckHeroDetail extends LitElement {
   }
 }
 
-customElements.define('deck-hero-detail', DeckHeroDetail);
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-hero-detail': DeckHeroDetail;
+  }
+}

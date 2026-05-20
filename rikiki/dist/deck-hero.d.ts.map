@@ -1,1 +1,1 @@
-{"version":3,"file":"deck-hero.d.ts","sourceRoot":"","sources":["../src/deck-hero.ts"],"names":[],"mappings":"AAQA,OAAO,EAAE,UAAU,EAAa,MAAM,KAAK,CAAC;AAG5C,qBAAa,QAAS,SAAQ,UAAU;IACtC,OAAgB,MAAM,4BAenB;IAEH,OAAgB,UAAU;;;;MAAiC;IAElD,MAAM;CAQhB"}
+{"version":3,"file":"deck-hero.d.ts","sourceRoot":"","sources":["../src/deck-hero.ts"],"names":[],"mappings":"AAQA,OAAO,EAAE,UAAU,EAAa,MAAM,KAAK,CAAC;AAI5C,qBACa,QAAS,SAAQ,UAAU;IACtC,OAAgB,MAAM,4BAenB;IAEyB,OAAO,CAAC,EAAE,MAAM,CAAC;IAEpC,MAAM;CAQhB;AAED,OAAO,CAAC,MAAM,CAAC;IACb,UAAU,qBAAqB;QAC7B,WAAW,EAAE,QAAQ,CAAC;KACvB;CACF"}

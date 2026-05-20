@@ -13,7 +13,11 @@
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
+export type DeckBadgeType = 'bad' | 'ok' | 'info' | 'warn' | 'neutral';
+
+@customElement('deck-badge')
 export class DeckBadge extends LitElement {
   static override styles = css`
     :host {
@@ -33,11 +37,15 @@ export class DeckBadge extends LitElement {
     :host([type="warn"]) { --deck-badge-bg: var(--surface-warn);         --deck-badge-fg: var(--orange);    --deck-badge-border: var(--border-warn); }
   `;
 
-  static override properties = { type: { type: String } };
+  @property({ type: String }) type?: DeckBadgeType;
 
   override render() {
     return html`<slot></slot>`;
   }
 }
 
-customElements.define('deck-badge', DeckBadge);
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-badge': DeckBadge;
+  }
+}

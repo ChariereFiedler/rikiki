@@ -1,5 +1,17 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+
 // src/deck-callout.ts
 import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 var ICONS = {
   info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
   warn: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
@@ -7,8 +19,20 @@ var ICONS = {
   ok: '<path d="M20 6 9 17l-5-5"/>'
 };
 var DeckCallout = class extends LitElement {
-  static {
-    this.styles = css`
+  render() {
+    const t = this.type ?? "info";
+    const icon = ICONS[t] ?? ICONS.info;
+    return html`
+      <div class="icon-box">
+        <svg viewBox="0 0 24 24" fill="none"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             .innerHTML="${icon}"></svg>
+      </div>
+      <div class="content"><slot></slot></div>
+    `;
+  }
+};
+DeckCallout.styles = css`
     :host {
       display: flex; gap: var(--sp-3);
       padding: var(--deck-callout-padding-y, var(--sp-3)) var(--deck-callout-padding-x, var(--sp-4));
@@ -48,24 +72,12 @@ var DeckCallout = class extends LitElement {
       border-radius: var(--r-sm); color: var(--text);
     }
   `;
-  }
-  static {
-    this.properties = { type: { type: String } };
-  }
-  render() {
-    const t = this.type || "info";
-    const icon = ICONS[t] || ICONS.info;
-    return html`
-      <div class="icon-box">
-        <svg viewBox="0 0 24 24" fill="none"
-             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-             .innerHTML="${icon}"></svg>
-      </div>
-      <div class="content"><slot></slot></div>
-    `;
-  }
-};
-customElements.define("deck-callout", DeckCallout);
+__decorateClass([
+  property({ type: String })
+], DeckCallout.prototype, "type", 2);
+DeckCallout = __decorateClass([
+  customElement("deck-callout")
+], DeckCallout);
 export {
   DeckCallout
 };

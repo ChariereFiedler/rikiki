@@ -1,7 +1,7 @@
 // ════════════════════════════════════════════════════════════════
 // <deck-tier-list>
 //   <deck-tier name="LLInt" desc="Bytecode" speed="×1"></deck-tier>
-//   <deck-tier-arrow>↓ après ~6 exécutions</deck-tier-arrow>
+//   <deck-tier-arrow>↓ after ~6 runs</deck-tier-arrow>
 //   <deck-tier name="Baseline JIT" speed="×10" severity="warn"></deck-tier>
 //   ...
 //   <deck-tier name="FTL · LLVM" speed="×100" hot></deck-tier>
@@ -9,15 +9,19 @@
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
+export type DeckTierSeverity = 'muted' | 'warn' | 'ok' | 'hot';
+
+@customElement('deck-tier-list')
 export class DeckTierList extends LitElement {
   static override styles = css`
     :host { display: flex; flex-direction: column; gap: var(--gap-xs); }
   `;
   override render() { return html`<slot></slot>`; }
 }
-customElements.define('deck-tier-list', DeckTierList);
 
+@customElement('deck-tier')
 export class DeckTier extends LitElement {
   static override styles = css`
     :host {
@@ -45,24 +49,24 @@ export class DeckTier extends LitElement {
     :host([hot]) .speed { color: var(--yellow); }
     .desc { font-size: var(--fs-small); color: var(--muted); line-height: 1.4; }
   `;
-  static override properties = {
-    name: { type: String },
-    speed: { type: String },
-    severity: { type: String },
-    hot: { type: Boolean, reflect: true },
-  };
+
+  @property({ type: String }) name?: string;
+  @property({ type: String }) speed?: string;
+  @property({ type: String }) severity?: DeckTierSeverity;
+  @property({ type: Boolean, reflect: true }) hot = false;
+
   override render() {
     return html`
       <div class="head">
         <span class="name">${this.name}</span>
-        <span class="speed" data-severity="${this.severity || (this.hot ? 'hot' : '')}">${this.speed}</span>
+        <span class="speed" data-severity="${this.severity ?? (this.hot ? 'hot' : '')}">${this.speed}</span>
       </div>
       <div class="desc"><slot></slot></div>
     `;
   }
 }
-customElements.define('deck-tier', DeckTier);
 
+@customElement('deck-tier-arrow')
 export class DeckTierArrow extends LitElement {
   static override styles = css`
     :host {
@@ -74,4 +78,11 @@ export class DeckTierArrow extends LitElement {
   `;
   override render() { return html`<slot></slot>`; }
 }
-customElements.define('deck-tier-arrow', DeckTierArrow);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-tier-list': DeckTierList;
+    'deck-tier': DeckTier;
+    'deck-tier-arrow': DeckTierArrow;
+  }
+}

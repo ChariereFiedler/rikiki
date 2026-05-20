@@ -1,25 +1,19 @@
 import { LitElement } from 'lit';
+export type DeckStackDirection = 'row' | 'column';
+export type DeckStackAlign = 'start' | 'center' | 'end' | 'stretch';
+export type DeckStackJustify = 'start' | 'center' | 'end' | 'between' | 'around';
 export declare class DeckStack extends LitElement {
     static styles: import("lit").CSSResult;
-    static properties: {
-        gap: {
-            type: StringConstructor;
-        };
-        direction: {
-            type: StringConstructor;
-        };
-        align: {
-            type: StringConstructor;
-        };
-        justify: {
-            type: StringConstructor;
-        };
-    };
     gap?: string;
-    direction?: string;
-    align?: string;
-    justify?: string;
+    direction?: DeckStackDirection;
+    align?: DeckStackAlign;
+    justify?: DeckStackJustify;
     updated(): void;
     render(): import("lit-html").TemplateResult<1>;
+}
+declare global {
+    interface HTMLElementTagNameMap {
+        'deck-stack': DeckStack;
+    }
 }
 //# sourceMappingURL=deck-stack.d.ts.map

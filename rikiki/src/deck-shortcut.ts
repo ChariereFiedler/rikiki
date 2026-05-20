@@ -16,9 +16,13 @@
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+
+export type DeckKbdTone = 'accent' | 'ok';
 
 /* ────────────────────────────── deck-kbd ────────────────────────────── */
 
+@customElement('deck-kbd')
 export class DeckKbd extends LitElement {
   static override styles = css`
     :host {
@@ -45,14 +49,17 @@ export class DeckKbd extends LitElement {
       border-color: rgba(0,0,0,0.15);
     }
   `;
+
+  @property({ type: String }) tone?: DeckKbdTone;
+
   override render() {
     return html`<slot></slot>`;
   }
 }
-customElements.define('deck-kbd', DeckKbd);
 
 /* ──────────────────────────── deck-shortcut ─────────────────────────── */
 
+@customElement('deck-shortcut')
 export class DeckShortcut extends LitElement {
   static override styles = css`
     :host {
@@ -86,18 +93,16 @@ export class DeckShortcut extends LitElement {
     :host([tone="ok"])     .keys .k { background: var(--green);  color: var(--dark); border-color: rgba(0,0,0,0.15); }
   `;
 
-  static override properties = {
-    keys:  { type: String },
-    label: { type: String },
-    note:  { type: String },
-    tone:  { type: String },
-  };
+  @property({ type: String }) keys?: string;
+  @property({ type: String }) label?: string;
+  @property({ type: String }) note?: string;
+  @property({ type: String }) tone?: DeckKbdTone;
 
   override render() {
-    const keyTokens = (this.keys || '').trim().split(/\s+/).filter(Boolean);
+    const keyTokens = (this.keys ?? '').trim().split(/\s+/).filter(Boolean);
     return html`
       <span class="keys" part="keys">
-        ${keyTokens.map(k => html`<span class="k">${k}</span>`)}
+        ${keyTokens.map((k) => html`<span class="k">${k}</span>`)}
       </span>
       <div class="body" part="body">
         ${this.label ? html`<div class="label">${this.label}</div>` : ''}
@@ -106,10 +111,10 @@ export class DeckShortcut extends LitElement {
     `;
   }
 }
-customElements.define('deck-shortcut', DeckShortcut);
 
 /* ─────────────────────────── deck-shortcut-list ─────────────────────── */
 
+@customElement('deck-shortcut-list')
 export class DeckShortcutList extends LitElement {
   static override styles = css`
     :host {
@@ -124,10 +129,8 @@ export class DeckShortcutList extends LitElement {
     }
   `;
 
-  static override properties = {
-    cols:   { type: String },
-    colGap: { type: String, attribute: 'col-gap' },
-  };
+  @property({ type: String }) cols?: string;
+  @property({ type: String, attribute: 'col-gap' }) colGap?: string;
 
   override updated() {
     if (this.colGap) {
@@ -141,4 +144,11 @@ export class DeckShortcutList extends LitElement {
     return html`<slot></slot>`;
   }
 }
-customElements.define('deck-shortcut-list', DeckShortcutList);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-kbd': DeckKbd;
+    'deck-shortcut': DeckShortcut;
+    'deck-shortcut-list': DeckShortcutList;
+  }
+}

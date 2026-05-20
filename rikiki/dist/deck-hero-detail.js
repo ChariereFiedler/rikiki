@@ -1,5 +1,17 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+
 // src/deck-hero-detail.ts
 import { LitElement, html, css as css2 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 
 // src/shared-styles.ts
 import { css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
@@ -99,8 +111,20 @@ var slideBase = [slideShell, typo, helpers];
 
 // src/deck-hero-detail.ts
 var DeckHeroDetail = class extends LitElement {
-  static {
-    this.styles = [...slideBase, css2`
+  render() {
+    return html`
+      ${this.eyebrow ? html`<span class="lbl">${this.eyebrow}</span>` : ""}
+      <slot name="title"></slot>
+      <slot name="lead"></slot>
+      <div class="hero" part="hero"><slot></slot></div>
+      <div class="detail" part="detail">
+        <div class="col"><slot name="left"></slot></div>
+        <div class="col"><slot name="right"></slot></div>
+      </div>
+    `;
+  }
+};
+DeckHeroDetail.styles = [...slideBase, css2`
     :host { justify-content: flex-start; }
     /* The hero (code/chart) gets at least half the available height; .detail
        (bullets + diagram) is capped at ~40%. Without these caps a tall mermaid
@@ -131,24 +155,12 @@ var DeckHeroDetail = class extends LitElement {
       overflow: hidden;
     }
   `];
-  }
-  static {
-    this.properties = { eyebrow: { type: String } };
-  }
-  render() {
-    return html`
-      ${this.eyebrow ? html`<span class="lbl">${this.eyebrow}</span>` : ""}
-      <slot name="title"></slot>
-      <slot name="lead"></slot>
-      <div class="hero" part="hero"><slot></slot></div>
-      <div class="detail" part="detail">
-        <div class="col"><slot name="left"></slot></div>
-        <div class="col"><slot name="right"></slot></div>
-      </div>
-    `;
-  }
-};
-customElements.define("deck-hero-detail", DeckHeroDetail);
+__decorateClass([
+  property({ type: String })
+], DeckHeroDetail.prototype, "eyebrow", 2);
+DeckHeroDetail = __decorateClass([
+  customElement("deck-hero-detail")
+], DeckHeroDetail);
 export {
   DeckHeroDetail
 };

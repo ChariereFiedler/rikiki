@@ -1,20 +1,24 @@
 // ════════════════════════════════════════════════════════════════
 // <deck-metric-list>
-//   <deck-metric severity="bad" value="5">Fichiers parsés</deck-metric>
-//   <deck-metric severity="ok"  value="1">Utilisés</deck-metric>
+//   <deck-metric severity="bad" value="5">Files parsed</deck-metric>
+//   <deck-metric severity="ok"  value="1">Used</deck-metric>
 // </deck-metric-list>
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
+export type DeckMetricSeverity = 'bad' | 'warn' | 'ok' | 'info';
+
+@customElement('deck-metric-list')
 export class DeckMetricList extends LitElement {
   static override styles = css`
     :host { display: flex; flex-direction: column; gap: var(--sp-2); }
   `;
   override render() { return html`<slot></slot>`; }
 }
-customElements.define('deck-metric-list', DeckMetricList);
 
+@customElement('deck-metric')
 export class DeckMetric extends LitElement {
   static override styles = css`
     :host {
@@ -36,16 +40,22 @@ export class DeckMetric extends LitElement {
     .value[data-severity="ok"]   { color: var(--green); }
     .value[data-severity="info"] { color: var(--text-info); }
   `;
-  static override properties = {
-    value: { type: String },
-    severity: { type: String },
-    mono: { type: Boolean },
-  };
+
+  @property({ type: String }) value?: string;
+  @property({ type: String }) severity?: DeckMetricSeverity;
+  @property({ type: Boolean }) mono = false;
+
   override render() {
     return html`
       <span class="label ${this.mono ? 'mono' : ''}"><slot></slot></span>
-      <span class="value" data-severity="${this.severity || ''}">${this.value}</span>
+      <span class="value" data-severity="${this.severity ?? ''}">${this.value}</span>
     `;
   }
 }
-customElements.define('deck-metric', DeckMetric);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-metric-list': DeckMetricList;
+    'deck-metric': DeckMetric;
+  }
+}

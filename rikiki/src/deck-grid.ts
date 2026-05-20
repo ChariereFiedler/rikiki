@@ -1,31 +1,31 @@
 // ════════════════════════════════════════════════════════════════
 // <deck-grid cols="2" rows? gap="3" align? justify? fill?>
-//   <enfant1/>
-//   <enfant2/>
+//   <child1/>
+//   <child2/>
 // </deck-grid>
 //
-// Remplace les `<div style="display:grid;grid-template-columns:1fr 1fr;
-// gap:..;height:100%">`.
-//
-// Attributs :
-//   cols    · nombre entier (1..6) OU template explicite ("1fr 2fr", "auto 1fr")
-//   rows    · idem, optionnel
-//   gap     · 1..6 → var(--sp-N), défaut 3. Ou une valeur CSS libre.
+// Attributes:
+//   cols    · integer 1..12 OR explicit template ("1fr 2fr", "auto 1fr")
+//   rows    · same, optional
+//   gap     · 1..6 → var(--sp-N), default 3. Or any CSS value.
 //   align   · start | center | end | stretch (align-items)
 //   justify · start | center | end | stretch (justify-items)
-//   fill    · flex:1, occupe la hauteur disponible du parent
+//   fill    · flex: 1, takes the parent's full height
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
-const MAP = {
+export type DeckGridAlign = 'start' | 'center' | 'end' | 'stretch';
+
+const MAP: Record<DeckGridAlign, string> = {
   start:   'start',
   center:  'center',
   end:     'end',
   stretch: 'stretch',
 };
 
-function expandTracks(value) {
+function expandTracks(value: string | undefined): string | null {
   if (!value) return null;
   const n = parseInt(value, 10);
   if (!Number.isNaN(n) && String(n) === value.trim() && n >= 1 && n <= 12) {
@@ -34,13 +34,14 @@ function expandTracks(value) {
   return value;
 }
 
-function expandGap(value) {
+function expandGap(value: string | undefined): string | null {
   if (!value) return null;
   const n = parseInt(value, 10);
   if (!Number.isNaN(n) && n >= 1 && n <= 6) return `var(--sp-${n})`;
   return value;
 }
 
+@customElement('deck-grid')
 export class DeckGrid extends LitElement {
   static override styles = css`
     :host {
@@ -56,13 +57,11 @@ export class DeckGrid extends LitElement {
     :host([fill]) { flex: 1 1 auto; height: 100%; }
   `;
 
-  static override properties = {
-    cols:    { type: String },
-    rows:    { type: String },
-    gap:     { type: String },
-    align:   { type: String },
-    justify: { type: String },
-  };
+  @property({ type: String }) cols?: string;
+  @property({ type: String }) rows?: string;
+  @property({ type: String }) gap?: string;
+  @property({ type: String }) align?: DeckGridAlign;
+  @property({ type: String }) justify?: DeckGridAlign;
 
   override updated() {
     const cols = expandTracks(this.cols);
@@ -71,8 +70,8 @@ export class DeckGrid extends LitElement {
     if (cols) this.style.setProperty('--_cols', cols);
     if (rows) this.style.setProperty('--_rows', rows);
     if (gap)  this.style.setProperty('--_gap', gap);
-    if (this.align)   this.style.setProperty('--_align',   MAP[this.align]   || this.align);
-    if (this.justify) this.style.setProperty('--_justify', MAP[this.justify] || this.justify);
+    if (this.align)   this.style.setProperty('--_align',   MAP[this.align]   ?? this.align);
+    if (this.justify) this.style.setProperty('--_justify', MAP[this.justify] ?? this.justify);
   }
 
   override render() {
@@ -80,4 +79,8 @@ export class DeckGrid extends LitElement {
   }
 }
 
-customElements.define('deck-grid', DeckGrid);
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-grid': DeckGrid;
+  }
+}

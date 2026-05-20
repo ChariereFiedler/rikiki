@@ -1,5 +1,17 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+
 // src/deck-code.ts
 import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement, property, state } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 function highlight(src, lang) {
   let s = src.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const placeholders = [];
@@ -26,7 +38,7 @@ function highlight(src, lang) {
     s = s.replace(/(#[0-9a-fA-F]{3,8})\b/g, (m) => stash("num", m));
     s = s.replace(
       /\b(\d+(?:\.\d+)?)(px|rem|em|%|vh|vw|vmin|vmax|s|ms|deg)?/g,
-      (_, n, u) => stash("num", n + (u || ""))
+      (_, n, u) => stash("num", n + (u ?? ""))
     );
   } else {
     s = s.replace(/(\/\/[^\n]*)/g, (m) => stash("cmt", m));
@@ -37,17 +49,64 @@ function highlight(src, lang) {
     );
     s = s.replace(/\b(\d+(?:\.\d+)?)\b/g, (m) => stash("num", m));
   }
-  s = s.replace(/P(\d+)E/g, (_, i) => placeholders[+i]);
+  s = s.replace(/P(\d+)E/g, (_, i) => placeholders[+i] ?? "");
   return s;
 }
 var DeckCode = class extends LitElement {
-  static {
-    /* Customization tokens:
-         --deck-code-bg / -border / -text
-         --deck-code-radius / -padding-y / -padding-x
-         --deck-code-syntax-{kw,str,num,cmt,ty,prop,fn}
-       All default to the theme's --code-* tokens. */
-    this.styles = css`
+  constructor() {
+    super(...arguments);
+    this.lang = "";
+    this.hero = false;
+    this.nested = false;
+    this._html = "";
+    this._groups = null;
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this._highlight();
+    try {
+      this._groups = JSON.parse(this.getAttribute("step-groups") ?? "null");
+    } catch {
+      this._groups = null;
+    }
+  }
+  _highlight() {
+    const raw = this.textContent ?? "";
+    const lines = raw.split("\n");
+    while (lines.length && !lines[0].trim()) lines.shift();
+    while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
+    const indent = lines.filter((l) => l.trim().length > 0).reduce((min, l) => Math.min(min, l.match(/^ */)?.[0].length ?? 0), Infinity);
+    const cleaned = indent === Infinity ? lines : lines.map((l) => l.slice(indent));
+    this._html = cleaned.map(
+      (line, i) => '<span class="line" data-line="' + (i + 1) + '">' + highlight(line || " ", this.lang) + "</span>"
+    ).join("");
+  }
+  /** Public API · called by deck-root when stepping through code groups. */
+  applyStep(n) {
+    if (!this._groups) return;
+    const lines = this.shadowRoot?.querySelectorAll(".line");
+    if (!lines) return;
+    if (n === 0) {
+      lines.forEach((l) => l.classList.remove("dim", "lit"));
+    } else {
+      const active = this._groups[Math.min(n - 1, this._groups.length - 1)] ?? [];
+      lines.forEach((l) => {
+        const num = parseInt(l.dataset["line"] ?? "0", 10);
+        l.classList.toggle("lit", active.includes(num));
+        l.classList.toggle("dim", !active.includes(num));
+      });
+    }
+  }
+  render() {
+    return html`<pre><code .innerHTML="${this._html}"></code></pre>`;
+  }
+};
+/* Customization tokens:
+     --deck-code-bg / -border / -text
+     --deck-code-radius / -padding-y / -padding-x
+     --deck-code-syntax-{kw,str,num,cmt,ty,prop,fn}
+   All default to the theme's --code-* tokens. */
+DeckCode.styles = css`
     :host {
       display: block;
       background: var(--deck-code-bg, var(--code-bg));
@@ -81,56 +140,24 @@ var DeckCode = class extends LitElement {
     .ty   { color: var(--deck-code-syntax-ty,   var(--code-ty)); }
     .prop { color: var(--deck-code-syntax-prop, var(--code-prop)); }
   `;
-  }
-  static {
-    this.properties = {
-      lang: { type: String },
-      hero: { type: Boolean, reflect: true },
-      nested: { type: Boolean, reflect: true },
-      "step-groups": { attribute: "step-groups", type: String },
-      _html: { state: true }
-    };
-  }
-  connectedCallback() {
-    super.connectedCallback();
-    this._highlight();
-    try {
-      this._groups = JSON.parse(this.getAttribute("step-groups") || "null");
-    } catch {
-      this._groups = null;
-    }
-  }
-  _highlight() {
-    const raw = this.textContent || "";
-    const lines = raw.split("\n");
-    while (lines.length && !lines[0].trim()) lines.shift();
-    while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
-    const indent = lines.filter((l) => l.trim().length > 0).reduce((min, l) => Math.min(min, l.match(/^ */)[0].length), Infinity);
-    const cleaned = indent === Infinity ? lines : lines.map((l) => l.slice(indent));
-    this._html = cleaned.map(
-      (line, i) => '<span class="line" data-line="' + (i + 1) + '">' + highlight(line || " ", this.lang) + "</span>"
-    ).join("");
-  }
-  applyStep(n) {
-    if (!this._groups) return;
-    const lines = this.shadowRoot?.querySelectorAll(".line");
-    if (!lines) return;
-    if (n === 0) {
-      lines.forEach((l) => l.classList.remove("dim", "lit"));
-    } else {
-      const active = this._groups[Math.min(n - 1, this._groups.length - 1)];
-      lines.forEach((l) => {
-        const num = parseInt(l.dataset.line, 10);
-        l.classList.toggle("lit", active.includes(num));
-        l.classList.toggle("dim", !active.includes(num));
-      });
-    }
-  }
-  render() {
-    return html`<pre><code .innerHTML="${this._html || ""}"></code></pre>`;
-  }
-};
-customElements.define("deck-code", DeckCode);
+__decorateClass([
+  property({ type: String })
+], DeckCode.prototype, "lang", 2);
+__decorateClass([
+  property({ type: Boolean, reflect: true })
+], DeckCode.prototype, "hero", 2);
+__decorateClass([
+  property({ type: Boolean, reflect: true })
+], DeckCode.prototype, "nested", 2);
+__decorateClass([
+  property({ type: String, attribute: "step-groups" })
+], DeckCode.prototype, "stepGroups", 2);
+__decorateClass([
+  state()
+], DeckCode.prototype, "_html", 2);
+DeckCode = __decorateClass([
+  customElement("deck-code")
+], DeckCode);
 export {
   DeckCode
 };

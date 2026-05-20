@@ -1,17 +1,20 @@
 // ════════════════════════════════════════════════════════════════
 // <deck-md>
-//   ## Sous-titre
-//   Texte **avec markdown** et `inline code`.
+//   ## Subtitle
+//   Text **with markdown** and `inline code`.
 //   - item
 //   - item
 // </deck-md>
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+// @ts-expect-error · marked is loaded as ESM from CDN; no types ship with it.
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked@12/+esm';
 
 marked.setOptions({ gfm: true, breaks: false });
 
+@customElement('deck-md')
 export class DeckMd extends LitElement {
   static override styles = css`
     :host { display: block; color: var(--soft); font-family: var(--sans); }
@@ -54,30 +57,34 @@ export class DeckMd extends LitElement {
     .content { display: contents; }
   `;
 
-  static override properties = { _html: { state: true } };
+  @state() private _html = '';
 
   override connectedCallback() {
     super.connectedCallback();
     this._parse();
   }
 
-  _parse() {
-    // Récupère le texte brut, dédente, parse markdown
-    const raw = this.textContent || '';
+  private _parse(): void {
+    // Grab raw text, deindent, parse markdown.
+    const raw = this.textContent ?? '';
     const lines = raw.split('\n');
-    // Enlève les indentations communes (utile quand le markdown est imbriqué dans du HTML indenté)
+    // Strip the common indent · so markdown nested inside indented HTML still parses.
     const indent = lines
-      .filter(l => l.trim().length > 0)
-      .reduce((min, l) => Math.min(min, l.match(/^ */)[0].length), Infinity);
-    const cleaned = indent === Infinity ? raw : lines.map(l => l.slice(indent)).join('\n');
-    this._html = marked.parse(cleaned.trim());
-    // Vide le slot original puisqu'on rend via shadow
+      .filter((l: string) => l.trim().length > 0)
+      .reduce((min: number, l: string) => Math.min(min, l.match(/^ */)?.[0].length ?? 0), Infinity);
+    const cleaned = indent === Infinity ? raw : lines.map((l: string) => l.slice(indent)).join('\n');
+    this._html = marked.parse(cleaned.trim()) as string;
+    // Clear the original slot · we render via shadow DOM.
     this.textContent = '';
   }
 
   override render() {
-    return html`<div class="content" .innerHTML="${this._html || ''}"></div>`;
+    return html`<div class="content" .innerHTML="${this._html}"></div>`;
   }
 }
 
-customElements.define('deck-md', DeckMd);
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-md': DeckMd;
+  }
+}

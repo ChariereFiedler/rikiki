@@ -6,8 +6,10 @@
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 import { slideBase } from './shared-styles.js';
 
+@customElement('deck-hook')
 export class DeckHook extends LitElement {
   /* Tokens:
        --deck-hook-bg               (defaults to --dark)
@@ -40,7 +42,7 @@ export class DeckHook extends LitElement {
     }
   `];
 
-  static override properties = { kicker: { type: String } };
+  @property({ type: String }) kicker?: string;
 
   override render() {
     return html`
@@ -52,4 +54,8 @@ export class DeckHook extends LitElement {
   }
 }
 
-customElements.define('deck-hook', DeckHook);
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-hook': DeckHook;
+  }
+}

@@ -5,14 +5,14 @@ export declare class DeckStepList extends LitElement {
 }
 export declare class DeckStep extends LitElement {
     static styles: import("lit").CSSResult;
-    static properties: {
-        n: {
-            type: StringConstructor;
-        };
-        note: {
-            type: StringConstructor;
-        };
-    };
+    n?: string;
+    note?: string;
     render(): import("lit-html").TemplateResult<1>;
+}
+declare global {
+    interface HTMLElementTagNameMap {
+        'deck-step-list': DeckStepList;
+        'deck-step': DeckStep;
+    }
 }
 //# sourceMappingURL=deck-step-list.d.ts.map

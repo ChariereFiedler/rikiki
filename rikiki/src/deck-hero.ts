@@ -1,14 +1,16 @@
 // ════════════════════════════════════════════════════════════════
 // <deck-hero eyebrow="ESM">
-//   <h1>Titre</h1>
-//   <p slot="lead">Phrase d'accroche (optionnelle).</p>
-//   <deck-code lang="js">...</deck-code>     <!-- ou autre bloc focal -->
+//   <h1>Title</h1>
+//   <p slot="lead">Optional hook line.</p>
+//   <deck-code lang="js">...</deck-code>     <!-- or any focal block -->
 // </deck-hero>
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 import { slideBase } from './shared-styles.js';
 
+@customElement('deck-hero')
 export class DeckHero extends LitElement {
   static override styles = [...slideBase, css`
     :host { justify-content: flex-start; }
@@ -27,7 +29,7 @@ export class DeckHero extends LitElement {
     ::slotted(.hero-main) { max-height: 100%; flex: 0 1 auto; }
   `];
 
-  static override properties = { eyebrow: { type: String } };
+  @property({ type: String }) eyebrow?: string;
 
   override render() {
     return html`
@@ -39,4 +41,8 @@ export class DeckHero extends LitElement {
   }
 }
 
-customElements.define('deck-hero', DeckHero);
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-hero': DeckHero;
+  }
+}

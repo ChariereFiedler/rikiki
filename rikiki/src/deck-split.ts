@@ -16,8 +16,12 @@
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 import { slideBase } from './shared-styles.js';
 
+export type DeckSplitCols = '1-1' | '1-2' | '2-1' | '3';
+
+@customElement('deck-split')
 export class DeckSplit extends LitElement {
   static override styles = [...slideBase, css`
     :host { justify-content: flex-start; }
@@ -40,15 +44,13 @@ export class DeckSplit extends LitElement {
     .col.center { justify-content: center; }
   `];
 
-  static override properties = {
-    eyebrow: { type: String },
-    cols:    { type: String },                              // '1-1' (default), '1-2', '2-1', '3'
-    gap:     { type: String },                              // between-column gap · '1'..'6' or raw value
-    colGap:  { type: String, attribute: 'col-gap' },        // inside-column gap · '1'..'6' or raw value
-  };
+  @property({ type: String }) eyebrow?: string;
+  @property({ type: String }) cols?: DeckSplitCols;
+  @property({ type: String }) gap?: string;
+  @property({ type: String, attribute: 'col-gap' }) colGap?: string;
 
   /** Map '1'..'6' to var(--sp-N); fall through to raw values otherwise. */
-  _resolveSp(v) {
+  private _resolveSp(v: string): string {
     const n = parseInt(v, 10);
     if (!Number.isNaN(n) && n >= 1 && n <= 6) return `var(--sp-${n})`;
     return v;
@@ -61,7 +63,7 @@ export class DeckSplit extends LitElement {
 
   override render() {
     const hasA = this.querySelector('[slot="a"]');
-    const isThree = this.cols === '3' || hasA;
+    const isThree = this.cols === '3' || !!hasA;
     return html`
       ${this.eyebrow ? html`<span class="lbl">${this.eyebrow}</span>` : ''}
       <slot name="title"></slot>
@@ -80,4 +82,8 @@ export class DeckSplit extends LitElement {
   }
 }
 
-customElements.define('deck-split', DeckSplit);
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-split': DeckSplit;
+  }
+}

@@ -1,50 +1,23 @@
 import { LitElement } from 'lit';
 export declare class DeckCover extends LitElement {
     static styles: import("lit").CSSResult[];
-    static properties: {
-        brand: {
-            type: StringConstructor;
-        };
-        brandSrc: {
-            type: StringConstructor;
-            attribute: string;
-        };
-        speaker: {
-            type: StringConstructor;
-        };
-        company: {
-            type: StringConstructor;
-        };
-        duration: {
-            type: StringConstructor;
-        };
-        audience: {
-            type: StringConstructor;
-        };
-        runtime: {
-            type: StringConstructor;
-        };
-        speakerLabel: {
-            type: StringConstructor;
-            attribute: string;
-        };
-        companyLabel: {
-            type: StringConstructor;
-            attribute: string;
-        };
-        durationLabel: {
-            type: StringConstructor;
-            attribute: string;
-        };
-        audienceLabel: {
-            type: StringConstructor;
-            attribute: string;
-        };
-        runtimeLabel: {
-            type: StringConstructor;
-            attribute: string;
-        };
-    };
+    brand?: string;
+    brandSrc?: string;
+    speaker?: string;
+    company?: string;
+    duration?: string;
+    audience?: string;
+    runtime?: string;
+    speakerLabel?: string;
+    companyLabel?: string;
+    durationLabel?: string;
+    audienceLabel?: string;
+    runtimeLabel?: string;
     render(): import("lit-html").TemplateResult<1>;
+}
+declare global {
+    interface HTMLElementTagNameMap {
+        'deck-cover': DeckCover;
+    }
 }
 //# sourceMappingURL=deck-cover.d.ts.map

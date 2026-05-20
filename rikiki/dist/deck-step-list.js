@@ -1,22 +1,41 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+
 // src/deck-step-list.ts
 import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 var DeckStepList = class extends LitElement {
-  static {
-    this.styles = css`
+  render() {
+    return html`<slot></slot>`;
+  }
+};
+DeckStepList.styles = css`
     :host {
       display: flex; flex-direction: column;
       gap: var(--gap-xs);
     }
   `;
-  }
+DeckStepList = __decorateClass([
+  customElement("deck-step-list")
+], DeckStepList);
+var DeckStep = class extends LitElement {
   render() {
-    return html`<slot></slot>`;
+    return html`
+      <span class="step-num">${this.n}</span>
+      <span class="label"><slot></slot></span>
+      ${this.note ? html`<span class="chip">${this.note}</span>` : ""}
+    `;
   }
 };
-customElements.define("deck-step-list", DeckStepList);
-var DeckStep = class extends LitElement {
-  static {
-    this.styles = css`
+DeckStep.styles = css`
     :host {
       display: flex; align-items: center; gap: var(--sp-3);
       background: var(--surface-card);
@@ -50,22 +69,15 @@ var DeckStep = class extends LitElement {
       font: 600 var(--fs-small)/1.4 var(--sans);
     }
   `;
-  }
-  static {
-    this.properties = {
-      n: { type: String },
-      note: { type: String }
-    };
-  }
-  render() {
-    return html`
-      <span class="step-num">${this.n}</span>
-      <span class="label"><slot></slot></span>
-      ${this.note ? html`<span class="chip">${this.note}</span>` : ""}
-    `;
-  }
-};
-customElements.define("deck-step", DeckStep);
+__decorateClass([
+  property({ type: String })
+], DeckStep.prototype, "n", 2);
+__decorateClass([
+  property({ type: String })
+], DeckStep.prototype, "note", 2);
+DeckStep = __decorateClass([
+  customElement("deck-step")
+], DeckStep);
 export {
   DeckStep,
   DeckStepList

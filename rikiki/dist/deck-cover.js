@@ -1,5 +1,17 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+
 // src/deck-cover.ts
 import { LitElement, html, css as css2 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 
 // src/shared-styles.ts
 import { css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
@@ -99,15 +111,42 @@ var slideBase = [slideShell, typo, helpers];
 
 // src/deck-cover.ts
 var DeckCover = class extends LitElement {
-  static {
-    /* Tokens:
-         --deck-cover-bg          slide background          (defaults to --dark)
-         --deck-cover-text        primary on-dark text      (--on-dark-text)
-         --deck-cover-soft        soft on-dark text         (--on-dark-soft)
-         --deck-cover-muted       very soft on-dark text    (--on-dark-muted)
-         --deck-cover-faint       faintest on-dark text     (--on-dark-faint)
-         --deck-cover-border      meta separator border     (--on-dark-border) */
-    this.styles = [...slideBase, css2`
+  render() {
+    const parts = (this.brand ?? "").split("\xB7").map((s) => s.trim()).filter(Boolean);
+    const brandName = parts[0] ?? "";
+    const context = parts.slice(1).join(" \xB7 ");
+    const items = [
+      this.speaker && { l: this.speakerLabel ?? "Pr\xE9sent\xE9 par", v: this.speaker },
+      this.company && { l: this.companyLabel ?? "Entreprise", v: this.company },
+      this.duration && { l: this.durationLabel ?? "Dur\xE9e", v: this.duration },
+      this.audience && { l: this.audienceLabel ?? "Audience", v: this.audience },
+      this.runtime && { l: this.runtimeLabel ?? "Runtime", v: this.runtime }
+    ].filter((x) => !!x);
+    const hasMark = !!this.brandSrc;
+    return html`
+      <div class="brand" part="brand">
+        ${hasMark ? html`<span class="brand-tile"><img src="${this.brandSrc}" alt="${brandName}"></span>` : ""}
+        ${brandName ? html`<span class="brand-name">${brandName}</span>` : ""}
+        ${context ? html`<span class="brand-context">${context}</span>` : ""}
+      </div>
+      <slot></slot>
+      ${items.length ? html`
+        <div class="meta" part="meta">
+          ${items.map((i) => html`
+            <div class="meta-item"><strong>${i.l}</strong><span>${i.v}</span></div>
+          `)}
+        </div>` : ""}
+    `;
+  }
+};
+/* Tokens:
+     --deck-cover-bg          slide background          (defaults to --dark)
+     --deck-cover-text        primary on-dark text      (--on-dark-text)
+     --deck-cover-soft        soft on-dark text         (--on-dark-soft)
+     --deck-cover-muted       very soft on-dark text    (--on-dark-muted)
+     --deck-cover-faint       faintest on-dark text     (--on-dark-faint)
+     --deck-cover-border      meta separator border     (--on-dark-border) */
+DeckCover.styles = [...slideBase, css2`
     :host {
       background: var(--deck-cover-bg, var(--dark));
       justify-content: center;
@@ -165,53 +204,45 @@ var DeckCover = class extends LitElement {
       font-size: var(--fs-body); font-weight: 600;
     }
   `];
-  }
-  static {
-    this.properties = {
-      brand: { type: String },
-      brandSrc: { type: String, attribute: "brand-src" },
-      speaker: { type: String },
-      company: { type: String },
-      duration: { type: String },
-      audience: { type: String },
-      runtime: { type: String },
-      // Labels (default FR, override via attrs for i18n)
-      speakerLabel: { type: String, attribute: "speaker-label" },
-      companyLabel: { type: String, attribute: "company-label" },
-      durationLabel: { type: String, attribute: "duration-label" },
-      audienceLabel: { type: String, attribute: "audience-label" },
-      runtimeLabel: { type: String, attribute: "runtime-label" }
-    };
-  }
-  render() {
-    const parts = (this.brand || "").split("\xB7").map((s) => s.trim()).filter(Boolean);
-    const brandName = parts[0] || "";
-    const context = parts.slice(1).join(" \xB7 ");
-    const items = [
-      this.speaker && { l: this.speakerLabel || "Pr\xE9sent\xE9 par", v: this.speaker },
-      this.company && { l: this.companyLabel || "Entreprise", v: this.company },
-      this.duration && { l: this.durationLabel || "Dur\xE9e", v: this.duration },
-      this.audience && { l: this.audienceLabel || "Audience", v: this.audience },
-      this.runtime && { l: this.runtimeLabel || "Runtime", v: this.runtime }
-    ].filter(Boolean);
-    const hasMark = !!this.brandSrc;
-    return html`
-      <div class="brand" part="brand">
-        ${hasMark ? html`<span class="brand-tile"><img src="${this.brandSrc}" alt="${brandName || ""}"></span>` : ""}
-        ${brandName ? html`<span class="brand-name">${brandName}</span>` : ""}
-        ${context ? html`<span class="brand-context">${context}</span>` : ""}
-      </div>
-      <slot></slot>
-      ${items.length ? html`
-        <div class="meta" part="meta">
-          ${items.map((i) => html`
-            <div class="meta-item"><strong>${i.l}</strong><span>${i.v}</span></div>
-          `)}
-        </div>` : ""}
-    `;
-  }
-};
-customElements.define("deck-cover", DeckCover);
+__decorateClass([
+  property({ type: String })
+], DeckCover.prototype, "brand", 2);
+__decorateClass([
+  property({ type: String, attribute: "brand-src" })
+], DeckCover.prototype, "brandSrc", 2);
+__decorateClass([
+  property({ type: String })
+], DeckCover.prototype, "speaker", 2);
+__decorateClass([
+  property({ type: String })
+], DeckCover.prototype, "company", 2);
+__decorateClass([
+  property({ type: String })
+], DeckCover.prototype, "duration", 2);
+__decorateClass([
+  property({ type: String })
+], DeckCover.prototype, "audience", 2);
+__decorateClass([
+  property({ type: String })
+], DeckCover.prototype, "runtime", 2);
+__decorateClass([
+  property({ type: String, attribute: "speaker-label" })
+], DeckCover.prototype, "speakerLabel", 2);
+__decorateClass([
+  property({ type: String, attribute: "company-label" })
+], DeckCover.prototype, "companyLabel", 2);
+__decorateClass([
+  property({ type: String, attribute: "duration-label" })
+], DeckCover.prototype, "durationLabel", 2);
+__decorateClass([
+  property({ type: String, attribute: "audience-label" })
+], DeckCover.prototype, "audienceLabel", 2);
+__decorateClass([
+  property({ type: String, attribute: "runtime-label" })
+], DeckCover.prototype, "runtimeLabel", 2);
+DeckCover = __decorateClass([
+  customElement("deck-cover")
+], DeckCover);
 export {
   DeckCover
 };

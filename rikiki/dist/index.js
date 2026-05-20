@@ -1,3 +1,14 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+
 // src/deck-root.ts
 import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
 var DeckRoot = class extends LitElement {
@@ -599,6 +610,7 @@ customElements.define("deck-root", DeckRoot);
 
 // src/deck-cover.ts
 import { LitElement as LitElement2, html as html2, css as css3 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 
 // src/shared-styles.ts
 import { css as css2 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
@@ -698,15 +710,42 @@ var slideBase = [slideShell, typo, helpers];
 
 // src/deck-cover.ts
 var DeckCover = class extends LitElement2 {
-  static {
-    /* Tokens:
-         --deck-cover-bg          slide background          (defaults to --dark)
-         --deck-cover-text        primary on-dark text      (--on-dark-text)
-         --deck-cover-soft        soft on-dark text         (--on-dark-soft)
-         --deck-cover-muted       very soft on-dark text    (--on-dark-muted)
-         --deck-cover-faint       faintest on-dark text     (--on-dark-faint)
-         --deck-cover-border      meta separator border     (--on-dark-border) */
-    this.styles = [...slideBase, css3`
+  render() {
+    const parts = (this.brand ?? "").split("\xB7").map((s) => s.trim()).filter(Boolean);
+    const brandName = parts[0] ?? "";
+    const context = parts.slice(1).join(" \xB7 ");
+    const items = [
+      this.speaker && { l: this.speakerLabel ?? "Pr\xE9sent\xE9 par", v: this.speaker },
+      this.company && { l: this.companyLabel ?? "Entreprise", v: this.company },
+      this.duration && { l: this.durationLabel ?? "Dur\xE9e", v: this.duration },
+      this.audience && { l: this.audienceLabel ?? "Audience", v: this.audience },
+      this.runtime && { l: this.runtimeLabel ?? "Runtime", v: this.runtime }
+    ].filter((x) => !!x);
+    const hasMark = !!this.brandSrc;
+    return html2`
+      <div class="brand" part="brand">
+        ${hasMark ? html2`<span class="brand-tile"><img src="${this.brandSrc}" alt="${brandName}"></span>` : ""}
+        ${brandName ? html2`<span class="brand-name">${brandName}</span>` : ""}
+        ${context ? html2`<span class="brand-context">${context}</span>` : ""}
+      </div>
+      <slot></slot>
+      ${items.length ? html2`
+        <div class="meta" part="meta">
+          ${items.map((i) => html2`
+            <div class="meta-item"><strong>${i.l}</strong><span>${i.v}</span></div>
+          `)}
+        </div>` : ""}
+    `;
+  }
+};
+/* Tokens:
+     --deck-cover-bg          slide background          (defaults to --dark)
+     --deck-cover-text        primary on-dark text      (--on-dark-text)
+     --deck-cover-soft        soft on-dark text         (--on-dark-soft)
+     --deck-cover-muted       very soft on-dark text    (--on-dark-muted)
+     --deck-cover-faint       faintest on-dark text     (--on-dark-faint)
+     --deck-cover-border      meta separator border     (--on-dark-border) */
+DeckCover.styles = [...slideBase, css3`
     :host {
       background: var(--deck-cover-bg, var(--dark));
       justify-content: center;
@@ -764,65 +803,64 @@ var DeckCover = class extends LitElement2 {
       font-size: var(--fs-body); font-weight: 600;
     }
   `];
-  }
-  static {
-    this.properties = {
-      brand: { type: String },
-      brandSrc: { type: String, attribute: "brand-src" },
-      speaker: { type: String },
-      company: { type: String },
-      duration: { type: String },
-      audience: { type: String },
-      runtime: { type: String },
-      // Labels (default FR, override via attrs for i18n)
-      speakerLabel: { type: String, attribute: "speaker-label" },
-      companyLabel: { type: String, attribute: "company-label" },
-      durationLabel: { type: String, attribute: "duration-label" },
-      audienceLabel: { type: String, attribute: "audience-label" },
-      runtimeLabel: { type: String, attribute: "runtime-label" }
-    };
-  }
-  render() {
-    const parts = (this.brand || "").split("\xB7").map((s) => s.trim()).filter(Boolean);
-    const brandName = parts[0] || "";
-    const context = parts.slice(1).join(" \xB7 ");
-    const items = [
-      this.speaker && { l: this.speakerLabel || "Pr\xE9sent\xE9 par", v: this.speaker },
-      this.company && { l: this.companyLabel || "Entreprise", v: this.company },
-      this.duration && { l: this.durationLabel || "Dur\xE9e", v: this.duration },
-      this.audience && { l: this.audienceLabel || "Audience", v: this.audience },
-      this.runtime && { l: this.runtimeLabel || "Runtime", v: this.runtime }
-    ].filter(Boolean);
-    const hasMark = !!this.brandSrc;
-    return html2`
-      <div class="brand" part="brand">
-        ${hasMark ? html2`<span class="brand-tile"><img src="${this.brandSrc}" alt="${brandName || ""}"></span>` : ""}
-        ${brandName ? html2`<span class="brand-name">${brandName}</span>` : ""}
-        ${context ? html2`<span class="brand-context">${context}</span>` : ""}
-      </div>
-      <slot></slot>
-      ${items.length ? html2`
-        <div class="meta" part="meta">
-          ${items.map((i) => html2`
-            <div class="meta-item"><strong>${i.l}</strong><span>${i.v}</span></div>
-          `)}
-        </div>` : ""}
-    `;
-  }
-};
-customElements.define("deck-cover", DeckCover);
+__decorateClass([
+  property({ type: String })
+], DeckCover.prototype, "brand", 2);
+__decorateClass([
+  property({ type: String, attribute: "brand-src" })
+], DeckCover.prototype, "brandSrc", 2);
+__decorateClass([
+  property({ type: String })
+], DeckCover.prototype, "speaker", 2);
+__decorateClass([
+  property({ type: String })
+], DeckCover.prototype, "company", 2);
+__decorateClass([
+  property({ type: String })
+], DeckCover.prototype, "duration", 2);
+__decorateClass([
+  property({ type: String })
+], DeckCover.prototype, "audience", 2);
+__decorateClass([
+  property({ type: String })
+], DeckCover.prototype, "runtime", 2);
+__decorateClass([
+  property({ type: String, attribute: "speaker-label" })
+], DeckCover.prototype, "speakerLabel", 2);
+__decorateClass([
+  property({ type: String, attribute: "company-label" })
+], DeckCover.prototype, "companyLabel", 2);
+__decorateClass([
+  property({ type: String, attribute: "duration-label" })
+], DeckCover.prototype, "durationLabel", 2);
+__decorateClass([
+  property({ type: String, attribute: "audience-label" })
+], DeckCover.prototype, "audienceLabel", 2);
+__decorateClass([
+  property({ type: String, attribute: "runtime-label" })
+], DeckCover.prototype, "runtimeLabel", 2);
+DeckCover = __decorateClass([
+  customElement("deck-cover")
+], DeckCover);
 
 // src/deck-section.ts
 import { LitElement as LitElement3, html as html3, css as css4 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement as customElement2, property as property2 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 var DeckSection = class extends LitElement3 {
-  static {
-    /* Tokens:
-         --deck-section-bg          (defaults to --dark)
-         --deck-section-num-color   small section number      (--on-dark-faint)
-         --deck-section-rule-color  line on each side         (--on-dark-border)
-         --deck-section-title-color (defaults to --yellow)
-         --deck-section-em-color    italic inside h1          (--on-dark-soft) */
-    this.styles = [...slideBase, css4`
+  render() {
+    return html3`
+      ${this.num ? html3`<div class="sec-num" part="num">${this.num}</div>` : ""}
+      <slot></slot>
+    `;
+  }
+};
+/* Tokens:
+     --deck-section-bg          (defaults to --dark)
+     --deck-section-num-color   small section number      (--on-dark-faint)
+     --deck-section-rule-color  line on each side         (--on-dark-border)
+     --deck-section-title-color (defaults to --yellow)
+     --deck-section-em-color    italic inside h1          (--on-dark-soft) */
+DeckSection.styles = [...slideBase, css4`
     :host {
       background: var(--deck-section-bg, var(--dark));
       color: var(--on-dark-text);
@@ -853,24 +891,27 @@ var DeckSection = class extends LitElement3 {
       font-style: normal; font-weight: 700;
     }
   `];
-  }
-  static {
-    this.properties = { num: { type: String } };
-  }
-  render() {
-    return html3`
-      ${this.num ? html3`<div class="sec-num" part="num">${this.num}</div>` : ""}
-      <slot></slot>
-    `;
-  }
-};
-customElements.define("deck-section", DeckSection);
+__decorateClass([
+  property2({ type: String })
+], DeckSection.prototype, "num", 2);
+DeckSection = __decorateClass([
+  customElement2("deck-section")
+], DeckSection);
 
 // src/deck-hero.ts
 import { LitElement as LitElement4, html as html4, css as css5 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement as customElement3, property as property3 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 var DeckHero = class extends LitElement4 {
-  static {
-    this.styles = [...slideBase, css5`
+  render() {
+    return html4`
+      ${this.eyebrow ? html4`<span class="lbl">${this.eyebrow}</span>` : ""}
+      <slot name="title"></slot>
+      <slot name="lead"></slot>
+      <div class="body" part="body"><slot></slot></div>
+    `;
+  }
+};
+DeckHero.styles = [...slideBase, css5`
     :host { justify-content: flex-start; }
     .body {
       flex: 1; min-height: 0;
@@ -886,26 +927,48 @@ var DeckHero = class extends LitElement4 {
     ::slotted(svg),
     ::slotted(.hero-main) { max-height: 100%; flex: 0 1 auto; }
   `];
-  }
-  static {
-    this.properties = { eyebrow: { type: String } };
-  }
-  render() {
-    return html4`
-      ${this.eyebrow ? html4`<span class="lbl">${this.eyebrow}</span>` : ""}
-      <slot name="title"></slot>
-      <slot name="lead"></slot>
-      <div class="body" part="body"><slot></slot></div>
-    `;
-  }
-};
-customElements.define("deck-hero", DeckHero);
+__decorateClass([
+  property3({ type: String })
+], DeckHero.prototype, "eyebrow", 2);
+DeckHero = __decorateClass([
+  customElement3("deck-hero")
+], DeckHero);
 
 // src/deck-split.ts
 import { LitElement as LitElement5, html as html5, css as css6 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement as customElement4, property as property4 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 var DeckSplit = class extends LitElement5 {
-  static {
-    this.styles = [...slideBase, css6`
+  /** Map '1'..'6' to var(--sp-N); fall through to raw values otherwise. */
+  _resolveSp(v) {
+    const n = parseInt(v, 10);
+    if (!Number.isNaN(n) && n >= 1 && n <= 6) return `var(--sp-${n})`;
+    return v;
+  }
+  updated() {
+    if (this.gap) this.style.setProperty("--_gap", this._resolveSp(this.gap));
+    if (this.colGap) this.style.setProperty("--_col-gap", this._resolveSp(this.colGap));
+  }
+  render() {
+    const hasA = this.querySelector('[slot="a"]');
+    const isThree = this.cols === "3" || !!hasA;
+    return html5`
+      ${this.eyebrow ? html5`<span class="lbl">${this.eyebrow}</span>` : ""}
+      <slot name="title"></slot>
+      <slot name="lead"></slot>
+      <div class="body" part="body">
+        ${isThree ? html5`
+          <div class="col" part="col"><slot name="a"></slot></div>
+          <div class="col" part="col"><slot name="b"></slot></div>
+          <div class="col" part="col"><slot name="c"></slot></div>
+        ` : html5`
+          <div class="col" part="col"><slot name="left"></slot></div>
+          <div class="col" part="col"><slot name="right"></slot></div>
+        `}
+      </div>
+    `;
+  }
+};
+DeckSplit.styles = [...slideBase, css6`
     :host { justify-content: flex-start; }
     .body {
       flex: 1; min-height: 0;
@@ -925,55 +988,40 @@ var DeckSplit = class extends LitElement5 {
     }
     .col.center { justify-content: center; }
   `];
-  }
-  static {
-    this.properties = {
-      eyebrow: { type: String },
-      cols: { type: String },
-      // '1-1' (default), '1-2', '2-1', '3'
-      gap: { type: String },
-      // between-column gap · '1'..'6' or raw value
-      colGap: { type: String, attribute: "col-gap" }
-      // inside-column gap · '1'..'6' or raw value
-    };
-  }
-  /** Map '1'..'6' to var(--sp-N); fall through to raw values otherwise. */
-  _resolveSp(v) {
-    const n = parseInt(v, 10);
-    if (!Number.isNaN(n) && n >= 1 && n <= 6) return `var(--sp-${n})`;
-    return v;
-  }
-  updated() {
-    if (this.gap) this.style.setProperty("--_gap", this._resolveSp(this.gap));
-    if (this.colGap) this.style.setProperty("--_col-gap", this._resolveSp(this.colGap));
-  }
+__decorateClass([
+  property4({ type: String })
+], DeckSplit.prototype, "eyebrow", 2);
+__decorateClass([
+  property4({ type: String })
+], DeckSplit.prototype, "cols", 2);
+__decorateClass([
+  property4({ type: String })
+], DeckSplit.prototype, "gap", 2);
+__decorateClass([
+  property4({ type: String, attribute: "col-gap" })
+], DeckSplit.prototype, "colGap", 2);
+DeckSplit = __decorateClass([
+  customElement4("deck-split")
+], DeckSplit);
+
+// src/deck-hero-detail.ts
+import { LitElement as LitElement6, html as html6, css as css7 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement as customElement5, property as property5 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
+var DeckHeroDetail = class extends LitElement6 {
   render() {
-    const hasA = this.querySelector('[slot="a"]');
-    const isThree = this.cols === "3" || hasA;
-    return html5`
-      ${this.eyebrow ? html5`<span class="lbl">${this.eyebrow}</span>` : ""}
+    return html6`
+      ${this.eyebrow ? html6`<span class="lbl">${this.eyebrow}</span>` : ""}
       <slot name="title"></slot>
       <slot name="lead"></slot>
-      <div class="body" part="body">
-        ${isThree ? html5`
-          <div class="col" part="col"><slot name="a"></slot></div>
-          <div class="col" part="col"><slot name="b"></slot></div>
-          <div class="col" part="col"><slot name="c"></slot></div>
-        ` : html5`
-          <div class="col" part="col"><slot name="left"></slot></div>
-          <div class="col" part="col"><slot name="right"></slot></div>
-        `}
+      <div class="hero" part="hero"><slot></slot></div>
+      <div class="detail" part="detail">
+        <div class="col"><slot name="left"></slot></div>
+        <div class="col"><slot name="right"></slot></div>
       </div>
     `;
   }
 };
-customElements.define("deck-split", DeckSplit);
-
-// src/deck-hero-detail.ts
-import { LitElement as LitElement6, html as html6, css as css7 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-var DeckHeroDetail = class extends LitElement6 {
-  static {
-    this.styles = [...slideBase, css7`
+DeckHeroDetail.styles = [...slideBase, css7`
     :host { justify-content: flex-start; }
     /* The hero (code/chart) gets at least half the available height; .detail
        (bullets + diagram) is capped at ~40%. Without these caps a tall mermaid
@@ -1004,35 +1052,32 @@ var DeckHeroDetail = class extends LitElement6 {
       overflow: hidden;
     }
   `];
-  }
-  static {
-    this.properties = { eyebrow: { type: String } };
-  }
+__decorateClass([
+  property5({ type: String })
+], DeckHeroDetail.prototype, "eyebrow", 2);
+DeckHeroDetail = __decorateClass([
+  customElement5("deck-hero-detail")
+], DeckHeroDetail);
+
+// src/deck-hook.ts
+import { LitElement as LitElement7, html as html7, css as css8 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement as customElement6, property as property6 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
+var DeckHook = class extends LitElement7 {
   render() {
-    return html6`
-      ${this.eyebrow ? html6`<span class="lbl">${this.eyebrow}</span>` : ""}
-      <slot name="title"></slot>
-      <slot name="lead"></slot>
-      <div class="hero" part="hero"><slot></slot></div>
-      <div class="detail" part="detail">
-        <div class="col"><slot name="left"></slot></div>
-        <div class="col"><slot name="right"></slot></div>
+    return html7`
+      <div class="body" part="body">
+        ${this.kicker ? html7`<span class="kicker on-dark">${this.kicker}</span>` : ""}
+        <slot></slot>
       </div>
     `;
   }
 };
-customElements.define("deck-hero-detail", DeckHeroDetail);
-
-// src/deck-hook.ts
-import { LitElement as LitElement7, html as html7, css as css8 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-var DeckHook = class extends LitElement7 {
-  static {
-    /* Tokens:
-         --deck-hook-bg               (defaults to --dark)
-         --deck-hook-display-color    (defaults to --yellow)
-         --deck-hook-caption-color    (defaults to --on-dark-muted)
-         --deck-hook-gap              vertical gap between elements */
-    this.styles = [...slideBase, css8`
+/* Tokens:
+     --deck-hook-bg               (defaults to --dark)
+     --deck-hook-display-color    (defaults to --yellow)
+     --deck-hook-caption-color    (defaults to --on-dark-muted)
+     --deck-hook-gap              vertical gap between elements */
+DeckHook.styles = [...slideBase, css8`
     :host {
       background: var(--deck-hook-bg, var(--dark));
       color: var(--on-dark-text);
@@ -1057,28 +1102,40 @@ var DeckHook = class extends LitElement7 {
       color: var(--deck-hook-caption-color, var(--on-dark-muted));
     }
   `];
-  }
-  static {
-    this.properties = { kicker: { type: String } };
-  }
-  render() {
-    return html7`
-      <div class="body" part="body">
-        ${this.kicker ? html7`<span class="kicker on-dark">${this.kicker}</span>` : ""}
-        <slot></slot>
-      </div>
-    `;
-  }
-};
-customElements.define("deck-hook", DeckHook);
+__decorateClass([
+  property6({ type: String })
+], DeckHook.prototype, "kicker", 2);
+DeckHook = __decorateClass([
+  customElement6("deck-hook")
+], DeckHook);
 
 // src/deck-md.ts
 import { LitElement as LitElement8, html as html8, css as css9 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement as customElement7, state } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked@12/+esm";
 marked.setOptions({ gfm: true, breaks: false });
 var DeckMd = class extends LitElement8 {
-  static {
-    this.styles = css9`
+  constructor() {
+    super(...arguments);
+    this._html = "";
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this._parse();
+  }
+  _parse() {
+    const raw = this.textContent ?? "";
+    const lines = raw.split("\n");
+    const indent = lines.filter((l) => l.trim().length > 0).reduce((min, l) => Math.min(min, l.match(/^ */)?.[0].length ?? 0), Infinity);
+    const cleaned = indent === Infinity ? raw : lines.map((l) => l.slice(indent)).join("\n");
+    this._html = marked.parse(cleaned.trim());
+    this.textContent = "";
+  }
+  render() {
+    return html8`<div class="content" .innerHTML="${this._html}"></div>`;
+  }
+};
+DeckMd.styles = css9`
     :host { display: block; color: var(--soft); font-family: var(--sans); }
     h1, h2, h3, h4 { color: var(--text); font-weight: 700; letter-spacing: -0.01em; }
     h2 { font-size: var(--fs-h2); margin-bottom: var(--sp-2); }
@@ -1118,30 +1175,16 @@ var DeckMd = class extends LitElement8 {
     hr { border: none; border-top: 1px solid var(--border); margin: var(--sp-4) 0; }
     .content { display: contents; }
   `;
-  }
-  static {
-    this.properties = { _html: { state: true } };
-  }
-  connectedCallback() {
-    super.connectedCallback();
-    this._parse();
-  }
-  _parse() {
-    const raw = this.textContent || "";
-    const lines = raw.split("\n");
-    const indent = lines.filter((l) => l.trim().length > 0).reduce((min, l) => Math.min(min, l.match(/^ */)[0].length), Infinity);
-    const cleaned = indent === Infinity ? raw : lines.map((l) => l.slice(indent)).join("\n");
-    this._html = marked.parse(cleaned.trim());
-    this.textContent = "";
-  }
-  render() {
-    return html8`<div class="content" .innerHTML="${this._html || ""}"></div>`;
-  }
-};
-customElements.define("deck-md", DeckMd);
+__decorateClass([
+  state()
+], DeckMd.prototype, "_html", 2);
+DeckMd = __decorateClass([
+  customElement7("deck-md")
+], DeckMd);
 
 // src/deck-code.ts
 import { LitElement as LitElement9, html as html9, css as css10 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement as customElement8, property as property7, state as state2 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 function highlight(src, lang) {
   let s = src.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const placeholders = [];
@@ -1168,7 +1211,7 @@ function highlight(src, lang) {
     s = s.replace(/(#[0-9a-fA-F]{3,8})\b/g, (m) => stash("num", m));
     s = s.replace(
       /\b(\d+(?:\.\d+)?)(px|rem|em|%|vh|vw|vmin|vmax|s|ms|deg)?/g,
-      (_, n, u) => stash("num", n + (u || ""))
+      (_, n, u) => stash("num", n + (u ?? ""))
     );
   } else {
     s = s.replace(/(\/\/[^\n]*)/g, (m) => stash("cmt", m));
@@ -1179,17 +1222,64 @@ function highlight(src, lang) {
     );
     s = s.replace(/\b(\d+(?:\.\d+)?)\b/g, (m) => stash("num", m));
   }
-  s = s.replace(/P(\d+)E/g, (_, i) => placeholders[+i]);
+  s = s.replace(/P(\d+)E/g, (_, i) => placeholders[+i] ?? "");
   return s;
 }
 var DeckCode = class extends LitElement9 {
-  static {
-    /* Customization tokens:
-         --deck-code-bg / -border / -text
-         --deck-code-radius / -padding-y / -padding-x
-         --deck-code-syntax-{kw,str,num,cmt,ty,prop,fn}
-       All default to the theme's --code-* tokens. */
-    this.styles = css10`
+  constructor() {
+    super(...arguments);
+    this.lang = "";
+    this.hero = false;
+    this.nested = false;
+    this._html = "";
+    this._groups = null;
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this._highlight();
+    try {
+      this._groups = JSON.parse(this.getAttribute("step-groups") ?? "null");
+    } catch {
+      this._groups = null;
+    }
+  }
+  _highlight() {
+    const raw = this.textContent ?? "";
+    const lines = raw.split("\n");
+    while (lines.length && !lines[0].trim()) lines.shift();
+    while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
+    const indent = lines.filter((l) => l.trim().length > 0).reduce((min, l) => Math.min(min, l.match(/^ */)?.[0].length ?? 0), Infinity);
+    const cleaned = indent === Infinity ? lines : lines.map((l) => l.slice(indent));
+    this._html = cleaned.map(
+      (line, i) => '<span class="line" data-line="' + (i + 1) + '">' + highlight(line || " ", this.lang) + "</span>"
+    ).join("");
+  }
+  /** Public API · called by deck-root when stepping through code groups. */
+  applyStep(n) {
+    if (!this._groups) return;
+    const lines = this.shadowRoot?.querySelectorAll(".line");
+    if (!lines) return;
+    if (n === 0) {
+      lines.forEach((l) => l.classList.remove("dim", "lit"));
+    } else {
+      const active = this._groups[Math.min(n - 1, this._groups.length - 1)] ?? [];
+      lines.forEach((l) => {
+        const num = parseInt(l.dataset["line"] ?? "0", 10);
+        l.classList.toggle("lit", active.includes(num));
+        l.classList.toggle("dim", !active.includes(num));
+      });
+    }
+  }
+  render() {
+    return html9`<pre><code .innerHTML="${this._html}"></code></pre>`;
+  }
+};
+/* Customization tokens:
+     --deck-code-bg / -border / -text
+     --deck-code-radius / -padding-y / -padding-x
+     --deck-code-syntax-{kw,str,num,cmt,ty,prop,fn}
+   All default to the theme's --code-* tokens. */
+DeckCode.styles = css10`
     :host {
       display: block;
       background: var(--deck-code-bg, var(--code-bg));
@@ -1223,59 +1313,28 @@ var DeckCode = class extends LitElement9 {
     .ty   { color: var(--deck-code-syntax-ty,   var(--code-ty)); }
     .prop { color: var(--deck-code-syntax-prop, var(--code-prop)); }
   `;
-  }
-  static {
-    this.properties = {
-      lang: { type: String },
-      hero: { type: Boolean, reflect: true },
-      nested: { type: Boolean, reflect: true },
-      "step-groups": { attribute: "step-groups", type: String },
-      _html: { state: true }
-    };
-  }
-  connectedCallback() {
-    super.connectedCallback();
-    this._highlight();
-    try {
-      this._groups = JSON.parse(this.getAttribute("step-groups") || "null");
-    } catch {
-      this._groups = null;
-    }
-  }
-  _highlight() {
-    const raw = this.textContent || "";
-    const lines = raw.split("\n");
-    while (lines.length && !lines[0].trim()) lines.shift();
-    while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
-    const indent = lines.filter((l) => l.trim().length > 0).reduce((min, l) => Math.min(min, l.match(/^ */)[0].length), Infinity);
-    const cleaned = indent === Infinity ? lines : lines.map((l) => l.slice(indent));
-    this._html = cleaned.map(
-      (line, i) => '<span class="line" data-line="' + (i + 1) + '">' + highlight(line || " ", this.lang) + "</span>"
-    ).join("");
-  }
-  applyStep(n) {
-    if (!this._groups) return;
-    const lines = this.shadowRoot?.querySelectorAll(".line");
-    if (!lines) return;
-    if (n === 0) {
-      lines.forEach((l) => l.classList.remove("dim", "lit"));
-    } else {
-      const active = this._groups[Math.min(n - 1, this._groups.length - 1)];
-      lines.forEach((l) => {
-        const num = parseInt(l.dataset.line, 10);
-        l.classList.toggle("lit", active.includes(num));
-        l.classList.toggle("dim", !active.includes(num));
-      });
-    }
-  }
-  render() {
-    return html9`<pre><code .innerHTML="${this._html || ""}"></code></pre>`;
-  }
-};
-customElements.define("deck-code", DeckCode);
+__decorateClass([
+  property7({ type: String })
+], DeckCode.prototype, "lang", 2);
+__decorateClass([
+  property7({ type: Boolean, reflect: true })
+], DeckCode.prototype, "hero", 2);
+__decorateClass([
+  property7({ type: Boolean, reflect: true })
+], DeckCode.prototype, "nested", 2);
+__decorateClass([
+  property7({ type: String, attribute: "step-groups" })
+], DeckCode.prototype, "stepGroups", 2);
+__decorateClass([
+  state2()
+], DeckCode.prototype, "_html", 2);
+DeckCode = __decorateClass([
+  customElement8("deck-code")
+], DeckCode);
 
 // src/deck-callout.ts
 import { LitElement as LitElement10, html as html10, css as css11 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement as customElement9, property as property8 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 var ICONS = {
   info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
   warn: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
@@ -1283,8 +1342,20 @@ var ICONS = {
   ok: '<path d="M20 6 9 17l-5-5"/>'
 };
 var DeckCallout = class extends LitElement10 {
-  static {
-    this.styles = css11`
+  render() {
+    const t = this.type ?? "info";
+    const icon = ICONS[t] ?? ICONS.info;
+    return html10`
+      <div class="icon-box">
+        <svg viewBox="0 0 24 24" fill="none"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             .innerHTML="${icon}"></svg>
+      </div>
+      <div class="content"><slot></slot></div>
+    `;
+  }
+};
+DeckCallout.styles = css11`
     :host {
       display: flex; gap: var(--sp-3);
       padding: var(--deck-callout-padding-y, var(--sp-3)) var(--deck-callout-padding-x, var(--sp-4));
@@ -1324,30 +1395,27 @@ var DeckCallout = class extends LitElement10 {
       border-radius: var(--r-sm); color: var(--text);
     }
   `;
-  }
-  static {
-    this.properties = { type: { type: String } };
-  }
-  render() {
-    const t = this.type || "info";
-    const icon = ICONS[t] || ICONS.info;
-    return html10`
-      <div class="icon-box">
-        <svg viewBox="0 0 24 24" fill="none"
-             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-             .innerHTML="${icon}"></svg>
-      </div>
-      <div class="content"><slot></slot></div>
-    `;
-  }
-};
-customElements.define("deck-callout", DeckCallout);
+__decorateClass([
+  property8({ type: String })
+], DeckCallout.prototype, "type", 2);
+DeckCallout = __decorateClass([
+  customElement9("deck-callout")
+], DeckCallout);
 
 // src/deck-card.ts
 import { LitElement as LitElement11, html as html11, css as css12 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement as customElement10, property as property9 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 var DeckCard = class extends LitElement11 {
-  static {
-    this.styles = css12`
+  constructor() {
+    super(...arguments);
+    this.center = false;
+    this.compact = false;
+  }
+  render() {
+    return html11`<slot></slot>`;
+  }
+};
+DeckCard.styles = css12`
     :host {
       display: flex; flex-direction: column;
       gap: var(--sp-2);
@@ -1382,18 +1450,22 @@ var DeckCard = class extends LitElement11 {
     :host([center])  { text-align: center; align-items: center; }
     :host([compact]) { padding: var(--sp-2) var(--sp-3); }
   `;
-  }
-  static {
-    this.properties = { color: { type: String } };
-  }
-  render() {
-    return html11`<slot></slot>`;
-  }
-};
-customElements.define("deck-card", DeckCard);
+__decorateClass([
+  property9({ type: String })
+], DeckCard.prototype, "color", 2);
+__decorateClass([
+  property9({ type: Boolean })
+], DeckCard.prototype, "center", 2);
+__decorateClass([
+  property9({ type: Boolean })
+], DeckCard.prototype, "compact", 2);
+DeckCard = __decorateClass([
+  customElement10("deck-card")
+], DeckCard);
 
 // src/deck-mermaid.ts
 import { LitElement as LitElement12, html as html12, css as css13 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement as customElement11, property as property10, state as state3 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 var mermaidReady = false;
 async function ensureMermaid() {
   if (mermaidReady) return;
@@ -1401,8 +1473,8 @@ async function ensureMermaid() {
     await new Promise((res, rej) => {
       const s = document.createElement("script");
       s.src = "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js";
-      s.onload = res;
-      s.onerror = rej;
+      s.onload = () => res();
+      s.onerror = () => rej(new Error("mermaid failed to load"));
       document.head.appendChild(s);
     });
   }
@@ -1425,12 +1497,43 @@ async function ensureMermaid() {
 }
 var mermaidId = 0;
 var DeckMermaid = class extends LitElement12 {
-  static {
-    /* Tokens:
-         --deck-mermaid-bg / -border / -radius / -padding
-       Defaults to the --code-* theme tokens · diagrams sit on the same
-       dark surface as code blocks for visual consistency. */
-    this.styles = css13`
+  constructor() {
+    super(...arguments);
+    this.rendered = false;
+    this._svg = "";
+    this._source = "";
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this._source = (this.textContent ?? "").trim();
+    const lines = this._source.split("\n");
+    const indent = lines.filter((l) => l.trim()).reduce((m, l) => Math.min(m, l.match(/^ */)?.[0].length ?? 0), Infinity);
+    if (indent < Infinity) this._source = lines.map((l) => l.slice(indent)).join("\n");
+    this._render();
+  }
+  async _render() {
+    if (!this._source) return;
+    await ensureMermaid();
+    const id = `mmd-${++mermaidId}`;
+    try {
+      const { svg } = await window.mermaid.render(id, this._source);
+      this._svg = svg;
+      this.rendered = true;
+    } catch (e) {
+      console.error("Mermaid render error", e);
+      const msg = e instanceof Error ? e.message : String(e);
+      this._svg = `<pre style="color:#f87171">${msg}</pre>`;
+    }
+  }
+  render() {
+    return html12`<div class="canvas" .innerHTML="${this._svg}"></div>`;
+  }
+};
+/* Tokens:
+     --deck-mermaid-bg / -border / -radius / -padding
+   Defaults to the --code-* theme tokens · diagrams sit on the same
+   dark surface as code blocks for visual consistency. */
+DeckMermaid.styles = css13`
     :host {
       display: flex; align-items: center; justify-content: center;
       background: var(--deck-mermaid-bg, var(--code-bg));
@@ -1447,60 +1550,43 @@ var DeckMermaid = class extends LitElement12 {
     :host([compact]) .canvas { max-width: 60%; }
     :host([compact]) .canvas svg { max-height: 22vh; }
   `;
-  }
-  static {
-    this.properties = {
-      _svg: { state: true },
-      rendered: { type: Boolean, reflect: true }
-    };
-  }
-  connectedCallback() {
-    super.connectedCallback();
-    this._source = (this.textContent || "").trim();
-    const lines = this._source.split("\n");
-    const indent = lines.filter((l) => l.trim()).reduce((m, l) => Math.min(m, l.match(/^ */)[0].length), Infinity);
-    if (indent < Infinity) this._source = lines.map((l) => l.slice(indent)).join("\n");
-    this.render = this.render.bind(this);
-    this._render();
-  }
-  async _render() {
-    if (!this._source) return;
-    await ensureMermaid();
-    const id = `mmd-${++mermaidId}`;
-    try {
-      const { svg } = await window.mermaid.render(id, this._source);
-      this._svg = svg;
-      this.rendered = true;
-    } catch (e) {
-      console.error("Mermaid render error", e);
-      this._svg = `<pre style="color:#f87171">${e.message}</pre>`;
-    }
-  }
-  render() {
-    return html12`<div class="canvas" .innerHTML="${this._svg || ""}"></div>`;
-  }
-};
-customElements.define("deck-mermaid", DeckMermaid);
+__decorateClass([
+  property10({ type: Boolean, reflect: true })
+], DeckMermaid.prototype, "rendered", 2);
+__decorateClass([
+  state3()
+], DeckMermaid.prototype, "_svg", 2);
+DeckMermaid = __decorateClass([
+  customElement11("deck-mermaid")
+], DeckMermaid);
 
 // src/deck-step-list.ts
 import { LitElement as LitElement13, html as html13, css as css14 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement as customElement12, property as property11 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 var DeckStepList = class extends LitElement13 {
-  static {
-    this.styles = css14`
+  render() {
+    return html13`<slot></slot>`;
+  }
+};
+DeckStepList.styles = css14`
     :host {
       display: flex; flex-direction: column;
       gap: var(--gap-xs);
     }
   `;
-  }
+DeckStepList = __decorateClass([
+  customElement12("deck-step-list")
+], DeckStepList);
+var DeckStep = class extends LitElement13 {
   render() {
-    return html13`<slot></slot>`;
+    return html13`
+      <span class="step-num">${this.n}</span>
+      <span class="label"><slot></slot></span>
+      ${this.note ? html13`<span class="chip">${this.note}</span>` : ""}
+    `;
   }
 };
-customElements.define("deck-step-list", DeckStepList);
-var DeckStep = class extends LitElement13 {
-  static {
-    this.styles = css14`
+DeckStep.styles = css14`
     :host {
       display: flex; align-items: center; gap: var(--sp-3);
       background: var(--surface-card);
@@ -1534,39 +1620,43 @@ var DeckStep = class extends LitElement13 {
       font: 600 var(--fs-small)/1.4 var(--sans);
     }
   `;
-  }
-  static {
-    this.properties = {
-      n: { type: String },
-      note: { type: String }
-    };
-  }
-  render() {
-    return html13`
-      <span class="step-num">${this.n}</span>
-      <span class="label"><slot></slot></span>
-      ${this.note ? html13`<span class="chip">${this.note}</span>` : ""}
-    `;
-  }
-};
-customElements.define("deck-step", DeckStep);
+__decorateClass([
+  property11({ type: String })
+], DeckStep.prototype, "n", 2);
+__decorateClass([
+  property11({ type: String })
+], DeckStep.prototype, "note", 2);
+DeckStep = __decorateClass([
+  customElement12("deck-step")
+], DeckStep);
 
 // src/deck-metric.ts
 import { LitElement as LitElement14, html as html14, css as css15 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement as customElement13, property as property12 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 var DeckMetricList = class extends LitElement14 {
-  static {
-    this.styles = css15`
-    :host { display: flex; flex-direction: column; gap: var(--sp-2); }
-  `;
-  }
   render() {
     return html14`<slot></slot>`;
   }
 };
-customElements.define("deck-metric-list", DeckMetricList);
+DeckMetricList.styles = css15`
+    :host { display: flex; flex-direction: column; gap: var(--sp-2); }
+  `;
+DeckMetricList = __decorateClass([
+  customElement13("deck-metric-list")
+], DeckMetricList);
 var DeckMetric = class extends LitElement14 {
-  static {
-    this.styles = css15`
+  constructor() {
+    super(...arguments);
+    this.mono = false;
+  }
+  render() {
+    return html14`
+      <span class="label ${this.mono ? "mono" : ""}"><slot></slot></span>
+      <span class="value" data-severity="${this.severity ?? ""}">${this.value}</span>
+    `;
+  }
+};
+DeckMetric.styles = css15`
     :host {
       display: flex; justify-content: space-between; align-items: center;
       background: var(--surface-card);
@@ -1586,39 +1676,49 @@ var DeckMetric = class extends LitElement14 {
     .value[data-severity="ok"]   { color: var(--green); }
     .value[data-severity="info"] { color: var(--text-info); }
   `;
-  }
-  static {
-    this.properties = {
-      value: { type: String },
-      severity: { type: String },
-      mono: { type: Boolean }
-    };
-  }
-  render() {
-    return html14`
-      <span class="label ${this.mono ? "mono" : ""}"><slot></slot></span>
-      <span class="value" data-severity="${this.severity || ""}">${this.value}</span>
-    `;
-  }
-};
-customElements.define("deck-metric", DeckMetric);
+__decorateClass([
+  property12({ type: String })
+], DeckMetric.prototype, "value", 2);
+__decorateClass([
+  property12({ type: String })
+], DeckMetric.prototype, "severity", 2);
+__decorateClass([
+  property12({ type: Boolean })
+], DeckMetric.prototype, "mono", 2);
+DeckMetric = __decorateClass([
+  customElement13("deck-metric")
+], DeckMetric);
 
 // src/deck-tier-list.ts
 import { LitElement as LitElement15, html as html15, css as css16 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement as customElement14, property as property13 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 var DeckTierList = class extends LitElement15 {
-  static {
-    this.styles = css16`
-    :host { display: flex; flex-direction: column; gap: var(--gap-xs); }
-  `;
-  }
   render() {
     return html15`<slot></slot>`;
   }
 };
-customElements.define("deck-tier-list", DeckTierList);
+DeckTierList.styles = css16`
+    :host { display: flex; flex-direction: column; gap: var(--gap-xs); }
+  `;
+DeckTierList = __decorateClass([
+  customElement14("deck-tier-list")
+], DeckTierList);
 var DeckTier = class extends LitElement15 {
-  static {
-    this.styles = css16`
+  constructor() {
+    super(...arguments);
+    this.hot = false;
+  }
+  render() {
+    return html15`
+      <div class="head">
+        <span class="name">${this.name}</span>
+        <span class="speed" data-severity="${this.severity ?? (this.hot ? "hot" : "")}">${this.speed}</span>
+      </div>
+      <div class="desc"><slot></slot></div>
+    `;
+  }
+};
+DeckTier.styles = css16`
     :host {
       display: flex; flex-direction: column; gap: var(--gap-hair);
       background: var(--surface-card);
@@ -1644,29 +1744,27 @@ var DeckTier = class extends LitElement15 {
     :host([hot]) .speed { color: var(--yellow); }
     .desc { font-size: var(--fs-small); color: var(--muted); line-height: 1.4; }
   `;
-  }
-  static {
-    this.properties = {
-      name: { type: String },
-      speed: { type: String },
-      severity: { type: String },
-      hot: { type: Boolean, reflect: true }
-    };
-  }
+__decorateClass([
+  property13({ type: String })
+], DeckTier.prototype, "name", 2);
+__decorateClass([
+  property13({ type: String })
+], DeckTier.prototype, "speed", 2);
+__decorateClass([
+  property13({ type: String })
+], DeckTier.prototype, "severity", 2);
+__decorateClass([
+  property13({ type: Boolean, reflect: true })
+], DeckTier.prototype, "hot", 2);
+DeckTier = __decorateClass([
+  customElement14("deck-tier")
+], DeckTier);
+var DeckTierArrow = class extends LitElement15 {
   render() {
-    return html15`
-      <div class="head">
-        <span class="name">${this.name}</span>
-        <span class="speed" data-severity="${this.severity || (this.hot ? "hot" : "")}">${this.speed}</span>
-      </div>
-      <div class="desc"><slot></slot></div>
-    `;
+    return html15`<slot></slot>`;
   }
 };
-customElements.define("deck-tier", DeckTier);
-var DeckTierArrow = class extends LitElement15 {
-  static {
-    this.styles = css16`
+DeckTierArrow.styles = css16`
     :host {
       display: block; text-align: center;
       color: var(--muted); opacity: var(--opacity-soft);
@@ -1674,18 +1772,19 @@ var DeckTierArrow = class extends LitElement15 {
       padding: 2px 0;
     }
   `;
-  }
-  render() {
-    return html15`<slot></slot>`;
-  }
-};
-customElements.define("deck-tier-arrow", DeckTierArrow);
+DeckTierArrow = __decorateClass([
+  customElement14("deck-tier-arrow")
+], DeckTierArrow);
 
 // src/deck-badge.ts
 import { LitElement as LitElement16, html as html16, css as css17 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement as customElement15, property as property14 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 var DeckBadge = class extends LitElement16 {
-  static {
-    this.styles = css17`
+  render() {
+    return html16`<slot></slot>`;
+  }
+};
+DeckBadge.styles = css17`
     :host {
       display: inline-block;
       padding: var(--deck-badge-padding-y, var(--sp-1)) var(--deck-badge-padding-x, var(--sp-3));
@@ -1702,15 +1801,12 @@ var DeckBadge = class extends LitElement16 {
     :host([type="info"]) { --deck-badge-bg: var(--surface-info-strong);  --deck-badge-fg: var(--text-info); --deck-badge-border: var(--border-info); }
     :host([type="warn"]) { --deck-badge-bg: var(--surface-warn);         --deck-badge-fg: var(--orange);    --deck-badge-border: var(--border-warn); }
   `;
-  }
-  static {
-    this.properties = { type: { type: String } };
-  }
-  render() {
-    return html16`<slot></slot>`;
-  }
-};
-customElements.define("deck-badge", DeckBadge);
+__decorateClass([
+  property14({ type: String })
+], DeckBadge.prototype, "type", 2);
+DeckBadge = __decorateClass([
+  customElement15("deck-badge")
+], DeckBadge);
 
 // src/deck-kicker.ts
 import { LitElement as LitElement17, html as html17, css as css18 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
@@ -1736,6 +1832,7 @@ customElements.define("deck-kicker", DeckKicker);
 
 // src/deck-stack.ts
 import { LitElement as LitElement18, html as html18, css as css19 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement as customElement16, property as property15 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 var JUSTIFY = {
   start: "flex-start",
   center: "center",
@@ -1750,8 +1847,26 @@ var ALIGN = {
   stretch: "stretch"
 };
 var DeckStack = class extends LitElement18 {
-  static {
-    this.styles = css19`
+  updated() {
+    if (this.gap) {
+      const n = parseInt(this.gap, 10);
+      if (!Number.isNaN(n) && n >= 1 && n <= 6) {
+        this.style.setProperty("--_gap", `var(--sp-${n})`);
+      } else {
+        this.style.setProperty("--_gap", this.gap);
+      }
+    } else {
+      this.style.removeProperty("--_gap");
+    }
+    this.style.setProperty("--_dir", this.direction === "row" ? "row" : "column");
+    if (this.align) this.style.setProperty("--_align", ALIGN[this.align] ?? this.align);
+    if (this.justify) this.style.setProperty("--_justify", JUSTIFY[this.justify] ?? this.justify);
+  }
+  render() {
+    return html18`<slot></slot>`;
+  }
+};
+DeckStack.styles = css19`
     :host {
       display: flex;
       flex-direction: var(--_dir, column);
@@ -1763,34 +1878,25 @@ var DeckStack = class extends LitElement18 {
     }
     :host([fill]) { flex: 1 1 auto; }
   `;
-  }
-  static {
-    this.properties = {
-      gap: { type: String },
-      direction: { type: String },
-      align: { type: String },
-      justify: { type: String }
-    };
-  }
-  updated() {
-    const n = parseInt(this.gap, 10);
-    if (!Number.isNaN(n) && n >= 1 && n <= 6) {
-      this.style.setProperty("--_gap", `var(--sp-${n})`);
-    } else if (this.gap) {
-      this.style.setProperty("--_gap", this.gap);
-    }
-    this.style.setProperty("--_dir", this.direction === "row" ? "row" : "column");
-    if (this.align) this.style.setProperty("--_align", ALIGN[this.align] || this.align);
-    if (this.justify) this.style.setProperty("--_justify", JUSTIFY[this.justify] || this.justify);
-  }
-  render() {
-    return html18`<slot></slot>`;
-  }
-};
-customElements.define("deck-stack", DeckStack);
+__decorateClass([
+  property15({ type: String })
+], DeckStack.prototype, "gap", 2);
+__decorateClass([
+  property15({ type: String })
+], DeckStack.prototype, "direction", 2);
+__decorateClass([
+  property15({ type: String })
+], DeckStack.prototype, "align", 2);
+__decorateClass([
+  property15({ type: String })
+], DeckStack.prototype, "justify", 2);
+DeckStack = __decorateClass([
+  customElement16("deck-stack")
+], DeckStack);
 
 // src/deck-grid.ts
 import { LitElement as LitElement19, html as html19, css as css20 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement as customElement17, property as property16 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 var MAP = {
   start: "start",
   center: "center",
@@ -1812,8 +1918,21 @@ function expandGap(value) {
   return value;
 }
 var DeckGrid = class extends LitElement19 {
-  static {
-    this.styles = css20`
+  updated() {
+    const cols = expandTracks(this.cols);
+    const rows = expandTracks(this.rows);
+    const gap = expandGap(this.gap);
+    if (cols) this.style.setProperty("--_cols", cols);
+    if (rows) this.style.setProperty("--_rows", rows);
+    if (gap) this.style.setProperty("--_gap", gap);
+    if (this.align) this.style.setProperty("--_align", MAP[this.align] ?? this.align);
+    if (this.justify) this.style.setProperty("--_justify", MAP[this.justify] ?? this.justify);
+  }
+  render() {
+    return html19`<slot></slot>`;
+  }
+};
+DeckGrid.styles = css20`
     :host {
       display: grid;
       grid-template-columns: var(--_cols, 1fr);
@@ -1826,34 +1945,28 @@ var DeckGrid = class extends LitElement19 {
     }
     :host([fill]) { flex: 1 1 auto; height: 100%; }
   `;
-  }
-  static {
-    this.properties = {
-      cols: { type: String },
-      rows: { type: String },
-      gap: { type: String },
-      align: { type: String },
-      justify: { type: String }
-    };
-  }
-  updated() {
-    const cols = expandTracks(this.cols);
-    const rows = expandTracks(this.rows);
-    const gap = expandGap(this.gap);
-    if (cols) this.style.setProperty("--_cols", cols);
-    if (rows) this.style.setProperty("--_rows", rows);
-    if (gap) this.style.setProperty("--_gap", gap);
-    if (this.align) this.style.setProperty("--_align", MAP[this.align] || this.align);
-    if (this.justify) this.style.setProperty("--_justify", MAP[this.justify] || this.justify);
-  }
-  render() {
-    return html19`<slot></slot>`;
-  }
-};
-customElements.define("deck-grid", DeckGrid);
+__decorateClass([
+  property16({ type: String })
+], DeckGrid.prototype, "cols", 2);
+__decorateClass([
+  property16({ type: String })
+], DeckGrid.prototype, "rows", 2);
+__decorateClass([
+  property16({ type: String })
+], DeckGrid.prototype, "gap", 2);
+__decorateClass([
+  property16({ type: String })
+], DeckGrid.prototype, "align", 2);
+__decorateClass([
+  property16({ type: String })
+], DeckGrid.prototype, "justify", 2);
+DeckGrid = __decorateClass([
+  customElement17("deck-grid")
+], DeckGrid);
 
 // src/deck-punch.ts
 import { LitElement as LitElement20, html as html20, css as css21 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement as customElement18, property as property17 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 var TONES = {
   warn: "var(--orange)",
   danger: "var(--red)",
@@ -1870,8 +1983,23 @@ var SIZES = {
   display: "clamp(2.6rem, 6vw, 5rem)"
 };
 var DeckPunch = class extends LitElement20 {
-  static {
-    this.styles = css21`
+  updated() {
+    if (this.tone && TONES[this.tone]) {
+      this.style.setProperty("--_color", TONES[this.tone]);
+    } else {
+      this.style.removeProperty("--_color");
+    }
+    if (this.size && SIZES[this.size]) {
+      this.style.setProperty("--_size", SIZES[this.size]);
+    } else {
+      this.style.removeProperty("--_size");
+    }
+  }
+  render() {
+    return html20`<slot></slot>`;
+  }
+};
+DeckPunch.styles = css21`
     :host {
       display: block;
       margin: 0;
@@ -1889,35 +2017,25 @@ var DeckPunch = class extends LitElement20 {
     :host([align="center"]) { text-align: center; }
     :host([align="right"])  { text-align: right; }
   `;
-  }
-  static {
-    this.properties = {
-      tone: { type: String },
-      size: { type: String },
-      weight: { type: String, reflect: true },
-      align: { type: String, reflect: true }
-    };
-  }
-  updated() {
-    if (this.tone && TONES[this.tone]) {
-      this.style.setProperty("--_color", TONES[this.tone]);
-    } else {
-      this.style.removeProperty("--_color");
-    }
-    if (this.size && SIZES[this.size]) {
-      this.style.setProperty("--_size", SIZES[this.size]);
-    } else {
-      this.style.removeProperty("--_size");
-    }
-  }
-  render() {
-    return html20`<slot></slot>`;
-  }
-};
-customElements.define("deck-punch", DeckPunch);
+__decorateClass([
+  property17({ type: String })
+], DeckPunch.prototype, "tone", 2);
+__decorateClass([
+  property17({ type: String })
+], DeckPunch.prototype, "size", 2);
+__decorateClass([
+  property17({ type: String, reflect: true })
+], DeckPunch.prototype, "weight", 2);
+__decorateClass([
+  property17({ type: String, reflect: true })
+], DeckPunch.prototype, "align", 2);
+DeckPunch = __decorateClass([
+  customElement18("deck-punch")
+], DeckPunch);
 
 // src/deck-stat.ts
 import { LitElement as LitElement21, html as html21, css as css22 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement as customElement19, property as property18 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 var TONES2 = {
   yellow: "var(--yellow)",
   orange: "var(--orange)",
@@ -1928,8 +2046,22 @@ var TONES2 = {
   cyan: "var(--cyan)"
 };
 var DeckStat = class extends LitElement21 {
-  static {
-    this.styles = css22`
+  updated() {
+    if (this.tone) {
+      this.style.setProperty("--_c", TONES2[this.tone] ?? this.tone);
+    } else {
+      this.style.removeProperty("--_c");
+    }
+  }
+  render() {
+    return html21`
+      ${this.num ? html21`<div class="num" part="num">${this.num}</div>` : ""}
+      <slot name="claim"></slot>
+      <div class="body" part="body"><slot></slot></div>
+    `;
+  }
+};
+DeckStat.styles = css22`
     :host {
       display: flex; flex-direction: column;
       gap: var(--sp-2);
@@ -1968,31 +2100,25 @@ var DeckStat = class extends LitElement21 {
       padding: 2px 6px; border-radius: var(--r-sm);
     }
   `;
-  }
-  static {
-    this.properties = {
-      num: { type: String },
-      tone: { type: String }
-    };
-  }
-  updated() {
-    if (this.tone) this.style.setProperty("--_c", TONES2[this.tone] || this.tone);
-  }
-  render() {
-    return html21`
-      ${this.num ? html21`<div class="num" part="num">${this.num}</div>` : ""}
-      <slot name="claim"></slot>
-      <div class="body" part="body"><slot></slot></div>
-    `;
-  }
-};
-customElements.define("deck-stat", DeckStat);
+__decorateClass([
+  property18({ type: String })
+], DeckStat.prototype, "num", 2);
+__decorateClass([
+  property18({ type: String })
+], DeckStat.prototype, "tone", 2);
+DeckStat = __decorateClass([
+  customElement19("deck-stat")
+], DeckStat);
 
 // src/deck-shortcut.ts
 import { LitElement as LitElement22, html as html22, css as css23 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement as customElement20, property as property19 } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 var DeckKbd = class extends LitElement22 {
-  static {
-    this.styles = css23`
+  render() {
+    return html22`<slot></slot>`;
+  }
+};
+DeckKbd.styles = css23`
     :host {
       display: inline-flex; align-items: center; justify-content: center;
       background: var(--surface-card);
@@ -2017,15 +2143,27 @@ var DeckKbd = class extends LitElement22 {
       border-color: rgba(0,0,0,0.15);
     }
   `;
-  }
+__decorateClass([
+  property19({ type: String })
+], DeckKbd.prototype, "tone", 2);
+DeckKbd = __decorateClass([
+  customElement20("deck-kbd")
+], DeckKbd);
+var DeckShortcut = class extends LitElement22 {
   render() {
-    return html22`<slot></slot>`;
+    const keyTokens = (this.keys ?? "").trim().split(/\s+/).filter(Boolean);
+    return html22`
+      <span class="keys" part="keys">
+        ${keyTokens.map((k) => html22`<span class="k">${k}</span>`)}
+      </span>
+      <div class="body" part="body">
+        ${this.label ? html22`<div class="label">${this.label}</div>` : ""}
+        ${this.note ? html22`<div class="note">${this.note}</div>` : html22`<div class="note"><slot></slot></div>`}
+      </div>
+    `;
   }
 };
-customElements.define("deck-kbd", DeckKbd);
-var DeckShortcut = class extends LitElement22 {
-  static {
-    this.styles = css23`
+DeckShortcut.styles = css23`
     :host {
       display: flex; align-items: center; gap: var(--sp-3);
       padding: var(--sp-2) 0;
@@ -2056,50 +2194,22 @@ var DeckShortcut = class extends LitElement22 {
     :host([tone="accent"]) .keys .k { background: var(--yellow); color: var(--dark); border-color: rgba(0,0,0,0.15); }
     :host([tone="ok"])     .keys .k { background: var(--green);  color: var(--dark); border-color: rgba(0,0,0,0.15); }
   `;
-  }
-  static {
-    this.properties = {
-      keys: { type: String },
-      label: { type: String },
-      note: { type: String },
-      tone: { type: String }
-    };
-  }
-  render() {
-    const keyTokens = (this.keys || "").trim().split(/\s+/).filter(Boolean);
-    return html22`
-      <span class="keys" part="keys">
-        ${keyTokens.map((k) => html22`<span class="k">${k}</span>`)}
-      </span>
-      <div class="body" part="body">
-        ${this.label ? html22`<div class="label">${this.label}</div>` : ""}
-        ${this.note ? html22`<div class="note">${this.note}</div>` : html22`<div class="note"><slot></slot></div>`}
-      </div>
-    `;
-  }
-};
-customElements.define("deck-shortcut", DeckShortcut);
+__decorateClass([
+  property19({ type: String })
+], DeckShortcut.prototype, "keys", 2);
+__decorateClass([
+  property19({ type: String })
+], DeckShortcut.prototype, "label", 2);
+__decorateClass([
+  property19({ type: String })
+], DeckShortcut.prototype, "note", 2);
+__decorateClass([
+  property19({ type: String })
+], DeckShortcut.prototype, "tone", 2);
+DeckShortcut = __decorateClass([
+  customElement20("deck-shortcut")
+], DeckShortcut);
 var DeckShortcutList = class extends LitElement22 {
-  static {
-    this.styles = css23`
-    :host {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0 var(--_col-gap, var(--sp-5));
-      font-family: var(--sans);
-    }
-    :host([cols="1"]) { grid-template-columns: 1fr; }
-    ::slotted(deck-shortcut) {
-      border-bottom: 1px solid var(--border);
-    }
-  `;
-  }
-  static {
-    this.properties = {
-      cols: { type: String },
-      colGap: { type: String, attribute: "col-gap" }
-    };
-  }
   updated() {
     if (this.colGap) {
       const n = parseInt(this.colGap, 10);
@@ -2111,5 +2221,25 @@ var DeckShortcutList = class extends LitElement22 {
     return html22`<slot></slot>`;
   }
 };
-customElements.define("deck-shortcut-list", DeckShortcutList);
+DeckShortcutList.styles = css23`
+    :host {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 var(--_col-gap, var(--sp-5));
+      font-family: var(--sans);
+    }
+    :host([cols="1"]) { grid-template-columns: 1fr; }
+    ::slotted(deck-shortcut) {
+      border-bottom: 1px solid var(--border);
+    }
+  `;
+__decorateClass([
+  property19({ type: String })
+], DeckShortcutList.prototype, "cols", 2);
+__decorateClass([
+  property19({ type: String, attribute: "col-gap" })
+], DeckShortcutList.prototype, "colGap", 2);
+DeckShortcutList = __decorateClass([
+  customElement20("deck-shortcut-list")
+], DeckShortcutList);
 //# sourceMappingURL=index.js.map

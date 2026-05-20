@@ -1,5 +1,5 @@
 // ════════════════════════════════════════════════════════════════
-// <deck-punch tone="default|warn|danger|ok|info|muted"
+// <deck-punch tone="default|warn|danger|ok|info|muted|accent"
 //             size="lead|big|mega|stat|display"
 //             weight="700|800|900"
 //             align="left|center|right">
@@ -15,8 +15,12 @@
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
-const TONES = {
+export type DeckPunchTone = 'warn' | 'danger' | 'ok' | 'info' | 'muted' | 'accent';
+export type DeckPunchSize = 'lead' | 'big' | 'mega' | 'stat' | 'display';
+
+const TONES: Record<DeckPunchTone, string> = {
   warn:   'var(--orange)',
   danger: 'var(--red)',
   ok:     'var(--green)',
@@ -25,7 +29,7 @@ const TONES = {
   accent: 'var(--yellow)',
 };
 
-const SIZES = {
+const SIZES: Record<DeckPunchSize, string> = {
   lead:    'var(--fs-lead)',
   big:     'var(--fs-big)',
   mega:    'var(--fs-mega)',
@@ -33,6 +37,7 @@ const SIZES = {
   display: 'clamp(2.6rem, 6vw, 5rem)',
 };
 
+@customElement('deck-punch')
 export class DeckPunch extends LitElement {
   static override styles = css`
     :host {
@@ -53,15 +58,12 @@ export class DeckPunch extends LitElement {
     :host([align="right"])  { text-align: right; }
   `;
 
-  static override properties = {
-    tone:   { type: String },
-    size:   { type: String },
-    weight: { type: String, reflect: true },
-    align:  { type: String, reflect: true },
-  };
+  @property({ type: String }) tone?: DeckPunchTone;
+  @property({ type: String }) size?: DeckPunchSize;
+  @property({ type: String, reflect: true }) weight?: string;
+  @property({ type: String, reflect: true }) align?: string;
 
   override updated() {
-    // Only set the colour when a tone is named · otherwise inherit.
     if (this.tone && TONES[this.tone]) {
       this.style.setProperty('--_color', TONES[this.tone]);
     } else {
@@ -79,4 +81,8 @@ export class DeckPunch extends LitElement {
   }
 }
 
-customElements.define('deck-punch', DeckPunch);
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-punch': DeckPunch;
+  }
+}

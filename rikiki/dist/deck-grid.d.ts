@@ -1,24 +1,18 @@
 import { LitElement } from 'lit';
+export type DeckGridAlign = 'start' | 'center' | 'end' | 'stretch';
 export declare class DeckGrid extends LitElement {
     static styles: import("lit").CSSResult;
-    static properties: {
-        cols: {
-            type: StringConstructor;
-        };
-        rows: {
-            type: StringConstructor;
-        };
-        gap: {
-            type: StringConstructor;
-        };
-        align: {
-            type: StringConstructor;
-        };
-        justify: {
-            type: StringConstructor;
-        };
-    };
+    cols?: string;
+    rows?: string;
+    gap?: string;
+    align?: DeckGridAlign;
+    justify?: DeckGridAlign;
     updated(): void;
     render(): import("lit-html").TemplateResult<1>;
+}
+declare global {
+    interface HTMLElementTagNameMap {
+        'deck-grid': DeckGrid;
+    }
 }
 //# sourceMappingURL=deck-grid.d.ts.map

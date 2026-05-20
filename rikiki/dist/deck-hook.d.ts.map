@@ -1,1 +1,1 @@
-{"version":3,"file":"deck-hook.d.ts","sourceRoot":"","sources":["../src/deck-hook.ts"],"names":[],"mappings":"AAOA,OAAO,EAAE,UAAU,EAAa,MAAM,KAAK,CAAC;AAG5C,qBAAa,QAAS,SAAQ,UAAU;IAMtC,OAAgB,MAAM,4BAwBnB;IAEH,OAAgB,UAAU;;;;MAAgC;IAEjD,MAAM;CAQhB"}
+{"version":3,"file":"deck-hook.d.ts","sourceRoot":"","sources":["../src/deck-hook.ts"],"names":[],"mappings":"AAOA,OAAO,EAAE,UAAU,EAAa,MAAM,KAAK,CAAC;AAI5C,qBACa,QAAS,SAAQ,UAAU;IAMtC,OAAgB,MAAM,4BAwBnB;IAEyB,MAAM,CAAC,EAAE,MAAM,CAAC;IAEnC,MAAM;CAQhB;AAED,OAAO,CAAC,MAAM,CAAC;IACb,UAAU,qBAAqB;QAC7B,WAAW,EAAE,QAAQ,CAAC;KACvB;CACF"}

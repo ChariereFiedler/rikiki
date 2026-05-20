@@ -1,13 +1,15 @@
 // ════════════════════════════════════════════════════════════════
 // <deck-step-list>
-//   <deck-step n="1" note="feuille">button.ts</deck-step>
-//   <deck-step n="2" note="feuille">icon.ts</deck-step>
+//   <deck-step n="1" note="leaf">button.ts</deck-step>
+//   <deck-step n="2" note="leaf">icon.ts</deck-step>
 //   ...
 // </deck-step-list>
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
+@customElement('deck-step-list')
 export class DeckStepList extends LitElement {
   static override styles = css`
     :host {
@@ -17,8 +19,8 @@ export class DeckStepList extends LitElement {
   `;
   override render() { return html`<slot></slot>`; }
 }
-customElements.define('deck-step-list', DeckStepList);
 
+@customElement('deck-step')
 export class DeckStep extends LitElement {
   static override styles = css`
     :host {
@@ -54,10 +56,10 @@ export class DeckStep extends LitElement {
       font: 600 var(--fs-small)/1.4 var(--sans);
     }
   `;
-  static override properties = {
-    n: { type: String },
-    note: { type: String },
-  };
+
+  @property({ type: String }) n?: string;
+  @property({ type: String }) note?: string;
+
   override render() {
     return html`
       <span class="step-num">${this.n}</span>
@@ -66,4 +68,10 @@ export class DeckStep extends LitElement {
     `;
   }
 }
-customElements.define('deck-step', DeckStep);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-step-list': DeckStepList;
+    'deck-step': DeckStep;
+  }
+}

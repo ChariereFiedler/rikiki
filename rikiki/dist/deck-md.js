@@ -1,10 +1,41 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+
 // src/deck-md.ts
 import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement, state } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked@12/+esm";
 marked.setOptions({ gfm: true, breaks: false });
 var DeckMd = class extends LitElement {
-  static {
-    this.styles = css`
+  constructor() {
+    super(...arguments);
+    this._html = "";
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this._parse();
+  }
+  _parse() {
+    const raw = this.textContent ?? "";
+    const lines = raw.split("\n");
+    const indent = lines.filter((l) => l.trim().length > 0).reduce((min, l) => Math.min(min, l.match(/^ */)?.[0].length ?? 0), Infinity);
+    const cleaned = indent === Infinity ? raw : lines.map((l) => l.slice(indent)).join("\n");
+    this._html = marked.parse(cleaned.trim());
+    this.textContent = "";
+  }
+  render() {
+    return html`<div class="content" .innerHTML="${this._html}"></div>`;
+  }
+};
+DeckMd.styles = css`
     :host { display: block; color: var(--soft); font-family: var(--sans); }
     h1, h2, h3, h4 { color: var(--text); font-weight: 700; letter-spacing: -0.01em; }
     h2 { font-size: var(--fs-h2); margin-bottom: var(--sp-2); }
@@ -44,27 +75,12 @@ var DeckMd = class extends LitElement {
     hr { border: none; border-top: 1px solid var(--border); margin: var(--sp-4) 0; }
     .content { display: contents; }
   `;
-  }
-  static {
-    this.properties = { _html: { state: true } };
-  }
-  connectedCallback() {
-    super.connectedCallback();
-    this._parse();
-  }
-  _parse() {
-    const raw = this.textContent || "";
-    const lines = raw.split("\n");
-    const indent = lines.filter((l) => l.trim().length > 0).reduce((min, l) => Math.min(min, l.match(/^ */)[0].length), Infinity);
-    const cleaned = indent === Infinity ? raw : lines.map((l) => l.slice(indent)).join("\n");
-    this._html = marked.parse(cleaned.trim());
-    this.textContent = "";
-  }
-  render() {
-    return html`<div class="content" .innerHTML="${this._html || ""}"></div>`;
-  }
-};
-customElements.define("deck-md", DeckMd);
+__decorateClass([
+  state()
+], DeckMd.prototype, "_html", 2);
+DeckMd = __decorateClass([
+  customElement("deck-md")
+], DeckMd);
 export {
   DeckMd
 };

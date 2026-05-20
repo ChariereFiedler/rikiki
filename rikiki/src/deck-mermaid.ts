@@ -6,19 +6,29 @@
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
+
+interface MermaidLib {
+  initialize(opts: Record<string, unknown>): void;
+  render(id: string, source: string): Promise<{ svg: string }>;
+}
+declare global {
+  interface Window { mermaid?: MermaidLib; }
+}
 
 let mermaidReady = false;
-async function ensureMermaid() {
+async function ensureMermaid(): Promise<void> {
   if (mermaidReady) return;
   if (!window.mermaid) {
-    await new Promise((res, rej) => {
+    await new Promise<void>((res, rej) => {
       const s = document.createElement('script');
       s.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
-      s.onload = res; s.onerror = rej;
+      s.onload = () => res();
+      s.onerror = () => rej(new Error('mermaid failed to load'));
       document.head.appendChild(s);
     });
   }
-  window.mermaid.initialize({
+  window.mermaid!.initialize({
     startOnLoad: false,
     theme: 'dark',
     themeVariables: {
@@ -38,6 +48,7 @@ async function ensureMermaid() {
 
 let mermaidId = 0;
 
+@customElement('deck-mermaid')
 export class DeckMermaid extends LitElement {
   /* Tokens:
        --deck-mermaid-bg / -border / -radius / -padding
@@ -61,42 +72,46 @@ export class DeckMermaid extends LitElement {
     :host([compact]) .canvas svg { max-height: 22vh; }
   `;
 
-  static override properties = {
-    _svg: { state: true },
-    rendered: { type: Boolean, reflect: true },
-  };
+  @property({ type: Boolean, reflect: true }) rendered = false;
+  @state() private _svg = '';
+  private _source = '';
 
   override connectedCallback() {
     super.connectedCallback();
-    this._source = (this.textContent || '').trim();
-    // Dédente
+    this._source = (this.textContent ?? '').trim();
+    // Deindent · the common leading-spaces stripped.
     const lines = this._source.split('\n');
-    const indent = lines.filter(l => l.trim()).reduce((m, l) => Math.min(m, l.match(/^ */)[0].length), Infinity);
-    if (indent < Infinity) this._source = lines.map(l => l.slice(indent)).join('\n');
+    const indent = lines
+      .filter((l: string) => l.trim())
+      .reduce((m: number, l: string) => Math.min(m, l.match(/^ */)?.[0].length ?? 0), Infinity);
+    if (indent < Infinity) this._source = lines.map((l: string) => l.slice(indent)).join('\n');
     // Keep light-DOM textContent intact so cloneNode(true) preserves the source
     // for overview thumbnails (the shadow template has no <slot>).
-    this.render = this.render.bind(this);
-    // Render on connect (asynchrone parce que mermaid charge depuis CDN)
     this._render();
   }
 
-  async _render() {
+  private async _render(): Promise<void> {
     if (!this._source) return;
     await ensureMermaid();
     const id = `mmd-${++mermaidId}`;
     try {
-      const { svg } = await window.mermaid.render(id, this._source);
+      const { svg } = await window.mermaid!.render(id, this._source);
       this._svg = svg;
       this.rendered = true;
-    } catch (e) {
+    } catch (e: unknown) {
       console.error('Mermaid render error', e);
-      this._svg = `<pre style="color:#f87171">${e.message}</pre>`;
+      const msg = e instanceof Error ? e.message : String(e);
+      this._svg = `<pre style="color:#f87171">${msg}</pre>`;
     }
   }
 
   override render() {
-    return html`<div class="canvas" .innerHTML="${this._svg || ''}"></div>`;
+    return html`<div class="canvas" .innerHTML="${this._svg}"></div>`;
   }
 }
 
-customElements.define('deck-mermaid', DeckMermaid);
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-mermaid': DeckMermaid;
+  }
+}

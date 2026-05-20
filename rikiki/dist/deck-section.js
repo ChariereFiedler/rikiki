@@ -1,5 +1,17 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+
 // src/deck-section.ts
 import { LitElement, html, css as css2 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 
 // src/shared-styles.ts
 import { css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
@@ -99,14 +111,20 @@ var slideBase = [slideShell, typo, helpers];
 
 // src/deck-section.ts
 var DeckSection = class extends LitElement {
-  static {
-    /* Tokens:
-         --deck-section-bg          (defaults to --dark)
-         --deck-section-num-color   small section number      (--on-dark-faint)
-         --deck-section-rule-color  line on each side         (--on-dark-border)
-         --deck-section-title-color (defaults to --yellow)
-         --deck-section-em-color    italic inside h1          (--on-dark-soft) */
-    this.styles = [...slideBase, css2`
+  render() {
+    return html`
+      ${this.num ? html`<div class="sec-num" part="num">${this.num}</div>` : ""}
+      <slot></slot>
+    `;
+  }
+};
+/* Tokens:
+     --deck-section-bg          (defaults to --dark)
+     --deck-section-num-color   small section number      (--on-dark-faint)
+     --deck-section-rule-color  line on each side         (--on-dark-border)
+     --deck-section-title-color (defaults to --yellow)
+     --deck-section-em-color    italic inside h1          (--on-dark-soft) */
+DeckSection.styles = [...slideBase, css2`
     :host {
       background: var(--deck-section-bg, var(--dark));
       color: var(--on-dark-text);
@@ -137,18 +155,12 @@ var DeckSection = class extends LitElement {
       font-style: normal; font-weight: 700;
     }
   `];
-  }
-  static {
-    this.properties = { num: { type: String } };
-  }
-  render() {
-    return html`
-      ${this.num ? html`<div class="sec-num" part="num">${this.num}</div>` : ""}
-      <slot></slot>
-    `;
-  }
-};
-customElements.define("deck-section", DeckSection);
+__decorateClass([
+  property({ type: String })
+], DeckSection.prototype, "num", 2);
+DeckSection = __decorateClass([
+  customElement("deck-section")
+], DeckSection);
 export {
   DeckSection
 };

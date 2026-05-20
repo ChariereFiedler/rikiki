@@ -1,8 +1,28 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+
 // src/deck-card.ts
 import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 var DeckCard = class extends LitElement {
-  static {
-    this.styles = css`
+  constructor() {
+    super(...arguments);
+    this.center = false;
+    this.compact = false;
+  }
+  render() {
+    return html`<slot></slot>`;
+  }
+};
+DeckCard.styles = css`
     :host {
       display: flex; flex-direction: column;
       gap: var(--sp-2);
@@ -37,15 +57,18 @@ var DeckCard = class extends LitElement {
     :host([center])  { text-align: center; align-items: center; }
     :host([compact]) { padding: var(--sp-2) var(--sp-3); }
   `;
-  }
-  static {
-    this.properties = { color: { type: String } };
-  }
-  render() {
-    return html`<slot></slot>`;
-  }
-};
-customElements.define("deck-card", DeckCard);
+__decorateClass([
+  property({ type: String })
+], DeckCard.prototype, "color", 2);
+__decorateClass([
+  property({ type: Boolean })
+], DeckCard.prototype, "center", 2);
+__decorateClass([
+  property({ type: Boolean })
+], DeckCard.prototype, "compact", 2);
+DeckCard = __decorateClass([
+  customElement("deck-card")
+], DeckCard);
 export {
   DeckCard
 };

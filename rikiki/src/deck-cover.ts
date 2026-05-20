@@ -13,8 +13,12 @@
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 import { slideBase } from './shared-styles.js';
 
+interface MetaItem { l: string; v: string; }
+
+@customElement('deck-cover')
 export class DeckCover extends LitElement {
   /* Tokens:
        --deck-cover-bg          slide background          (defaults to --dark)
@@ -82,40 +86,38 @@ export class DeckCover extends LitElement {
     }
   `];
 
-  static override properties = {
-    brand: { type: String },
-    brandSrc: { type: String, attribute: 'brand-src' },
-    speaker: { type: String },
-    company: { type: String },
-    duration: { type: String },
-    audience: { type: String },
-    runtime: { type: String },
-    // Labels (default FR, override via attrs for i18n)
-    speakerLabel:  { type: String, attribute: 'speaker-label'  },
-    companyLabel:  { type: String, attribute: 'company-label'  },
-    durationLabel: { type: String, attribute: 'duration-label' },
-    audienceLabel: { type: String, attribute: 'audience-label' },
-    runtimeLabel:  { type: String, attribute: 'runtime-label'  },
-  };
+  @property({ type: String }) brand?: string;
+  @property({ type: String, attribute: 'brand-src' }) brandSrc?: string;
+  @property({ type: String }) speaker?: string;
+  @property({ type: String }) company?: string;
+  @property({ type: String }) duration?: string;
+  @property({ type: String }) audience?: string;
+  @property({ type: String }) runtime?: string;
+  // Labels (default FR, override via attrs for i18n)
+  @property({ type: String, attribute: 'speaker-label'  }) speakerLabel?: string;
+  @property({ type: String, attribute: 'company-label'  }) companyLabel?: string;
+  @property({ type: String, attribute: 'duration-label' }) durationLabel?: string;
+  @property({ type: String, attribute: 'audience-label' }) audienceLabel?: string;
+  @property({ type: String, attribute: 'runtime-label'  }) runtimeLabel?: string;
 
   override render() {
-    const parts = (this.brand || '').split('·').map(s => s.trim()).filter(Boolean);
-    const brandName = parts[0] || '';
+    const parts = (this.brand ?? '').split('·').map((s: string) => s.trim()).filter(Boolean);
+    const brandName = parts[0] ?? '';
     const context = parts.slice(1).join(' · ');
-    const items = [
-      this.speaker  && { l: this.speakerLabel  || 'Présenté par', v: this.speaker },
-      this.company  && { l: this.companyLabel  || 'Entreprise',   v: this.company },
-      this.duration && { l: this.durationLabel || 'Durée',        v: this.duration },
-      this.audience && { l: this.audienceLabel || 'Audience',     v: this.audience },
-      this.runtime  && { l: this.runtimeLabel  || 'Runtime',      v: this.runtime },
-    ].filter(Boolean);
+    const items: MetaItem[] = [
+      this.speaker  && { l: this.speakerLabel  ?? 'Présenté par', v: this.speaker },
+      this.company  && { l: this.companyLabel  ?? 'Entreprise',   v: this.company },
+      this.duration && { l: this.durationLabel ?? 'Durée',        v: this.duration },
+      this.audience && { l: this.audienceLabel ?? 'Audience',     v: this.audience },
+      this.runtime  && { l: this.runtimeLabel  ?? 'Runtime',      v: this.runtime },
+    ].filter((x): x is MetaItem => !!x);
 
     const hasMark = !!this.brandSrc;
 
     return html`
       <div class="brand" part="brand">
         ${hasMark
-          ? html`<span class="brand-tile"><img src="${this.brandSrc}" alt="${brandName || ''}"></span>`
+          ? html`<span class="brand-tile"><img src="${this.brandSrc!}" alt="${brandName}"></span>`
           : ''}
         ${brandName ? html`<span class="brand-name">${brandName}</span>` : ''}
         ${context ? html`<span class="brand-context">${context}</span>` : ''}
@@ -123,7 +125,7 @@ export class DeckCover extends LitElement {
       <slot></slot>
       ${items.length ? html`
         <div class="meta" part="meta">
-          ${items.map(i => html`
+          ${items.map((i) => html`
             <div class="meta-item"><strong>${i.l}</strong><span>${i.v}</span></div>
           `)}
         </div>` : ''}
@@ -131,4 +133,8 @@ export class DeckCover extends LitElement {
   }
 }
 
-customElements.define('deck-cover', DeckCover);
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-cover': DeckCover;
+  }
+}

@@ -15,8 +15,12 @@
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
-const TONES = {
+export type DeckStatTone =
+  | 'yellow' | 'orange' | 'green' | 'red' | 'purple' | 'lime' | 'cyan';
+
+const TONES: Record<DeckStatTone, string> = {
   yellow: 'var(--yellow)',
   orange: 'var(--orange)',
   green:  'var(--green)',
@@ -26,6 +30,7 @@ const TONES = {
   cyan:   'var(--cyan)',
 };
 
+@customElement('deck-stat')
 export class DeckStat extends LitElement {
   static override styles = css`
     :host {
@@ -67,13 +72,15 @@ export class DeckStat extends LitElement {
     }
   `;
 
-  static override properties = {
-    num:  { type: String },
-    tone: { type: String },
-  };
+  @property({ type: String }) num?: string;
+  @property({ type: String }) tone?: DeckStatTone;
 
   override updated() {
-    if (this.tone) this.style.setProperty('--_c', TONES[this.tone] || this.tone);
+    if (this.tone) {
+      this.style.setProperty('--_c', TONES[this.tone] ?? this.tone);
+    } else {
+      this.style.removeProperty('--_c');
+    }
   }
 
   override render() {
@@ -85,4 +92,8 @@ export class DeckStat extends LitElement {
   }
 }
 
-customElements.define('deck-stat', DeckStat);
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-stat': DeckStat;
+  }
+}

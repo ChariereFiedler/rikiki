@@ -21,17 +21,19 @@ const entryPoints = readdirSync(SRC)
 // Rewrite bare module specs ('lit', 'marked') to their jsdelivr CDN URLs at build time.
 // Consumers get plain ES modules that resolve in any browser without an import map.
 const CDN_ALIASES = {
-  lit:    'https://cdn.jsdelivr.net/npm/lit@3/+esm',
-  marked: 'https://cdn.jsdelivr.net/npm/marked@12/+esm',
+  lit:                 'https://cdn.jsdelivr.net/npm/lit@3/+esm',
+  'lit/decorators.js': 'https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm',
+  marked:              'https://cdn.jsdelivr.net/npm/marked@12/+esm',
 };
 
 const cdnRewrite = {
   name: 'cdn-rewrite',
   setup(b) {
-    b.onResolve({ filter: /^(lit|marked)$/ }, (args) => ({
-      path: CDN_ALIASES[args.path],
-      external: true,
-    }));
+    b.onResolve({ filter: /^(lit|lit\/.*|marked)$/ }, (args) => {
+      const target = CDN_ALIASES[args.path];
+      if (!target) return null;
+      return { path: target, external: true };
+    });
   },
 };
 

@@ -18,7 +18,11 @@
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
+export type DeckCardColor = 'yellow' | 'orange' | 'green' | 'red';
+
+@customElement('deck-card')
 export class DeckCard extends LitElement {
   static override styles = css`
     :host {
@@ -56,11 +60,17 @@ export class DeckCard extends LitElement {
     :host([compact]) { padding: var(--sp-2) var(--sp-3); }
   `;
 
-  static override properties = { color: { type: String } };
+  @property({ type: String }) color?: DeckCardColor;
+  @property({ type: Boolean }) center = false;
+  @property({ type: Boolean }) compact = false;
 
   override render() {
     return html`<slot></slot>`;
   }
 }
 
-customElements.define('deck-card', DeckCard);
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-card': DeckCard;
+  }
+}

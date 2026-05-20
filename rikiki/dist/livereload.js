@@ -20,7 +20,7 @@ var FILES = [
   here("./deck-grid.js"),
   here("./deck-punch.js"),
   location.pathname
-  // le HTML lui-même
+  // the HTML itself
 ];
 var state = /* @__PURE__ */ new Map();
 var toast;
@@ -32,13 +32,15 @@ function showToast(text, color = "#0a0a0a") {
   }
   toast.textContent = text;
   toast.style.opacity = "1";
-  clearTimeout(toast._t);
-  toast._t = setTimeout(() => toast.style.opacity = "0", 1500);
+  if (toast._t) clearTimeout(toast._t);
+  toast._t = setTimeout(() => {
+    if (toast) toast.style.opacity = "0";
+  }, 1500);
 }
 async function check(url) {
   try {
     const r = await fetch(url + "?_lr=" + Date.now(), { method: "HEAD", cache: "no-store" });
-    const tag = r.headers.get("last-modified") || r.headers.get("etag") || r.headers.get("content-length");
+    const tag = r.headers.get("last-modified") ?? r.headers.get("etag") ?? r.headers.get("content-length");
     if (!tag) return false;
     const prev = state.get(url);
     state.set(url, tag);
@@ -60,9 +62,9 @@ async function loop() {
     await new Promise((r) => setTimeout(r, 800));
   }
 }
-(async () => {
+void (async () => {
   await Promise.all(FILES.map(check));
   showToast("livereload on");
-  loop();
+  void loop();
 })();
 //# sourceMappingURL=livereload.js.map

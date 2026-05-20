@@ -1,32 +1,38 @@
 // ════════════════════════════════════════════════════════════════
 // <deck-stack gap="3" direction="column|row" align="start|center|end"
 //             justify="start|center|end|between">
-//   <enfant1/>
-//   <enfant2/>
+//   <child1/>
+//   <child2/>
 // </deck-stack>
 //
-// Remplace les `<div style="display:flex;flex-direction:column;gap:..">`
-// et les `style="margin-top:var(--sp-3)"` sur enfants empilés.
+// Replaces <div style="display:flex;flex-direction:column;gap:.."> and
+// margin-top declarations on stacked children.
 //
-// `gap` accepte 1..6 et mappe sur var(--sp-N). Défaut: 3.
+// `gap` accepts 1..6 and maps to var(--sp-N). Default 3.
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
-const JUSTIFY = {
+export type DeckStackDirection = 'row' | 'column';
+export type DeckStackAlign     = 'start' | 'center' | 'end' | 'stretch';
+export type DeckStackJustify   = 'start' | 'center' | 'end' | 'between' | 'around';
+
+const JUSTIFY: Record<DeckStackJustify, string> = {
   start:   'flex-start',
   center:  'center',
   end:     'flex-end',
   between: 'space-between',
   around:  'space-around',
 };
-const ALIGN = {
+const ALIGN: Record<DeckStackAlign, string> = {
   start:   'flex-start',
   center:  'center',
   end:     'flex-end',
   stretch: 'stretch',
 };
 
+@customElement('deck-stack')
 export class DeckStack extends LitElement {
   static override styles = css`
     :host {
@@ -41,28 +47,25 @@ export class DeckStack extends LitElement {
     :host([fill]) { flex: 1 1 auto; }
   `;
 
-  static override properties = {
-    gap:       { type: String },
-    direction: { type: String },
-    align:     { type: String },
-    justify:   { type: String },
-  };
-
-  declare gap?: string;
-  declare direction?: string;
-  declare align?: string;
-  declare justify?: string;
+  @property({ type: String }) gap?: string;
+  @property({ type: String }) direction?: DeckStackDirection;
+  @property({ type: String }) align?: DeckStackAlign;
+  @property({ type: String }) justify?: DeckStackJustify;
 
   override updated() {
-    const n = parseInt(this.gap, 10);
-    if (!Number.isNaN(n) && n >= 1 && n <= 6) {
-      this.style.setProperty('--_gap', `var(--sp-${n})`);
-    } else if (this.gap) {
-      this.style.setProperty('--_gap', this.gap);
+    if (this.gap) {
+      const n = parseInt(this.gap, 10);
+      if (!Number.isNaN(n) && n >= 1 && n <= 6) {
+        this.style.setProperty('--_gap', `var(--sp-${n})`);
+      } else {
+        this.style.setProperty('--_gap', this.gap);
+      }
+    } else {
+      this.style.removeProperty('--_gap');
     }
     this.style.setProperty('--_dir', this.direction === 'row' ? 'row' : 'column');
-    if (this.align)   this.style.setProperty('--_align',   ALIGN[this.align]   || this.align);
-    if (this.justify) this.style.setProperty('--_justify', JUSTIFY[this.justify] || this.justify);
+    if (this.align)   this.style.setProperty('--_align',   ALIGN[this.align]   ?? this.align);
+    if (this.justify) this.style.setProperty('--_justify', JUSTIFY[this.justify] ?? this.justify);
   }
 
   override render() {
@@ -70,4 +73,8 @@ export class DeckStack extends LitElement {
   }
 }
 
-customElements.define('deck-stack', DeckStack);
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-stack': DeckStack;
+  }
+}

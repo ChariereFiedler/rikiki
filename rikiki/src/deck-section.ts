@@ -3,8 +3,10 @@
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 import { slideBase } from './shared-styles.js';
 
+@customElement('deck-section')
 export class DeckSection extends LitElement {
   /* Tokens:
        --deck-section-bg          (defaults to --dark)
@@ -44,7 +46,7 @@ export class DeckSection extends LitElement {
     }
   `];
 
-  static override properties = { num: { type: String } };
+  @property({ type: String }) num?: string;
 
   override render() {
     return html`
@@ -54,4 +56,8 @@ export class DeckSection extends LitElement {
   }
 }
 
-customElements.define('deck-section', DeckSection);
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-section': DeckSection;
+  }
+}

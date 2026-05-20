@@ -18,18 +18,22 @@
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+
+export type DeckCalloutType = 'info' | 'warn' | 'danger' | 'ok';
 
 /* Lucide icon paths (https://lucide.dev) · 24×24, stroke-only, linecap round.
    The `i` dot in info/warn/danger needs `stroke-linecap="round"` to show up,
    because it is rendered as a zero-length path. Without round caps it
    collapses to nothing — the original bug. */
-const ICONS = {
+const ICONS: Record<DeckCalloutType, string> = {
   info:   '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
   warn:   '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
   danger: '<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>',
   ok:     '<path d="M20 6 9 17l-5-5"/>',
 };
 
+@customElement('deck-callout')
 export class DeckCallout extends LitElement {
   static override styles = css`
     :host {
@@ -72,11 +76,11 @@ export class DeckCallout extends LitElement {
     }
   `;
 
-  static override properties = { type: { type: String } };
+  @property({ type: String }) type?: DeckCalloutType;
 
   override render() {
-    const t = this.type || 'info';
-    const icon = ICONS[t] || ICONS.info;
+    const t: DeckCalloutType = this.type ?? 'info';
+    const icon = ICONS[t] ?? ICONS.info;
     // stroke-linecap="round" lets the i-dot (a zero-length path) render as a
     // small circle · without it, the dot collapses to nothing.
     return html`
@@ -90,4 +94,8 @@ export class DeckCallout extends LitElement {
   }
 }
 
-customElements.define('deck-callout', DeckCallout);
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-callout': DeckCallout;
+  }
+}

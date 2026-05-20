@@ -1,5 +1,17 @@
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result) __defProp(target, key, result);
+  return result;
+};
+
 // src/deck-stat.ts
 import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+import { customElement, property } from "https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";
 var TONES = {
   yellow: "var(--yellow)",
   orange: "var(--orange)",
@@ -10,8 +22,22 @@ var TONES = {
   cyan: "var(--cyan)"
 };
 var DeckStat = class extends LitElement {
-  static {
-    this.styles = css`
+  updated() {
+    if (this.tone) {
+      this.style.setProperty("--_c", TONES[this.tone] ?? this.tone);
+    } else {
+      this.style.removeProperty("--_c");
+    }
+  }
+  render() {
+    return html`
+      ${this.num ? html`<div class="num" part="num">${this.num}</div>` : ""}
+      <slot name="claim"></slot>
+      <div class="body" part="body"><slot></slot></div>
+    `;
+  }
+};
+DeckStat.styles = css`
     :host {
       display: flex; flex-direction: column;
       gap: var(--sp-2);
@@ -50,25 +76,15 @@ var DeckStat = class extends LitElement {
       padding: 2px 6px; border-radius: var(--r-sm);
     }
   `;
-  }
-  static {
-    this.properties = {
-      num: { type: String },
-      tone: { type: String }
-    };
-  }
-  updated() {
-    if (this.tone) this.style.setProperty("--_c", TONES[this.tone] || this.tone);
-  }
-  render() {
-    return html`
-      ${this.num ? html`<div class="num" part="num">${this.num}</div>` : ""}
-      <slot name="claim"></slot>
-      <div class="body" part="body"><slot></slot></div>
-    `;
-  }
-};
-customElements.define("deck-stat", DeckStat);
+__decorateClass([
+  property({ type: String })
+], DeckStat.prototype, "num", 2);
+__decorateClass([
+  property({ type: String })
+], DeckStat.prototype, "tone", 2);
+DeckStat = __decorateClass([
+  customElement("deck-stat")
+], DeckStat);
 export {
   DeckStat
 };
