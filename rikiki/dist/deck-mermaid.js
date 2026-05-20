@@ -32,13 +32,17 @@ async function ensureMermaid() {
 var mermaidId = 0;
 var DeckMermaid = class extends LitElement {
   static {
+    /* Tokens:
+         --deck-mermaid-bg / -border / -radius / -padding
+       Defaults to the --code-* theme tokens · diagrams sit on the same
+       dark surface as code blocks for visual consistency. */
     this.styles = css`
     :host {
       display: flex; align-items: center; justify-content: center;
-      background: #0f0f10;
-      border: 1px solid #232325;
-      border-radius: var(--r-md);
-      padding: var(--sp-4);
+      background: var(--deck-mermaid-bg, var(--code-bg));
+      border: 1px solid var(--deck-mermaid-border, var(--code-border));
+      border-radius: var(--deck-mermaid-radius, var(--r-md));
+      padding: var(--deck-mermaid-padding, var(--sp-4));
       box-shadow: var(--shadow-card);
       overflow: hidden;
       min-width: 0;

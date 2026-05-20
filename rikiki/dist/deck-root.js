@@ -74,11 +74,13 @@ var DeckRoot = class extends LitElement {
           e.preventDefault();
           const chap = this.chapters[c];
           if (chap && i + 1 < chap.slides.length) this._goToCoords(c, i + 1);
+          else this._advance();
           return;
         }
         if (e.key === "ArrowUp") {
           e.preventDefault();
           if (i - 1 >= 0) this._goToCoords(c, i - 1);
+          else this._back();
           return;
         }
       } else {

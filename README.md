@@ -23,7 +23,7 @@ python3 -m http.server 7799
 
 Then open one of the examples:
 
-- <http://localhost:7799/examples/web-components-in-5min/> · a 5-minute mini-tutorial showcasing the components
+- <http://localhost:7799/examples/rikiki-tour/> · a 12-slide tour of every layout, atom and navigation key
 - <http://localhost:7799/rikiki/starter.html> · a blank template you can copy
 
 To author your own deck:

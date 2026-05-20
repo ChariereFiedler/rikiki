@@ -1,1 +1,1 @@
-{"version":3,"file":"deck-cover.d.ts","sourceRoot":"","sources":["../src/deck-cover.ts"],"names":[],"mappings":"AAOA,OAAO,EAAE,UAAU,EAAa,MAAM,KAAK,CAAC;AAM5C,qBAAa,SAAU,SAAQ,UAAU;IACvC,MAAM,CAAC,MAAM,4BAuCV;IAEH,MAAM,CAAC,UAAU;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;MAaf;IAEF,MAAM;CAwBP"}
+{"version":3,"file":"deck-cover.d.ts","sourceRoot":"","sources":["../src/deck-cover.ts"],"names":[],"mappings":"AAcA,OAAO,EAAE,UAAU,EAAa,MAAM,KAAK,CAAC;AAG5C,qBAAa,SAAU,SAAQ,UAAU;IACvC,MAAM,CAAC,MAAM,4BA6CV;IAEH,MAAM,CAAC,UAAU;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;MAcf;IAEF,MAAM;CA+BP"}

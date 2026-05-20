@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rikiki · the docs</title>
+<link id="theme-link" rel="stylesheet" href="../../rikiki/tokens.css">
+<script type="module" src="../../rikiki/dist/index.js"></script>
+<script>
+  // Live theme switch · used by the clickable cards on the Themes slide.
+  // Choice is persisted in localStorage so a reload keeps it.
+  const THEMES = {
+    rikiki:   '../../rikiki/tokens.css',
+    siliceum: '../../rikiki/themes/siliceum.css',
+  };
+  function setTheme(name) {
+    const href = THEMES[name];
+    if (!href) return;
+    document.getElementById('theme-link').href = href;
+    document.documentElement.dataset.theme = name;
+    try { localStorage.setItem('rikiki-tour-theme', name); } catch {}
+  }
+  // Restore previous choice on load.
+  try {
+    const saved = localStorage.getItem('rikiki-tour-theme');
+    if (saved && THEMES[saved]) setTheme(saved);
+  } catch {}
+
+  if (location.search.includes('live') || location.search.includes('dev')) {
+    import('../../rikiki/dist/livereload.js');
+  }
+</script>
+<style>
+  /* Theme cards · clickable with theme-driven hover / focus / active states. */
+  .theme-card {
+    cursor: pointer;
+    border-radius: var(--r-lg);
+    outline: none;
+    padding: 4px;                    /* keeps the ring from clipping the card */
+    transition: transform 0.15s ease;
+    position: relative;
+  }
+  .theme-card:hover { transform: translateY(-2px); }
+  /* Active theme · solid ring with breathing space */
+  html[data-theme="rikiki"]   .theme-card[data-theme="rikiki"],
+  html[data-theme="siliceum"] .theme-card[data-theme="siliceum"] {
+    background: var(--yellow);
+  }
+  html[data-theme="rikiki"]   .theme-card[data-theme="rikiki"]::after,
+  html[data-theme="siliceum"] .theme-card[data-theme="siliceum"]::after {
+    content: "active";
+    position: absolute;
+    top: 10px; right: 12px;
+    background: var(--dark); color: var(--yellow);
+    font: 700 0.62rem/1 var(--mono);
+    letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 5px 9px;
+    border-radius: var(--r-pill);
+    z-index: 1;
+  }
+  /* Keyboard focus · distinct from active · uses outline-style ring */
+  .theme-card:focus-visible {
+    box-shadow: 0 0 0 4px var(--surface-card), 0 0 0 6px var(--yellow);
+  }
+</style>
+<style>
+  /* The only inline CSS · a tiny 2D deck-map used to teach navigation.
+     It is a visualisation of the framework's own structure, so it lives
+     here in the docs rather than as a shipped component. */
+  .deck-map { display: flex; gap: var(--sp-2); align-items: stretch; }
+  .deck-map .chap { display: flex; flex-direction: column; gap: var(--sp-1); flex: 1; min-width: 0; }
+  .deck-map .cell {
+    aspect-ratio: 16 / 9;
+    border-radius: var(--r-sm);
+    border: 2px solid var(--border);
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font: 700 var(--fs-micro)/1 var(--mono);
+    color: var(--muted);
+  }
+  .deck-map .cell.sec    { background: var(--dark); color: var(--on-dark-text); border-color: var(--dark); }
+  .deck-map .cell.active { border-color: var(--yellow); box-shadow: 0 0 0 3px rgba(240,112,32,0.30); color: var(--text); background: var(--surface-card); }
+</style>
+</head>
+<body>
+
+<deck-root>
+
+<!-- ════════════════════════════════════════════════════════════════
+     1 · COVER
+     ════════════════════════════════════════════════════════════════ -->
+<deck-cover
+  brand="rikiki · docs"
+  duration="~7 min"           duration-label="Length"
+  audience="Deck authors"     audience-label="Audience">
+  <h1>The whole framework,<br><span class="accent">in 14 slides.</span></h1>
+  <p slot="sub">Web Components for technical presentations · zero build, archivable in 2031.</p>
+</deck-cover>
+
+<!-- ════════════════════════════════════════════════════════════════
+     2 · SECTION · Why
+     ════════════════════════════════════════════════════════════════ -->
+<deck-section num="01"><h1>Why<br><em>Rikiki</em></h1></deck-section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     3 · Three promises · <deck-stat> from the framework
+     ════════════════════════════════════════════════════════════════ -->
+<deck-split eyebrow="Promises" cols="3" gap="5">
+  <h1 slot="title">Three on-purpose constraints</h1>
+  <deck-stat slot="a" num="01" tone="orange">
+    <h3 slot="claim">Open <code>index.html</code></h3>
+    No build, no dev server, no toolchain. <strong>A deck is a folder.</strong>
+  </deck-stat>
+  <deck-stat slot="b" num="02" tone="green">
+    <h3 slot="claim">Alive in 2031</h3>
+    Web standards only · Custom Elements, Shadow DOM, ES Modules, CSS variables.
+  </deck-stat>
+  <deck-stat slot="c" num="03" tone="lime">
+    <h3 slot="claim">~25 KB core</h3>
+    Lit + components. <strong>Anything bigger is opt-in.</strong>
+  </deck-stat>
+</deck-split>
+
+<!-- ════════════════════════════════════════════════════════════════
+     4 · Architecture · mermaid does the diagram
+     ════════════════════════════════════════════════════════════════ -->
+<deck-hero eyebrow="Architecture">
+  <h1 slot="title">Three thin layers</h1>
+  <deck-mermaid>
+    graph TB
+      A["Your deck<br/><code>index.html</code><br/>slides as &lt;deck-*&gt; elements"]:::deck
+      B["rikiki<br/>~20 Lit components<br/>themes · livereload · overview"]:::pkg
+      C["Web standards<br/>Custom Elements · Shadow DOM<br/>ES Modules · CSS Custom Properties"]:::std
+      A --> B --> C
+      classDef deck fill:#f07020,stroke:#b65820,color:#fff,stroke-width:2px
+      classDef pkg  fill:#00c8a0,stroke:#067a64,color:#fff,stroke-width:2px
+      classDef std  fill:#161c2e,stroke:#1e2840,color:#e8e4f0,stroke-width:2px
+  </deck-mermaid>
+</deck-hero>
+
+<!-- ════════════════════════════════════════════════════════════════
+     5 · SECTION · Anatomy
+     ════════════════════════════════════════════════════════════════ -->
+<deck-section num="02"><h1>Anatomy</h1></deck-section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     6 · A slide is just HTML · code on one side, key parts named
+     ════════════════════════════════════════════════════════════════ -->
+<deck-split eyebrow="Source = output" gap="5" col-gap="3">
+  <h1 slot="title">A slide is just HTML</h1>
+  <div slot="left">
+    <deck-code lang="html">
+      &lt;deck-hero eyebrow="Module"&gt;
+        &lt;h1 slot="title"&gt;Side effects&lt;/h1&gt;
+        &lt;p slot="lead" class="lead"&gt;
+          A module can act on import.
+        &lt;/p&gt;
+        &lt;deck-code lang="ts" hero&gt;
+          import './polyfill';
+        &lt;/deck-code&gt;
+      &lt;/deck-hero&gt;
+    </deck-code>
+  </div>
+  <deck-stack slot="right" gap="3">
+    <deck-callout type="info">
+      <strong>Layouts</strong> · <code>&lt;deck-hero&gt;</code> and friends provide structure · title, lead, body.
+    </deck-callout>
+    <deck-callout type="ok">
+      <strong>Slots</strong> · <code>slot="title"</code>, <code>slot="lead"</code>, <code>slot="left"</code>, <code>slot="right"</code>.
+    </deck-callout>
+    <deck-callout type="warn">
+      <strong>Atoms</strong> · <code>&lt;deck-code&gt;</code>, <code>&lt;deck-md&gt;</code>, <code>&lt;deck-callout&gt;</code>, <code>&lt;deck-card&gt;</code>, <code>&lt;deck-mermaid&gt;</code>.
+    </deck-callout>
+  </deck-stack>
+</deck-split>
+
+<!-- ════════════════════════════════════════════════════════════════
+     7 · SECTION · Library
+     ════════════════════════════════════════════════════════════════ -->
+<deck-section num="03"><h1>The library</h1></deck-section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     8 · Layouts cheat-sheet · deck-step-list
+     ════════════════════════════════════════════════════════════════ -->
+<deck-hero eyebrow="Layouts">
+  <h1 slot="title">Six layouts, six jobs</h1>
+  <deck-step-list>
+    <deck-step n="1" note="Opening slide · XL title on dark, optional brand mark, meta block.">&lt;deck-cover&gt;</deck-step>
+    <deck-step n="2" note="Chapter separator · number + centered title on dark.">&lt;deck-section&gt;</deck-step>
+    <deck-step n="3" note="One focal block · code, table, mermaid, big stat.">&lt;deck-hero&gt;</deck-step>
+    <deck-step n="4" note="Two or three columns · cols=&quot;1-1&quot;, &quot;1-2&quot;, &quot;3&quot;. gap is a design-token attribute.">&lt;deck-split&gt;</deck-step>
+    <deck-step n="5" note="Hero on top, two detail cards below · slot=&quot;left&quot;, slot=&quot;right&quot;.">&lt;deck-hero-detail&gt;</deck-step>
+    <deck-step n="6" note="Centered punchline on dark · the take-home line.">&lt;deck-hook&gt;</deck-step>
+  </deck-step-list>
+</deck-hero>
+
+<!-- ════════════════════════════════════════════════════════════════
+     9 · Atoms · shown, not described · deck-split + deck-stack
+     ════════════════════════════════════════════════════════════════ -->
+<deck-split eyebrow="Atoms" gap="5" col-gap="3">
+  <h1 slot="title">Atoms · the things you slot</h1>
+  <deck-stack slot="left" gap="3">
+    <deck-callout type="info">
+      <strong>&lt;deck-callout&gt;</strong> · boxed note · `info` / `warn` / `danger` / `ok`.
+    </deck-callout>
+    <deck-card color="yellow">
+      <h3>&lt;deck-card color="…"&gt;</h3>
+      <deck-md>Tinted block · `yellow`, `orange`, `green`, `red`.</deck-md>
+    </deck-card>
+    <deck-code lang="js" nested>
+      const greet = (n) =&gt; `Hi, ${n}`;
+    </deck-code>
+  </deck-stack>
+  <deck-stack slot="right" gap="3">
+    <deck-card color="green">
+      <h3>&lt;deck-md&gt;</h3>
+      <deck-md>**Markdown** body · GFM, tables, lists, `inline code`. Anywhere a paragraph would sit.</deck-md>
+    </deck-card>
+    <deck-card color="orange">
+      <h3>&lt;deck-mermaid&gt;</h3>
+      <deck-md>Mermaid diagram loaded **on demand** from CDN · the only opt-in CDN dep.</deck-md>
+    </deck-card>
+    <deck-card color="yellow">
+      <h3>…plus 11 more</h3>
+      <deck-md>`&lt;deck-stat&gt;`, `&lt;deck-shortcut&gt;`, `&lt;deck-badge&gt;`, `&lt;deck-metric&gt;`, `&lt;deck-tier-list&gt;`, `&lt;deck-step-list&gt;`, `&lt;deck-kicker&gt;`, `&lt;deck-stack&gt;`, `&lt;deck-grid&gt;`, `&lt;deck-punch&gt;`, `&lt;deck-root&gt;`.</deck-md>
+    </deck-card>
+  </deck-stack>
+</deck-split>
+
+<!-- ════════════════════════════════════════════════════════════════
+     10 · SECTION · Navigation
+     ════════════════════════════════════════════════════════════════ -->
+<deck-section num="04"><h1>Navigation</h1></deck-section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     11 · 2D map · custom inline (doc-specific), callouts framework-side
+     ════════════════════════════════════════════════════════════════ -->
+<deck-split eyebrow="2D model" cols="2-1" gap="5" col-gap="3">
+  <h1 slot="title">Sections go right · slides go down</h1>
+  <deck-stack slot="left" gap="3">
+    <div class="deck-map">
+      <div class="chap"><div class="cell sec">Cover</div></div>
+      <div class="chap">
+        <div class="cell sec">Sec 1</div>
+        <div class="cell active">·</div>
+        <div class="cell">·</div>
+      </div>
+      <div class="chap">
+        <div class="cell sec">Sec 2</div>
+        <div class="cell">·</div>
+        <div class="cell">·</div>
+        <div class="cell">·</div>
+      </div>
+      <div class="chap"><div class="cell sec">Hook</div></div>
+    </div>
+    <deck-callout type="info">
+      Each column is a chapter (opened by a <code>&lt;deck-section&gt;</code>); rows below are sub-slides inside it. The highlighted cell is the current slide.
+    </deck-callout>
+  </deck-stack>
+  <deck-stack slot="right" gap="3">
+    <deck-callout type="warn">
+      <strong>← / →</strong> jump between <strong>columns</strong> · sections.
+    </deck-callout>
+    <deck-callout type="ok">
+      <strong>↑ / ↓</strong> walk the <strong>rows</strong> · sub-slides.
+    </deck-callout>
+    <deck-callout type="info">
+      <strong>Space</strong> · linear next. Doesn't care about axes.
+    </deck-callout>
+  </deck-stack>
+</deck-split>
+
+<!-- ════════════════════════════════════════════════════════════════
+     12 · All shortcuts · framework component <deck-shortcut-list>
+     ════════════════════════════════════════════════════════════════ -->
+<deck-hero eyebrow="Shortcuts">
+  <h1 slot="title">Every key, on one page</h1>
+  <deck-shortcut-list col-gap="5">
+    <deck-shortcut keys="← →"      label="Section"          note="Jump between top-level chapters."></deck-shortcut>
+    <deck-shortcut keys="↑ ↓"      label="Sub-slide"        note="Within the current section."></deck-shortcut>
+    <deck-shortcut keys="Space PgDn" label="Next (linear)"  note="Always advances · the safest key."></deck-shortcut>
+    <deck-shortcut keys="PgUp"     label="Previous"         note="Step back through the source order."></deck-shortcut>
+    <deck-shortcut keys="Home"     label="First slide"      note="Back to the cover."></deck-shortcut>
+    <deck-shortcut keys="End"      label="Last slide"       note="Skip to the closing hook."></deck-shortcut>
+    <deck-shortcut keys="O"        label="Overview"         note="Path layout · click any slide to jump there."></deck-shortcut>
+    <deck-shortcut keys="? H"      label="Help"             note="Full shortcut overlay."></deck-shortcut>
+    <deck-shortcut keys="Esc"      label="Close overlay"    note="Closes overview, help, or any temporary view."></deck-shortcut>
+    <deck-shortcut keys="#N"       label="Deep link"        note="URL hash · #5 shares slide 5 directly."></deck-shortcut>
+  </deck-shortcut-list>
+</deck-hero>
+
+<!-- ════════════════════════════════════════════════════════════════
+     13 · SECTION · Themes
+     ════════════════════════════════════════════════════════════════ -->
+<deck-section num="05"><h1>Themes</h1></deck-section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     14 · Two themes · pure framework
+     ════════════════════════════════════════════════════════════════ -->
+<deck-split eyebrow="Two ship by default · click to try" gap="5">
+  <h1 slot="title">Pick a theme · one link, one swap</h1>
+  <div slot="left" class="theme-card" data-theme="rikiki"
+       role="button" tabindex="0" onclick="setTheme('rikiki')"
+       onkeydown="if(event.key==='Enter'||event.key===' '){setTheme('rikiki');event.preventDefault();}">
+    <deck-card color="orange">
+      <h3>rikiki · default</h3>
+      <deck-md>
+        Tropical-jungle palette · **mango** primary, **helico** teal, **orchid**, **lime**.
+        Unbounded + Inter + Space Mono via Google Fonts.
+      </deck-md>
+      <deck-code lang="html" nested>
+        &lt;link rel="stylesheet"
+              href="rikiki/tokens.css"&gt;
+      </deck-code>
+    </deck-card>
+  </div>
+  <div slot="right" class="theme-card" data-theme="siliceum"
+       role="button" tabindex="0" onclick="setTheme('siliceum')"
+       onkeydown="if(event.key==='Enter'||event.key===' '){setTheme('siliceum');event.preventDefault();}">
+    <deck-card color="yellow">
+      <h3>siliceum · warm paper</h3>
+      <deck-md>
+        Warm paper palette · `#F7CB44` yellow accent, Source Sans Pro + JetBrains Mono,
+        self-hosted woff2.
+      </deck-md>
+      <deck-code lang="html" nested>
+        &lt;link rel="stylesheet"
+              href="rikiki/themes/siliceum.css"&gt;
+      </deck-code>
+    </deck-card>
+  </div>
+</deck-split>
+
+<!-- ════════════════════════════════════════════════════════════════
+     15 · SECTION · Quickstart
+     ════════════════════════════════════════════════════════════════ -->
+<deck-section num="06"><h1>Quickstart</h1></deck-section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     16 · The whole HTML file
+     ════════════════════════════════════════════════════════════════ -->
+<deck-hero eyebrow="60 seconds, no install">
+  <h1 slot="title">A deck, end to end</h1>
+  <deck-code lang="html" hero>
+    &lt;!doctype html&gt;
+    &lt;html&gt;
+    &lt;head&gt;
+      &lt;meta charset="UTF-8"&gt;
+      &lt;link rel="stylesheet" href="../../rikiki/tokens.css"&gt;
+      &lt;script type="module" src="../../rikiki/dist/index.js"&gt;&lt;/script&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+      &lt;deck-root&gt;
+        &lt;deck-cover brand="my-talk"&gt;
+          &lt;h1&gt;Hello, &lt;span class="accent"&gt;world&lt;/span&gt;.&lt;/h1&gt;
+        &lt;/deck-cover&gt;
+        &lt;deck-hero eyebrow="One slide"&gt;
+          &lt;h1 slot="title"&gt;That's all you need.&lt;/h1&gt;
+          &lt;deck-md&gt;Write **markdown**, drop `&lt;deck-*&gt;` blocks, navigate with arrows.&lt;/deck-md&gt;
+        &lt;/deck-hero&gt;
+      &lt;/deck-root&gt;
+    &lt;/body&gt;
+    &lt;/html&gt;
+  </deck-code>
+</deck-hero>
+
+<!-- ════════════════════════════════════════════════════════════════
+     17 · Closing hook · framework only
+     ════════════════════════════════════════════════════════════════ -->
+<deck-hook kicker="The whole point">
+  <deck-punch size="display" weight="900">Source = output.</deck-punch>
+  <p class="caption on-dark">A deck is a folder · open it in 2031, edit one character, give it again.</p>
+</deck-hook>
+
+</deck-root>
+
+</body>
+</html>

@@ -23,6 +23,8 @@ import './deck-kicker.js';
 import './deck-stack.js';
 import './deck-grid.js';
 import './deck-punch.js';
+import './deck-stat.js';
+import './deck-shortcut.js';
 
 // Mermaid optionnel (chargé via CDN si <deck-mermaid> est présent)
 // Voir starter.html pour l'init mermaid.

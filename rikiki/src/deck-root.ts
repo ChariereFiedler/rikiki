@@ -371,13 +371,12 @@ export class DeckRoot extends LitElement {
     if (e.key === 'PageUp')                    { e.preventDefault(); this._back(); return; }
 
     if (this._has2DNav()) {
-      // reveal.js convention:
-      //   ←/→ : move between top-level slides (chapters/sections).
-      //         If no chapter exists in that direction, fall back to a linear
-      //         step so the arrow never feels dead at the edges.
-      //   ↑/↓ : strict vertical · move between sub-slides within the current
-      //         chapter. Do nothing at the chapter's vertical boundary, like
-      //         reveal.js does (use Space/PgDn/← /→ to leave the chapter).
+      // Two axes, both with linear fallback at edges:
+      //   ←/→ : jump to the previous/next top-level chapter (section).
+      //         At the deck edges, fall back to a linear step.
+      //   ↑/↓ : walk slide-by-slide. Inside a section stays in the section;
+      //         at the section boundary, crosses over linearly · so the user
+      //         can hold ↓ to traverse the whole deck.
       const { c, i } = this._coords(this.current);
       if (e.key === 'ArrowRight') {
         e.preventDefault();
@@ -395,11 +394,13 @@ export class DeckRoot extends LitElement {
         e.preventDefault();
         const chap = this.chapters[c];
         if (chap && i + 1 < chap.slides.length) this._goToCoords(c, i + 1);
+        else this._advance();
         return;
       }
       if (e.key === 'ArrowUp') {
         e.preventDefault();
         if (i - 1 >= 0) this._goToCoords(c, i - 1);
+        else this._back();
         return;
       }
     } else {

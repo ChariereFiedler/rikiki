@@ -5,6 +5,10 @@ export declare class DeckCover extends LitElement {
         brand: {
             type: StringConstructor;
         };
+        brandSrc: {
+            type: StringConstructor;
+            attribute: string;
+        };
         speaker: {
             type: StringConstructor;
         };

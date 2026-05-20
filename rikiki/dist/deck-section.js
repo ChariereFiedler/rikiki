@@ -100,29 +100,42 @@ var slideBase = [slideShell, typo, helpers];
 // src/deck-section.ts
 var DeckSection = class extends LitElement {
   static {
+    /* Tokens:
+         --deck-section-bg          (defaults to --dark)
+         --deck-section-num-color   small section number      (--on-dark-faint)
+         --deck-section-rule-color  line on each side         (--on-dark-border)
+         --deck-section-title-color (defaults to --yellow)
+         --deck-section-em-color    italic inside h1          (--on-dark-soft) */
     this.styles = [...slideBase, css2`
     :host {
-      background: var(--dark); color: #fff;
+      background: var(--deck-section-bg, var(--dark));
+      color: var(--on-dark-text);
       justify-content: center; align-items: center; text-align: center;
     }
     .sec-num {
       font-size: var(--fs-micro); font-weight: 700; letter-spacing: 0.16em;
-      text-transform: uppercase; color: rgba(255,255,255,0.35);
+      text-transform: uppercase;
+      color: var(--deck-section-num-color, var(--on-dark-faint));
       margin-bottom: var(--sp-3);
       display: inline-flex; align-items: center; gap: 0.8rem;
+      font-family: var(--mono);
     }
     .sec-num::before, .sec-num::after {
       content: ''; width: 32px; height: 1px;
-      background: rgba(255,255,255,0.2);
+      background: var(--deck-section-rule-color, var(--on-dark-border));
     }
     ::slotted(h1) {
       font-size: var(--fs-section); font-weight: 900;
-      color: var(--yellow); line-height: 1.02; letter-spacing: -0.03em;
+      color: var(--deck-section-title-color, var(--yellow));
+      line-height: 1.02; letter-spacing: -0.03em;
       max-width: 18ch;
       border: none; padding: 0; margin: 0;
       text-align: center; align-self: center;
     }
-    ::slotted(h1 em) { color: rgba(255,255,255,0.65); font-style: normal; font-weight: 700; }
+    ::slotted(h1 em) {
+      color: var(--deck-section-em-color, var(--on-dark-soft));
+      font-style: normal; font-weight: 700;
+    }
   `];
   }
   static {

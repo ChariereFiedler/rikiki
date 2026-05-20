@@ -74,11 +74,13 @@ var DeckRoot = class extends LitElement {
           e.preventDefault();
           const chap = this.chapters[c];
           if (chap && i + 1 < chap.slides.length) this._goToCoords(c, i + 1);
+          else this._advance();
           return;
         }
         if (e.key === "ArrowUp") {
           e.preventDefault();
           if (i - 1 >= 0) this._goToCoords(c, i - 1);
+          else this._back();
           return;
         }
       } else {
@@ -697,8 +699,19 @@ var slideBase = [slideShell, typo, helpers];
 // src/deck-cover.ts
 var DeckCover = class extends LitElement2 {
   static {
+    /* Tokens:
+         --deck-cover-bg          slide background          (defaults to --dark)
+         --deck-cover-text        primary on-dark text      (--on-dark-text)
+         --deck-cover-soft        soft on-dark text         (--on-dark-soft)
+         --deck-cover-muted       very soft on-dark text    (--on-dark-muted)
+         --deck-cover-faint       faintest on-dark text     (--on-dark-faint)
+         --deck-cover-border      meta separator border     (--on-dark-border) */
     this.styles = [...slideBase, css3`
-    :host { background: var(--dark); justify-content: center; color: #fff; }
+    :host {
+      background: var(--deck-cover-bg, var(--dark));
+      justify-content: center;
+      color: var(--deck-cover-text, var(--on-dark-text));
+    }
     .brand {
       display: inline-flex; align-items: center; gap: var(--sp-3);
       margin-bottom: var(--sp-5);
@@ -713,35 +726,43 @@ var DeckCover = class extends LitElement2 {
       font-family: var(--display, inherit);
       font-size: var(--fs-micro); font-weight: 700;
       letter-spacing: 0.2em; text-transform: uppercase;
-      color: rgba(255,255,255,0.75);
+      color: var(--deck-cover-soft, var(--on-dark-soft));
     }
     .brand-context {
-      font-size: var(--fs-micro); font-weight: 700; color: rgba(255,255,255,0.55);
+      font-size: var(--fs-micro); font-weight: 700;
+      color: var(--deck-cover-muted, var(--on-dark-muted));
       letter-spacing: 0.2em; text-transform: uppercase;
-      padding-left: var(--sp-3); border-left: 1px solid rgba(255,255,255,0.18);
+      padding-left: var(--sp-3);
+      border-left: 1px solid var(--deck-cover-border, var(--on-dark-border));
     }
     ::slotted(h1) {
       font-size: clamp(3.6rem, 9vw, 8.5rem); font-weight: 900;
-      color: #fff; line-height: 1.02; letter-spacing: -0.035em;
+      color: var(--deck-cover-text, var(--on-dark-text));
+      line-height: 1.02; letter-spacing: -0.035em;
       margin-bottom: var(--sp-4);
       border: none; padding: 0;
     }
     ::slotted(.sub) {
-      font-size: var(--fs-h2); color: rgba(255,255,255,0.6);
+      font-size: var(--fs-h2);
+      color: var(--deck-cover-muted, var(--on-dark-muted));
       margin-bottom: var(--sp-6); max-width: 60ch; line-height: 1.45;
       display: block;
     }
     .meta {
       display: flex; gap: var(--sp-6);
-      border-top: 1px solid rgba(255,255,255,0.12);
+      border-top: 1px solid var(--deck-cover-border, var(--on-dark-border));
       padding-top: var(--sp-4);
     }
     .meta-item strong {
       display: block; font-size: var(--fs-micro); letter-spacing: 0.12em;
-      text-transform: uppercase; color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+      color: var(--deck-cover-faint, var(--on-dark-faint));
       margin-bottom: 6px; font-weight: 700;
     }
-    .meta-item span { color: #fff; font-size: var(--fs-body); font-weight: 600; }
+    .meta-item span {
+      color: var(--deck-cover-text, var(--on-dark-text));
+      font-size: var(--fs-body); font-weight: 600;
+    }
   `];
   }
   static {
@@ -795,29 +816,42 @@ customElements.define("deck-cover", DeckCover);
 import { LitElement as LitElement3, html as html3, css as css4 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
 var DeckSection = class extends LitElement3 {
   static {
+    /* Tokens:
+         --deck-section-bg          (defaults to --dark)
+         --deck-section-num-color   small section number      (--on-dark-faint)
+         --deck-section-rule-color  line on each side         (--on-dark-border)
+         --deck-section-title-color (defaults to --yellow)
+         --deck-section-em-color    italic inside h1          (--on-dark-soft) */
     this.styles = [...slideBase, css4`
     :host {
-      background: var(--dark); color: #fff;
+      background: var(--deck-section-bg, var(--dark));
+      color: var(--on-dark-text);
       justify-content: center; align-items: center; text-align: center;
     }
     .sec-num {
       font-size: var(--fs-micro); font-weight: 700; letter-spacing: 0.16em;
-      text-transform: uppercase; color: rgba(255,255,255,0.35);
+      text-transform: uppercase;
+      color: var(--deck-section-num-color, var(--on-dark-faint));
       margin-bottom: var(--sp-3);
       display: inline-flex; align-items: center; gap: 0.8rem;
+      font-family: var(--mono);
     }
     .sec-num::before, .sec-num::after {
       content: ''; width: 32px; height: 1px;
-      background: rgba(255,255,255,0.2);
+      background: var(--deck-section-rule-color, var(--on-dark-border));
     }
     ::slotted(h1) {
       font-size: var(--fs-section); font-weight: 900;
-      color: var(--yellow); line-height: 1.02; letter-spacing: -0.03em;
+      color: var(--deck-section-title-color, var(--yellow));
+      line-height: 1.02; letter-spacing: -0.03em;
       max-width: 18ch;
       border: none; padding: 0; margin: 0;
       text-align: center; align-self: center;
     }
-    ::slotted(h1 em) { color: rgba(255,255,255,0.65); font-style: normal; font-weight: 700; }
+    ::slotted(h1 em) {
+      color: var(--deck-section-em-color, var(--on-dark-soft));
+      font-style: normal; font-weight: 700;
+    }
   `];
   }
   static {
@@ -878,15 +912,15 @@ var DeckSplit = class extends LitElement5 {
       display: grid;
       grid-template-columns: 1fr 1fr;
       grid-template-rows: minmax(0, 1fr);
-      gap: var(--sp-5);
+      gap: var(--_gap, var(--sp-5));
     }
     :host([cols="1-2"]) .body { grid-template-columns: 1fr 2fr; }
     :host([cols="2-1"]) .body { grid-template-columns: 2fr 1fr; }
-    :host([cols="3"])   .body { grid-template-columns: 1fr 1fr 1fr; gap: var(--sp-4); }
+    :host([cols="3"])   .body { grid-template-columns: 1fr 1fr 1fr; gap: var(--_gap, var(--sp-4)); }
     .col {
       display: flex; flex-direction: column;
       min-height: 0; min-width: 0;
-      gap: var(--sp-3);
+      gap: var(--_col-gap, var(--sp-3));
       overflow: hidden;
     }
     .col.center { justify-content: center; }
@@ -895,9 +929,23 @@ var DeckSplit = class extends LitElement5 {
   static {
     this.properties = {
       eyebrow: { type: String },
-      cols: { type: String }
-      // '1-1' (defaut), '1-2', '2-1', '3'
+      cols: { type: String },
+      // '1-1' (default), '1-2', '2-1', '3'
+      gap: { type: String },
+      // between-column gap · '1'..'6' or raw value
+      colGap: { type: String, attribute: "col-gap" }
+      // inside-column gap · '1'..'6' or raw value
     };
+  }
+  /** Map '1'..'6' to var(--sp-N); fall through to raw values otherwise. */
+  _resolveSp(v) {
+    const n = parseInt(v, 10);
+    if (!Number.isNaN(n) && n >= 1 && n <= 6) return `var(--sp-${n})`;
+    return v;
+  }
+  updated() {
+    if (this.gap) this.style.setProperty("--_gap", this._resolveSp(this.gap));
+    if (this.colGap) this.style.setProperty("--_col-gap", this._resolveSp(this.colGap));
   }
   render() {
     const hasA = this.querySelector('[slot="a"]');
@@ -979,26 +1027,34 @@ customElements.define("deck-hero-detail", DeckHeroDetail);
 import { LitElement as LitElement7, html as html7, css as css8 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
 var DeckHook = class extends LitElement7 {
   static {
+    /* Tokens:
+         --deck-hook-bg               (defaults to --dark)
+         --deck-hook-display-color    (defaults to --yellow)
+         --deck-hook-caption-color    (defaults to --on-dark-muted)
+         --deck-hook-gap              vertical gap between elements */
     this.styles = [...slideBase, css8`
     :host {
-      background: var(--dark); color: #fff;
+      background: var(--deck-hook-bg, var(--dark));
+      color: var(--on-dark-text);
       justify-content: center; align-items: center; text-align: center;
     }
     .body {
       display: flex; flex-direction: column; align-items: center;
-      gap: var(--sp-4);
+      gap: var(--deck-hook-gap, var(--sp-4));
       max-width: 75vw;
     }
     ::slotted(.display) {
+      font-family: var(--display, var(--sans));
       font-size: clamp(3rem, 7vw, 5.5rem);
-      font-weight: 900; color: var(--yellow);
+      font-weight: 900;
+      color: var(--deck-hook-display-color, var(--yellow));
       letter-spacing: -0.03em; line-height: 1.05;
       margin: 0;
     }
     ::slotted(.display.danger) { color: var(--red); }
     ::slotted(.caption) {
       font-size: var(--fs-lead);
-      color: rgba(255,255,255,0.6);
+      color: var(--deck-hook-caption-color, var(--on-dark-muted));
     }
   `];
   }
@@ -1034,16 +1090,17 @@ var DeckMd = class extends LitElement8 {
     em { font-style: italic; }
     code {
       font-family: var(--mono); font-size: var(--fs-mono-sm);
-      background: rgba(0,0,0,0.06); padding: 2px 6px;
+      background: var(--surface-tint); padding: 2px 6px;
       border-radius: var(--r-sm); color: var(--text);
     }
     pre {
-      background: #0f0f10; border: 1px solid #232325;
+      background: var(--deck-md-pre-bg, var(--code-bg));
+      border: 1px solid var(--deck-md-pre-border, var(--code-border));
       border-radius: var(--r-md);
       padding: var(--sp-3) var(--sp-4);
       overflow: auto;
       font-family: var(--mono); font-size: var(--fs-mono);
-      line-height: 1.75; color: #f4f4f5;
+      line-height: 1.75; color: var(--deck-md-pre-text, var(--code-text));
       margin: 0 0 var(--sp-3);
       box-shadow: var(--shadow-card);
     }
@@ -1085,36 +1142,64 @@ customElements.define("deck-md", DeckMd);
 
 // src/deck-code.ts
 import { LitElement as LitElement9, html as html9, css as css10 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-function highlight(src) {
+function highlight(src, lang) {
   let s = src.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const placeholders = [];
   const stash = (cls, text) => {
-    const id = `\uE000P${placeholders.length}E\uE001`;
-    placeholders.push(`<span class="${cls}">${text}</span>`);
+    const id = "P" + placeholders.length + "E";
+    placeholders.push('<span class="' + cls + '">' + text + "</span>");
     return id;
   };
-  s = s.replace(/(\/\/[^\n]*)/g, (m) => stash("cmt", m));
-  s = s.replace(/(['"`])((?:\\.|(?!\1)[^\\])*)\1/g, (m) => stash("str", m));
-  s = s.replace(
-    /\b(const|let|var|function|return|if|else|for|while|class|extends|new|export|import|from|as|await|async|of|in|typeof|instanceof|true|false|null|undefined)\b/g,
-    (m) => stash("kw", m)
-  );
-  s = s.replace(/\b(\d+(?:\.\d+)?)\b/g, (m) => stash("num", m));
-  s = s.replace(/P(\d+)E/g, (_, i) => placeholders[+i]);
+  const isHtml = lang === "html" || lang === "xml" || lang === "svg";
+  const isCss = lang === "css" || lang === "scss" || lang === "less";
+  if (isHtml) {
+    s = s.replace(/(&lt;!--[\s\S]*?--&gt;)/g, (m) => stash("cmt", m));
+    s = s.replace(/(&lt;!doctype[^&]*&gt;)/gi, (m) => stash("cmt", m));
+    s = s.replace(/("[^"]*"|'[^']*')/g, (m) => stash("str", m));
+    s = s.replace(
+      /(&lt;\/?)([a-zA-Z][a-zA-Z0-9:-]*)/g,
+      (_, lt, tag) => lt + stash("kw", tag)
+    );
+    s = s.replace(/\b([a-zA-Z][a-zA-Z0-9-]*)(?==)/g, (m) => stash("prop", m));
+  } else if (isCss) {
+    s = s.replace(/(\/\*[\s\S]*?\*\/)/g, (m) => stash("cmt", m));
+    s = s.replace(/("[^"]*"|'[^']*')/g, (m) => stash("str", m));
+    s = s.replace(/([a-zA-Z-]+)(?=\s*:)/g, (m) => stash("prop", m));
+    s = s.replace(/(#[0-9a-fA-F]{3,8})\b/g, (m) => stash("num", m));
+    s = s.replace(
+      /\b(\d+(?:\.\d+)?)(px|rem|em|%|vh|vw|vmin|vmax|s|ms|deg)?/g,
+      (_, n, u) => stash("num", n + (u || ""))
+    );
+  } else {
+    s = s.replace(/(\/\/[^\n]*)/g, (m) => stash("cmt", m));
+    s = s.replace(/(['"`])((?:\\.|(?!\1)[^\\])*)\1/g, (m) => stash("str", m));
+    s = s.replace(
+      /\b(const|let|var|function|return|if|else|for|while|class|extends|new|export|import|from|as|await|async|of|in|typeof|instanceof|true|false|null|undefined)\b/g,
+      (m) => stash("kw", m)
+    );
+    s = s.replace(/\b(\d+(?:\.\d+)?)\b/g, (m) => stash("num", m));
+  }
+  s = s.replace(/P(\d+)E/g, (_, i) => placeholders[+i]);
   return s;
 }
 var DeckCode = class extends LitElement9 {
   static {
+    /* Customization tokens:
+         --deck-code-bg / -border / -text
+         --deck-code-radius / -padding-y / -padding-x
+         --deck-code-syntax-{kw,str,num,cmt,ty,prop,fn}
+       All default to the theme's --code-* tokens. */
     this.styles = css10`
     :host {
       display: block;
-      background: #0f0f10; border: 1px solid #232325;
-      border-radius: var(--r-md);
-      padding: var(--sp-3) var(--sp-4);
+      background: var(--deck-code-bg, var(--code-bg));
+      border: 1px solid var(--deck-code-border, var(--code-border));
+      border-radius: var(--deck-code-radius, var(--r-md));
+      padding: var(--deck-code-padding-y, var(--sp-3)) var(--deck-code-padding-x, var(--sp-4));
       font-family: var(--mono);
       font-size: var(--fs-mono);
       line-height: 1.7;
-      color: #f4f4f5;
+      color: var(--deck-code-text, var(--code-text));
       box-shadow: var(--shadow-card);
       overflow: auto;
       white-space: pre;
@@ -1122,7 +1207,6 @@ var DeckCode = class extends LitElement9 {
     :host([hero]) { display: flex; align-items: safe center; padding: var(--sp-4) var(--sp-5); }
     :host([nested]) {
       box-shadow: none;
-      border: 1px solid #1f1f21;
       border-radius: var(--r-sm);
       padding: var(--sp-2) var(--sp-3);
     }
@@ -1131,13 +1215,13 @@ var DeckCode = class extends LitElement9 {
     .line { transition: opacity 0.25s ease; display: block; }
     .line.dim { opacity: 0.25; }
     .line.lit { opacity: 1; }
-    .kw   { color: #c792ea; }
-    .fn   { color: #82aaff; }
-    .str  { color: #c3e88d; }
-    .num  { color: #f78c6c; }
-    .cmt  { color: #546e7a; font-style: italic; }
-    .ty   { color: #ffcb6b; }
-    .prop { color: #80cbc4; }
+    .kw   { color: var(--deck-code-syntax-kw,   var(--code-kw)); }
+    .fn   { color: var(--deck-code-syntax-fn,   var(--code-fn)); }
+    .str  { color: var(--deck-code-syntax-str,  var(--code-str)); }
+    .num  { color: var(--deck-code-syntax-num,  var(--code-num)); }
+    .cmt  { color: var(--deck-code-syntax-cmt,  var(--code-cmt)); font-style: italic; }
+    .ty   { color: var(--deck-code-syntax-ty,   var(--code-ty)); }
+    .prop { color: var(--deck-code-syntax-prop, var(--code-prop)); }
   `;
   }
   static {
@@ -1166,7 +1250,7 @@ var DeckCode = class extends LitElement9 {
     const indent = lines.filter((l) => l.trim().length > 0).reduce((min, l) => Math.min(min, l.match(/^ */)[0].length), Infinity);
     const cleaned = indent === Infinity ? lines : lines.map((l) => l.slice(indent));
     this._html = cleaned.map(
-      (line, i) => `<span class="line" data-line="${i + 1}">${highlight(line || " ")}</span>`
+      (line, i) => '<span class="line" data-line="' + (i + 1) + '">' + highlight(line || " ", this.lang) + "</span>"
     ).join("");
   }
   applyStep(n) {
@@ -1193,31 +1277,32 @@ customElements.define("deck-code", DeckCode);
 // src/deck-callout.ts
 import { LitElement as LitElement10, html as html10, css as css11 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
 var ICONS = {
-  info: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
-  warn: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
-  danger: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
-  ok: '<polyline points="20 6 9 17 4 12"/>'
-};
-var COLORS = {
-  info: { bg: "rgba(247,203,68,0.10)", bd: "rgba(247,203,68,0.45)", st: "var(--yellow)" },
-  warn: { bg: "rgba(234,88,12,0.08)", bd: "rgba(234,88,12,0.40)", st: "var(--orange)" },
-  danger: { bg: "rgba(220,38,38,0.08)", bd: "rgba(220,38,38,0.40)", st: "var(--red)" },
-  ok: { bg: "rgba(22,163,74,0.08)", bd: "rgba(22,163,74,0.40)", st: "var(--green)" }
+  info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+  warn: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  danger: '<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>',
+  ok: '<path d="M20 6 9 17l-5-5"/>'
 };
 var DeckCallout = class extends LitElement10 {
   static {
     this.styles = css11`
     :host {
       display: flex; gap: var(--sp-3);
-      padding: var(--sp-3) var(--sp-4);
-      border-radius: var(--r-md);
-      border: 1px solid transparent;
-      font-size: var(--fs-body); line-height: 1.55;
+      padding: var(--deck-callout-padding-y, var(--sp-3)) var(--deck-callout-padding-x, var(--sp-4));
+      border-radius: var(--deck-callout-radius, var(--r-md));
+      background: var(--deck-callout-bg, var(--surface-info));
+      border: 1px solid var(--deck-callout-border, var(--border-info));
       box-shadow: var(--shadow-card);
       align-items: center;
       color: var(--soft);
       font-family: var(--sans);
+      font-size: var(--fs-body); line-height: 1.55;
     }
+    /* Type-based mapping · every value points at a theme token. */
+    :host([type="info"])   { --deck-callout-bg: var(--surface-info);   --deck-callout-border: var(--border-info);   --deck-callout-stroke: var(--yellow); }
+    :host([type="warn"])   { --deck-callout-bg: var(--surface-warn);   --deck-callout-border: var(--border-warn);   --deck-callout-stroke: var(--orange); }
+    :host([type="danger"]) { --deck-callout-bg: var(--surface-bad);    --deck-callout-border: var(--border-bad);    --deck-callout-stroke: var(--red); }
+    :host([type="ok"])     { --deck-callout-bg: var(--surface-ok);     --deck-callout-border: var(--border-ok);     --deck-callout-stroke: var(--green); }
+
     .icon-box {
       flex-shrink: 0;
       width: var(--icon-2xl); height: var(--icon-2xl);
@@ -1225,13 +1310,17 @@ var DeckCallout = class extends LitElement10 {
       border-radius: 50%;
       background: var(--surface-tint);
     }
-    .icon-box svg { width: var(--icon-lg); height: var(--icon-lg); stroke-width: 2.2; }
+    .icon-box svg {
+      width: var(--icon-lg); height: var(--icon-lg);
+      stroke: var(--deck-callout-stroke, var(--yellow));
+      stroke-width: 2.2;
+    }
     .content { flex: 1; }
     ::slotted(p) { margin: 0; }
     ::slotted(strong) { color: var(--text); font-weight: 700; }
     ::slotted(code) {
       font-family: var(--mono); font-size: var(--fs-mono-sm);
-      background: rgba(0,0,0,0.06); padding: 2px 6px;
+      background: var(--surface-tint); padding: 2px 6px;
       border-radius: var(--r-sm); color: var(--text);
     }
   `;
@@ -1241,13 +1330,11 @@ var DeckCallout = class extends LitElement10 {
   }
   render() {
     const t = this.type || "info";
-    const c = COLORS[t] || COLORS.info;
     const icon = ICONS[t] || ICONS.info;
-    this.style.background = c.bg;
-    this.style.borderColor = c.bd;
     return html10`
       <div class="icon-box">
-        <svg viewBox="0 0 24 24" fill="none" stroke="${c.st}" stroke-width="2.2"
+        <svg viewBox="0 0 24 24" fill="none"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
              .innerHTML="${icon}"></svg>
       </div>
       <div class="content"><slot></slot></div>
@@ -1258,19 +1345,13 @@ customElements.define("deck-callout", DeckCallout);
 
 // src/deck-card.ts
 import { LitElement as LitElement11, html as html11, css as css12 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-var COLORS2 = {
-  yellow: { bg: "rgba(247,203,68,0.04)", bd: "rgba(247,203,68,0.55)" },
-  orange: { bg: "rgba(234,88,12,0.03)", bd: "rgba(234,88,12,0.45)" },
-  green: { bg: "rgba(22,163,74,0.025)", bd: "rgba(22,163,74,0.45)" },
-  red: { bg: "rgba(220,38,38,0.025)", bd: "rgba(220,38,38,0.45)" }
-};
 var DeckCard = class extends LitElement11 {
   static {
     this.styles = css12`
     :host {
       display: flex; flex-direction: column;
       gap: var(--sp-2);
-      background: var(--card);
+      background: var(--surface-card);
       border: 1px solid var(--border);
       border-radius: var(--r-lg);
       padding: var(--sp-3) var(--sp-4);
@@ -1279,7 +1360,12 @@ var DeckCard = class extends LitElement11 {
       font-family: var(--sans);
       color: var(--soft);
     }
+    :host([color="yellow"]) { background: var(--surface-info-faint); border-color: var(--border-info); }
+    :host([color="orange"]) { background: var(--surface-warn);       border-color: var(--border-warn); }
+    :host([color="green"])  { background: var(--surface-ok);         border-color: var(--border-ok); }
+    :host([color="red"])    { background: var(--surface-bad);        border-color: var(--border-bad); }
     ::slotted(h3) {
+      font-family: var(--display, var(--sans));
       font-size: var(--fs-h2);
       font-weight: 700;
       color: var(--text);
@@ -1293,7 +1379,7 @@ var DeckCard = class extends LitElement11 {
       margin: 0;
     }
     ::slotted(strong) { color: var(--text); font-weight: 700; }
-    :host([center]) { text-align: center; align-items: center; }
+    :host([center])  { text-align: center; align-items: center; }
     :host([compact]) { padding: var(--sp-2) var(--sp-3); }
   `;
   }
@@ -1301,11 +1387,6 @@ var DeckCard = class extends LitElement11 {
     this.properties = { color: { type: String } };
   }
   render() {
-    const c = COLORS2[this.color];
-    if (c) {
-      this.style.background = c.bg;
-      this.style.borderColor = c.bd;
-    }
     return html11`<slot></slot>`;
   }
 };
@@ -1345,13 +1426,17 @@ async function ensureMermaid() {
 var mermaidId = 0;
 var DeckMermaid = class extends LitElement12 {
   static {
+    /* Tokens:
+         --deck-mermaid-bg / -border / -radius / -padding
+       Defaults to the --code-* theme tokens · diagrams sit on the same
+       dark surface as code blocks for visual consistency. */
     this.styles = css13`
     :host {
       display: flex; align-items: center; justify-content: center;
-      background: #0f0f10;
-      border: 1px solid #232325;
-      border-radius: var(--r-md);
-      padding: var(--sp-4);
+      background: var(--deck-mermaid-bg, var(--code-bg));
+      border: 1px solid var(--deck-mermaid-border, var(--code-border));
+      border-radius: var(--deck-mermaid-radius, var(--r-md));
+      padding: var(--deck-mermaid-padding, var(--sp-4));
       box-shadow: var(--shadow-card);
       overflow: hidden;
       min-width: 0;
@@ -1598,35 +1683,30 @@ customElements.define("deck-tier-arrow", DeckTierArrow);
 
 // src/deck-badge.ts
 import { LitElement as LitElement16, html as html16, css as css17 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-var TYPES = {
-  bad: { bg: "var(--surface-bad)", fg: "var(--red)", bd: "var(--border-bad)" },
-  ok: { bg: "var(--surface-ok)", fg: "var(--green)", bd: "var(--border-ok)" },
-  info: { bg: "var(--surface-info-strong)", fg: "var(--text-info)", bd: "var(--border-info)" },
-  warn: { bg: "var(--surface-warn)", fg: "var(--orange)", bd: "var(--border-warn)" },
-  neutral: { bg: "var(--surface-tint)", fg: "var(--muted)", bd: "var(--border)" }
-};
 var DeckBadge = class extends LitElement16 {
   static {
     this.styles = css17`
     :host {
       display: inline-block;
-      padding: var(--sp-1) var(--sp-3);
+      padding: var(--deck-badge-padding-y, var(--sp-1)) var(--deck-badge-padding-x, var(--sp-3));
       margin-bottom: var(--sp-2);
       font: 700 var(--fs-micro)/1.2 var(--sans);
       letter-spacing: 0.1em; text-transform: uppercase;
-      border-radius: var(--r-pill);
-      border: 1px solid transparent;
+      border-radius: var(--deck-badge-radius, var(--r-pill));
+      background: var(--deck-badge-bg, var(--surface-tint));
+      color: var(--deck-badge-fg, var(--muted));
+      border: 1px solid var(--deck-badge-border, var(--border));
     }
+    :host([type="bad"])  { --deck-badge-bg: var(--surface-bad);          --deck-badge-fg: var(--red);       --deck-badge-border: var(--border-bad); }
+    :host([type="ok"])   { --deck-badge-bg: var(--surface-ok);           --deck-badge-fg: var(--green);     --deck-badge-border: var(--border-ok); }
+    :host([type="info"]) { --deck-badge-bg: var(--surface-info-strong);  --deck-badge-fg: var(--text-info); --deck-badge-border: var(--border-info); }
+    :host([type="warn"]) { --deck-badge-bg: var(--surface-warn);         --deck-badge-fg: var(--orange);    --deck-badge-border: var(--border-warn); }
   `;
   }
   static {
     this.properties = { type: { type: String } };
   }
   render() {
-    const t = TYPES[this.type] || TYPES.neutral;
-    this.style.background = t.bg;
-    this.style.color = t.fg;
-    this.style.borderColor = t.bd;
     return html16`<slot></slot>`;
   }
 };
@@ -1775,18 +1855,19 @@ customElements.define("deck-grid", DeckGrid);
 // src/deck-punch.ts
 import { LitElement as LitElement20, html as html20, css as css21 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
 var TONES = {
-  default: "var(--text)",
   warn: "var(--orange)",
   danger: "var(--red)",
   ok: "var(--green)",
   info: "var(--yellow)",
-  muted: "var(--muted)"
+  muted: "var(--muted)",
+  accent: "var(--yellow)"
 };
 var SIZES = {
   lead: "var(--fs-lead)",
   big: "var(--fs-big)",
   mega: "var(--fs-mega)",
-  stat: "var(--fs-stat)"
+  stat: "var(--fs-stat)",
+  display: "clamp(2.6rem, 6vw, 5rem)"
 };
 var DeckPunch = class extends LitElement20 {
   static {
@@ -1794,14 +1875,19 @@ var DeckPunch = class extends LitElement20 {
     :host {
       display: block;
       margin: 0;
+      font-family: var(--display, var(--sans));
       font-weight: 900;
       line-height: 1.1;
-      letter-spacing: -0.01em;
-      font-size: var(--_size, var(--fs-lead));
-      color:     var(--_color, var(--text));
+      letter-spacing: -0.02em;
+      font-size: var(--deck-punch-size, var(--_size, var(--fs-lead)));
+      /* "inherit" lets us pick up the on-dark color of cover/hook/section · the
+         color is only overridden when a tone is explicitly chosen. */
+      color:     var(--deck-punch-color, var(--_color, inherit));
     }
     :host([weight="700"]) { font-weight: 700; }
+    :host([weight="800"]) { font-weight: 800; }
     :host([align="center"]) { text-align: center; }
+    :host([align="right"])  { text-align: right; }
   `;
   }
   static {
@@ -1813,12 +1899,217 @@ var DeckPunch = class extends LitElement20 {
     };
   }
   updated() {
-    this.style.setProperty("--_color", TONES[this.tone] || TONES.default);
-    this.style.setProperty("--_size", SIZES[this.size] || SIZES.lead);
+    if (this.tone && TONES[this.tone]) {
+      this.style.setProperty("--_color", TONES[this.tone]);
+    } else {
+      this.style.removeProperty("--_color");
+    }
+    if (this.size && SIZES[this.size]) {
+      this.style.setProperty("--_size", SIZES[this.size]);
+    } else {
+      this.style.removeProperty("--_size");
+    }
   }
   render() {
     return html20`<slot></slot>`;
   }
 };
 customElements.define("deck-punch", DeckPunch);
+
+// src/deck-stat.ts
+import { LitElement as LitElement21, html as html21, css as css22 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+var TONES2 = {
+  yellow: "var(--yellow)",
+  orange: "var(--orange)",
+  green: "var(--green)",
+  red: "var(--red)",
+  purple: "var(--purple)",
+  lime: "var(--lime)",
+  cyan: "var(--cyan)"
+};
+var DeckStat = class extends LitElement21 {
+  static {
+    this.styles = css22`
+    :host {
+      display: flex; flex-direction: column;
+      gap: var(--sp-2);
+      padding: var(--sp-4) var(--sp-3);
+      border-left: 4px solid var(--_c, var(--yellow));
+      min-width: 0;
+      font-family: var(--sans);
+    }
+    .num {
+      font-family: var(--display, var(--sans));
+      font-size: clamp(3.5rem, 7vw, 6rem);
+      font-weight: 900;
+      line-height: 0.9;
+      color: var(--_c, var(--yellow));
+      letter-spacing: -0.04em;
+    }
+    ::slotted([slot="claim"]) {
+      font-family: var(--display, var(--sans));
+      font-size: var(--fs-strong);
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+    .body {
+      font-size: var(--fs-body);
+      color: var(--muted);
+      line-height: 1.45;
+      margin-top: var(--sp-2);
+    }
+    ::slotted(strong) { color: var(--text); font-weight: 700; }
+    ::slotted(code) {
+      font-family: var(--mono); font-size: var(--fs-mono-sm);
+      background: var(--surface-tint); color: var(--text);
+      padding: 2px 6px; border-radius: var(--r-sm);
+    }
+  `;
+  }
+  static {
+    this.properties = {
+      num: { type: String },
+      tone: { type: String }
+    };
+  }
+  updated() {
+    if (this.tone) this.style.setProperty("--_c", TONES2[this.tone] || this.tone);
+  }
+  render() {
+    return html21`
+      ${this.num ? html21`<div class="num" part="num">${this.num}</div>` : ""}
+      <slot name="claim"></slot>
+      <div class="body" part="body"><slot></slot></div>
+    `;
+  }
+};
+customElements.define("deck-stat", DeckStat);
+
+// src/deck-shortcut.ts
+import { LitElement as LitElement22, html as html22, css as css23 } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
+var DeckKbd = class extends LitElement22 {
+  static {
+    this.styles = css23`
+    :host {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-bottom: 3px solid var(--surface-tint-strong, rgba(0,0,0,0.10));
+      border-radius: 5px;
+      padding: 3px 8px;
+      font: 700 0.92rem/1 var(--mono);
+      color: var(--text);
+      min-width: 22px;
+      text-align: center;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset;
+    }
+    :host([tone="accent"]) {
+      background: var(--yellow);
+      color: var(--dark);
+      border-color: rgba(0,0,0,0.15);
+    }
+    :host([tone="ok"]) {
+      background: var(--green);
+      color: var(--dark);
+      border-color: rgba(0,0,0,0.15);
+    }
+  `;
+  }
+  render() {
+    return html22`<slot></slot>`;
+  }
+};
+customElements.define("deck-kbd", DeckKbd);
+var DeckShortcut = class extends LitElement22 {
+  static {
+    this.styles = css23`
+    :host {
+      display: flex; align-items: center; gap: var(--sp-3);
+      padding: var(--sp-2) 0;
+      font-family: var(--sans);
+    }
+    .keys { display: inline-flex; gap: 4px; flex-shrink: 0; }
+    .keys deck-kbd, .keys .k {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-bottom: 3px solid rgba(0,0,0,0.10);
+      border-radius: 5px;
+      padding: 3px 8px;
+      font: 700 0.92rem/1 var(--mono);
+      color: var(--text);
+      min-width: 22px; text-align: center;
+    }
+    .body { flex: 1; min-width: 0; }
+    .label {
+      font: 700 var(--fs-body)/1.2 var(--sans);
+      color: var(--text);
+    }
+    .note {
+      font: 400 var(--fs-small)/1.4 var(--sans);
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    :host([tone="accent"]) .keys .k { background: var(--yellow); color: var(--dark); border-color: rgba(0,0,0,0.15); }
+    :host([tone="ok"])     .keys .k { background: var(--green);  color: var(--dark); border-color: rgba(0,0,0,0.15); }
+  `;
+  }
+  static {
+    this.properties = {
+      keys: { type: String },
+      label: { type: String },
+      note: { type: String },
+      tone: { type: String }
+    };
+  }
+  render() {
+    const keyTokens = (this.keys || "").trim().split(/\s+/).filter(Boolean);
+    return html22`
+      <span class="keys" part="keys">
+        ${keyTokens.map((k) => html22`<span class="k">${k}</span>`)}
+      </span>
+      <div class="body" part="body">
+        ${this.label ? html22`<div class="label">${this.label}</div>` : ""}
+        ${this.note ? html22`<div class="note">${this.note}</div>` : html22`<div class="note"><slot></slot></div>`}
+      </div>
+    `;
+  }
+};
+customElements.define("deck-shortcut", DeckShortcut);
+var DeckShortcutList = class extends LitElement22 {
+  static {
+    this.styles = css23`
+    :host {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 var(--_col-gap, var(--sp-5));
+      font-family: var(--sans);
+    }
+    :host([cols="1"]) { grid-template-columns: 1fr; }
+    ::slotted(deck-shortcut) {
+      border-bottom: 1px solid var(--border);
+    }
+  `;
+  }
+  static {
+    this.properties = {
+      cols: { type: String },
+      colGap: { type: String, attribute: "col-gap" }
+    };
+  }
+  updated() {
+    if (this.colGap) {
+      const n = parseInt(this.colGap, 10);
+      const v = !Number.isNaN(n) && n >= 1 && n <= 6 ? `var(--sp-${n})` : this.colGap;
+      this.style.setProperty("--_col-gap", v);
+    }
+  }
+  render() {
+    return html22`<slot></slot>`;
+  }
+};
+customElements.define("deck-shortcut-list", DeckShortcutList);
 //# sourceMappingURL=index.js.map

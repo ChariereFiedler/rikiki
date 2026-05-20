@@ -16,8 +16,19 @@ import { LitElement, html, css } from 'lit';
 import { slideBase } from './shared-styles.js';
 
 export class DeckCover extends LitElement {
+  /* Tokens:
+       --deck-cover-bg          slide background          (defaults to --dark)
+       --deck-cover-text        primary on-dark text      (--on-dark-text)
+       --deck-cover-soft        soft on-dark text         (--on-dark-soft)
+       --deck-cover-muted       very soft on-dark text    (--on-dark-muted)
+       --deck-cover-faint       faintest on-dark text     (--on-dark-faint)
+       --deck-cover-border      meta separator border     (--on-dark-border) */
   static styles = [...slideBase, css`
-    :host { background: var(--dark); justify-content: center; color: #fff; }
+    :host {
+      background: var(--deck-cover-bg, var(--dark));
+      justify-content: center;
+      color: var(--deck-cover-text, var(--on-dark-text));
+    }
     .brand {
       display: inline-flex; align-items: center; gap: var(--sp-3);
       margin-bottom: var(--sp-5);
@@ -32,35 +43,43 @@ export class DeckCover extends LitElement {
       font-family: var(--display, inherit);
       font-size: var(--fs-micro); font-weight: 700;
       letter-spacing: 0.2em; text-transform: uppercase;
-      color: rgba(255,255,255,0.75);
+      color: var(--deck-cover-soft, var(--on-dark-soft));
     }
     .brand-context {
-      font-size: var(--fs-micro); font-weight: 700; color: rgba(255,255,255,0.55);
+      font-size: var(--fs-micro); font-weight: 700;
+      color: var(--deck-cover-muted, var(--on-dark-muted));
       letter-spacing: 0.2em; text-transform: uppercase;
-      padding-left: var(--sp-3); border-left: 1px solid rgba(255,255,255,0.18);
+      padding-left: var(--sp-3);
+      border-left: 1px solid var(--deck-cover-border, var(--on-dark-border));
     }
     ::slotted(h1) {
       font-size: clamp(3.6rem, 9vw, 8.5rem); font-weight: 900;
-      color: #fff; line-height: 1.02; letter-spacing: -0.035em;
+      color: var(--deck-cover-text, var(--on-dark-text));
+      line-height: 1.02; letter-spacing: -0.035em;
       margin-bottom: var(--sp-4);
       border: none; padding: 0;
     }
     ::slotted(.sub) {
-      font-size: var(--fs-h2); color: rgba(255,255,255,0.6);
+      font-size: var(--fs-h2);
+      color: var(--deck-cover-muted, var(--on-dark-muted));
       margin-bottom: var(--sp-6); max-width: 60ch; line-height: 1.45;
       display: block;
     }
     .meta {
       display: flex; gap: var(--sp-6);
-      border-top: 1px solid rgba(255,255,255,0.12);
+      border-top: 1px solid var(--deck-cover-border, var(--on-dark-border));
       padding-top: var(--sp-4);
     }
     .meta-item strong {
       display: block; font-size: var(--fs-micro); letter-spacing: 0.12em;
-      text-transform: uppercase; color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+      color: var(--deck-cover-faint, var(--on-dark-faint));
       margin-bottom: 6px; font-weight: 700;
     }
-    .meta-item span { color: #fff; font-size: var(--fs-body); font-weight: 600; }
+    .meta-item span {
+      color: var(--deck-cover-text, var(--on-dark-text));
+      font-size: var(--fs-body); font-weight: 600;
+    }
   `];
 
   static properties = {

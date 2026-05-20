@@ -1,18 +1,12 @@
 // src/deck-card.ts
 import { LitElement, html, css } from "https://cdn.jsdelivr.net/npm/lit@3/+esm";
-var COLORS = {
-  yellow: { bg: "rgba(247,203,68,0.04)", bd: "rgba(247,203,68,0.55)" },
-  orange: { bg: "rgba(234,88,12,0.03)", bd: "rgba(234,88,12,0.45)" },
-  green: { bg: "rgba(22,163,74,0.025)", bd: "rgba(22,163,74,0.45)" },
-  red: { bg: "rgba(220,38,38,0.025)", bd: "rgba(220,38,38,0.45)" }
-};
 var DeckCard = class extends LitElement {
   static {
     this.styles = css`
     :host {
       display: flex; flex-direction: column;
       gap: var(--sp-2);
-      background: var(--card);
+      background: var(--surface-card);
       border: 1px solid var(--border);
       border-radius: var(--r-lg);
       padding: var(--sp-3) var(--sp-4);
@@ -21,7 +15,12 @@ var DeckCard = class extends LitElement {
       font-family: var(--sans);
       color: var(--soft);
     }
+    :host([color="yellow"]) { background: var(--surface-info-faint); border-color: var(--border-info); }
+    :host([color="orange"]) { background: var(--surface-warn);       border-color: var(--border-warn); }
+    :host([color="green"])  { background: var(--surface-ok);         border-color: var(--border-ok); }
+    :host([color="red"])    { background: var(--surface-bad);        border-color: var(--border-bad); }
     ::slotted(h3) {
+      font-family: var(--display, var(--sans));
       font-size: var(--fs-h2);
       font-weight: 700;
       color: var(--text);
@@ -35,7 +34,7 @@ var DeckCard = class extends LitElement {
       margin: 0;
     }
     ::slotted(strong) { color: var(--text); font-weight: 700; }
-    :host([center]) { text-align: center; align-items: center; }
+    :host([center])  { text-align: center; align-items: center; }
     :host([compact]) { padding: var(--sp-2) var(--sp-3); }
   `;
   }
@@ -43,11 +42,6 @@ var DeckCard = class extends LitElement {
     this.properties = { color: { type: String } };
   }
   render() {
-    const c = COLORS[this.color];
-    if (c) {
-      this.style.background = c.bg;
-      this.style.borderColor = c.bd;
-    }
     return html`<slot></slot>`;
   }
 };

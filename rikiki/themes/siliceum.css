@@ -19,6 +19,9 @@
   --red:    #dc2626;
   --green:  #16a34a;
   --orange: #ea580c;
+  --purple: #7c3aed;
+  --lime:   #84cc16;
+  --cyan:   #0891b2;
 
   /* Couleurs sémantiques (surfaces & bordures) */
   --surface-bad:    rgba(220,38,38,0.10);
@@ -72,11 +75,11 @@
   --fs-mono:    0.88rem;
   --fs-mono-sm: 0.8rem;
 
-  /* ── Rayons ──────────────────────────────────────── */
-  --r-xs: 4px;
-  --r-sm: 6px;
-  --r-md: 10px;
-  --r-lg: 14px;
+  /* ── Rayons · Siliceum stays a bit more austere than Rikiki ────── */
+  --r-xs: 3px;
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 10px;
   --r-pill: 9999px;
 
   /* ── Tailles d'icônes ────────────────────────────── */
@@ -112,6 +115,18 @@
 
   /* ── Hauteur typique d'un titre H1 ───────────────── */
   --title-block: 4.5rem;
+
+  /* ── Code-block surface + syntax palette ─────────── */
+  --code-bg:     #0f0f10;
+  --code-border: #232325;
+  --code-text:   #f4f4f5;
+  --code-cmt:    #546e7a;
+  --code-kw:     #c792ea;
+  --code-str:    #c3e88d;
+  --code-num:    #f78c6c;
+  --code-ty:     #ffcb6b;
+  --code-prop:   #80cbc4;
+  --code-fn:     #82aaff;
 }
 
 /* ── Reset minimal (n'écrase pas le padding des Web Components) ── */
@@ -138,14 +153,15 @@ body { font-family: var(--sans); color: var(--text); }
 deck-hero > h1,
 deck-split > h1,
 deck-hero-detail > h1 {
+  font-family: var(--display);
   font-size: var(--fs-h1);
   font-weight: 700;
   color: var(--text);
-  letter-spacing: -0.022em;
+  letter-spacing: -0.018em;                 /* less tight than Rikiki */
   line-height: 1.15;
   margin-bottom: var(--sp-4);
   padding-bottom: var(--sp-2);
-  border-bottom: 3px solid var(--yellow);
+  border-bottom: 2px solid var(--yellow);   /* thinner accent rule */
   display: inline-block;
   align-self: flex-start;
 }

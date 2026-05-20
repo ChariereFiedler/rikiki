@@ -107,15 +107,15 @@ var DeckSplit = class extends LitElement {
       display: grid;
       grid-template-columns: 1fr 1fr;
       grid-template-rows: minmax(0, 1fr);
-      gap: var(--sp-5);
+      gap: var(--_gap, var(--sp-5));
     }
     :host([cols="1-2"]) .body { grid-template-columns: 1fr 2fr; }
     :host([cols="2-1"]) .body { grid-template-columns: 2fr 1fr; }
-    :host([cols="3"])   .body { grid-template-columns: 1fr 1fr 1fr; gap: var(--sp-4); }
+    :host([cols="3"])   .body { grid-template-columns: 1fr 1fr 1fr; gap: var(--_gap, var(--sp-4)); }
     .col {
       display: flex; flex-direction: column;
       min-height: 0; min-width: 0;
-      gap: var(--sp-3);
+      gap: var(--_col-gap, var(--sp-3));
       overflow: hidden;
     }
     .col.center { justify-content: center; }
@@ -124,9 +124,23 @@ var DeckSplit = class extends LitElement {
   static {
     this.properties = {
       eyebrow: { type: String },
-      cols: { type: String }
-      // '1-1' (defaut), '1-2', '2-1', '3'
+      cols: { type: String },
+      // '1-1' (default), '1-2', '2-1', '3'
+      gap: { type: String },
+      // between-column gap · '1'..'6' or raw value
+      colGap: { type: String, attribute: "col-gap" }
+      // inside-column gap · '1'..'6' or raw value
     };
+  }
+  /** Map '1'..'6' to var(--sp-N); fall through to raw values otherwise. */
+  _resolveSp(v) {
+    const n = parseInt(v, 10);
+    if (!Number.isNaN(n) && n >= 1 && n <= 6) return `var(--sp-${n})`;
+    return v;
+  }
+  updated() {
+    if (this.gap) this.style.setProperty("--_gap", this._resolveSp(this.gap));
+    if (this.colGap) this.style.setProperty("--_col-gap", this._resolveSp(this.colGap));
   }
   render() {
     const hasA = this.querySelector('[slot="a"]');

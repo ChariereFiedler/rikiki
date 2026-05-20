@@ -25,16 +25,17 @@ export class DeckMd extends LitElement {
     em { font-style: italic; }
     code {
       font-family: var(--mono); font-size: var(--fs-mono-sm);
-      background: rgba(0,0,0,0.06); padding: 2px 6px;
+      background: var(--surface-tint); padding: 2px 6px;
       border-radius: var(--r-sm); color: var(--text);
     }
     pre {
-      background: #0f0f10; border: 1px solid #232325;
+      background: var(--deck-md-pre-bg, var(--code-bg));
+      border: 1px solid var(--deck-md-pre-border, var(--code-border));
       border-radius: var(--r-md);
       padding: var(--sp-3) var(--sp-4);
       overflow: auto;
       font-family: var(--mono); font-size: var(--fs-mono);
-      line-height: 1.75; color: #f4f4f5;
+      line-height: 1.75; color: var(--deck-md-pre-text, var(--code-text));
       margin: 0 0 var(--sp-3);
       box-shadow: var(--shadow-card);
     }
