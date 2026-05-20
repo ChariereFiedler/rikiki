@@ -156,24 +156,11 @@ html { font-size: clamp(14px, 2.35vh, 42px); }
 html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); }
 body { font-family: var(--sans); color: var(--text); }
 
-/* ── Rikiki signature backgrounds ──────────────────────
-   Paper slides get a soft warm wash from mango at the top-left.
-   Dark slides (cover/section/hook) get a deep navy → void gradient
-   plus a faint mango glow that hints at the jungle origin. */
-deck-hero, deck-split, deck-hero-detail {
-  background:
-    radial-gradient(ellipse at 0% 0%,
-      rgba(240, 112, 32, 0.05) 0%,
-      transparent 60%),
-    var(--bg) !important;
-}
-deck-cover, deck-section, deck-hook {
-  background:
-    radial-gradient(circle at 15% 85%,
-      rgba(240, 112, 32, 0.10) 0%,
-      transparent 50%),
-    linear-gradient(180deg, var(--void) 0%, var(--deep) 60%, var(--layer) 100%) !important;
-}
+/* No theme-specific gradients on slides themselves · slide layouts handle
+   their own background via shadow-DOM `:host { background: ... }` rules.
+   Anything we set here would either need `!important` (which would break
+   clones in overview when the theme switches at runtime) or rely on
+   theme-only variables that overview clones can't resolve. */
 
 /* ── Light-DOM helpers (apply to slotted children) ──── */
 .accent { color: var(--yellow); }

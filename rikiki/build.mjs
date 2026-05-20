@@ -34,6 +34,14 @@ const cdnRewrite = {
       if (!target) return null;
       return { path: target, external: true };
     });
+    // Keep dynamic imports of sibling lazy modules out of the bundle so the
+    // browser fetches them on demand. deck-root uses
+    //   await import('./deck-overview.js')
+    // which would otherwise be inlined back into deck-root.
+    b.onResolve({ filter: /^\.\/(deck-overview|deck-help)\.js$/ }, (args) => ({
+      path: args.path,
+      external: true,
+    }));
   },
 };
 

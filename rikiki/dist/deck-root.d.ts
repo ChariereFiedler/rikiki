@@ -4,38 +4,27 @@ export declare class DeckRoot extends LitElement {
     current: number;
     step: number;
     overview: boolean;
-    static properties: {
-        current: {
-            type: NumberConstructor;
-            state: boolean;
-        };
-        step: {
-            type: NumberConstructor;
-            state: boolean;
-        };
-        overview: {
-            type: BooleanConstructor;
-            reflect: boolean;
-        };
-    };
     private slides;
     private chapters;
-    constructor();
+    private _overviewTeardown;
     firstUpdated(): void;
     disconnectedCallback(): void;
     /** Group slides into chapters bounded by <deck-section> markers. */
     private _buildChapters;
-    /** Whether 2D nav is enabled (i.e. at least one chapter has multiple slides). */
+    /** True when at least one chapter has multiple slides and there are 2+ chapters. */
     private _has2DNav;
-    /** Convert flat index → {chapter, intra-chapter index}. */
+    /** Flat index → {chapter, intra-chapter index}. */
     private _coords;
     private _flatFromCoords;
     private _onHash;
     private _readHash;
     private _writeHash;
     private _onKey;
+    /** Lazy-import the help module the first time the user opens it. */
     private _toggleHelp;
     private _closeHelp;
+    /** Lazy-import the overview module the first time the user opens it. */
+    private _renderOverviewIfActive;
     private _maxSteps;
     private _advance;
     private _back;
@@ -45,10 +34,11 @@ export declare class DeckRoot extends LitElement {
     private _applyStep;
     private _updateUI;
     updated(): void;
-    /** Inject tokens.css into our shadow root so cloned slides get the
-     *  light-DOM-only styling (deck-cover > h1, .lead, .sub, etc.). */
-    private _ensureOverviewTokens;
-    private _renderOverviewIfActive;
     render(): unknown;
+}
+declare global {
+    interface HTMLElementTagNameMap {
+        'deck-root': DeckRoot;
+    }
 }
 //# sourceMappingURL=deck-root.d.ts.map
