@@ -1,11 +1,1 @@
-import{LitElement as t,html as e,css as o}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";var r=class extends t{static{this.styles=o`
-    :host {
-      display: block;
-      font: 700 var(--fs-micro)/1.2 var(--sans);
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: var(--sp-2);
-    }
-    :host([on-dark]) { color: var(--on-dark-muted); }
-  `}render(){return e`<slot></slot>`}};customElements.define("deck-kicker",r);export{r as DeckKicker};
+import{LitElement as t,html as e,css as o}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";var r=class extends t{static{this.styles=o`:host{display:block;font:700 var(--fs-micro)/1.2 var(--sans);letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:var(--sp-2)}:host([on-dark]){color:var(--on-dark-muted)}`}render(){return e`<slot></slot>`}};customElements.define("deck-kicker",r);export{r as DeckKicker};

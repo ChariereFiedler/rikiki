@@ -1,74 +1,7 @@
-var m=Object.defineProperty;var x=Object.getOwnPropertyDescriptor;var e=(d,r,t,p)=>{for(var s=p>1?void 0:p?x(r,t):r,c=d.length-1,g;c>=0;c--)(g=d[c])&&(s=(p?g(r,t,s):g(s))||s);return p&&s&&m(r,t,s),s};import{LitElement as v,html as n,css as b}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as y,property as l}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var i=class extends v{render(){return n`<slot></slot>`}};i.styles=b`
-    :host {
-      display: inline-flex; align-items: center; justify-content: center;
-      background: var(--surface-card);
-      border: 1px solid var(--border);
-      border-bottom: 3px solid var(--surface-tint-strong, rgba(0,0,0,0.10));
-      border-radius: 5px;
-      padding: 3px 8px;
-      font: 700 0.92rem/1 var(--mono);
-      color: var(--text);
-      min-width: 22px;
-      text-align: center;
-      box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset;
-    }
-    :host([tone="accent"]) {
-      background: var(--yellow);
-      color: var(--dark);
-      border-color: rgba(0,0,0,0.15);
-    }
-    :host([tone="ok"]) {
-      background: var(--green);
-      color: var(--dark);
-      border-color: rgba(0,0,0,0.15);
-    }
-  `,e([l({type:String})],i.prototype,"tone",2),i=e([y("deck-kbd")],i);var o=class extends v{render(){let r=(this.keys??"").trim().split(/\s+/).filter(Boolean);return n`
-      <span class="keys" part="keys">
-        ${r.map(t=>n`<span class="k">${t}</span>`)}
+var m=Object.defineProperty;var x=Object.getOwnPropertyDescriptor;var e=(d,r,t,p)=>{for(var s=p>1?void 0:p?x(r,t):r,c=d.length-1,g;c>=0;c--)(g=d[c])&&(s=(p?g(r,t,s):g(s))||s);return p&&s&&m(r,t,s),s};import{LitElement as v,html as n,css as b}from"https://cdn.jsdelivr.net/npm/lit@3/+esm";import{customElement as y,property as l}from"https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm";var i=class extends v{render(){return n`<slot></slot>`}};i.styles=b`:host{display:inline-flex;align-items:center;justify-content:center;background:var(--surface-card);border:1px solid var(--border);border-bottom:3px solid var(--surface-tint-strong,rgba(0,0,0,0.10));border-radius:5px;padding:3px 8px;font:700 0.92rem/1 var(--mono);color:var(--text);min-width:22px;text-align:center;box-shadow:0 1px 0 rgba(255,255,255,0.5) inset}:host([tone="accent"]){background:var(--yellow);color:var(--dark);border-color:rgba(0,0,0,0.15)}:host([tone="ok"]){background:var(--green);color:var(--dark);border-color:rgba(0,0,0,0.15)}`,e([l({type:String})],i.prototype,"tone",2),i=e([y("deck-kbd")],i);var o=class extends v{render(){let r=(this.keys??"").trim().split(/\s+/).filter(Boolean);return n`<span class="keys" part="keys"> ${r.map(t=>n`<span class="k">${t}</span>`)}
       </span>
       <div class="body" part="body">
         ${this.label?n`<div class="label">${this.label}</div>`:""}
         ${this.note?n`<div class="note">${this.note}</div>`:n`<div class="note"><slot></slot></div>`}
       </div>
-    `}};o.styles=b`
-    :host {
-      display: flex; align-items: center; gap: var(--sp-3);
-      padding: var(--sp-2) 0;
-      font-family: var(--sans);
-    }
-    .keys { display: inline-flex; gap: 4px; flex-shrink: 0; }
-    .keys deck-kbd, .keys .k {
-      display: inline-flex; align-items: center; justify-content: center;
-      background: var(--surface-card);
-      border: 1px solid var(--border);
-      border-bottom: 3px solid rgba(0,0,0,0.10);
-      border-radius: 5px;
-      padding: 3px 8px;
-      font: 700 0.92rem/1 var(--mono);
-      color: var(--text);
-      min-width: 22px; text-align: center;
-    }
-    .body { flex: 1; min-width: 0; }
-    .label {
-      font: 700 var(--fs-body)/1.2 var(--sans);
-      color: var(--text);
-    }
-    .note {
-      font: 400 var(--fs-small)/1.4 var(--sans);
-      color: var(--muted);
-      margin-top: 2px;
-    }
-    :host([tone="accent"]) .keys .k { background: var(--yellow); color: var(--dark); border-color: rgba(0,0,0,0.15); }
-    :host([tone="ok"])     .keys .k { background: var(--green);  color: var(--dark); border-color: rgba(0,0,0,0.15); }
-  `,e([l({type:String})],o.prototype,"keys",2),e([l({type:String})],o.prototype,"label",2),e([l({type:String})],o.prototype,"note",2),e([l({type:String})],o.prototype,"tone",2),o=e([y("deck-shortcut")],o);var a=class extends v{updated(){if(this.colGap){let r=parseInt(this.colGap,10),t=!Number.isNaN(r)&&r>=1&&r<=6?`var(--sp-${r})`:this.colGap;this.style.setProperty("--_col-gap",t)}}render(){return n`<slot></slot>`}};a.styles=b`
-    :host {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0 var(--_col-gap, var(--sp-5));
-      font-family: var(--sans);
-    }
-    :host([cols="1"]) { grid-template-columns: 1fr; }
-    ::slotted(deck-shortcut) {
-      border-bottom: 1px solid var(--border);
-    }
-  `,e([l({type:String})],a.prototype,"cols",2),e([l({type:String,attribute:"col-gap"})],a.prototype,"colGap",2),a=e([y("deck-shortcut-list")],a);export{i as DeckKbd,o as DeckShortcut,a as DeckShortcutList};
+    `}};o.styles=b`:host{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-2) 0;font-family:var(--sans)}.keys{display:inline-flex;gap:4px;flex-shrink:0}.keys deck-kbd,.keys .k{display:inline-flex;align-items:center;justify-content:center;background:var(--surface-card);border:1px solid var(--border);border-bottom:3px solid rgba(0,0,0,0.10);border-radius:5px;padding:3px 8px;font:700 0.92rem/1 var(--mono);color:var(--text);min-width:22px;text-align:center}.body{flex:1;min-width:0}.label{font:700 var(--fs-body)/1.2 var(--sans);color:var(--text)}.note{font:400 var(--fs-small)/1.4 var(--sans);color:var(--muted);margin-top:2px}:host([tone="accent"]) .keys .k{background:var(--yellow);color:var(--dark);border-color:rgba(0,0,0,0.15)}:host([tone="ok"]) .keys .k{background:var(--green);color:var(--dark);border-color:rgba(0,0,0,0.15)}`,e([l({type:String})],o.prototype,"keys",2),e([l({type:String})],o.prototype,"label",2),e([l({type:String})],o.prototype,"note",2),e([l({type:String})],o.prototype,"tone",2),o=e([y("deck-shortcut")],o);var a=class extends v{updated(){if(this.colGap){let r=parseInt(this.colGap,10),t=!Number.isNaN(r)&&r>=1&&r<=6?`var(--sp-${r})`:this.colGap;this.style.setProperty("--_col-gap",t)}}render(){return n`<slot></slot>`}};a.styles=b`:host{display:grid;grid-template-columns:1fr 1fr;gap:0 var(--_col-gap,var(--sp-5));font-family:var(--sans)}:host([cols="1"]){grid-template-columns:1fr}::slotted(deck-shortcut){border-bottom:1px solid var(--border)}`,e([l({type:String})],a.prototype,"cols",2),e([l({type:String,attribute:"col-gap"})],a.prototype,"colGap",2),a=e([y("deck-shortcut-list")],a);export{i as DeckKbd,o as DeckShortcut,a as DeckShortcutList};

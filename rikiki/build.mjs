@@ -4,7 +4,7 @@
 // Type declarations (.d.ts) come from `tsc --emitDeclarationOnly` (see package.json).
 
 import { build, context } from 'esbuild';
-import { readdirSync, mkdirSync } from 'node:fs';
+import { readdirSync, readFileSync, mkdirSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -37,6 +37,38 @@ const cdnRewrite = {
   },
 };
 
+// Minify CSS-in-JS · esbuild's --minify doesn't touch template-literal
+// contents, so every `css`...`` block ships verbatim with comments and
+// whitespace. This plugin strips comments + collapses whitespace inside
+// css` and html` blocks before esbuild ever sees them.
+//
+// Disabled in dev mode (sourcemaps wouldn't line up otherwise).
+function minifyTemplates(enabled) {
+  return {
+    name: 'minify-templates',
+    setup(b) {
+      if (!enabled) return;
+      b.onLoad({ filter: /\.ts$/ }, (args) => {
+        let src = readFileSync(args.path, 'utf8');
+        // Walk every `css\`...\`` (and `html\`...\``) and minify its body.
+        src = src.replace(/(css|html)`([\s\S]*?)`/g, (_, tag, body) => {
+          let m = body;
+          // Block comments
+          m = m.replace(/\/\*[\s\S]*?\*\//g, '');
+          // Collapse runs of whitespace · keep newlines as single spaces
+          m = m.replace(/\s+/g, ' ');
+          // Tighten around CSS punctuation
+          m = m.replace(/\s*([{}:;,])\s*/g, '$1');
+          // Drop the final ; before }
+          m = m.replace(/;}/g, '}');
+          return tag + '`' + m.trim() + '`';
+        });
+        return { contents: src, loader: 'ts' };
+      });
+    },
+  };
+}
+
 // Production build is minified. Use `--watch` for an unminified dev build with
 // sourcemaps. The `--dev` flag forces the same dev-style output for one-shots.
 const isDev = process.argv.includes('--watch') || process.argv.includes('--dev');
@@ -53,7 +85,7 @@ const config = {
   sourcemap: isDev,
   minify: !isDev,
   legalComments: 'none',
-  plugins: [cdnRewrite],
+  plugins: [cdnRewrite, minifyTemplates(!isDev)],
   // Keep each component its own file (no chunk merging since splitting is off
   // and entryPoints is the full src/*.ts list).
   logLevel: 'info',
