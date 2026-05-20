@@ -1,1 +1,1 @@
-{"version":3,"file":"deck-section.d.ts","sourceRoot":"","sources":["../src/deck-section.ts"],"names":[],"mappings":"AAIA,OAAO,EAAE,UAAU,EAAa,MAAM,KAAK,CAAC;AAG5C,qBAAa,WAAY,SAAQ,UAAU;IACzC,MAAM,CAAC,MAAM,4BAuBV;IAEH,MAAM,CAAC,UAAU;;;;MAA6B;IAE9C,MAAM;CAMP"}
+{"version":3,"file":"deck-section.d.ts","sourceRoot":"","sources":["../src/deck-section.ts"],"names":[],"mappings":"AAIA,OAAO,EAAE,UAAU,EAAa,MAAM,KAAK,CAAC;AAG5C,qBAAa,WAAY,SAAQ,UAAU;IAOzC,OAAgB,MAAM,4BA8BnB;IAEH,OAAgB,UAAU;;;;MAA6B;IAE9C,MAAM;CAMhB"}

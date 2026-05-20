@@ -10,7 +10,7 @@ import { LitElement, html, css } from 'lit';
 import { slideBase } from './shared-styles.js';
 
 export class DeckHero extends LitElement {
-  static styles = [...slideBase, css`
+  static override styles = [...slideBase, css`
     :host { justify-content: flex-start; }
     .body {
       flex: 1; min-height: 0;
@@ -27,9 +27,9 @@ export class DeckHero extends LitElement {
     ::slotted(.hero-main) { max-height: 100%; flex: 0 1 auto; }
   `];
 
-  static properties = { eyebrow: { type: String } };
+  static override properties = { eyebrow: { type: String } };
 
-  render() {
+  override render() {
     return html`
       ${this.eyebrow ? html`<span class="lbl">${this.eyebrow}</span>` : ''}
       <slot name="title"></slot>

@@ -12,7 +12,7 @@ import { LitElement, html, css } from 'lit';
 import { slideBase } from './shared-styles.js';
 
 export class DeckHeroDetail extends LitElement {
-  static styles = [...slideBase, css`
+  static override styles = [...slideBase, css`
     :host { justify-content: flex-start; }
     /* The hero (code/chart) gets at least half the available height; .detail
        (bullets + diagram) is capped at ~40%. Without these caps a tall mermaid
@@ -44,9 +44,9 @@ export class DeckHeroDetail extends LitElement {
     }
   `];
 
-  static properties = { eyebrow: { type: String } };
+  static override properties = { eyebrow: { type: String } };
 
-  render() {
+  override render() {
     return html`
       ${this.eyebrow ? html`<span class="lbl">${this.eyebrow}</span>` : ''}
       <slot name="title"></slot>

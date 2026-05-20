@@ -13,7 +13,7 @@ import { marked } from 'https://cdn.jsdelivr.net/npm/marked@12/+esm';
 marked.setOptions({ gfm: true, breaks: false });
 
 export class DeckMd extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host { display: block; color: var(--soft); font-family: var(--sans); }
     h1, h2, h3, h4 { color: var(--text); font-weight: 700; letter-spacing: -0.01em; }
     h2 { font-size: var(--fs-h2); margin-bottom: var(--sp-2); }
@@ -54,9 +54,9 @@ export class DeckMd extends LitElement {
     .content { display: contents; }
   `;
 
-  static properties = { _html: { state: true } };
+  static override properties = { _html: { state: true } };
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this._parse();
   }
@@ -75,7 +75,7 @@ export class DeckMd extends LitElement {
     this.textContent = '';
   }
 
-  render() {
+  override render() {
     return html`<div class="content" .innerHTML="${this._html || ''}"></div>`;
   }
 }

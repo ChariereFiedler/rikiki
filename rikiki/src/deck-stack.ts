@@ -28,7 +28,7 @@ const ALIGN = {
 };
 
 export class DeckStack extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: flex;
       flex-direction: var(--_dir, column);
@@ -41,14 +41,19 @@ export class DeckStack extends LitElement {
     :host([fill]) { flex: 1 1 auto; }
   `;
 
-  static properties = {
+  static override properties = {
     gap:       { type: String },
     direction: { type: String },
     align:     { type: String },
     justify:   { type: String },
   };
 
-  updated() {
+  declare gap?: string;
+  declare direction?: string;
+  declare align?: string;
+  declare justify?: string;
+
+  override updated() {
     const n = parseInt(this.gap, 10);
     if (!Number.isNaN(n) && n >= 1 && n <= 6) {
       this.style.setProperty('--_gap', `var(--sp-${n})`);
@@ -60,7 +65,7 @@ export class DeckStack extends LitElement {
     if (this.justify) this.style.setProperty('--_justify', JUSTIFY[this.justify] || this.justify);
   }
 
-  render() {
+  override render() {
     return html`<slot></slot>`;
   }
 }

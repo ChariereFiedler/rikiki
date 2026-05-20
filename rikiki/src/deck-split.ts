@@ -19,7 +19,7 @@ import { LitElement, html, css } from 'lit';
 import { slideBase } from './shared-styles.js';
 
 export class DeckSplit extends LitElement {
-  static styles = [...slideBase, css`
+  static override styles = [...slideBase, css`
     :host { justify-content: flex-start; }
     .body {
       flex: 1; min-height: 0;
@@ -40,7 +40,7 @@ export class DeckSplit extends LitElement {
     .col.center { justify-content: center; }
   `];
 
-  static properties = {
+  static override properties = {
     eyebrow: { type: String },
     cols:    { type: String },                              // '1-1' (default), '1-2', '2-1', '3'
     gap:     { type: String },                              // between-column gap · '1'..'6' or raw value
@@ -54,12 +54,12 @@ export class DeckSplit extends LitElement {
     return v;
   }
 
-  updated() {
+  override updated() {
     if (this.gap)    this.style.setProperty('--_gap',     this._resolveSp(this.gap));
     if (this.colGap) this.style.setProperty('--_col-gap', this._resolveSp(this.colGap));
   }
 
-  render() {
+  override render() {
     const hasA = this.querySelector('[slot="a"]');
     const isThree = this.cols === '3' || hasA;
     return html`

@@ -11,15 +11,15 @@
 import { LitElement, html, css } from 'lit';
 
 export class DeckTierList extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host { display: flex; flex-direction: column; gap: var(--gap-xs); }
   `;
-  render() { return html`<slot></slot>`; }
+  override render() { return html`<slot></slot>`; }
 }
 customElements.define('deck-tier-list', DeckTierList);
 
 export class DeckTier extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: flex; flex-direction: column; gap: var(--gap-hair);
       background: var(--surface-card);
@@ -45,13 +45,13 @@ export class DeckTier extends LitElement {
     :host([hot]) .speed { color: var(--yellow); }
     .desc { font-size: var(--fs-small); color: var(--muted); line-height: 1.4; }
   `;
-  static properties = {
+  static override properties = {
     name: { type: String },
     speed: { type: String },
     severity: { type: String },
     hot: { type: Boolean, reflect: true },
   };
-  render() {
+  override render() {
     return html`
       <div class="head">
         <span class="name">${this.name}</span>
@@ -64,7 +64,7 @@ export class DeckTier extends LitElement {
 customElements.define('deck-tier', DeckTier);
 
 export class DeckTierArrow extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: block; text-align: center;
       color: var(--muted); opacity: var(--opacity-soft);
@@ -72,6 +72,6 @@ export class DeckTierArrow extends LitElement {
       padding: 2px 0;
     }
   `;
-  render() { return html`<slot></slot>`; }
+  override render() { return html`<slot></slot>`; }
 }
 customElements.define('deck-tier-arrow', DeckTierArrow);

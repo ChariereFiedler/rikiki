@@ -34,7 +34,7 @@ const SIZES = {
 };
 
 export class DeckPunch extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: block;
       margin: 0;
@@ -53,14 +53,14 @@ export class DeckPunch extends LitElement {
     :host([align="right"])  { text-align: right; }
   `;
 
-  static properties = {
+  static override properties = {
     tone:   { type: String },
     size:   { type: String },
     weight: { type: String, reflect: true },
     align:  { type: String, reflect: true },
   };
 
-  updated() {
+  override updated() {
     // Only set the colour when a tone is named · otherwise inherit.
     if (this.tone && TONES[this.tone]) {
       this.style.setProperty('--_color', TONES[this.tone]);
@@ -74,7 +74,7 @@ export class DeckPunch extends LitElement {
     }
   }
 
-  render() {
+  override render() {
     return html`<slot></slot>`;
   }
 }

@@ -1,1 +1,1 @@
-{"version":3,"file":"deck-card.d.ts","sourceRoot":"","sources":["../src/deck-card.ts"],"names":[],"mappings":"AAYA,OAAO,EAAE,UAAU,EAAa,MAAM,KAAK,CAAC;AAS5C,qBAAa,QAAS,SAAQ,UAAU;IACtC,MAAM,CAAC,MAAM,0BA6BX;IAEF,MAAM,CAAC,UAAU;;;;MAA+B;IAEhD,MAAM;CAQP"}
+{"version":3,"file":"deck-card.d.ts","sourceRoot":"","sources":["../src/deck-card.ts"],"names":[],"mappings":"AAmBA,OAAO,EAAE,UAAU,EAAa,MAAM,KAAK,CAAC;AAE5C,qBAAa,QAAS,SAAQ,UAAU;IACtC,OAAgB,MAAM,0BAkCpB;IAEF,OAAgB,UAAU;;;;MAA+B;IAEhD,MAAM;CAGhB"}

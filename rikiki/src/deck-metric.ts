@@ -8,15 +8,15 @@
 import { LitElement, html, css } from 'lit';
 
 export class DeckMetricList extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host { display: flex; flex-direction: column; gap: var(--sp-2); }
   `;
-  render() { return html`<slot></slot>`; }
+  override render() { return html`<slot></slot>`; }
 }
 customElements.define('deck-metric-list', DeckMetricList);
 
 export class DeckMetric extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: flex; justify-content: space-between; align-items: center;
       background: var(--surface-card);
@@ -36,12 +36,12 @@ export class DeckMetric extends LitElement {
     .value[data-severity="ok"]   { color: var(--green); }
     .value[data-severity="info"] { color: var(--text-info); }
   `;
-  static properties = {
+  static override properties = {
     value: { type: String },
     severity: { type: String },
     mono: { type: Boolean },
   };
-  render() {
+  override render() {
     return html`
       <span class="label ${this.mono ? 'mono' : ''}"><slot></slot></span>
       <span class="value" data-severity="${this.severity || ''}">${this.value}</span>

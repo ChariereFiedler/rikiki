@@ -43,7 +43,7 @@ export class DeckMermaid extends LitElement {
        --deck-mermaid-bg / -border / -radius / -padding
      Defaults to the --code-* theme tokens · diagrams sit on the same
      dark surface as code blocks for visual consistency. */
-  static styles = css`
+  static override styles = css`
     :host {
       display: flex; align-items: center; justify-content: center;
       background: var(--deck-mermaid-bg, var(--code-bg));
@@ -61,12 +61,12 @@ export class DeckMermaid extends LitElement {
     :host([compact]) .canvas svg { max-height: 22vh; }
   `;
 
-  static properties = {
+  static override properties = {
     _svg: { state: true },
     rendered: { type: Boolean, reflect: true },
   };
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this._source = (this.textContent || '').trim();
     // Dédente
@@ -94,7 +94,7 @@ export class DeckMermaid extends LitElement {
     }
   }
 
-  render() {
+  override render() {
     return html`<div class="canvas" .innerHTML="${this._svg || ''}"></div>`;
   }
 }

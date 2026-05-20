@@ -20,7 +20,7 @@ import { LitElement, html, css } from 'lit';
 /* ────────────────────────────── deck-kbd ────────────────────────────── */
 
 export class DeckKbd extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: inline-flex; align-items: center; justify-content: center;
       background: var(--surface-card);
@@ -45,7 +45,7 @@ export class DeckKbd extends LitElement {
       border-color: rgba(0,0,0,0.15);
     }
   `;
-  render() {
+  override render() {
     return html`<slot></slot>`;
   }
 }
@@ -54,7 +54,7 @@ customElements.define('deck-kbd', DeckKbd);
 /* ──────────────────────────── deck-shortcut ─────────────────────────── */
 
 export class DeckShortcut extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: flex; align-items: center; gap: var(--sp-3);
       padding: var(--sp-2) 0;
@@ -86,14 +86,14 @@ export class DeckShortcut extends LitElement {
     :host([tone="ok"])     .keys .k { background: var(--green);  color: var(--dark); border-color: rgba(0,0,0,0.15); }
   `;
 
-  static properties = {
+  static override properties = {
     keys:  { type: String },
     label: { type: String },
     note:  { type: String },
     tone:  { type: String },
   };
 
-  render() {
+  override render() {
     const keyTokens = (this.keys || '').trim().split(/\s+/).filter(Boolean);
     return html`
       <span class="keys" part="keys">
@@ -111,7 +111,7 @@ customElements.define('deck-shortcut', DeckShortcut);
 /* ─────────────────────────── deck-shortcut-list ─────────────────────── */
 
 export class DeckShortcutList extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -124,12 +124,12 @@ export class DeckShortcutList extends LitElement {
     }
   `;
 
-  static properties = {
+  static override properties = {
     cols:   { type: String },
     colGap: { type: String, attribute: 'col-gap' },
   };
 
-  updated() {
+  override updated() {
     if (this.colGap) {
       const n = parseInt(this.colGap, 10);
       const v = !Number.isNaN(n) && n >= 1 && n <= 6 ? `var(--sp-${n})` : this.colGap;
@@ -137,7 +137,7 @@ export class DeckShortcutList extends LitElement {
     }
   }
 
-  render() {
+  override render() {
     return html`<slot></slot>`;
   }
 }

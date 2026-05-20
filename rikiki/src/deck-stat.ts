@@ -27,7 +27,7 @@ const TONES = {
 };
 
 export class DeckStat extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: flex; flex-direction: column;
       gap: var(--sp-2);
@@ -67,16 +67,16 @@ export class DeckStat extends LitElement {
     }
   `;
 
-  static properties = {
+  static override properties = {
     num:  { type: String },
     tone: { type: String },
   };
 
-  updated() {
+  override updated() {
     if (this.tone) this.style.setProperty('--_c', TONES[this.tone] || this.tone);
   }
 
-  render() {
+  override render() {
     return html`
       ${this.num ? html`<div class="num" part="num">${this.num}</div>` : ''}
       <slot name="claim"></slot>

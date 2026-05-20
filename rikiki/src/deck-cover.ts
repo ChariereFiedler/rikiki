@@ -23,7 +23,7 @@ export class DeckCover extends LitElement {
        --deck-cover-muted       very soft on-dark text    (--on-dark-muted)
        --deck-cover-faint       faintest on-dark text     (--on-dark-faint)
        --deck-cover-border      meta separator border     (--on-dark-border) */
-  static styles = [...slideBase, css`
+  static override styles = [...slideBase, css`
     :host {
       background: var(--deck-cover-bg, var(--dark));
       justify-content: center;
@@ -82,7 +82,7 @@ export class DeckCover extends LitElement {
     }
   `];
 
-  static properties = {
+  static override properties = {
     brand: { type: String },
     brandSrc: { type: String, attribute: 'brand-src' },
     speaker: { type: String },
@@ -98,7 +98,7 @@ export class DeckCover extends LitElement {
     runtimeLabel:  { type: String, attribute: 'runtime-label'  },
   };
 
-  render() {
+  override render() {
     const parts = (this.brand || '').split('·').map(s => s.trim()).filter(Boolean);
     const brandName = parts[0] || '';
     const context = parts.slice(1).join(' · ');

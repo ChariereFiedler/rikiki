@@ -9,18 +9,18 @@
 import { LitElement, html, css } from 'lit';
 
 export class DeckStepList extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: flex; flex-direction: column;
       gap: var(--gap-xs);
     }
   `;
-  render() { return html`<slot></slot>`; }
+  override render() { return html`<slot></slot>`; }
 }
 customElements.define('deck-step-list', DeckStepList);
 
 export class DeckStep extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: flex; align-items: center; gap: var(--sp-3);
       background: var(--surface-card);
@@ -54,11 +54,11 @@ export class DeckStep extends LitElement {
       font: 600 var(--fs-small)/1.4 var(--sans);
     }
   `;
-  static properties = {
+  static override properties = {
     n: { type: String },
     note: { type: String },
   };
-  render() {
+  override render() {
     return html`
       <span class="step-num">${this.n}</span>
       <span class="label"><slot></slot></span>

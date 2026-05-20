@@ -18,4 +18,6 @@ import './deck-kicker.js';
 import './deck-stack.js';
 import './deck-grid.js';
 import './deck-punch.js';
+import './deck-stat.js';
+import './deck-shortcut.js';
 //# sourceMappingURL=index.d.ts.map

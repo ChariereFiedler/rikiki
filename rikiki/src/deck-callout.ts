@@ -31,7 +31,7 @@ const ICONS = {
 };
 
 export class DeckCallout extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: flex; gap: var(--sp-3);
       padding: var(--deck-callout-padding-y, var(--sp-3)) var(--deck-callout-padding-x, var(--sp-4));
@@ -72,9 +72,9 @@ export class DeckCallout extends LitElement {
     }
   `;
 
-  static properties = { type: { type: String } };
+  static override properties = { type: { type: String } };
 
-  render() {
+  override render() {
     const t = this.type || 'info';
     const icon = ICONS[t] || ICONS.info;
     // stroke-linecap="round" lets the i-dot (a zero-length path) render as a

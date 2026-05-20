@@ -15,7 +15,7 @@
 import { LitElement, html, css } from 'lit';
 
 export class DeckBadge extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: inline-block;
       padding: var(--deck-badge-padding-y, var(--sp-1)) var(--deck-badge-padding-x, var(--sp-3));
@@ -33,9 +33,9 @@ export class DeckBadge extends LitElement {
     :host([type="warn"]) { --deck-badge-bg: var(--surface-warn);         --deck-badge-fg: var(--orange);    --deck-badge-border: var(--border-warn); }
   `;
 
-  static properties = { type: { type: String } };
+  static override properties = { type: { type: String } };
 
-  render() {
+  override render() {
     return html`<slot></slot>`;
   }
 }

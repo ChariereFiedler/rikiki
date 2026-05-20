@@ -15,6 +15,10 @@ export declare class DeckStack extends LitElement {
             type: StringConstructor;
         };
     };
+    gap?: string;
+    direction?: string;
+    align?: string;
+    justify?: string;
     updated(): void;
     render(): import("lit-html").TemplateResult<1>;
 }

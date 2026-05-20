@@ -1,1 +1,1 @@
-{"version":3,"file":"deck-grid.d.ts","sourceRoot":"","sources":["../src/deck-grid.ts"],"names":[],"mappings":"AAkBA,OAAO,EAAE,UAAU,EAAa,MAAM,KAAK,CAAC;AAyB5C,qBAAa,QAAS,SAAQ,UAAU;IACtC,MAAM,CAAC,MAAM,0BAYX;IAEF,MAAM,CAAC,UAAU;;;;;;;;;;;;;;;;MAMf;IAEF,OAAO;IAWP,MAAM;CAGP"}
+{"version":3,"file":"deck-grid.d.ts","sourceRoot":"","sources":["../src/deck-grid.ts"],"names":[],"mappings":"AAkBA,OAAO,EAAE,UAAU,EAAa,MAAM,KAAK,CAAC;AAyB5C,qBAAa,QAAS,SAAQ,UAAU;IACtC,OAAgB,MAAM,0BAYpB;IAEF,OAAgB,UAAU;;;;;;;;;;;;;;;;MAMxB;IAEO,OAAO;IAWP,MAAM;CAGhB"}

@@ -20,7 +20,7 @@
 import { LitElement, html, css } from 'lit';
 
 export class DeckCard extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: flex; flex-direction: column;
       gap: var(--sp-2);
@@ -56,9 +56,9 @@ export class DeckCard extends LitElement {
     :host([compact]) { padding: var(--sp-2) var(--sp-3); }
   `;
 
-  static properties = { color: { type: String } };
+  static override properties = { color: { type: String } };
 
-  render() {
+  override render() {
     return html`<slot></slot>`;
   }
 }

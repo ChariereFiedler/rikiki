@@ -6,7 +6,7 @@
 import { LitElement, html, css } from 'lit';
 
 export class DeckKicker extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: block;
       font: 700 var(--fs-micro)/1.2 var(--sans);
@@ -17,6 +17,6 @@ export class DeckKicker extends LitElement {
     }
     :host([on-dark]) { color: var(--on-dark-muted); }
   `;
-  render() { return html`<slot></slot>`; }
+  override render() { return html`<slot></slot>`; }
 }
 customElements.define('deck-kicker', DeckKicker);

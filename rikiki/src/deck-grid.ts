@@ -42,7 +42,7 @@ function expandGap(value) {
 }
 
 export class DeckGrid extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: grid;
       grid-template-columns: var(--_cols, 1fr);
@@ -56,7 +56,7 @@ export class DeckGrid extends LitElement {
     :host([fill]) { flex: 1 1 auto; height: 100%; }
   `;
 
-  static properties = {
+  static override properties = {
     cols:    { type: String },
     rows:    { type: String },
     gap:     { type: String },
@@ -64,7 +64,7 @@ export class DeckGrid extends LitElement {
     justify: { type: String },
   };
 
-  updated() {
+  override updated() {
     const cols = expandTracks(this.cols);
     const rows = expandTracks(this.rows);
     const gap  = expandGap(this.gap);
@@ -75,7 +75,7 @@ export class DeckGrid extends LitElement {
     if (this.justify) this.style.setProperty('--_justify', MAP[this.justify] || this.justify);
   }
 
-  render() {
+  override render() {
     return html`<slot></slot>`;
   }
 }

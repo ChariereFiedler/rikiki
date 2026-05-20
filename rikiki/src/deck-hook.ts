@@ -14,7 +14,7 @@ export class DeckHook extends LitElement {
        --deck-hook-display-color    (defaults to --yellow)
        --deck-hook-caption-color    (defaults to --on-dark-muted)
        --deck-hook-gap              vertical gap between elements */
-  static styles = [...slideBase, css`
+  static override styles = [...slideBase, css`
     :host {
       background: var(--deck-hook-bg, var(--dark));
       color: var(--on-dark-text);
@@ -40,9 +40,9 @@ export class DeckHook extends LitElement {
     }
   `];
 
-  static properties = { kicker: { type: String } };
+  static override properties = { kicker: { type: String } };
 
-  render() {
+  override render() {
     return html`
       <div class="body" part="body">
         ${this.kicker ? html`<span class="kicker on-dark">${this.kicker}</span>` : ''}

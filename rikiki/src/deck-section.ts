@@ -12,7 +12,7 @@ export class DeckSection extends LitElement {
        --deck-section-rule-color  line on each side         (--on-dark-border)
        --deck-section-title-color (defaults to --yellow)
        --deck-section-em-color    italic inside h1          (--on-dark-soft) */
-  static styles = [...slideBase, css`
+  static override styles = [...slideBase, css`
     :host {
       background: var(--deck-section-bg, var(--dark));
       color: var(--on-dark-text);
@@ -44,9 +44,9 @@ export class DeckSection extends LitElement {
     }
   `];
 
-  static properties = { num: { type: String } };
+  static override properties = { num: { type: String } };
 
-  render() {
+  override render() {
     return html`
       ${this.num ? html`<div class="sec-num" part="num">${this.num}</div>` : ''}
       <slot></slot>

@@ -66,7 +66,7 @@ export class DeckCode extends LitElement {
        --deck-code-radius / -padding-y / -padding-x
        --deck-code-syntax-{kw,str,num,cmt,ty,prop,fn}
      All default to the theme's --code-* tokens. */
-  static styles = css`
+  static override styles = css`
     :host {
       display: block;
       background: var(--deck-code-bg, var(--code-bg));
@@ -101,7 +101,7 @@ export class DeckCode extends LitElement {
     .prop { color: var(--deck-code-syntax-prop, var(--code-prop)); }
   `;
 
-  static properties = {
+  static override properties = {
     lang: { type: String },
     hero: { type: Boolean, reflect: true },
     nested: { type: Boolean, reflect: true },
@@ -109,7 +109,7 @@ export class DeckCode extends LitElement {
     _html: { state: true },
   };
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this._highlight();
     try {
@@ -151,7 +151,7 @@ export class DeckCode extends LitElement {
     }
   }
 
-  render() {
+  override render() {
     return html`<pre><code .innerHTML="${this._html || ''}"></code></pre>`;
   }
 }

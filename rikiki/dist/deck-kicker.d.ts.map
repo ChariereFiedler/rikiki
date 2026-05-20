@@ -1,1 +1,1 @@
-{"version":3,"file":"deck-kicker.d.ts","sourceRoot":"","sources":["../src/deck-kicker.ts"],"names":[],"mappings":"AAKA,OAAO,EAAE,UAAU,EAAa,MAAM,KAAK,CAAC;AAE5C,qBAAa,UAAW,SAAQ,UAAU;IACxC,MAAM,CAAC,MAAM,0BAUX;IACF,MAAM;CACP"}
+{"version":3,"file":"deck-kicker.d.ts","sourceRoot":"","sources":["../src/deck-kicker.ts"],"names":[],"mappings":"AAKA,OAAO,EAAE,UAAU,EAAa,MAAM,KAAK,CAAC;AAE5C,qBAAa,UAAW,SAAQ,UAAU;IACxC,OAAgB,MAAM,0BAUpB;IACO,MAAM;CAChB"}
