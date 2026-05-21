@@ -3,7 +3,7 @@ import Docs from '../../layouts/Docs.astro';
 import CodeBlock from '../../components/CodeBlock.astro';
 import ComponentPreview from '../../components/ComponentPreview.astro';
 
-const layoutTags = new Set(['deck-cover', 'deck-section', 'deck-feature', 'deck-split', 'deck-feature-cards', 'deck-takeaway']);
+const layoutTags = new Set(['deck-cover', 'deck-section', 'deck-feature', 'deck-split', 'deck-feature-cards', 'deck-takeaway', 'deck-photo']);
 
 interface Component {
   tag: string;
@@ -112,6 +112,25 @@ const layouts: Component[] = [
 </deck-takeaway>`,
     tokens: ['--deck-takeaway-bg', '--deck-takeaway-display-color', '--deck-takeaway-caption-color', '--deck-takeaway-gap'],
   },
+  {
+    tag: 'deck-photo',
+    summary: 'Full-bleed image slide · slotted content sits on a dimmable overlay. Cover-style hero or mood section break.',
+    attrs: [
+      { name: 'src',        type: 'URL',                          note: 'Image URL · required' },
+      { name: 'position',   type: 'CSS object-position',          note: 'Default "center"' },
+      { name: 'darken',     type: '0..1',                         note: 'Overlay alpha · default 0.35' },
+      { name: 'align',      type: 'top | center | bottom',        note: 'Vertical alignment of slotted content' },
+      { name: 'text-align', type: 'left | center | right',        note: 'Text alignment inside the overlay · default left' },
+    ],
+    slots: [
+      { name: '(default)', note: 'Title (h1), subtitle (.sub), or any HTML to overlay on the image' },
+    ],
+    example: `<deck-photo src="/cover.jpg" darken="0.4" align="center">
+  <h1>Mood opener</h1>
+  <p class="sub">One line caption.</p>
+</deck-photo>`,
+    tokens: ['--deck-photo-overlay-color', '--deck-photo-text-color', '--deck-photo-text-muted', '--deck-photo-content-max-width'],
+  },
 ];
 
 const atoms: Component[] = [
@@ -196,7 +215,7 @@ const atoms: Component[] = [
   },
   {
     tag: 'deck-metric',
-    summary: 'One-line metric · label + value · severity colored.',
+    summary: 'One-line metric · label + value · severity colored. Wrap several in <deck-metric-list> for the rule-divided list look.',
     attrs: [
       { name: 'value',    type: 'string' },
       { name: 'severity', type: 'bad | warn | ok | info' },
@@ -207,6 +226,14 @@ const atoms: Component[] = [
   <deck-metric value="1"  severity="ok">Used</deck-metric>
 </deck-metric-list>`,
     tokens: ['--deck-metric-bg', '--deck-metric-border', '--deck-metric-text', '--deck-metric-radius', '--deck-metric-padding-x', '--deck-metric-padding-y', '--deck-metric-shadow', '--deck-metric-label-color', '--deck-metric-value-{bad,warn,ok,info}'],
+  },
+  {
+    tag: 'deck-metric-list',
+    summary: 'Container · rule dividers between stacked <deck-metric> rows. No attributes · purely a layout grouping.',
+    example: `<deck-metric-list>
+  <deck-metric value="5"  severity="bad">Files parsed</deck-metric>
+  <deck-metric value="1"  severity="ok">Used</deck-metric>
+</deck-metric-list>`,
   },
   {
     tag: 'deck-tier-list',
@@ -281,9 +308,12 @@ const atoms: Component[] = [
     tag: 'deck-grid',
     summary: 'Grid container · n columns by 1..12 or explicit template.',
     attrs: [
-      { name: 'cols', type: '1..12 | "1fr 2fr" | ...' },
-      { name: 'gap',  type: '1..6' },
-      { name: 'fill', type: 'boolean' },
+      { name: 'cols',    type: '1..12 | "1fr 2fr" | ...' },
+      { name: 'rows',    type: '1..12 | "auto 1fr" | ...', note: 'Optional explicit row template' },
+      { name: 'gap',     type: '1..6' },
+      { name: 'align',   type: 'start | center | end | stretch', note: 'align-items' },
+      { name: 'justify', type: 'start | center | end | stretch', note: 'justify-items' },
+      { name: 'fill',    type: 'boolean',                        note: 'Take the parent slide\'s full height' },
     ],
     example: `<deck-grid cols="3" gap="3" fill>
   <deck-card>a</deck-card>
@@ -295,6 +325,9 @@ const atoms: Component[] = [
   {
     tag: 'deck-kicker',
     summary: 'Caption-style label above a section · uppercase, mono.',
+    attrs: [
+      { name: 'on-dark', type: 'boolean', note: 'Switch to the inverse-surface palette · use on dark backgrounds' },
+    ],
     example: `<deck-kicker>Before</deck-kicker>`,
     tokens: ['--deck-kicker-color', '--deck-kicker-on-dark-color', '--deck-kicker-font-size', '--deck-kicker-tracking', '--deck-kicker-margin'],
   },
@@ -319,14 +352,14 @@ const atoms: Component[] = [
 <Docs
   title="Component library"
   eyebrow="Reference"
-  description="Every <deck-*> element · attributes, slots, tokens, live preview. 24 components total, but you'll only meet five on day one."
+  description="Every <deck-*> element · attributes, slots, tokens, live preview. 26 components total, but you'll only meet five on day one."
 >
 
 <h2 id="mental-model">Mental model · which one do I need?</h2>
 <p>The 24 components fit in five buckets. Use this as a triage map.</p>
 <ul>
   <li>
-    <strong>Layouts (6)</strong> · the slide's overall shape ·
+    <strong>Layouts (7)</strong> · the slide's overall shape ·
     <a href="#deck-cover"><code>deck-cover</code></a>,
     <a href="#deck-section"><code>deck-section</code></a>,
     <a href="#deck-feature"><code>deck-feature</code></a>,
