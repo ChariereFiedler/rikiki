@@ -1,171 +1,33 @@
-# Rikiki · Operations Runbook
+# Rikiki · Operations
 
-Operating procedures for the live deployment at https://rikiki.tordu-jardin.fr.
+Site live · https://rikiki.tordu-jardin.fr · Portainer stack `rikiki` (id 54).
 
-## Stack at a glance
+## Pipeline
 
-| Concern | Value |
-|---------|-------|
-| Git repo | https://gitlab.com/tordu-jardin/rikiki |
-| Default branch | `main` (push-protected, Maintainers only) |
-| CI template | `tordu-jardin/cloud:ci/deploy-static.gitlab-ci.yml` |
-| Image registry | `registry.tordu-jardin.fr/rikiki` |
-| Tags published | `:latest` (mutable) and `:<commit-short-sha>` (immutable) |
-| Orchestrator | Portainer · stack `rikiki` (id 54), endpoint 1 |
-| Reverse proxy | traefik · routes `Host(rikiki.tordu-jardin.fr)` to port 80 |
-| TLS | Let's Encrypt via the platform's `letsencrypt` resolver |
-| Public assets host | nginx 1.27-alpine inside the container |
+`check → build → deploy` on every push to `main`.
 
-## Pipeline stages
-
-`check` → `build` → `deploy` (all on `main`).
-
-- **check · lint** runs `npm run lint` (em-dash linter + `astro check`) before the Docker build. Fail-fast on type errors or style violations.
-- **build · build-image** generates the Dockerfile, runs `npm run build` inside (which delegates to `cd site && npm ci && npm run build && node ../scripts/post-build-inline-lit.mjs`), tags the image as `:latest` + `:<sha>`, and pushes both with `docker buildx build --push`.
-- **deploy · deploy** asks Portainer to redeploy the stack with `PullImage: true, ForceRecreate: true`.
-- **deploy · smoke-test** curls the live URL after redeploy to verify the home, docs and assets respond 200 and the `index.js` no longer references jsdelivr for `marked`.
+- `lint` · em-dash linter + `astro check`
+- `build-image` · generates the Dockerfile, builds with `docker buildx build --push`, tags both `:latest` and `:<short-sha>`
+- `deploy` · asks Portainer to redeploy with `PullImage` + `ForceRecreate`
+- `smoke-test` · curls the home, docs and bundle in `:deploy` after the deploy job
 
 ## Rollback
 
-### Quick rollback (recommended)
-
 ```sh
-# from anywhere with TJ_* secrets sourced
+# Source TJ_REGISTRY_USER / TJ_REGISTRY_PASSWORD / TJ_PORTAINER_URL / TJ_PORTAINER_KEY
 ./scripts/rollback.sh <short-sha>
 ```
 
-The script:
-1. Pulls `registry.tordu-jardin.fr/rikiki:<short-sha>`
-2. Retags it as `:latest` and pushes
-3. Calls the Portainer API to redeploy the stack with `PullImage`+`ForceRecreate`
-4. Appends a `# rolled-back to <sha> at <timestamp>` marker to the compose to force Portainer's diff (same workaround the regular deploy job uses)
+The script pulls the image tagged with `<short-sha>` (every build pushes one), retags it as `:latest`, pushes, and asks Portainer to recreate the stack with `PullImage` + `ForceRecreate`. Verify with `curl -I https://rikiki.tordu-jardin.fr/`.
 
-Verify with `curl -I https://rikiki.tordu-jardin.fr/` · HTTP/2 200 means traefik is routing again. The smoke-test CI job is *not* re-run by a rollback · run it manually if you need the assertions.
-
-### Required env vars
-
-```
-TJ_REGISTRY            registry.tordu-jardin.fr
-TJ_REGISTRY_USER       <user>
-TJ_REGISTRY_PASSWORD   <token>
-TJ_PORTAINER_URL       https://portainer.tordu-jardin.fr
-TJ_PORTAINER_KEY       <api key>
-```
-
-These are the same secrets the CI job uses · they live in the group-level CI/CD settings of `tordu-jardin`.
-
-### Finding the SHA to roll back to
+Find the SHA to roll back to:
 
 ```sh
-# Last 10 deploys, newest first
 git log --oneline -10 main
-# Or via the GitLab API:
-curl -s -H "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-  "https://gitlab.com/api/v4/projects/82405490/pipelines?status=success&per_page=10" \
-  | jq -r '.[] | "\(.sha[:8])  \(.created_at)  \(.web_url)"'
 ```
-
-Pick the previous "success" pipeline's SHA. Each successful build pushed `<short-sha>` as an immutable tag · use the short form (first 8 chars).
-
-## When the deploy fails
-
-Two failure modes the CI distinguishes:
-
-| What failed | Where to look | Fix |
-|-------------|---------------|-----|
-| `lint` | `npm run lint` output in the CI job log | Fix the .astro / em-dash locally, push again |
-| `build-image` | `docker buildx build` output · usually an npm/Astro error | Reproduce locally with `npm run build` from the repo root |
-| `deploy` | Portainer API response (HTTP code + body) | Check the Portainer UI · stack may be in a broken state. Manual recreate from compose works |
-| `smoke-test` | URL probe failures in the job log | Deploy already happened · roll back with `scripts/rollback.sh <previous-sha>` |
-
-## Reading the live state
-
-```sh
-# Container health from Portainer
-curl -sk -H "X-API-Key: $TJ_PORTAINER_KEY" \
-  "https://portainer.tordu-jardin.fr/api/endpoints/1/docker/containers/rikiki-site/json" \
-  | jq '.State | {Status, Health: .Health.Status, StartedAt}'
-
-# nginx logs (last 50 lines)
-curl -sk -H "X-API-Key: $TJ_PORTAINER_KEY" \
-  "https://portainer.tordu-jardin.fr/api/endpoints/1/docker/containers/rikiki-site/logs?stdout=true&stderr=true&tail=50"
-
-# Live response headers
-curl -skI https://rikiki.tordu-jardin.fr/
-```
-
-## Manual stack update (compose change without code change)
-
-The CI's `deploy` job re-uses the compose already stored in Portainer · it does not push the compose from git. To roll out a `docker-compose.cloud.yml` change you must update the stack directly:
-
-```sh
-COMPOSE=$(cat docker-compose.cloud.yml)
-COMPOSE="$COMPOSE" python3 -c "
-import json, os
-print(json.dumps({
-  'StackFileContent': os.environ['COMPOSE'],
-  'Env': [],
-  'Prune': False,
-  'PullImage': True,
-}))" > /tmp/stack.json
-
-curl -sk -X PUT \
-  -H "X-API-Key: $TJ_PORTAINER_KEY" \
-  -H "Content-Type: application/json" \
-  --data @/tmp/stack.json \
-  "https://portainer.tordu-jardin.fr/api/stacks/54?endpointId=1"
-```
-
-(Followed by `git commit docker-compose.cloud.yml` so the repo stays the source of truth.)
-
-## DORA metrics
-
-```sh
-./scripts/dora.sh           # last 30 days (default)
-./scripts/dora.sh 7         # last 7 days
-```
-
-Pulls successful + failed pipelines on `main` from the GitLab API (needs `GITLAB_TOKEN` with `read_api`) and prints the four canonical DORA metrics plus the Accelerate band reference. Not a dashboard, but enough to spot a trend during weekly retros. For per-commit lead time it samples up to 30 successful pipelines and queries each commit's authored date.
-
-## SBOM (Software Bill of Materials)
-
-Every deploy emits an SBOM in two formats as CI artifacts (`sbom.spdx.json`, `sbom.cdx.json`), retained 30 days. To grab the SBOM for a given commit:
-
-```sh
-# Find the pipeline that built the SHA
-curl -s -H "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-  "https://gitlab.com/api/v4/projects/82405490/pipelines?ref=main&sha=<short-sha>" \
-  | jq '.[0].id'
-
-# Then via the GitLab UI: Pipelines → pipeline_id → sbom job → Browse artifacts
-# Or via API:
-curl -s -H "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-  -o sbom.zip \
-  "https://gitlab.com/api/v4/projects/82405490/jobs/<sbom_job_id>/artifacts"
-```
-
-Use it for CVE response · `grep <cve-package>` against `sbom.spdx.json` to know if the running version is exposed.
-
-## Signed commits
-
-`main` does **not** yet enforce signed commits (a current audit gap). To turn it on once contributors have GPG/SSH signing configured:
-
-1. Each contributor sets up signing locally:
-   ```sh
-   # SSH signing (simpler, reuses your ssh key)
-   git config --global gpg.format ssh
-   git config --global user.signingkey ~/.ssh/id_ed25519.pub
-   git config --global commit.gpgsign true
-   ```
-2. Upload the corresponding public key to GitLab → User settings → SSH keys → "Usage type: Signing" (or "Authentication and Signing").
-3. Verify with `git log --show-signature -1` and check the GitLab commit view shows a "Verified" badge.
-4. Enforce on the repo: Project settings → Repository → Push rules → ✓ "Reject unverified users" + ✓ "Reject unsigned commits".
-
-(GitLab also supports GPG and Gitsign · pick what your team already has.)
 
 ## Known gotchas
 
-- **localhost in healthchecks**: Alpine wget tries IPv6 first; nginx listens IPv4 only. Always use `127.0.0.1` in healthcheck `test:` for this stack.
-- **First deploy after creating the stack**: Portainer will reject `ForceRecreate: true` if the compose string is byte-identical to the cached one; the deploy job appends a timestamp marker. The rollback script does the same.
-- **CSP and `marked`**: `dist/index.js` from the framework imports `marked@12` from cdn.jsdelivr.net. The platform CSP blocks it. The `post-build-inline-lit.mjs` step downloads marked at build time, vendors it under `/rikiki/dist/vendor/marked.js`, and rewrites the URL in the bundle. If you upgrade the framework and the script's URL pattern changes, fix the regex there.
-- **Single environment**: there is no staging. Local dev (`npm run dev` in `site/`) is the validation environment. Push to `main` lands directly in production.
+- **healthcheck on `localhost`** · nginx listens on 0.0.0.0:80 only and Alpine wget tries IPv6 first. Use `127.0.0.1` in `docker-compose.cloud.yml`.
+- **CSP and `marked`** · the framework's `dist/index.js` imports `marked@12` from `cdn.jsdelivr.net`, which the platform CSP blocks. `scripts/post-build-inline-lit.mjs` runs after the Astro build to vendor marked at `/rikiki/dist/vendor/marked.js` and rewrite the URL in the bundle. If the framework changes that import, fix the regex there.
+- **Single environment** · no staging. Local dev (`npm run dev` in `site/`) is the validation environment.
