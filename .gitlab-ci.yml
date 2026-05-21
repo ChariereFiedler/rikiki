@@ -108,16 +108,20 @@ build-image:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
+# Both scan jobs run inside ${ALPINE_IMAGE} because the shared
+# tordu-jardin runner restricts allowed_images to docker:*, node:*,
+# python:*, alpine:*, golang:*, rust:*, debian:*, nginx:* · aquasec/
+# and anchore/ images are blocked. We install the binaries on demand
+# from the upstream installer scripts (~3-5 s each, cached layer-less).
+
 # CVE scan · Trivy pulls the freshly-pushed image straight from the
 # private registry (no docker daemon needed) and reports HIGH/CRITICAL
-# vulnerabilities. `allow_failure: true` for now · we want visibility
-# before we make it a hard gate, otherwise a brand-new CVE in nginx-
-# alpine blocks every deploy until the base image bumps.
+# fixable vulnerabilities. `allow_failure: true` for now · we want
+# visibility before we make it a hard gate, otherwise a brand-new CVE
+# in nginx-alpine blocks every deploy until the base image bumps.
 scan-image:
   stage: scan
-  image:
-    name: aquasec/trivy:0.58.0
-    entrypoint: [""]
+  image: ${ALPINE_IMAGE}
   needs: [build-image]
   variables:
     IMAGE: "${TJ_REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
@@ -125,28 +129,34 @@ scan-image:
     TRIVY_PASSWORD: "${TJ_REGISTRY_PASSWORD}"
     TRIVY_NO_PROGRESS: "true"
     TRIVY_TIMEOUT: "5m"
+    TRIVY_VERSION: "0.58.0"
+  before_script:
+    - apk add --no-cache curl ca-certificates
+    - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh
+        | sh -s -- -b /usr/local/bin "v${TRIVY_VERSION}"
   script:
     - trivy image --severity HIGH,CRITICAL --exit-code 1 --ignore-unfixed "$IMAGE"
   allow_failure: true
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
-# SBOM · Syft inspects the same image and emits an SPDX 2.3 document
-# (industry-standard, ingestible by Dependency-Track, GitHub, GitLab
-# Vulnerability Reports). Stored as a CI artifact for 30 days · enough
-# for a CVE that drops on a Friday afternoon to be cross-referenced
-# against the running version on Monday. Same auth as Trivy.
+# SBOM · Syft inspects the same image and emits SPDX 2.3 + CycloneDX
+# JSON. Stored 30 days · enough for a CVE that drops Friday afternoon
+# to be cross-referenced against the running version Monday morning.
 sbom:
   stage: scan
-  image:
-    name: anchore/syft:v1.18.0
-    entrypoint: [""]
+  image: ${ALPINE_IMAGE}
   needs: [build-image]
   variables:
     IMAGE: "${TJ_REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
     SYFT_REGISTRY_AUTH_USERNAME: "${TJ_REGISTRY_USER}"
     SYFT_REGISTRY_AUTH_PASSWORD: "${TJ_REGISTRY_PASSWORD}"
     SYFT_REGISTRY_AUTH_AUTHORITY: "${TJ_REGISTRY}"
+    SYFT_VERSION: "1.18.0"
+  before_script:
+    - apk add --no-cache curl ca-certificates
+    - curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh
+        | sh -s -- -b /usr/local/bin "v${SYFT_VERSION}"
   script:
     - syft "$IMAGE" -o spdx-json=sbom.spdx.json -o cyclonedx-json=sbom.cdx.json
     - echo "── SBOM summary ──"
