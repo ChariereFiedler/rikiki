@@ -129,11 +129,14 @@ scan-image:
     TRIVY_PASSWORD: "${TJ_REGISTRY_PASSWORD}"
     TRIVY_NO_PROGRESS: "true"
     TRIVY_TIMEOUT: "5m"
-    TRIVY_VERSION: "0.58.0"
+    TRIVY_VERSION: "0.70.0"
   before_script:
-    - apk add --no-cache curl ca-certificates
-    - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh
-        | sh -s -- -b /usr/local/bin "v${TRIVY_VERSION}"
+    - apk add --no-cache curl ca-certificates tar
+    # The upstream install.sh routes through get.trivy.dev which 404s on
+    # several releases · grab the tarball straight from GitHub instead.
+    - curl -sfL "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+        | tar xz -C /usr/local/bin trivy
+    - trivy --version | head -1
   script:
     - trivy image --severity HIGH,CRITICAL --exit-code 1 --ignore-unfixed "$IMAGE"
   allow_failure: true
