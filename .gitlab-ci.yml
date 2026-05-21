@@ -17,3 +17,61 @@ variables:
   SPA_FALLBACK: 'true'
 
 stages: [build, deploy]
+
+# Override the template's build-image job · the shared runner now selects
+# the `docker-container` buildx driver by default, which does not load the
+# built image into the local daemon. The template's plain `docker push`
+# that follows then fails with "tag does not exist". We use `docker buildx
+# build --push` so buildx pushes directly to the registry in one shot.
+# The rest (image tags, build args, cache-from) is kept identical to the
+# template so behaviour is otherwise unchanged.
+build-image:
+  stage: build
+  image: docker:27-cli
+  variables:
+    IMAGE: "${TJ_REGISTRY}/${IMAGE_NAME}"
+    DOCKER_BUILDKIT: "1"
+  before_script:
+    - |
+      for var in TJ_REGISTRY TJ_REGISTRY_USER TJ_REGISTRY_PASSWORD; do
+        eval val=\$$var
+        [ -z "$val" ] && echo "ERROR: $var is not set. Check runner config." && exit 1
+      done
+    - docker login "$TJ_REGISTRY" -u "$TJ_REGISTRY_USER" -p "$TJ_REGISTRY_PASSWORD"
+  script:
+    - |
+      DOCKERFILE=".generated.Dockerfile"
+      cat > "$DOCKERFILE" <<DOCKERFILE_EOF
+      # syntax=docker/dockerfile:1
+      FROM node:${NODE_VERSION}-alpine AS build
+      WORKDIR /app
+      COPY package.json package-lock.json ./
+      RUN --mount=type=cache,target=/root/.npm npm ci
+      COPY . .
+      RUN ${BUILD_CMD}
+      FROM nginx:1.27-alpine
+      COPY --from=build /app/${BUILD_OUTPUT}/ /usr/share/nginx/html/
+      RUN sed -i 's|application/javascript\s\+js;|application/javascript js mjs;|' /etc/nginx/mime.types
+      DOCKERFILE_EOF
+      cat >> "$DOCKERFILE" <<'SPA_EOF'
+      RUN printf 'server {\n    listen 80;\n    root /usr/share/nginx/html;\n    location / { try_files $uri $uri/ /index.html; }\n}\n' > /etc/nginx/conf.d/default.conf
+      EXPOSE 80
+      HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
+          CMD wget -qO- http://127.0.0.1/ || exit 1
+      SPA_EOF
+    - |
+      CACHE_FLAG=""
+      if [ "$DOCKER_NO_CACHE" != "true" ]; then
+        CACHE_FLAG="--cache-from $IMAGE:latest"
+      fi
+    - docker buildx build
+        $CACHE_FLAG
+        --build-arg BUILDKIT_INLINE_CACHE=1
+        --build-arg "COMMIT_SHA=$CI_COMMIT_SHORT_SHA"
+        -f .generated.Dockerfile
+        -t "$IMAGE:$CI_COMMIT_SHORT_SHA"
+        -t "$IMAGE:latest"
+        --push
+        .
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
