@@ -118,6 +118,51 @@ curl -sk -X PUT \
 
 (Followed by `git commit docker-compose.cloud.yml` so the repo stays the source of truth.)
 
+## DORA metrics
+
+```sh
+./scripts/dora.sh           # last 30 days (default)
+./scripts/dora.sh 7         # last 7 days
+```
+
+Pulls successful + failed pipelines on `main` from the GitLab API (needs `GITLAB_TOKEN` with `read_api`) and prints the four canonical DORA metrics plus the Accelerate band reference. Not a dashboard, but enough to spot a trend during weekly retros. For per-commit lead time it samples up to 30 successful pipelines and queries each commit's authored date.
+
+## SBOM (Software Bill of Materials)
+
+Every deploy emits an SBOM in two formats as CI artifacts (`sbom.spdx.json`, `sbom.cdx.json`), retained 30 days. To grab the SBOM for a given commit:
+
+```sh
+# Find the pipeline that built the SHA
+curl -s -H "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+  "https://gitlab.com/api/v4/projects/82405490/pipelines?ref=main&sha=<short-sha>" \
+  | jq '.[0].id'
+
+# Then via the GitLab UI: Pipelines → pipeline_id → sbom job → Browse artifacts
+# Or via API:
+curl -s -H "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+  -o sbom.zip \
+  "https://gitlab.com/api/v4/projects/82405490/jobs/<sbom_job_id>/artifacts"
+```
+
+Use it for CVE response · `grep <cve-package>` against `sbom.spdx.json` to know if the running version is exposed.
+
+## Signed commits
+
+`main` does **not** yet enforce signed commits (a current audit gap). To turn it on once contributors have GPG/SSH signing configured:
+
+1. Each contributor sets up signing locally:
+   ```sh
+   # SSH signing (simpler, reuses your ssh key)
+   git config --global gpg.format ssh
+   git config --global user.signingkey ~/.ssh/id_ed25519.pub
+   git config --global commit.gpgsign true
+   ```
+2. Upload the corresponding public key to GitLab → User settings → SSH keys → "Usage type: Signing" (or "Authentication and Signing").
+3. Verify with `git log --show-signature -1` and check the GitLab commit view shows a "Verified" badge.
+4. Enforce on the repo: Project settings → Repository → Push rules → ✓ "Reject unverified users" + ✓ "Reject unsigned commits".
+
+(GitLab also supports GPG and Gitsign · pick what your team already has.)
+
 ## Known gotchas
 
 - **localhost in healthchecks**: Alpine wget tries IPv6 first; nginx listens IPv4 only. Always use `127.0.0.1` in healthcheck `test:` for this stack.

@@ -131,6 +131,34 @@ scan-image:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
+# SBOM · Syft inspects the same image and emits an SPDX 2.3 document
+# (industry-standard, ingestible by Dependency-Track, GitHub, GitLab
+# Vulnerability Reports). Stored as a CI artifact for 30 days · enough
+# for a CVE that drops on a Friday afternoon to be cross-referenced
+# against the running version on Monday. Same auth as Trivy.
+sbom:
+  stage: scan
+  image:
+    name: anchore/syft:v1.18.0
+    entrypoint: [""]
+  needs: [build-image]
+  variables:
+    IMAGE: "${TJ_REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
+    SYFT_REGISTRY_AUTH_USERNAME: "${TJ_REGISTRY_USER}"
+    SYFT_REGISTRY_AUTH_PASSWORD: "${TJ_REGISTRY_PASSWORD}"
+    SYFT_REGISTRY_AUTH_AUTHORITY: "${TJ_REGISTRY}"
+  script:
+    - syft "$IMAGE" -o spdx-json=sbom.spdx.json -o cyclonedx-json=sbom.cdx.json
+    - echo "── SBOM summary ──"
+    - syft "$IMAGE" -o table | head -30
+  artifacts:
+    name: "sbom-${CI_COMMIT_SHORT_SHA}"
+    paths: [sbom.spdx.json, sbom.cdx.json]
+    expire_in: 30 days
+  allow_failure: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
 # Smoke test · after Portainer recreates the stack, hit the public URL
 # from outside and assert the routes we care about respond 200. Catches:
 # - CSP-broken bundle (Lit fails to load → no <deck-*>) by checking the
