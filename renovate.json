@@ -1,0 +1,45 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":maintainLockFilesWeekly"
+  ],
+  "schedule": ["before 6am on monday"],
+  "timezone": "Europe/Paris",
+  "labels": ["dependencies"],
+  "rangeStrategy": "bump",
+  "packageRules": [
+    {
+      "description": "Pin docker image digests so a registry refresh can't silently swap our base",
+      "matchManagers": ["dockerfile", "gitlabci"],
+      "pinDigests": true
+    },
+    {
+      "description": "Group minor + patch bumps into a single PR per package family",
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "{{depName}}"
+    },
+    {
+      "description": "Auto-merge non-major dev deps after CI passes",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["patch", "pin"],
+      "automerge": true
+    },
+    {
+      "description": "Hold majors for manual review",
+      "matchUpdateTypes": ["major"],
+      "addLabels": ["needs-review"],
+      "automerge": false
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "addLabels": ["priority:high"]
+  },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on monday"]
+  }
+}
