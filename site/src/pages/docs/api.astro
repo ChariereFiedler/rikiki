@@ -98,6 +98,22 @@ const carouselExample = `<!-- Carousel mode · auto-advance every 4 s, wrap at e
 </p>
 <CodeBlock label="A 3-step code reveal" lang="html" code={stepGroups} />
 
+<h2 id="root-tokens">Customization tokens</h2>
+<p>
+  The <code>deck-root</code> chrome (progress bar, slide counter dots, keyboard
+  hints) is themed via these CSS custom properties · set them on the host or
+  any ancestor.
+</p>
+<ul>
+  <li><code>--deck-root-bg</code> · backdrop colour</li>
+  <li><code>--deck-root-progress-color</code> · top progress bar fill</li>
+  <li><code>--deck-root-progress-height</code> · default <code>3px</code></li>
+  <li><code>--deck-root-dot-bg</code> · slide counter dot, inactive state</li>
+  <li><code>--deck-root-dot-active-bg</code> · active slide dot</li>
+  <li><code>--deck-root-counter-color</code> · "N / total" text colour</li>
+  <li><code>--deck-root-kb-hint-color</code> · keyboard-hint footer text colour</li>
+</ul>
+
 <h2 id="extending">Extending</h2>
 <p>
   To add a layout or atom, write a class that extends <code>LitElement</code>,
