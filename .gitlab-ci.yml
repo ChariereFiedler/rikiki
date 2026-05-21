@@ -12,7 +12,11 @@ variables:
   STACK_NAME: 'rikiki'
   IMAGE_NAME: 'rikiki'
   NODE_VERSION: '24'
-  BUILD_CMD: 'cd site && npm ci && npm run build'
+  # BUILD_CMD defaults to `npm run build` (template default) · the root
+  # package.json's "build" script handles the cd-into-site dance AND the
+  # post-step that swaps in the standalone Lit bundle (see
+  # scripts/post-build-inline-lit.mjs). Override it here and the post-step
+  # gets bypassed · we learned this the hard way.
   BUILD_OUTPUT: 'site/dist'
   SPA_FALLBACK: 'true'
 
