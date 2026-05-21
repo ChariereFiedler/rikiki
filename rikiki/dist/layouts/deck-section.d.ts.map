@@ -1,0 +1,1 @@
+{"version":3,"file":"deck-section.d.ts","sourceRoot":"","sources":["../../src/layouts/deck-section.ts"],"names":[],"mappings":"AAIA,OAAO,EAAE,UAAU,EAAa,MAAM,KAAK,CAAC;AAI5C,qBACa,WAAY,SAAQ,UAAU;IAOzC,OAAgB,MAAM,4BA8BnB;IAEyB,GAAG,CAAC,EAAE,MAAM,CAAC;IAEhC,MAAM;CAMhB;AAED,OAAO,CAAC,MAAM,CAAC;IACb,UAAU,qBAAqB;QAC7B,cAAc,EAAE,WAAW,CAAC;KAC7B;CACF"}

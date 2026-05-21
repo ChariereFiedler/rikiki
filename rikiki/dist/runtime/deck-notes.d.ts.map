@@ -1,0 +1,1 @@
+{"version":3,"file":"deck-notes.d.ts","sourceRoot":"","sources":["../../src/runtime/deck-notes.ts"],"names":[],"mappings":"AAiBA,OAAO,EAAE,UAAU,EAAa,MAAM,KAAK,CAAC;AAG5C,qBACa,SAAU,SAAQ,UAAU;IACvC,OAAgB,MAAM,0BAEpB;IAEF,iEAAiE;IACjE,IAAI,KAAK,IAAI,MAAM,CAElB;IAEQ,MAAM,IAAI,OAAO;CAG3B;AAED,OAAO,CAAC,MAAM,CAAC;IACb,UAAU,qBAAqB;QAC7B,YAAY,EAAE,SAAS,CAAC;KACzB;CACF"}
