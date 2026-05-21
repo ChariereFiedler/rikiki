@@ -20,7 +20,26 @@ variables:
   BUILD_OUTPUT: 'site/dist'
   SPA_FALLBACK: 'true'
 
-stages: [build, deploy]
+stages: [check, build, deploy]
+
+# Quality gate · runs before the (expensive) Docker build so a broken
+# .astro type or a forbidden em-dash short-circuits the pipeline in ~10s
+# instead of waiting for the Astro+Docker pass to fail much later.
+lint:
+  stage: check
+  image: node:${NODE_VERSION}-alpine
+  cache:
+    key: site-node-modules-${CI_COMMIT_REF_SLUG}
+    paths:
+      - site/node_modules/
+  before_script:
+    - cd site
+    - npm ci --prefer-offline --no-audit
+  script:
+    - npm run lint
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
 
 # Override the template's build-image job · the shared runner now selects
 # the `docker-container` buildx driver by default, which does not load the
@@ -77,5 +96,56 @@ build-image:
         -t "$IMAGE:latest"
         --push
         .
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# Smoke test · after Portainer recreates the stack, hit the public URL
+# from outside and assert the routes we care about respond 200. Catches:
+# - CSP-broken bundle (Lit fails to load → no <deck-*>) by checking the
+#   served JS still contains an esbuild-bundled marker rather than the
+#   bare zero-build flavour
+# - missing vendor assets (vendor/marked.js, theme CSS)
+# - bad nginx config, broken redirect, expired cert
+# Fails the pipeline if any check fails · the deploy is already live at
+# that point, so a failure here is the cue to run scripts/rollback.sh.
+smoke-test:
+  stage: deploy
+  image: alpine:3.21
+  needs: [deploy]
+  variables:
+    SITE_URL: "https://rikiki.tordu-jardin.fr"
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - |
+      fail=0
+      check() {
+        local path="$1" expected="$2"
+        local code
+        code=$(curl -sk -o /tmp/body -w '%{http_code}' --max-time 15 "${SITE_URL}${path}") || code=000
+        if [ "$code" != "$expected" ]; then
+          echo "FAIL · ${path} · expected HTTP $expected, got $code"
+          fail=1
+        else
+          echo "OK   · ${path} · HTTP $code"
+        fi
+      }
+      check "/"                                "200"
+      check "/docs/"                           "200"
+      check "/docs/components/"                "200"
+      check "/docs/theming/"                   "200"
+      check "/rikiki/dist/index.js"            "200"
+      check "/rikiki/dist/vendor/marked.js"    "200"
+      check "/rikiki/themes/rikiki.css"        "200"
+      check "/embed/"                          "200"
+      # Bundle health · the marked URL must point at /rikiki/dist/vendor/
+      # (CSP-safe), not the cdn.jsdelivr.net one.
+      if curl -sk --max-time 10 "${SITE_URL}/rikiki/dist/index.js" | grep -q 'cdn\.jsdelivr\.net/npm/marked'; then
+        echo "FAIL · index.js still imports marked from cdn.jsdelivr.net"
+        fail=1
+      else
+        echo "OK   · index.js · marked URL rewritten"
+      fi
+      exit $fail
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
