@@ -17,10 +17,17 @@ mkdirSync(OUT, { recursive: true });
 // src/ is organised in design-system buckets · runtime/, layouts/,
 // molecules/, atoms/, plugins/ · plus a few files at the root
 // (index.ts, shared-styles.ts, livereload.ts). Walk recursively so
-// each .ts becomes its own entry point. dist/ MIRRORS the src/ shape
-// (esbuild's default behaviour) so the public URL contract is
-// /rikiki/dist/<bucket>/deck-<name>.js · the index module's static
-// imports and deck-root's dynamic imports both resolve naturally.
+// each .ts becomes its own entry point. dist/ is FLAT regardless of
+// the bucket the source lives in (see entryNames in config below).
+//
+// Why flat dist/ · deck-root's dynamic imports (`await import(
+// './deck-help.js')` etc.) get marked external by the plugin below
+// so esbuild leaves them verbatim in the bundle. The bundle is then
+// served as `/rikiki/dist/index.js`, where `./deck-help.js` resolves
+// to `/rikiki/dist/deck-help.js`. If dist/ mirrored src/ that path
+// would be `/rikiki/dist/runtime/deck-help.js` and presenter/help/
+// overview would 404 at runtime. Flat keeps the contract correct
+// for both the bundled file and the per-component sub-files.
 function walkTs(dir) {
   const out = [];
   for (const entry of readdirSync(dir)) {
@@ -32,6 +39,16 @@ function walkTs(dir) {
 }
 
 const entryPoints = walkTs(SRC);
+
+// Two files with the same basename would collide once flattened.
+const seen = new Map();
+for (const p of entryPoints) {
+  const base = p.slice(p.lastIndexOf('/') + 1);
+  if (seen.has(base)) {
+    throw new Error(`build · duplicate basename ${base}: ${seen.get(base)} vs ${p}`);
+  }
+  seen.set(base, p);
+}
 
 // Rewrite bare module specs ('lit', 'marked') to their jsdelivr CDN URLs at build time.
 // Consumers get plain ES modules that resolve in any browser without an import map.
@@ -99,10 +116,10 @@ const isDev = process.argv.includes('--watch') || process.argv.includes('--dev')
 const config = {
   entryPoints,
   outdir: OUT,
-  // outbase: SRC ensures dist/ mirrors src/ exactly (without it, esbuild
-  // would pick the common ancestor and add a stray level). entryNames
-  // is left at its default '[dir]/[name]'.
-  outbase: SRC,
+  // Flatten · entryNames '[name]' strips the bucket from the output
+  // path so dist/atoms/deck-badge.js becomes dist/deck-badge.js. See
+  // the note above walkTs() for why · TLDR runtime dynamic imports.
+  entryNames: '[name]',
   format: 'esm',
   target: 'es2022',
   platform: 'browser',
