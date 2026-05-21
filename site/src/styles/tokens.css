@@ -157,6 +157,21 @@
   --rik-radius-md:                    14px;
   --rik-radius-lg:                    20px;
   --rik-radius-pill:                  9999px;
+
+  /* Code surface + syntax · same contract as themes/rikiki.css so any
+     site component that writes against --rik-code__* (DualUse diff,
+     embedded snippets) gets the dark editor surface. The deck's iframes
+     re-declare these inside their own :root via the theme file. */
+  --rik-code__bg:                     #0f0f10;
+  --rik-code__border:                 #232325;
+  --rik-code__text:                   #f4f4f5;
+  --rik-code__syntax-comment:         #8b95a0;
+  --rik-code__syntax-keyword:         #c792ea;
+  --rik-code__syntax-string:          #c3e88d;
+  --rik-code__syntax-number:          #f78c6c;
+  --rik-code__syntax-type:            #ffcb6b;
+  --rik-code__syntax-property:        #80cbc4;
+  --rik-code__syntax-function:        #82aaff;
 }
 
 /* The site is light-only by design. Authored dark sections (hero, hook,

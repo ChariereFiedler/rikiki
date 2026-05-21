@@ -46,12 +46,44 @@ const pageTitle = `${title} · Rikiki docs`;
       if (aside) aside.style.display = 'none';
       return;
     }
+
+    // Make every h2/h3 with an id shareable · clicking the heading text
+    // (or the # affordance) pushes `#id` into the URL without scrolling
+    // the page (we let the native anchor jump do that when the user clicks
+    // the rendered <a>, but the heading-click handler only updates the URL).
+    heads.forEach((h) => {
+      // Inject a real anchor link as the # affordance · keyboard-reachable,
+      // copy-link friendly, and replaces the pure-CSS ::after we had.
+      const anchor = document.createElement('a');
+      anchor.className = 'heading-anchor';
+      anchor.href = '#' + h.id;
+      anchor.setAttribute('aria-label', 'Link to ' + (h.textContent || '').trim());
+      anchor.textContent = '#';
+      h.appendChild(anchor);
+
+      // Click anywhere on the heading text also pushes the hash · this
+      // makes copying the URL trivial without forcing users to hover-hunt
+      // the small # badge.
+      h.addEventListener('click', (e) => {
+        if (e.target.closest('a')) return;          // let native anchor handle itself
+        if (e.target.closest('code')) return;       // don't hijack code clicks
+        const next = new URL(window.location.href);
+        next.hash = '#' + h.id;
+        history.pushState(null, '', next);
+      });
+      // Make the cursor signal the affordance.
+      h.style.cursor = 'pointer';
+    });
+
     heads.forEach((h) => {
       const li = document.createElement('li');
       li.className = h.tagName === 'H3' ? 'lvl-3' : 'lvl-2';
       const a = document.createElement('a');
       a.href = '#' + h.id;
-      a.textContent = h.textContent.replace(/#$/, '').trim();
+      // textContent of h now includes our injected '#' anchor · strip it.
+      const labelNode = h.cloneNode(true);
+      labelNode.querySelectorAll('.heading-anchor').forEach((n) => n.remove());
+      a.textContent = (labelNode.textContent || '').trim();
       li.appendChild(a);
       list.appendChild(li);
     });
@@ -136,33 +168,27 @@ const pageTitle = `${title} · Rikiki docs`;
     border-radius: 0;
     font-size: inherit;
   }
-  /* Anchor link badge next to h2/h3 on hover */
+  /* Anchor link badge next to h2/h3 on hover · real <a>, injected by JS */
   .content > article h2[id], .content > article h3[id] { position: relative; }
-  .content > article h2[id]::after, .content > article h3[id]::after {
-    content: '#';
+  .content > article h2[id] .heading-anchor,
+  .content > article h3[id] .heading-anchor {
     position: absolute; left: -1.2em; top: 0;
     color: var(--rik-text-default--faint);
+    text-decoration: none;
+    font-weight: 400;
     opacity: 0;
-    transition: opacity 0.12s;
+    transition: opacity 0.12s, color 0.12s;
   }
-  .content > article h2[id]:hover::after,
-  .content > article h3[id]:hover::after { opacity: 1; }
-</style>
+  .content > article h2[id]:hover .heading-anchor,
+  .content > article h3[id]:hover .heading-anchor,
+  .content > article .heading-anchor:focus-visible { opacity: 1; }
+  .content > article .heading-anchor:hover { color: var(--rik-accent); }
 
-<style>
-  .layout {
-    display: grid;
-    grid-template-columns: 240px minmax(0, 1fr) 220px;
-    max-width: 1440px;
-    margin: 0 auto;
-    min-height: calc(100vh - 60px);
-  }
-  .content {
-    padding: var(--rik-space-6) var(--rik-space-6);
-    max-width: 920px;
-    min-width: 0;
-  }
-  /* ── Right-side TOC ───────────────────────────────── */
+  /* ── Right-side TOC ──────────────────────────────────────────────
+     These rules sit in the `is:global` block because the <li>/<a>
+     children are created at runtime by the inline script · Astro's
+     scoped CSS adds a data-astro-cid-* selector that those dynamic
+     nodes never receive, so a `<style>` rule would never match them. */
   .toc {
     position: sticky;
     top: 60px;
@@ -171,7 +197,7 @@ const pageTitle = `${title} · Rikiki docs`;
     max-height: calc(100vh - 60px);
     overflow-y: auto;
   }
-  .toc-head {
+  .toc .toc-head {
     font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
     letter-spacing: 0.16em;
     text-transform: uppercase;
@@ -188,23 +214,47 @@ const pageTitle = `${title} · Rikiki docs`;
   .toc li { margin: 0; }
   .toc a {
     display: block;
-    padding: 6px var(--rik-space-3);
+    padding: 7px var(--rik-space-3);
     margin-left: -1px;
-    border-left: 1px solid transparent;
-    color: var(--rik-text-default--faint);
+    border-left: 2px solid transparent;
+    color: var(--rik-text-default--muted);
     text-decoration: none;
     font-size: var(--rik-font-size-sm);
-    line-height: 1.35;
-    transition: color var(--rik-motion-fast) var(--rik-motion__ease-out),
-                border-color var(--rik-motion-fast) var(--rik-motion__ease-out);
+    line-height: 1.4;
+    transition: color 0.12s, border-color 0.12s, background 0.12s;
   }
-  .toc a:hover { color: var(--rik-text-default); text-decoration: none; }
+  .toc a:hover {
+    color: var(--rik-text-default);
+    text-decoration: none;
+    background: rgba(42, 37, 32, 0.04);
+  }
   .toc a.is-active {
-    color: var(--rik-accent--strong);
+    color: var(--rik-accent);
     border-left-color: var(--rik-accent);
+    background: rgba(240, 112, 32, 0.06);
     font-weight: 700;
   }
-  .toc .lvl-3 a { padding-left: var(--rik-space-5); font-size: 0.82rem; }
+  .toc .lvl-3 a {
+    padding-left: var(--rik-space-5);
+    font-size: 0.82rem;
+    color: var(--rik-text-default--faint);
+  }
+</style>
+
+<style>
+  .layout {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr) 220px;
+    max-width: 1440px;
+    margin: 0 auto;
+    min-height: calc(100vh - 60px);
+  }
+  .content {
+    padding: var(--rik-space-6) var(--rik-space-6);
+    max-width: 920px;
+    min-width: 0;
+  }
+  /* TOC styles live in the is:global block above (dynamic <li>/<a>). */
   article > .eyebrow {
     display: table;
     padding: 4px 10px;

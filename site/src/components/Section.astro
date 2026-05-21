@@ -37,7 +37,11 @@ const { id, eyebrow, num, title, tone = 'paper' } = Astro.props;
      orange section name to its right. Both share the pill rounding so the
      left curve belongs to the num chip · no double-rounded overlap. */
   .eyebrow {
-    display: inline-flex; align-items: stretch;
+    /* width: fit-content keeps the pill hugging its content while the
+       flex container stays block-level · prevents the eyebrow from
+       sharing its line with the following <h2 class="title">. */
+    display: flex; align-items: stretch;
+    width: fit-content;
     background: var(--rik-accent);
     color: var(--rik-accent__on);
     border-radius: var(--rik-radius-pill);
