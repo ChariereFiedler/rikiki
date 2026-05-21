@@ -20,22 +20,23 @@ rikiki/
 │   ├── siliceum.css          ← alternative theme (warm paper + yellow)
 │   └── siliceum-fonts.css    ← self-hosted Source Sans Pro + JetBrains Mono
 ├── fonts/                    ← woff2 files used by the Siliceum theme
-├── src/                      ← TypeScript sources · contributors edit these
-│   ├── deck-root.ts          ← deck wrapper · navigation, overview, hash, kb hints
-│   ├── deck-cover.ts         ← layouts
-│   ├── deck-section.ts
-│   ├── deck-feature.ts
-│   ├── deck-split.ts
-│   ├── deck-feature-cards.ts
-│   ├── deck-takeaway.ts
-│   ├── deck-md.ts            ← atoms
-│   ├── deck-code.ts
-│   ├── deck-callout.ts
-│   ├── deck-card.ts
-│   ├── …                     ← deck-badge, deck-metric, deck-tier-list, etc.
+├── src/                      ← TypeScript sources · organised by DS bucket
+│   ├── index.ts              ← registers every component
 │   ├── shared-styles.ts
-│   └── index.ts              ← registers every component
-├── dist/                     ← built output · consumers import from here
+│   ├── livereload.ts
+│   ├── runtime/              ← deck-root, deck-help, deck-overview,
+│   │                            deck-presenter, deck-transition, deck-notes
+│   ├── layouts/              ← deck-cover, deck-section, deck-feature,
+│   │                            deck-split, deck-feature-cards, deck-takeaway,
+│   │                            deck-photo
+│   ├── molecules/            ← deck-callout, deck-card, deck-md, deck-mermaid,
+│   │                            deck-stat, deck-metric, deck-tier-list,
+│   │                            deck-step-list, deck-shortcut, deck-stack,
+│   │                            deck-grid
+│   ├── atoms/                ← deck-badge, deck-kicker, deck-punch, deck-code
+│   └── plugins/              ← opt-in (shiki for advanced syntax highlighting)
+├── dist/                     ← built output · FLAT regardless of src bucket
+│                                (deck-root's dynamic imports rely on it)
 ├── build.mjs                 ← esbuild script
 ├── tsconfig.json
 └── starter.html              ← blank template, one slide per layout type
@@ -44,7 +45,7 @@ rikiki/
 ## Three-layer styling
 
 1. **Theme tokens** (`themes/<name>.css`) at `:root` · custom properties cross the Shadow DOM, so they reach every component.
-2. **Shared styles** (`src/shared-styles.ts`) · base typography, helpers, imported by every component via `static styles`.
+2. **Shared styles** (`src/shared-styles.ts`) · base typography, helpers, imported by every layout via `static styles`.
 3. **Layout-specific CSS** · each component's own Shadow DOM.
 
 To re-theme: copy a theme file, change the values, that's it. All components follow.
@@ -163,7 +164,7 @@ deck-cover::part(brand) { font-family: 'Comic Sans'; }
 
 ### Add a layout
 
-Create `src/deck-my-layout.ts`, import `slideBase` from `shared-styles.js`, extend `LitElement`, register in `src/index.ts`. Rebuild.
+Create `src/layouts/deck-my-layout.ts`, `import { slideBase } from '../shared-styles.js'`, extend `LitElement`, register in `src/index.ts`. Rebuild.
 
 ## Build
 

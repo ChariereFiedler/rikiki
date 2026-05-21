@@ -63,7 +63,7 @@ URL hash stays flat (`#3` = slide 3) for shareability.
 
 ## Contributing
 
-Sources are in `rikiki/src/*.ts`. Build with:
+Sources are in `rikiki/src/**/*.ts` (organised by DS bucket · runtime/, layouts/, molecules/, atoms/, plugins/). Build with:
 
 ```bash
 cd rikiki

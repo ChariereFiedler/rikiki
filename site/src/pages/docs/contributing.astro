@@ -9,7 +9,7 @@ npm run build       # esbuild + tsc --emitDeclarationOnly
 npm run watch       # esbuild --watch (dev sourcemaps)
 npm run typecheck   # tsc --noEmit (must stay clean)`;
 
-const newComponent = `// src/deck-myname.ts
+const newComponent = `// src/molecules/deck-myname.ts  (or layouts/, atoms/, runtime/)
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
@@ -59,14 +59,15 @@ declare global {
 <h2 id="add-component">Adding a component</h2>
 
 <ol>
-  <li>Create <code>src/deck-myname.ts</code>.</li>
+  <li>Pick the bucket · <code>layouts/</code> for slide-level, <code>molecules/</code> for containers and composed elements, <code>atoms/</code> for primitives, <code>runtime/</code> for orchestration code that isn't part of the author-facing API.</li>
+  <li>Create <code>src/&lt;bucket&gt;/deck-myname.ts</code>.</li>
   <li>Extend <code>LitElement</code>, decorate with <code>@customElement</code> and <code>@property</code>.</li>
   <li>Expose <strong>per-component tokens</strong> with sensible defaults from the theme palette · users should be able to retheme via <code>--deck-myname-*</code>.</li>
-  <li>Register it in <code>src/index.ts</code> if it should be auto-loaded with the full bundle.</li>
-  <li>Run <code>npm run build</code> · commit both <code>src/</code> and <code>dist/</code>.</li>
+  <li>Register it in <code>src/index.ts</code> with the full bucket path: <code>import './&lt;bucket&gt;/deck-myname.js'</code>.</li>
+  <li>Run <code>npm run build</code> · commit both <code>src/</code> and <code>dist/</code>. <code>dist/</code> stays flat regardless of the bucket · the public URL is <code>/rikiki/dist/deck-myname.js</code>.</li>
 </ol>
 
-<CodeBlock label="src/deck-myname.ts" lang="ts" code={newComponent} />
+<CodeBlock label="src/<bucket>/deck-myname.ts" lang="ts" code={newComponent} />
 
 <h2 id="pr-flow">Pull requests</h2>
 <ul>
