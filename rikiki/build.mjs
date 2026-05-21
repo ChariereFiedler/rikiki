@@ -4,8 +4,8 @@
 // Type declarations (.d.ts) come from `tsc --emitDeclarationOnly` (see package.json).
 
 import { build, context } from 'esbuild';
-import { readdirSync, readFileSync, mkdirSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
+import { readdirSync, readFileSync, mkdirSync, statSync } from 'node:fs';
+import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -14,9 +14,24 @@ const OUT = resolve(__dirname, 'dist');
 
 mkdirSync(OUT, { recursive: true });
 
-const entryPoints = readdirSync(SRC)
-  .filter((f) => f.endsWith('.ts'))
-  .map((f) => resolve(SRC, f));
+// src/ is organised in design-system buckets · runtime/, layouts/,
+// molecules/, atoms/, plugins/ · plus a few files at the root
+// (index.ts, shared-styles.ts, livereload.ts). Walk recursively so
+// each .ts becomes its own entry point. dist/ MIRRORS the src/ shape
+// (esbuild's default behaviour) so the public URL contract is
+// /rikiki/dist/<bucket>/deck-<name>.js · the index module's static
+// imports and deck-root's dynamic imports both resolve naturally.
+function walkTs(dir) {
+  const out = [];
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry);
+    if (statSync(full).isDirectory()) out.push(...walkTs(full));
+    else if (entry.endsWith('.ts')) out.push(full);
+  }
+  return out;
+}
+
+const entryPoints = walkTs(SRC);
 
 // Rewrite bare module specs ('lit', 'marked') to their jsdelivr CDN URLs at build time.
 // Consumers get plain ES modules that resolve in any browser without an import map.
@@ -38,7 +53,7 @@ const cdnRewrite = {
     // browser fetches them on demand. deck-root uses
     //   await import('./deck-overview.js')
     // which would otherwise be inlined back into deck-root.
-    b.onResolve({ filter: /^\.\/(deck-overview|deck-help|deck-transition|deck-presenter|shiki-plugin)\.js$/ }, (args) => ({
+    b.onResolve({ filter: /^\.\/(deck-overview|deck-help|deck-transition|deck-presenter)\.js$/ }, (args) => ({
       path: args.path,
       external: true,
     }));
@@ -84,6 +99,10 @@ const isDev = process.argv.includes('--watch') || process.argv.includes('--dev')
 const config = {
   entryPoints,
   outdir: OUT,
+  // outbase: SRC ensures dist/ mirrors src/ exactly (without it, esbuild
+  // would pick the common ancestor and add a stray level). entryNames
+  // is left at its default '[dir]/[name]'.
+  outbase: SRC,
   format: 'esm',
   target: 'es2022',
   platform: 'browser',
@@ -95,7 +114,7 @@ const config = {
   legalComments: 'none',
   plugins: [cdnRewrite, minifyTemplates(!isDev)],
   // Keep each component its own file (no chunk merging since splitting is off
-  // and entryPoints is the full src/*.ts list).
+  // and entryPoints is the full walked src/**/*.ts list).
   logLevel: 'info',
 };
 
