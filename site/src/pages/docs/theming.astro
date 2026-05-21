@@ -53,15 +53,6 @@ const newTheme = `/* themes/my-brand.css · a minimal third theme.
   --rik-font-mono:       'IBM Plex Mono', ui-monospace, monospace;
 }`;
 
-const darkMode = `<!-- 1. Honour the OS preference (default if no attr is set) -->
-<html>
-
-<!-- 2. Force light regardless of OS -->
-<html data-rik-theme="light">
-
-<!-- 3. Force dark regardless of OS -->
-<html data-rik-theme="dark">`;
-
 const reduceMotion = `@media (prefers-reduced-motion: reduce) {
   :root {
     --rik-motion-fast: 0ms;

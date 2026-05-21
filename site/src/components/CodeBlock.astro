@@ -8,7 +8,6 @@ interface Props {
   label?: string;
 }
 const { lang = 'html', code, label } = Astro.props;
-const langLabel = label ?? lang.toUpperCase();
 
 function highlight(src: string, lang: string): string {
   let s = src.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -148,15 +147,7 @@ const highlighted = highlight(code.trim(), lang);
       const code = btn.getAttribute('data-code') || '';
       try {
         await navigator.clipboard.writeText(code);
-      } catch {
-        /* fallback · select + execCommand for older browsers */
-        const ta = document.createElement('textarea');
-        ta.value = code;
-        document.body.appendChild(ta);
-        ta.select();
-        try { document.execCommand('copy'); } catch { /* noop */ }
-        ta.remove();
-      }
+      } catch { /* clipboard API failed (e.g. insecure context) · accept silently */ }
       const label = btn.querySelector('.label-text');
       const original = label?.textContent;
       btn.classList.add('copied');
