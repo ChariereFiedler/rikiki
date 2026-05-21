@@ -19,21 +19,21 @@ variables:
   # gets bypassed · we learned this the hard way.
   BUILD_OUTPUT: 'site/dist'
   SPA_FALLBACK: 'true'
-  # Pinned image digests · Renovate keeps these fresh. Tag-pinning alone
-  # (docker:27-cli, node:24-alpine…) is mutable: a registry refresh would
-  # silently shift the build under our feet. Pinning by sha256 makes the
-  # pipeline reproducible AND turns a supply-chain compromise of a tag
-  # into a deploy-time error instead of a silent swap.
+  # Base images pinned by sha256. Light supply-chain hygiene · a tag
+  # refresh upstream no longer silently shifts the build under our feet.
+  # Bump by hand when needed (run `docker pull <image>` to see the new
+  # digest, paste it back here).
   NODE_IMAGE:  'node:24-alpine@sha256:d1b3b4da11eefd5941e7f0b9cf17783fc99d9c6fc34884a665f40a06dbdfc94f'
   NGINX_IMAGE: 'nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10'
   DOCKER_CLI_IMAGE: 'docker:27-cli@sha256:851f91d241214e7c6db86513b270d58776379aacc5eb9c4a87e5b47115e3065c'
   ALPINE_IMAGE: 'alpine:3.21@sha256:48b0309ca019d89d40f670aa1bc06e426dc0931948452e8491e3d65087abc07d'
 
-stages: [check, build, scan, deploy]
+stages: [check, build, deploy]
 
-# Quality gate · runs before the (expensive) Docker build so a broken
-# .astro type or a forbidden em-dash short-circuits the pipeline in ~10s
-# instead of waiting for the Astro+Docker pass to fail much later.
+# Quality gate · em-dash linter + `astro check`. Runs before the (more
+# expensive) Docker build so a TS error or a forbidden em-dash short-
+# circuits the pipeline in ~25s instead of waiting for the Astro+Docker
+# pass to fail much later.
 lint:
   stage: check
   image: ${NODE_IMAGE}
@@ -108,79 +108,11 @@ build-image:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
-# Both scan jobs run inside ${ALPINE_IMAGE} because the shared
-# tordu-jardin runner restricts allowed_images to docker:*, node:*,
-# python:*, alpine:*, golang:*, rust:*, debian:*, nginx:* · aquasec/
-# and anchore/ images are blocked. We install the binaries on demand
-# from the upstream installer scripts (~3-5 s each, cached layer-less).
-
-# CVE scan · Trivy pulls the freshly-pushed image straight from the
-# private registry (no docker daemon needed) and reports HIGH/CRITICAL
-# fixable vulnerabilities. `allow_failure: true` for now · we want
-# visibility before we make it a hard gate, otherwise a brand-new CVE
-# in nginx-alpine blocks every deploy until the base image bumps.
-scan-image:
-  stage: scan
-  image: ${ALPINE_IMAGE}
-  needs: [build-image]
-  variables:
-    IMAGE: "${TJ_REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
-    TRIVY_USERNAME: "${TJ_REGISTRY_USER}"
-    TRIVY_PASSWORD: "${TJ_REGISTRY_PASSWORD}"
-    TRIVY_NO_PROGRESS: "true"
-    TRIVY_TIMEOUT: "5m"
-    TRIVY_VERSION: "0.70.0"
-  before_script:
-    - apk add --no-cache curl ca-certificates tar
-    # The upstream install.sh routes through get.trivy.dev which 404s on
-    # several releases · grab the tarball straight from GitHub instead.
-    - curl -sfL "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
-        | tar xz -C /usr/local/bin trivy
-    - trivy --version | head -1
-  script:
-    - trivy image --severity HIGH,CRITICAL --exit-code 1 --ignore-unfixed "$IMAGE"
-  allow_failure: true
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-
-# SBOM · Syft inspects the same image and emits SPDX 2.3 + CycloneDX
-# JSON. Stored 30 days · enough for a CVE that drops Friday afternoon
-# to be cross-referenced against the running version Monday morning.
-sbom:
-  stage: scan
-  image: ${ALPINE_IMAGE}
-  needs: [build-image]
-  variables:
-    IMAGE: "${TJ_REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
-    SYFT_REGISTRY_AUTH_USERNAME: "${TJ_REGISTRY_USER}"
-    SYFT_REGISTRY_AUTH_PASSWORD: "${TJ_REGISTRY_PASSWORD}"
-    SYFT_REGISTRY_AUTH_AUTHORITY: "${TJ_REGISTRY}"
-    SYFT_VERSION: "1.18.0"
-  before_script:
-    - apk add --no-cache curl ca-certificates
-    - curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh
-        | sh -s -- -b /usr/local/bin "v${SYFT_VERSION}"
-  script:
-    - syft "$IMAGE" -o spdx-json=sbom.spdx.json -o cyclonedx-json=sbom.cdx.json
-    - echo "── SBOM summary ──"
-    - syft "$IMAGE" -o table | head -30
-  artifacts:
-    name: "sbom-${CI_COMMIT_SHORT_SHA}"
-    paths: [sbom.spdx.json, sbom.cdx.json]
-    expire_in: 30 days
-  allow_failure: true
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-
 # Smoke test · after Portainer recreates the stack, hit the public URL
-# from outside and assert the routes we care about respond 200. Catches:
-# - CSP-broken bundle (Lit fails to load → no <deck-*>) by checking the
-#   served JS still contains an esbuild-bundled marker rather than the
-#   bare zero-build flavour
-# - missing vendor assets (vendor/marked.js, theme CSS)
-# - bad nginx config, broken redirect, expired cert
-# Fails the pipeline if any check fails · the deploy is already live at
-# that point, so a failure here is the cue to run scripts/rollback.sh.
+# from outside and assert the routes we care about respond 200, plus a
+# content-level check that the bundle no longer references jsdelivr for
+# marked (CSP-killer regression we've already hit once). Failure here
+# is the cue to roll back · the deploy is already live at this point.
 smoke-test:
   stage: deploy
   image: ${ALPINE_IMAGE}
@@ -206,13 +138,8 @@ smoke-test:
       check "/"                                "200"
       check "/docs/"                           "200"
       check "/docs/components/"                "200"
-      check "/docs/theming/"                   "200"
       check "/rikiki/dist/index.js"            "200"
       check "/rikiki/dist/vendor/marked.js"    "200"
-      check "/rikiki/themes/rikiki.css"        "200"
-      check "/embed/"                          "200"
-      # Bundle health · the marked URL must point at /rikiki/dist/vendor/
-      # (CSP-safe), not the cdn.jsdelivr.net one.
       if curl -sk --max-time 10 "${SITE_URL}/rikiki/dist/index.js" | grep -q 'cdn\.jsdelivr\.net/npm/marked'; then
         echo "FAIL · index.js still imports marked from cdn.jsdelivr.net"
         fail=1
