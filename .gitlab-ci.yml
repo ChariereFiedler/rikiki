@@ -1,0 +1,19 @@
+include:
+  - project: tordu-jardin/cloud
+    file: ci/deploy-static.gitlab-ci.yml
+
+# Layout · the monorepo keeps the Astro site under site/, with public/
+# symlinks back to the sibling rikiki/ and examples/ packages. The static
+# template builds at BUILD_CONTEXT root, so a thin root package.json acts
+# as the entry point for `COPY package.json package-lock.json && npm ci`
+# (no deps · the root install is a no-op) and BUILD_CMD jumps into site/
+# for the real build. BUILD_OUTPUT points at the nested dist/.
+variables:
+  STACK_NAME: 'rikiki'
+  IMAGE_NAME: 'rikiki'
+  NODE_VERSION: '24'
+  BUILD_CMD: 'cd site && npm ci && npm run build'
+  BUILD_OUTPUT: 'site/dist'
+  SPA_FALLBACK: 'true'
+
+stages: [build, deploy]

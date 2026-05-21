@@ -1,0 +1,26 @@
+services:
+  rikiki-site:
+    image: registry.tordu-jardin.fr/rikiki:latest
+    container_name: rikiki-site
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.rikiki-site.rule=Host(`rikiki.tordu-jardin.fr`)
+      - traefik.http.routers.rikiki-site.entrypoints=websecure
+      - traefik.http.routers.rikiki-site.tls.certresolver=letsencrypt
+      - traefik.http.services.rikiki-site.loadbalancer.server.port=80
+      - traefik.http.routers.rikiki-site.middlewares=security-headers@file
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:80/']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+networks:
+  proxy:
+    external: true
