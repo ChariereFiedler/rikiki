@@ -2,7 +2,7 @@
 import Docs from '../../layouts/Docs.astro';
 import CodeBlock from '../../components/CodeBlock.astro';
 
-const npmCmd = `npm install rikiki`;
+const npmCmd = `npm install rikiki-deck`;
 
 const minDeck = `<!doctype html>
 <html>
@@ -26,8 +26,8 @@ const minDeck = `<!doctype html>
 </body>
 </html>`;
 
-const cdnDeck = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rikiki/tokens.css">
-<script type="module" src="https://cdn.jsdelivr.net/npm/rikiki/dist/index.js"></script>`;
+const cdnDeck = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rikiki-deck/tokens.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/rikiki-deck/dist/index.js"></script>`;
 
 const serve = `# Any static server works · pick one you already have:
 python3 -m http.server 7799
@@ -54,8 +54,8 @@ npx serve .
 <h3 id="install-npm">Via npm (versioned, offline-friendly)</h3>
 <CodeBlock label="terminal" lang="js" code={npmCmd} />
 <p>
-  Then reference the files relative to <code>node_modules/rikiki/</code> · or
-  copy <code>node_modules/rikiki</code> next to your deck and commit it.
+  Then reference the files relative to <code>node_modules/rikiki-deck/</code> · or
+  copy <code>node_modules/rikiki-deck</code> next to your deck and commit it.
 </p>
 
 <h3 id="install-clone">Via git clone (contributors)</h3>
