@@ -1,100 +1,68 @@
 ---
-import CodeBlock from './CodeBlock.astro';
-
-const slidesCode = `<deck-root transition="slide">
-  <deck-cover>...</deck-cover>
-  <deck-section>...</deck-section>
-  <deck-feature>
-    <deck-notes>Pause for laughter.</deck-notes>
-  </deck-feature>
-</deck-root>`;
-
-const carouselCode = `<deck-root autoplay="4000" loop swipe transition="slide">
-  <deck-feature>...</deck-feature>
-  <deck-feature>...</deck-feature>
-  <deck-feature>...</deck-feature>
-</deck-root>`;
+// DualUse · "same components, different attributes" pitched as a literal diff.
+// The hero of this section IS the markup. Three differentiator attributes are
+// inline-highlighted so the eye lands on the entire change at once.
 ---
 
 <section id="dual" class="dual">
   <div class="inner">
-    <p class="eyebrow">Two products, one folder</p>
-    <h2>It runs your talk. It also runs your landing-page carousel.</h2>
+    <p class="eyebrow"><span class="num">02</span> Two products, one folder</p>
+    <h2>Add three attributes. The deck becomes a carousel.</h2>
     <p class="lede">
-      Same components. Same theming. Same bundle. Add
-      <code>autoplay loop swipe</code> to <code>deck-root</code> and the deck
-      becomes a touch-friendly carousel · no second framework, no extra
-      dependency.
+      Same components. Same theming. Same 12 KB bundle. The dual-use isn't
+      a marketing accident · it's a side-effect of building the deck engine
+      on Web Components and CSS custom properties.
     </p>
 
-    <div class="grid">
-      <!-- ─── Slides ─────────────────────────────────── -->
-      <article class="case case-slides">
-        <div class="stripe" aria-hidden="true"></div>
-        <header>
-          <span class="icon" aria-hidden="true">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="4" width="20" height="14" rx="2"></rect>
-              <path d="M2 20h20"></path>
-              <path d="M9 9l5 3-5 3V9z" fill="currentColor"></path>
-            </svg>
-          </span>
-          <div class="head-text">
-            <span class="tag">Use case A</span>
-            <h3>Slides for technical talks</h3>
-          </div>
-        </header>
-
-        <ul class="features">
-          <li><span class="check" aria-hidden="true">✓</span>2D keyboard nav · sections + sub-slides</li>
-          <li><span class="check" aria-hidden="true">✓</span>Speaker notes + presenter window <span class="kbd">P</span></li>
-          <li><span class="check" aria-hidden="true">✓</span>Overview mode <span class="kbd">O</span> · path layout</li>
-          <li><span class="check" aria-hidden="true">✓</span>Step-reveal in <code>&lt;deck-code&gt;</code></li>
-          <li><span class="check" aria-hidden="true">✓</span>Opt-in Shiki for production-grade syntax</li>
-        </ul>
-
-        <CodeBlock lang="html" code={slidesCode} label="markup" />
-      </article>
-
-      <!-- ─── Carousels ──────────────────────────────── -->
-      <article class="case case-carousel">
-        <div class="stripe" aria-hidden="true"></div>
-        <header>
-          <span class="icon" aria-hidden="true">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"></path>
-              <path d="M21 4v4h-4"></path>
-              <path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"></path>
-              <path d="M3 20v-4h4"></path>
-            </svg>
-          </span>
-          <div class="head-text">
-            <span class="tag">Use case B</span>
-            <h3>Carousels for product pages</h3>
-          </div>
-        </header>
-
-        <ul class="features">
-          <li><span class="check" aria-hidden="true">✓</span>Auto-advance · <code>autoplay="N"</code> ms</li>
-          <li><span class="check" aria-hidden="true">✓</span>Wraps · <code>loop</code> at the edges</li>
-          <li><span class="check" aria-hidden="true">✓</span>Touch swipe · 60 px threshold, ignores buttons/links</li>
-          <li><span class="check" aria-hidden="true">✓</span>Pauses on hover, resets on click</li>
-          <li><span class="check" aria-hidden="true">✓</span>Step-dots indicator out of the box</li>
-        </ul>
-
-        <CodeBlock lang="html" code={carouselCode} label="markup" />
-      </article>
+    <div class="diff-wrap">
+      <header class="diff-head">
+        <span class="from">A slide deck</span>
+        <span class="arrow" aria-hidden="true">→</span>
+        <span class="to">A carousel</span>
+      </header>
+      <pre class="diff" aria-label="Three attributes turn a deck into a carousel">
+<span class="line"><span class="tok-pun">&lt;</span><span class="tok-tag">deck-root</span><span class="diff-add"> <span class="tok-attr">autoplay</span>=<span class="tok-str">"4000"</span> <span class="tok-attr">loop</span> <span class="tok-attr">swipe</span></span> <span class="tok-attr">transition</span>=<span class="tok-str">"slide"</span><span class="tok-pun">&gt;</span></span>
+<span class="line">  <span class="tok-pun">&lt;</span><span class="tok-tag">deck-cover</span><span class="tok-pun">&gt;</span>...<span class="tok-pun">&lt;/</span><span class="tok-tag">deck-cover</span><span class="tok-pun">&gt;</span></span>
+<span class="line">  <span class="tok-pun">&lt;</span><span class="tok-tag">deck-feature</span><span class="tok-pun">&gt;</span>...<span class="tok-pun">&lt;/</span><span class="tok-tag">deck-feature</span><span class="tok-pun">&gt;</span></span>
+<span class="line">  <span class="tok-pun">&lt;</span><span class="tok-tag">deck-feature</span><span class="tok-pun">&gt;</span>...<span class="tok-pun">&lt;/</span><span class="tok-tag">deck-feature</span><span class="tok-pun">&gt;</span></span>
+<span class="line"><span class="tok-pun">&lt;/</span><span class="tok-tag">deck-root</span><span class="tok-pun">&gt;</span></span>
+      </pre>
+      <p class="diff-caption">
+        <strong>Three attributes.</strong> The whole change. Same markup as
+        any other deck · the engine just stops asking the human and starts
+        auto-advancing with touch swipe.
+      </p>
     </div>
 
-    <p class="caveat">
-      The dual-use isn't a marketing accident · it's a side-effect of building
-      the deck engine on Web Components and CSS custom properties. The same
-      contract serves both audiences.
-    </p>
+    <div class="cases">
+      <article class="case">
+        <header>
+          <h3>As a slide deck</h3>
+          <p class="case-line">Drop the three attributes. Keep 2D nav, presenter window, speaker notes, step-reveal.</p>
+        </header>
+        <ul class="tags">
+          <li><kbd>P</kbd> presenter</li>
+          <li><kbd>O</kbd> overview</li>
+          <li><kbd>.</kbd> blank</li>
+        </ul>
+      </article>
+
+      <article class="case">
+        <header>
+          <h3>As a carousel</h3>
+          <p class="case-line">Keep the three. Get touch swipe, autoplay pause on hover, end-wraps to start.</p>
+        </header>
+        <ul class="tags">
+          <li>60 px swipe</li>
+          <li>Hover-pause</li>
+          <li>Loop</li>
+        </ul>
+      </article>
+    </div>
   </div>
 </section>
 
-<style>
+<style is:global>
   .dual {
     background: var(--rik-surface-raised);
     padding: var(--rik-space-7) var(--rik-space-5);
@@ -104,15 +72,21 @@ const carouselCode = `<deck-root autoplay="4000" loop swipe transition="slide">
   .inner { max-width: 1080px; margin: 0 auto; }
 
   .eyebrow {
-    display: inline-block;
+    display: inline-flex; align-items: center; gap: 8px;
     background: var(--rik-accent);
     color: var(--rik-accent__on);
-    padding: 4px 10px;
+    padding: 4px 14px 4px 4px;
     border-radius: var(--rik-radius-pill);
     font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    margin-bottom: var(--rik-space-3);
+    margin: 0 0 var(--rik-space-3);
+  }
+  .eyebrow .num {
+    background: var(--rik-accent__on);
+    color: var(--rik-accent--strong);
+    padding: 4px 7px;
+    border-radius: var(--rik-radius-pill);
   }
   h2 {
     font-family: var(--rik-font-display);
@@ -122,7 +96,7 @@ const carouselCode = `<deck-root autoplay="4000" loop swipe transition="slide">
     letter-spacing: -0.025em;
     line-height: 1.05;
     margin: 0 0 var(--rik-space-3);
-    max-width: 22ch;
+    max-width: 24ch;
   }
   .lede {
     font-size: var(--rik-font-size-lead);
@@ -131,116 +105,111 @@ const carouselCode = `<deck-root autoplay="4000" loop swipe transition="slide">
     max-width: 72ch;
     margin: 0 0 var(--rik-space-6);
   }
-  .lede code {
+  .lede code, .case code {
     font-family: var(--rik-font-mono);
     font-size: 0.92em;
     background: rgba(42, 37, 32, 0.06);
     color: var(--rik-text-default);
-    padding: 2px 6px;
+    padding: 2px 7px;
     border-radius: 4px;
   }
 
-  /* ─── Grid + cards ───────────────────────────────────── */
-  .grid {
+  /* ── The diff · hero of the section ────────────────────── */
+  .diff-wrap {
+    background: var(--rik-code__bg);
+    border-radius: var(--rik-radius-md);
+    padding: 0 0 var(--rik-space-4);
+    box-shadow: var(--rik-elevation-3);
+    margin-bottom: var(--rik-space-5);
+    overflow: hidden;
+  }
+  .diff-head {
+    display: flex; align-items: center; gap: var(--rik-space-3);
+    padding: var(--rik-space-3) var(--rik-space-5);
+    background: linear-gradient(90deg, var(--rik-status-success), var(--rik-accent));
+    color: var(--rik-accent__on);
+    font: 800 var(--rik-font-size-sm)/1 var(--rik-font-display);
+    letter-spacing: -0.005em;
+  }
+  .diff-head .from, .diff-head .to {
+    padding: 4px 10px;
+    background: rgba(0, 0, 0, 0.22);
+    border-radius: 4px;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  }
+  .diff-head .arrow {
+    font: 700 1.1rem/1 var(--rik-font-mono);
+    opacity: 0.8;
+  }
+  .diff {
+    margin: 0;
+    padding: var(--rik-space-5);
+    font-family: var(--rik-font-mono);
+    font-size: 1.05rem;
+    line-height: 1.9;
+    color: var(--rik-code__text);
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .diff .line { display: block; }
+  .diff .tok-tag  { color: var(--rik-code__syntax-keyword); }
+  .diff .tok-attr { color: var(--rik-code__syntax-property); }
+  .diff .tok-str  { color: var(--rik-code__syntax-string); }
+  .diff .tok-pun  { color: var(--rik-code__text); opacity: 0.65; }
+  .diff .diff-add {
+    background: rgba(0, 200, 160, 0.20);
+    color: var(--rik-code__text);
+    padding: 2px 6px;
+    border-radius: 4px;
+    box-shadow: inset 0 0 0 1px rgba(0, 200, 160, 0.45);
+  }
+  .diff .diff-add .tok-attr { color: #c3e88d; font-weight: 700; }
+  .diff-caption {
+    margin: 0 var(--rik-space-5);
+    padding-top: var(--rik-space-3);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: var(--rik-font-size-sm);
+    color: rgba(232, 228, 240, 0.72);
+    line-height: 1.6;
+  }
+  .diff-caption strong { color: var(--rik-status-success); font-weight: 800; }
+
+  /* ── Two minimal cases · short headers, tag list ── */
+  .cases {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--rik-space-4);
+    gap: var(--rik-space-4) var(--rik-space-6);
   }
-  @media (max-width: 880px) { .grid { grid-template-columns: 1fr; } }
-
-  .case {
-    position: relative;
-    background: var(--rik-surface-raised--strong);
-    border: 1px solid var(--rik-border-default);
-    border-radius: var(--rik-radius-md);
-    padding: var(--rik-space-5);
-    display: flex; flex-direction: column;
-    gap: var(--rik-space-4);
-    overflow: hidden;
-    transition: transform var(--rik-motion-base) var(--rik-motion__ease-out),
-                box-shadow var(--rik-motion-base) var(--rik-motion__ease-out);
-  }
-  .case:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--rik-elevation-3);
-  }
-  .stripe {
-    position: absolute; top: 0; left: 0; right: 0;
-    height: 4px;
-  }
-  .case-slides .stripe   { background: linear-gradient(90deg, var(--rik-accent), var(--rik-accent--strong)); }
-  .case-carousel .stripe { background: linear-gradient(90deg, var(--rik-status-success), var(--rik-decor-lime)); }
-
-  /* ─── Card header ─────────────────────────────────── */
-  header {
-    display: flex;
-    align-items: center;
-    gap: var(--rik-space-3);
-    padding-top: 4px;
-  }
-  .icon {
-    flex: 0 0 auto;
-    width: 56px; height: 56px;
-    display: inline-flex;
-    align-items: center; justify-content: center;
-    border-radius: var(--rik-radius-md);
-    background: var(--rik-surface-sunken);
-  }
-  .case-slides .icon   { color: var(--rik-accent); background: var(--rik-accent--faint); }
-  .case-carousel .icon { color: var(--rik-status-success); background: rgba(0, 200, 160, 0.10); }
-  .head-text { display: flex; flex-direction: column; gap: 4px; }
-  .tag {
-    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--rik-text-default--faint);
-  }
+  @media (max-width: 720px) { .cases { grid-template-columns: 1fr; } }
+  .case header { margin-bottom: var(--rik-space-2); }
   .case h3 {
     font-family: var(--rik-font-display);
-    font-size: 1.45rem;
+    font-size: 1.25rem;
     font-weight: 800;
     color: var(--rik-text-default);
-    letter-spacing: -0.015em;
-    line-height: 1.2;
-    margin: 0;
+    letter-spacing: -0.012em;
+    line-height: 1.25;
+    margin: 0 0 4px;
   }
-
-  /* ─── Feature list ───────────────────────────────── */
-  .features {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex; flex-direction: column;
-    gap: 10px;
+  .case-line {
     font-size: var(--rik-font-size-body);
-    line-height: 1.5;
     color: var(--rik-text-default--muted);
+    line-height: 1.55;
+    margin: 0;
   }
-  .features li {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 12px;
-    align-items: start;
+  ul.tags {
+    list-style: none;
+    padding: var(--rik-space-3) 0 0;
+    margin: 0;
+    border-top: 1px solid var(--rik-border-default);
+    display: flex; flex-wrap: wrap;
+    gap: 6px 10px;
+    font-size: var(--rik-font-size-sm);
+    color: var(--rik-text-default--faint);
   }
-  .features code {
-    font-family: var(--rik-font-mono);
-    font-size: 0.92em;
-    background: rgba(42, 37, 32, 0.06);
-    color: var(--rik-text-default);
-    padding: 1px 5px;
-    border-radius: 3px;
-  }
-  .check {
-    width: 18px; height: 18px;
-    display: inline-flex; align-items: center; justify-content: center;
-    border-radius: 50%;
-    font: 700 11px/1 var(--rik-font-mono);
-    color: var(--rik-accent__on);
-    margin-top: 3px;
-  }
-  .case-slides   .check { background: var(--rik-accent); }
-  .case-carousel .check { background: var(--rik-status-success); }
-  .kbd {
+  ul.tags li { display: inline-flex; align-items: center; gap: 6px; }
+  kbd {
     display: inline-block;
     padding: 1px 6px;
     background: var(--rik-surface-raised);
@@ -249,13 +218,5 @@ const carouselCode = `<deck-root autoplay="4000" loop swipe transition="slide">
     border-radius: 4px;
     font: 700 0.78em/1.2 var(--rik-font-mono);
     color: var(--rik-text-default);
-  }
-
-  .caveat {
-    margin-top: var(--rik-space-5);
-    font-size: var(--rik-font-size-sm);
-    color: var(--rik-text-default--faint);
-    line-height: 1.6;
-    max-width: 75ch;
   }
 </style>

@@ -1,0 +1,4304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rikiki · stress test · 400 slides</title>
+<link rel="stylesheet" href="../../rikiki/themes/rikiki.css">
+<script type="module" src="../../rikiki/dist/index.js"></script>
+</head>
+<body>
+
+<deck-root transition="slide">
+
+  <deck-cover brand="rikiki · stress" speaker="Perf test" company="Local" duration="watch the FPS" runtime="400 slides">
+    <h1>400 slides · <span class="accent">one bundle</span>.</h1>
+    <p class="sub">Press <kbd>End</kbd> to jump to the last slide. Watch memory, GC pauses, and the overview render time.</p>
+  </deck-cover>
+
+  <deck-section num="01">
+    <h1>Chapter 1</h1>
+  </deck-section>
+
+  <deck-feature-cards eyebrow="Cards 1">
+    <h1 slot="title">Three options · slide 1</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option1 = 'a' | 'b' | 'c';
+const pick1 = (o: Option1): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 1</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 1</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #2</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 1.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 2.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 3">
+    <h1 slot="title">A metric · slide 3</h1>
+    <deck-stack gap="3">
+      <deck-stat num="93" tone="ember">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="39" tone="mango">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 4">
+    <h1 slot="title">Heads-up #4</h1>
+    <deck-callout type="info">
+      <strong>Note 4 ·</strong> a callout boxed at slide 4. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 5">
+    <h1 slot="title">Plain text slide 5</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **5** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 6">
+    <h1 slot="title">Function definition #6</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item6 = (n: number): string =&gt; `#6 · ${n}`;
+const out6 = item6(3);
+console.log(out6);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 7">
+    <h1 slot="title">Three options · slide 7</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option7 = 'a' | 'b' | 'c';
+const pick7 = (o: Option7): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 7</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 7</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #8</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 7.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 8.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 9">
+    <h1 slot="title">A metric · slide 9</h1>
+    <deck-stack gap="3">
+      <deck-stat num="279" tone="orchid">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="18" tone="helico">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 10">
+    <h1 slot="title">Heads-up #10</h1>
+    <deck-callout type="danger">
+      <strong>Note 10 ·</strong> a callout boxed at slide 10. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 11">
+    <h1 slot="title">Plain text slide 11</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **11** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 12">
+    <h1 slot="title">Function definition #12</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item12 = (n: number): string =&gt; `#12 · ${n}`;
+const out12 = item12(6);
+console.log(out12);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 13">
+    <h1 slot="title">Three options · slide 13</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option13 = 'a' | 'b' | 'c';
+const pick13 = (o: Option13): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 13</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 13</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #14</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 13.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 14.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 15">
+    <h1 slot="title">A metric · slide 15</h1>
+    <deck-stack gap="3">
+      <deck-stat num="465" tone="mango">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="96" tone="lime">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 16">
+    <h1 slot="title">Heads-up #16</h1>
+    <deck-callout type="info">
+      <strong>Note 16 ·</strong> a callout boxed at slide 16. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 17">
+    <h1 slot="title">Plain text slide 17</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **17** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 18">
+    <h1 slot="title">Function definition #18</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item18 = (n: number): string =&gt; `#18 · ${n}`;
+const out18 = item18(9);
+console.log(out18);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 19">
+    <h1 slot="title">Three options · slide 19</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option19 = 'a' | 'b' | 'c';
+const pick19 = (o: Option19): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 19</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 19</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #20</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 19.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 20.</p></deck-card>
+  </deck-split>
+
+  <deck-section num="02">
+    <h1>Chapter 2</h1>
+  </deck-section>
+
+  <deck-feature eyebrow="Numbers 21">
+    <h1 slot="title">A metric · slide 21</h1>
+    <deck-stack gap="3">
+      <deck-stat num="651" tone="helico">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="75" tone="ember">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 22">
+    <h1 slot="title">Heads-up #22</h1>
+    <deck-callout type="danger">
+      <strong>Note 22 ·</strong> a callout boxed at slide 22. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 23">
+    <h1 slot="title">Plain text slide 23</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **23** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 24">
+    <h1 slot="title">Function definition #24</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item24 = (n: number): string =&gt; `#24 · ${n}`;
+const out24 = item24(12);
+console.log(out24);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 25">
+    <h1 slot="title">Three options · slide 25</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option25 = 'a' | 'b' | 'c';
+const pick25 = (o: Option25): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 25</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 25</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #26</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 25.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 26.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 27">
+    <h1 slot="title">A metric · slide 27</h1>
+    <deck-stack gap="3">
+      <deck-stat num="837" tone="lime">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="54" tone="orchid">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 28">
+    <h1 slot="title">Heads-up #28</h1>
+    <deck-callout type="info">
+      <strong>Note 28 ·</strong> a callout boxed at slide 28. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 29">
+    <h1 slot="title">Plain text slide 29</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **29** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 30">
+    <h1 slot="title">Function definition #30</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item30 = (n: number): string =&gt; `#30 · ${n}`;
+const out30 = item30(2);
+console.log(out30);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 31">
+    <h1 slot="title">Three options · slide 31</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option31 = 'a' | 'b' | 'c';
+const pick31 = (o: Option31): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 31</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 31</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #32</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 31.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 32.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 33">
+    <h1 slot="title">A metric · slide 33</h1>
+    <deck-stack gap="3">
+      <deck-stat num="24" tone="ember">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="33" tone="mango">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 34">
+    <h1 slot="title">Heads-up #34</h1>
+    <deck-callout type="danger">
+      <strong>Note 34 ·</strong> a callout boxed at slide 34. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 35">
+    <h1 slot="title">Plain text slide 35</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **35** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 36">
+    <h1 slot="title">Function definition #36</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item36 = (n: number): string =&gt; `#36 · ${n}`;
+const out36 = item36(5);
+console.log(out36);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 37">
+    <h1 slot="title">Three options · slide 37</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option37 = 'a' | 'b' | 'c';
+const pick37 = (o: Option37): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 37</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 37</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #38</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 37.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 38.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 39">
+    <h1 slot="title">A metric · slide 39</h1>
+    <deck-stack gap="3">
+      <deck-stat num="210" tone="orchid">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="12" tone="helico">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 40">
+    <h1 slot="title">Heads-up #40</h1>
+    <deck-callout type="info">
+      <strong>Note 40 ·</strong> a callout boxed at slide 40. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-section num="03">
+    <h1>Chapter 3</h1>
+  </deck-section>
+
+  <deck-feature eyebrow="Slide 41">
+    <h1 slot="title">Plain text slide 41</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **41** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 42">
+    <h1 slot="title">Function definition #42</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item42 = (n: number): string =&gt; `#42 · ${n}`;
+const out42 = item42(8);
+console.log(out42);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 43">
+    <h1 slot="title">Three options · slide 43</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option43 = 'a' | 'b' | 'c';
+const pick43 = (o: Option43): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 43</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 43</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #44</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 43.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 44.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 45">
+    <h1 slot="title">A metric · slide 45</h1>
+    <deck-stack gap="3">
+      <deck-stat num="396" tone="mango">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="90" tone="lime">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 46">
+    <h1 slot="title">Heads-up #46</h1>
+    <deck-callout type="danger">
+      <strong>Note 46 ·</strong> a callout boxed at slide 46. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 47">
+    <h1 slot="title">Plain text slide 47</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **47** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 48">
+    <h1 slot="title">Function definition #48</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item48 = (n: number): string =&gt; `#48 · ${n}`;
+const out48 = item48(11);
+console.log(out48);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 49">
+    <h1 slot="title">Three options · slide 49</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option49 = 'a' | 'b' | 'c';
+const pick49 = (o: Option49): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 49</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 49</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #50</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 49.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 50.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 51">
+    <h1 slot="title">A metric · slide 51</h1>
+    <deck-stack gap="3">
+      <deck-stat num="582" tone="helico">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="69" tone="ember">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 52">
+    <h1 slot="title">Heads-up #52</h1>
+    <deck-callout type="info">
+      <strong>Note 52 ·</strong> a callout boxed at slide 52. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 53">
+    <h1 slot="title">Plain text slide 53</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **53** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 54">
+    <h1 slot="title">Function definition #54</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item54 = (n: number): string =&gt; `#54 · ${n}`;
+const out54 = item54(1);
+console.log(out54);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 55">
+    <h1 slot="title">Three options · slide 55</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option55 = 'a' | 'b' | 'c';
+const pick55 = (o: Option55): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 55</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 55</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #56</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 55.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 56.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 57">
+    <h1 slot="title">A metric · slide 57</h1>
+    <deck-stack gap="3">
+      <deck-stat num="768" tone="lime">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="48" tone="orchid">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 58">
+    <h1 slot="title">Heads-up #58</h1>
+    <deck-callout type="danger">
+      <strong>Note 58 ·</strong> a callout boxed at slide 58. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 59">
+    <h1 slot="title">Plain text slide 59</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **59** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 60">
+    <h1 slot="title">Function definition #60</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item60 = (n: number): string =&gt; `#60 · ${n}`;
+const out60 = item60(4);
+console.log(out60);
+    </deck-code>
+  </deck-feature>
+
+  <deck-section num="04">
+    <h1>Chapter 4</h1>
+  </deck-section>
+
+  <deck-feature-cards eyebrow="Cards 61">
+    <h1 slot="title">Three options · slide 61</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option61 = 'a' | 'b' | 'c';
+const pick61 = (o: Option61): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 61</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 61</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #62</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 61.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 62.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 63">
+    <h1 slot="title">A metric · slide 63</h1>
+    <deck-stack gap="3">
+      <deck-stat num="954" tone="ember">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="27" tone="mango">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 64">
+    <h1 slot="title">Heads-up #64</h1>
+    <deck-callout type="info">
+      <strong>Note 64 ·</strong> a callout boxed at slide 64. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 65">
+    <h1 slot="title">Plain text slide 65</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **65** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 66">
+    <h1 slot="title">Function definition #66</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item66 = (n: number): string =&gt; `#66 · ${n}`;
+const out66 = item66(7);
+console.log(out66);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 67">
+    <h1 slot="title">Three options · slide 67</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option67 = 'a' | 'b' | 'c';
+const pick67 = (o: Option67): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 67</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 67</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #68</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 67.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 68.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 69">
+    <h1 slot="title">A metric · slide 69</h1>
+    <deck-stack gap="3">
+      <deck-stat num="141" tone="orchid">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="6" tone="helico">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 70">
+    <h1 slot="title">Heads-up #70</h1>
+    <deck-callout type="danger">
+      <strong>Note 70 ·</strong> a callout boxed at slide 70. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 71">
+    <h1 slot="title">Plain text slide 71</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **71** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 72">
+    <h1 slot="title">Function definition #72</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item72 = (n: number): string =&gt; `#72 · ${n}`;
+const out72 = item72(10);
+console.log(out72);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 73">
+    <h1 slot="title">Three options · slide 73</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option73 = 'a' | 'b' | 'c';
+const pick73 = (o: Option73): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 73</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 73</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #74</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 73.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 74.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 75">
+    <h1 slot="title">A metric · slide 75</h1>
+    <deck-stack gap="3">
+      <deck-stat num="327" tone="mango">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="84" tone="lime">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 76">
+    <h1 slot="title">Heads-up #76</h1>
+    <deck-callout type="info">
+      <strong>Note 76 ·</strong> a callout boxed at slide 76. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 77">
+    <h1 slot="title">Plain text slide 77</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **77** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 78">
+    <h1 slot="title">Function definition #78</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item78 = (n: number): string =&gt; `#78 · ${n}`;
+const out78 = item78(0);
+console.log(out78);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 79">
+    <h1 slot="title">Three options · slide 79</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option79 = 'a' | 'b' | 'c';
+const pick79 = (o: Option79): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 79</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 79</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #80</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 79.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 80.</p></deck-card>
+  </deck-split>
+
+  <deck-section num="05">
+    <h1>Chapter 5</h1>
+  </deck-section>
+
+  <deck-feature eyebrow="Numbers 81">
+    <h1 slot="title">A metric · slide 81</h1>
+    <deck-stack gap="3">
+      <deck-stat num="513" tone="helico">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="63" tone="ember">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 82">
+    <h1 slot="title">Heads-up #82</h1>
+    <deck-callout type="danger">
+      <strong>Note 82 ·</strong> a callout boxed at slide 82. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 83">
+    <h1 slot="title">Plain text slide 83</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **83** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 84">
+    <h1 slot="title">Function definition #84</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item84 = (n: number): string =&gt; `#84 · ${n}`;
+const out84 = item84(3);
+console.log(out84);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 85">
+    <h1 slot="title">Three options · slide 85</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option85 = 'a' | 'b' | 'c';
+const pick85 = (o: Option85): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 85</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 85</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #86</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 85.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 86.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 87">
+    <h1 slot="title">A metric · slide 87</h1>
+    <deck-stack gap="3">
+      <deck-stat num="699" tone="lime">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="42" tone="orchid">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 88">
+    <h1 slot="title">Heads-up #88</h1>
+    <deck-callout type="info">
+      <strong>Note 88 ·</strong> a callout boxed at slide 88. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 89">
+    <h1 slot="title">Plain text slide 89</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **89** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 90">
+    <h1 slot="title">Function definition #90</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item90 = (n: number): string =&gt; `#90 · ${n}`;
+const out90 = item90(6);
+console.log(out90);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 91">
+    <h1 slot="title">Three options · slide 91</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option91 = 'a' | 'b' | 'c';
+const pick91 = (o: Option91): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 91</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 91</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #92</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 91.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 92.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 93">
+    <h1 slot="title">A metric · slide 93</h1>
+    <deck-stack gap="3">
+      <deck-stat num="885" tone="ember">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="21" tone="mango">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 94">
+    <h1 slot="title">Heads-up #94</h1>
+    <deck-callout type="danger">
+      <strong>Note 94 ·</strong> a callout boxed at slide 94. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 95">
+    <h1 slot="title">Plain text slide 95</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **95** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 96">
+    <h1 slot="title">Function definition #96</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item96 = (n: number): string =&gt; `#96 · ${n}`;
+const out96 = item96(9);
+console.log(out96);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 97">
+    <h1 slot="title">Three options · slide 97</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option97 = 'a' | 'b' | 'c';
+const pick97 = (o: Option97): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 97</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 97</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #98</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 97.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 98.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 99">
+    <h1 slot="title">A metric · slide 99</h1>
+    <deck-stack gap="3">
+      <deck-stat num="72" tone="orchid">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="0" tone="helico">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 100">
+    <h1 slot="title">Heads-up #100</h1>
+    <deck-callout type="info">
+      <strong>Note 100 ·</strong> a callout boxed at slide 100. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-section num="06">
+    <h1>Chapter 6</h1>
+  </deck-section>
+
+  <deck-feature eyebrow="Slide 101">
+    <h1 slot="title">Plain text slide 101</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **101** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 102">
+    <h1 slot="title">Function definition #102</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item102 = (n: number): string =&gt; `#102 · ${n}`;
+const out102 = item102(12);
+console.log(out102);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 103">
+    <h1 slot="title">Three options · slide 103</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option103 = 'a' | 'b' | 'c';
+const pick103 = (o: Option103): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 103</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 103</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #104</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 103.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 104.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 105">
+    <h1 slot="title">A metric · slide 105</h1>
+    <deck-stack gap="3">
+      <deck-stat num="258" tone="mango">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="78" tone="lime">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 106">
+    <h1 slot="title">Heads-up #106</h1>
+    <deck-callout type="danger">
+      <strong>Note 106 ·</strong> a callout boxed at slide 106. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 107">
+    <h1 slot="title">Plain text slide 107</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **107** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 108">
+    <h1 slot="title">Function definition #108</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item108 = (n: number): string =&gt; `#108 · ${n}`;
+const out108 = item108(2);
+console.log(out108);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 109">
+    <h1 slot="title">Three options · slide 109</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option109 = 'a' | 'b' | 'c';
+const pick109 = (o: Option109): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 109</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 109</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #110</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 109.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 110.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 111">
+    <h1 slot="title">A metric · slide 111</h1>
+    <deck-stack gap="3">
+      <deck-stat num="444" tone="helico">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="57" tone="ember">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 112">
+    <h1 slot="title">Heads-up #112</h1>
+    <deck-callout type="info">
+      <strong>Note 112 ·</strong> a callout boxed at slide 112. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 113">
+    <h1 slot="title">Plain text slide 113</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **113** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 114">
+    <h1 slot="title">Function definition #114</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item114 = (n: number): string =&gt; `#114 · ${n}`;
+const out114 = item114(5);
+console.log(out114);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 115">
+    <h1 slot="title">Three options · slide 115</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option115 = 'a' | 'b' | 'c';
+const pick115 = (o: Option115): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 115</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 115</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #116</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 115.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 116.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 117">
+    <h1 slot="title">A metric · slide 117</h1>
+    <deck-stack gap="3">
+      <deck-stat num="630" tone="lime">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="36" tone="orchid">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 118">
+    <h1 slot="title">Heads-up #118</h1>
+    <deck-callout type="danger">
+      <strong>Note 118 ·</strong> a callout boxed at slide 118. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 119">
+    <h1 slot="title">Plain text slide 119</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **119** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 120">
+    <h1 slot="title">Function definition #120</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item120 = (n: number): string =&gt; `#120 · ${n}`;
+const out120 = item120(8);
+console.log(out120);
+    </deck-code>
+  </deck-feature>
+
+  <deck-section num="07">
+    <h1>Chapter 7</h1>
+  </deck-section>
+
+  <deck-feature-cards eyebrow="Cards 121">
+    <h1 slot="title">Three options · slide 121</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option121 = 'a' | 'b' | 'c';
+const pick121 = (o: Option121): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 121</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 121</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #122</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 121.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 122.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 123">
+    <h1 slot="title">A metric · slide 123</h1>
+    <deck-stack gap="3">
+      <deck-stat num="816" tone="ember">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="15" tone="mango">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 124">
+    <h1 slot="title">Heads-up #124</h1>
+    <deck-callout type="info">
+      <strong>Note 124 ·</strong> a callout boxed at slide 124. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 125">
+    <h1 slot="title">Plain text slide 125</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **125** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 126">
+    <h1 slot="title">Function definition #126</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item126 = (n: number): string =&gt; `#126 · ${n}`;
+const out126 = item126(11);
+console.log(out126);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 127">
+    <h1 slot="title">Three options · slide 127</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option127 = 'a' | 'b' | 'c';
+const pick127 = (o: Option127): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 127</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 127</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #128</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 127.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 128.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 129">
+    <h1 slot="title">A metric · slide 129</h1>
+    <deck-stack gap="3">
+      <deck-stat num="03" tone="orchid">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="93" tone="helico">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 130">
+    <h1 slot="title">Heads-up #130</h1>
+    <deck-callout type="danger">
+      <strong>Note 130 ·</strong> a callout boxed at slide 130. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 131">
+    <h1 slot="title">Plain text slide 131</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **131** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 132">
+    <h1 slot="title">Function definition #132</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item132 = (n: number): string =&gt; `#132 · ${n}`;
+const out132 = item132(1);
+console.log(out132);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 133">
+    <h1 slot="title">Three options · slide 133</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option133 = 'a' | 'b' | 'c';
+const pick133 = (o: Option133): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 133</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 133</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #134</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 133.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 134.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 135">
+    <h1 slot="title">A metric · slide 135</h1>
+    <deck-stack gap="3">
+      <deck-stat num="189" tone="mango">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="72" tone="lime">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 136">
+    <h1 slot="title">Heads-up #136</h1>
+    <deck-callout type="info">
+      <strong>Note 136 ·</strong> a callout boxed at slide 136. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 137">
+    <h1 slot="title">Plain text slide 137</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **137** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 138">
+    <h1 slot="title">Function definition #138</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item138 = (n: number): string =&gt; `#138 · ${n}`;
+const out138 = item138(4);
+console.log(out138);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 139">
+    <h1 slot="title">Three options · slide 139</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option139 = 'a' | 'b' | 'c';
+const pick139 = (o: Option139): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 139</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 139</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #140</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 139.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 140.</p></deck-card>
+  </deck-split>
+
+  <deck-section num="08">
+    <h1>Chapter 8</h1>
+  </deck-section>
+
+  <deck-feature eyebrow="Numbers 141">
+    <h1 slot="title">A metric · slide 141</h1>
+    <deck-stack gap="3">
+      <deck-stat num="375" tone="helico">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="51" tone="ember">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 142">
+    <h1 slot="title">Heads-up #142</h1>
+    <deck-callout type="danger">
+      <strong>Note 142 ·</strong> a callout boxed at slide 142. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 143">
+    <h1 slot="title">Plain text slide 143</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **143** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 144">
+    <h1 slot="title">Function definition #144</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item144 = (n: number): string =&gt; `#144 · ${n}`;
+const out144 = item144(7);
+console.log(out144);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 145">
+    <h1 slot="title">Three options · slide 145</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option145 = 'a' | 'b' | 'c';
+const pick145 = (o: Option145): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 145</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 145</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #146</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 145.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 146.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 147">
+    <h1 slot="title">A metric · slide 147</h1>
+    <deck-stack gap="3">
+      <deck-stat num="561" tone="lime">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="30" tone="orchid">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 148">
+    <h1 slot="title">Heads-up #148</h1>
+    <deck-callout type="info">
+      <strong>Note 148 ·</strong> a callout boxed at slide 148. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 149">
+    <h1 slot="title">Plain text slide 149</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **149** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 150">
+    <h1 slot="title">Function definition #150</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item150 = (n: number): string =&gt; `#150 · ${n}`;
+const out150 = item150(10);
+console.log(out150);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 151">
+    <h1 slot="title">Three options · slide 151</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option151 = 'a' | 'b' | 'c';
+const pick151 = (o: Option151): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 151</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 151</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #152</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 151.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 152.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 153">
+    <h1 slot="title">A metric · slide 153</h1>
+    <deck-stack gap="3">
+      <deck-stat num="747" tone="ember">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="9" tone="mango">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 154">
+    <h1 slot="title">Heads-up #154</h1>
+    <deck-callout type="danger">
+      <strong>Note 154 ·</strong> a callout boxed at slide 154. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 155">
+    <h1 slot="title">Plain text slide 155</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **155** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 156">
+    <h1 slot="title">Function definition #156</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item156 = (n: number): string =&gt; `#156 · ${n}`;
+const out156 = item156(0);
+console.log(out156);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 157">
+    <h1 slot="title">Three options · slide 157</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option157 = 'a' | 'b' | 'c';
+const pick157 = (o: Option157): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 157</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 157</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #158</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 157.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 158.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 159">
+    <h1 slot="title">A metric · slide 159</h1>
+    <deck-stack gap="3">
+      <deck-stat num="933" tone="orchid">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="87" tone="helico">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 160">
+    <h1 slot="title">Heads-up #160</h1>
+    <deck-callout type="info">
+      <strong>Note 160 ·</strong> a callout boxed at slide 160. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-section num="09">
+    <h1>Chapter 9</h1>
+  </deck-section>
+
+  <deck-feature eyebrow="Slide 161">
+    <h1 slot="title">Plain text slide 161</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **161** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 162">
+    <h1 slot="title">Function definition #162</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item162 = (n: number): string =&gt; `#162 · ${n}`;
+const out162 = item162(3);
+console.log(out162);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 163">
+    <h1 slot="title">Three options · slide 163</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option163 = 'a' | 'b' | 'c';
+const pick163 = (o: Option163): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 163</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 163</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #164</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 163.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 164.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 165">
+    <h1 slot="title">A metric · slide 165</h1>
+    <deck-stack gap="3">
+      <deck-stat num="120" tone="mango">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="66" tone="lime">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 166">
+    <h1 slot="title">Heads-up #166</h1>
+    <deck-callout type="danger">
+      <strong>Note 166 ·</strong> a callout boxed at slide 166. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 167">
+    <h1 slot="title">Plain text slide 167</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **167** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 168">
+    <h1 slot="title">Function definition #168</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item168 = (n: number): string =&gt; `#168 · ${n}`;
+const out168 = item168(6);
+console.log(out168);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 169">
+    <h1 slot="title">Three options · slide 169</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option169 = 'a' | 'b' | 'c';
+const pick169 = (o: Option169): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 169</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 169</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #170</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 169.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 170.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 171">
+    <h1 slot="title">A metric · slide 171</h1>
+    <deck-stack gap="3">
+      <deck-stat num="306" tone="helico">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="45" tone="ember">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 172">
+    <h1 slot="title">Heads-up #172</h1>
+    <deck-callout type="info">
+      <strong>Note 172 ·</strong> a callout boxed at slide 172. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 173">
+    <h1 slot="title">Plain text slide 173</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **173** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 174">
+    <h1 slot="title">Function definition #174</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item174 = (n: number): string =&gt; `#174 · ${n}`;
+const out174 = item174(9);
+console.log(out174);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 175">
+    <h1 slot="title">Three options · slide 175</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option175 = 'a' | 'b' | 'c';
+const pick175 = (o: Option175): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 175</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 175</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #176</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 175.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 176.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 177">
+    <h1 slot="title">A metric · slide 177</h1>
+    <deck-stack gap="3">
+      <deck-stat num="492" tone="lime">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="24" tone="orchid">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 178">
+    <h1 slot="title">Heads-up #178</h1>
+    <deck-callout type="danger">
+      <strong>Note 178 ·</strong> a callout boxed at slide 178. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 179">
+    <h1 slot="title">Plain text slide 179</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **179** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 180">
+    <h1 slot="title">Function definition #180</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item180 = (n: number): string =&gt; `#180 · ${n}`;
+const out180 = item180(12);
+console.log(out180);
+    </deck-code>
+  </deck-feature>
+
+  <deck-section num="10">
+    <h1>Chapter 10</h1>
+  </deck-section>
+
+  <deck-feature-cards eyebrow="Cards 181">
+    <h1 slot="title">Three options · slide 181</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option181 = 'a' | 'b' | 'c';
+const pick181 = (o: Option181): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 181</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 181</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #182</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 181.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 182.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 183">
+    <h1 slot="title">A metric · slide 183</h1>
+    <deck-stack gap="3">
+      <deck-stat num="678" tone="ember">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="3" tone="mango">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 184">
+    <h1 slot="title">Heads-up #184</h1>
+    <deck-callout type="info">
+      <strong>Note 184 ·</strong> a callout boxed at slide 184. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 185">
+    <h1 slot="title">Plain text slide 185</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **185** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 186">
+    <h1 slot="title">Function definition #186</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item186 = (n: number): string =&gt; `#186 · ${n}`;
+const out186 = item186(2);
+console.log(out186);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 187">
+    <h1 slot="title">Three options · slide 187</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option187 = 'a' | 'b' | 'c';
+const pick187 = (o: Option187): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 187</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 187</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #188</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 187.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 188.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 189">
+    <h1 slot="title">A metric · slide 189</h1>
+    <deck-stack gap="3">
+      <deck-stat num="864" tone="orchid">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="81" tone="helico">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 190">
+    <h1 slot="title">Heads-up #190</h1>
+    <deck-callout type="danger">
+      <strong>Note 190 ·</strong> a callout boxed at slide 190. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 191">
+    <h1 slot="title">Plain text slide 191</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **191** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 192">
+    <h1 slot="title">Function definition #192</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item192 = (n: number): string =&gt; `#192 · ${n}`;
+const out192 = item192(5);
+console.log(out192);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 193">
+    <h1 slot="title">Three options · slide 193</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option193 = 'a' | 'b' | 'c';
+const pick193 = (o: Option193): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 193</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 193</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #194</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 193.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 194.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 195">
+    <h1 slot="title">A metric · slide 195</h1>
+    <deck-stack gap="3">
+      <deck-stat num="51" tone="mango">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="60" tone="lime">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 196">
+    <h1 slot="title">Heads-up #196</h1>
+    <deck-callout type="info">
+      <strong>Note 196 ·</strong> a callout boxed at slide 196. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 197">
+    <h1 slot="title">Plain text slide 197</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **197** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 198">
+    <h1 slot="title">Function definition #198</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item198 = (n: number): string =&gt; `#198 · ${n}`;
+const out198 = item198(8);
+console.log(out198);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 199">
+    <h1 slot="title">Three options · slide 199</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option199 = 'a' | 'b' | 'c';
+const pick199 = (o: Option199): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 199</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 199</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #200</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 199.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 200.</p></deck-card>
+  </deck-split>
+
+  <deck-section num="11">
+    <h1>Chapter 11</h1>
+  </deck-section>
+
+  <deck-feature eyebrow="Numbers 201">
+    <h1 slot="title">A metric · slide 201</h1>
+    <deck-stack gap="3">
+      <deck-stat num="237" tone="helico">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="39" tone="ember">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 202">
+    <h1 slot="title">Heads-up #202</h1>
+    <deck-callout type="danger">
+      <strong>Note 202 ·</strong> a callout boxed at slide 202. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 203">
+    <h1 slot="title">Plain text slide 203</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **203** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 204">
+    <h1 slot="title">Function definition #204</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item204 = (n: number): string =&gt; `#204 · ${n}`;
+const out204 = item204(11);
+console.log(out204);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 205">
+    <h1 slot="title">Three options · slide 205</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option205 = 'a' | 'b' | 'c';
+const pick205 = (o: Option205): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 205</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 205</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #206</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 205.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 206.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 207">
+    <h1 slot="title">A metric · slide 207</h1>
+    <deck-stack gap="3">
+      <deck-stat num="423" tone="lime">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="18" tone="orchid">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 208">
+    <h1 slot="title">Heads-up #208</h1>
+    <deck-callout type="info">
+      <strong>Note 208 ·</strong> a callout boxed at slide 208. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 209">
+    <h1 slot="title">Plain text slide 209</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **209** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 210">
+    <h1 slot="title">Function definition #210</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item210 = (n: number): string =&gt; `#210 · ${n}`;
+const out210 = item210(1);
+console.log(out210);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 211">
+    <h1 slot="title">Three options · slide 211</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option211 = 'a' | 'b' | 'c';
+const pick211 = (o: Option211): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 211</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 211</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #212</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 211.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 212.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 213">
+    <h1 slot="title">A metric · slide 213</h1>
+    <deck-stack gap="3">
+      <deck-stat num="609" tone="ember">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="96" tone="mango">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 214">
+    <h1 slot="title">Heads-up #214</h1>
+    <deck-callout type="danger">
+      <strong>Note 214 ·</strong> a callout boxed at slide 214. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 215">
+    <h1 slot="title">Plain text slide 215</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **215** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 216">
+    <h1 slot="title">Function definition #216</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item216 = (n: number): string =&gt; `#216 · ${n}`;
+const out216 = item216(4);
+console.log(out216);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 217">
+    <h1 slot="title">Three options · slide 217</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option217 = 'a' | 'b' | 'c';
+const pick217 = (o: Option217): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 217</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 217</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #218</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 217.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 218.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 219">
+    <h1 slot="title">A metric · slide 219</h1>
+    <deck-stack gap="3">
+      <deck-stat num="795" tone="orchid">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="75" tone="helico">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 220">
+    <h1 slot="title">Heads-up #220</h1>
+    <deck-callout type="info">
+      <strong>Note 220 ·</strong> a callout boxed at slide 220. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-section num="12">
+    <h1>Chapter 12</h1>
+  </deck-section>
+
+  <deck-feature eyebrow="Slide 221">
+    <h1 slot="title">Plain text slide 221</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **221** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 222">
+    <h1 slot="title">Function definition #222</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item222 = (n: number): string =&gt; `#222 · ${n}`;
+const out222 = item222(7);
+console.log(out222);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 223">
+    <h1 slot="title">Three options · slide 223</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option223 = 'a' | 'b' | 'c';
+const pick223 = (o: Option223): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 223</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 223</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #224</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 223.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 224.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 225">
+    <h1 slot="title">A metric · slide 225</h1>
+    <deck-stack gap="3">
+      <deck-stat num="981" tone="mango">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="54" tone="lime">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 226">
+    <h1 slot="title">Heads-up #226</h1>
+    <deck-callout type="danger">
+      <strong>Note 226 ·</strong> a callout boxed at slide 226. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 227">
+    <h1 slot="title">Plain text slide 227</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **227** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 228">
+    <h1 slot="title">Function definition #228</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item228 = (n: number): string =&gt; `#228 · ${n}`;
+const out228 = item228(10);
+console.log(out228);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 229">
+    <h1 slot="title">Three options · slide 229</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option229 = 'a' | 'b' | 'c';
+const pick229 = (o: Option229): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 229</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 229</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #230</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 229.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 230.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 231">
+    <h1 slot="title">A metric · slide 231</h1>
+    <deck-stack gap="3">
+      <deck-stat num="168" tone="helico">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="33" tone="ember">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 232">
+    <h1 slot="title">Heads-up #232</h1>
+    <deck-callout type="info">
+      <strong>Note 232 ·</strong> a callout boxed at slide 232. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 233">
+    <h1 slot="title">Plain text slide 233</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **233** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 234">
+    <h1 slot="title">Function definition #234</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item234 = (n: number): string =&gt; `#234 · ${n}`;
+const out234 = item234(0);
+console.log(out234);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 235">
+    <h1 slot="title">Three options · slide 235</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option235 = 'a' | 'b' | 'c';
+const pick235 = (o: Option235): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 235</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 235</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #236</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 235.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 236.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 237">
+    <h1 slot="title">A metric · slide 237</h1>
+    <deck-stack gap="3">
+      <deck-stat num="354" tone="lime">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="12" tone="orchid">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 238">
+    <h1 slot="title">Heads-up #238</h1>
+    <deck-callout type="danger">
+      <strong>Note 238 ·</strong> a callout boxed at slide 238. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 239">
+    <h1 slot="title">Plain text slide 239</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **239** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 240">
+    <h1 slot="title">Function definition #240</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item240 = (n: number): string =&gt; `#240 · ${n}`;
+const out240 = item240(3);
+console.log(out240);
+    </deck-code>
+  </deck-feature>
+
+  <deck-section num="13">
+    <h1>Chapter 13</h1>
+  </deck-section>
+
+  <deck-feature-cards eyebrow="Cards 241">
+    <h1 slot="title">Three options · slide 241</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option241 = 'a' | 'b' | 'c';
+const pick241 = (o: Option241): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 241</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 241</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #242</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 241.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 242.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 243">
+    <h1 slot="title">A metric · slide 243</h1>
+    <deck-stack gap="3">
+      <deck-stat num="540" tone="ember">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="90" tone="mango">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 244">
+    <h1 slot="title">Heads-up #244</h1>
+    <deck-callout type="info">
+      <strong>Note 244 ·</strong> a callout boxed at slide 244. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 245">
+    <h1 slot="title">Plain text slide 245</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **245** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 246">
+    <h1 slot="title">Function definition #246</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item246 = (n: number): string =&gt; `#246 · ${n}`;
+const out246 = item246(6);
+console.log(out246);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 247">
+    <h1 slot="title">Three options · slide 247</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option247 = 'a' | 'b' | 'c';
+const pick247 = (o: Option247): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 247</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 247</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #248</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 247.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 248.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 249">
+    <h1 slot="title">A metric · slide 249</h1>
+    <deck-stack gap="3">
+      <deck-stat num="726" tone="orchid">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="69" tone="helico">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 250">
+    <h1 slot="title">Heads-up #250</h1>
+    <deck-callout type="danger">
+      <strong>Note 250 ·</strong> a callout boxed at slide 250. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 251">
+    <h1 slot="title">Plain text slide 251</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **251** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 252">
+    <h1 slot="title">Function definition #252</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item252 = (n: number): string =&gt; `#252 · ${n}`;
+const out252 = item252(9);
+console.log(out252);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 253">
+    <h1 slot="title">Three options · slide 253</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option253 = 'a' | 'b' | 'c';
+const pick253 = (o: Option253): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 253</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 253</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #254</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 253.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 254.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 255">
+    <h1 slot="title">A metric · slide 255</h1>
+    <deck-stack gap="3">
+      <deck-stat num="912" tone="mango">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="48" tone="lime">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 256">
+    <h1 slot="title">Heads-up #256</h1>
+    <deck-callout type="info">
+      <strong>Note 256 ·</strong> a callout boxed at slide 256. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 257">
+    <h1 slot="title">Plain text slide 257</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **257** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 258">
+    <h1 slot="title">Function definition #258</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item258 = (n: number): string =&gt; `#258 · ${n}`;
+const out258 = item258(12);
+console.log(out258);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 259">
+    <h1 slot="title">Three options · slide 259</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option259 = 'a' | 'b' | 'c';
+const pick259 = (o: Option259): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 259</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 259</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #260</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 259.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 260.</p></deck-card>
+  </deck-split>
+
+  <deck-section num="14">
+    <h1>Chapter 14</h1>
+  </deck-section>
+
+  <deck-feature eyebrow="Numbers 261">
+    <h1 slot="title">A metric · slide 261</h1>
+    <deck-stack gap="3">
+      <deck-stat num="99" tone="helico">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="27" tone="ember">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 262">
+    <h1 slot="title">Heads-up #262</h1>
+    <deck-callout type="danger">
+      <strong>Note 262 ·</strong> a callout boxed at slide 262. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 263">
+    <h1 slot="title">Plain text slide 263</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **263** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 264">
+    <h1 slot="title">Function definition #264</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item264 = (n: number): string =&gt; `#264 · ${n}`;
+const out264 = item264(2);
+console.log(out264);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 265">
+    <h1 slot="title">Three options · slide 265</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option265 = 'a' | 'b' | 'c';
+const pick265 = (o: Option265): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 265</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 265</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #266</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 265.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 266.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 267">
+    <h1 slot="title">A metric · slide 267</h1>
+    <deck-stack gap="3">
+      <deck-stat num="285" tone="lime">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="6" tone="orchid">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 268">
+    <h1 slot="title">Heads-up #268</h1>
+    <deck-callout type="info">
+      <strong>Note 268 ·</strong> a callout boxed at slide 268. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 269">
+    <h1 slot="title">Plain text slide 269</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **269** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 270">
+    <h1 slot="title">Function definition #270</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item270 = (n: number): string =&gt; `#270 · ${n}`;
+const out270 = item270(5);
+console.log(out270);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 271">
+    <h1 slot="title">Three options · slide 271</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option271 = 'a' | 'b' | 'c';
+const pick271 = (o: Option271): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 271</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 271</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #272</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 271.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 272.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 273">
+    <h1 slot="title">A metric · slide 273</h1>
+    <deck-stack gap="3">
+      <deck-stat num="471" tone="ember">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="84" tone="mango">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 274">
+    <h1 slot="title">Heads-up #274</h1>
+    <deck-callout type="danger">
+      <strong>Note 274 ·</strong> a callout boxed at slide 274. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 275">
+    <h1 slot="title">Plain text slide 275</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **275** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 276">
+    <h1 slot="title">Function definition #276</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item276 = (n: number): string =&gt; `#276 · ${n}`;
+const out276 = item276(8);
+console.log(out276);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 277">
+    <h1 slot="title">Three options · slide 277</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option277 = 'a' | 'b' | 'c';
+const pick277 = (o: Option277): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 277</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 277</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #278</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 277.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 278.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 279">
+    <h1 slot="title">A metric · slide 279</h1>
+    <deck-stack gap="3">
+      <deck-stat num="657" tone="orchid">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="63" tone="helico">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 280">
+    <h1 slot="title">Heads-up #280</h1>
+    <deck-callout type="info">
+      <strong>Note 280 ·</strong> a callout boxed at slide 280. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-section num="15">
+    <h1>Chapter 15</h1>
+  </deck-section>
+
+  <deck-feature eyebrow="Slide 281">
+    <h1 slot="title">Plain text slide 281</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **281** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 282">
+    <h1 slot="title">Function definition #282</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item282 = (n: number): string =&gt; `#282 · ${n}`;
+const out282 = item282(11);
+console.log(out282);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 283">
+    <h1 slot="title">Three options · slide 283</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option283 = 'a' | 'b' | 'c';
+const pick283 = (o: Option283): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 283</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 283</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #284</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 283.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 284.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 285">
+    <h1 slot="title">A metric · slide 285</h1>
+    <deck-stack gap="3">
+      <deck-stat num="843" tone="mango">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="42" tone="lime">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 286">
+    <h1 slot="title">Heads-up #286</h1>
+    <deck-callout type="danger">
+      <strong>Note 286 ·</strong> a callout boxed at slide 286. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 287">
+    <h1 slot="title">Plain text slide 287</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **287** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 288">
+    <h1 slot="title">Function definition #288</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item288 = (n: number): string =&gt; `#288 · ${n}`;
+const out288 = item288(1);
+console.log(out288);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 289">
+    <h1 slot="title">Three options · slide 289</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option289 = 'a' | 'b' | 'c';
+const pick289 = (o: Option289): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 289</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 289</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #290</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 289.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 290.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 291">
+    <h1 slot="title">A metric · slide 291</h1>
+    <deck-stack gap="3">
+      <deck-stat num="30" tone="helico">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="21" tone="ember">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 292">
+    <h1 slot="title">Heads-up #292</h1>
+    <deck-callout type="info">
+      <strong>Note 292 ·</strong> a callout boxed at slide 292. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 293">
+    <h1 slot="title">Plain text slide 293</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **293** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 294">
+    <h1 slot="title">Function definition #294</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item294 = (n: number): string =&gt; `#294 · ${n}`;
+const out294 = item294(4);
+console.log(out294);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 295">
+    <h1 slot="title">Three options · slide 295</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option295 = 'a' | 'b' | 'c';
+const pick295 = (o: Option295): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 295</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 295</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #296</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 295.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 296.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 297">
+    <h1 slot="title">A metric · slide 297</h1>
+    <deck-stack gap="3">
+      <deck-stat num="216" tone="lime">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="0" tone="orchid">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 298">
+    <h1 slot="title">Heads-up #298</h1>
+    <deck-callout type="danger">
+      <strong>Note 298 ·</strong> a callout boxed at slide 298. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 299">
+    <h1 slot="title">Plain text slide 299</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **299** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 300">
+    <h1 slot="title">Function definition #300</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item300 = (n: number): string =&gt; `#300 · ${n}`;
+const out300 = item300(7);
+console.log(out300);
+    </deck-code>
+  </deck-feature>
+
+  <deck-section num="16">
+    <h1>Chapter 16</h1>
+  </deck-section>
+
+  <deck-feature-cards eyebrow="Cards 301">
+    <h1 slot="title">Three options · slide 301</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option301 = 'a' | 'b' | 'c';
+const pick301 = (o: Option301): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 301</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 301</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #302</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 301.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 302.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 303">
+    <h1 slot="title">A metric · slide 303</h1>
+    <deck-stack gap="3">
+      <deck-stat num="402" tone="ember">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="78" tone="mango">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 304">
+    <h1 slot="title">Heads-up #304</h1>
+    <deck-callout type="info">
+      <strong>Note 304 ·</strong> a callout boxed at slide 304. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 305">
+    <h1 slot="title">Plain text slide 305</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **305** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 306">
+    <h1 slot="title">Function definition #306</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item306 = (n: number): string =&gt; `#306 · ${n}`;
+const out306 = item306(10);
+console.log(out306);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 307">
+    <h1 slot="title">Three options · slide 307</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option307 = 'a' | 'b' | 'c';
+const pick307 = (o: Option307): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 307</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 307</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #308</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 307.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 308.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 309">
+    <h1 slot="title">A metric · slide 309</h1>
+    <deck-stack gap="3">
+      <deck-stat num="588" tone="orchid">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="57" tone="helico">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 310">
+    <h1 slot="title">Heads-up #310</h1>
+    <deck-callout type="danger">
+      <strong>Note 310 ·</strong> a callout boxed at slide 310. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 311">
+    <h1 slot="title">Plain text slide 311</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **311** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 312">
+    <h1 slot="title">Function definition #312</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item312 = (n: number): string =&gt; `#312 · ${n}`;
+const out312 = item312(0);
+console.log(out312);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 313">
+    <h1 slot="title">Three options · slide 313</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option313 = 'a' | 'b' | 'c';
+const pick313 = (o: Option313): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 313</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 313</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #314</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 313.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 314.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 315">
+    <h1 slot="title">A metric · slide 315</h1>
+    <deck-stack gap="3">
+      <deck-stat num="774" tone="mango">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="36" tone="lime">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 316">
+    <h1 slot="title">Heads-up #316</h1>
+    <deck-callout type="info">
+      <strong>Note 316 ·</strong> a callout boxed at slide 316. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 317">
+    <h1 slot="title">Plain text slide 317</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **317** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 318">
+    <h1 slot="title">Function definition #318</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item318 = (n: number): string =&gt; `#318 · ${n}`;
+const out318 = item318(3);
+console.log(out318);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 319">
+    <h1 slot="title">Three options · slide 319</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option319 = 'a' | 'b' | 'c';
+const pick319 = (o: Option319): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 319</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 319</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #320</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 319.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 320.</p></deck-card>
+  </deck-split>
+
+  <deck-section num="17">
+    <h1>Chapter 17</h1>
+  </deck-section>
+
+  <deck-feature eyebrow="Numbers 321">
+    <h1 slot="title">A metric · slide 321</h1>
+    <deck-stack gap="3">
+      <deck-stat num="960" tone="helico">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="15" tone="ember">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 322">
+    <h1 slot="title">Heads-up #322</h1>
+    <deck-callout type="danger">
+      <strong>Note 322 ·</strong> a callout boxed at slide 322. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 323">
+    <h1 slot="title">Plain text slide 323</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **323** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 324">
+    <h1 slot="title">Function definition #324</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item324 = (n: number): string =&gt; `#324 · ${n}`;
+const out324 = item324(6);
+console.log(out324);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 325">
+    <h1 slot="title">Three options · slide 325</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option325 = 'a' | 'b' | 'c';
+const pick325 = (o: Option325): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 325</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 325</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #326</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 325.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 326.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 327">
+    <h1 slot="title">A metric · slide 327</h1>
+    <deck-stack gap="3">
+      <deck-stat num="147" tone="lime">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="93" tone="orchid">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 328">
+    <h1 slot="title">Heads-up #328</h1>
+    <deck-callout type="info">
+      <strong>Note 328 ·</strong> a callout boxed at slide 328. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 329">
+    <h1 slot="title">Plain text slide 329</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **329** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 330">
+    <h1 slot="title">Function definition #330</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item330 = (n: number): string =&gt; `#330 · ${n}`;
+const out330 = item330(9);
+console.log(out330);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 331">
+    <h1 slot="title">Three options · slide 331</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option331 = 'a' | 'b' | 'c';
+const pick331 = (o: Option331): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 331</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 331</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #332</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 331.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 332.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 333">
+    <h1 slot="title">A metric · slide 333</h1>
+    <deck-stack gap="3">
+      <deck-stat num="333" tone="ember">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="72" tone="mango">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 334">
+    <h1 slot="title">Heads-up #334</h1>
+    <deck-callout type="danger">
+      <strong>Note 334 ·</strong> a callout boxed at slide 334. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 335">
+    <h1 slot="title">Plain text slide 335</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **335** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 336">
+    <h1 slot="title">Function definition #336</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item336 = (n: number): string =&gt; `#336 · ${n}`;
+const out336 = item336(12);
+console.log(out336);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 337">
+    <h1 slot="title">Three options · slide 337</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option337 = 'a' | 'b' | 'c';
+const pick337 = (o: Option337): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 337</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 337</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #338</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 337.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 338.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 339">
+    <h1 slot="title">A metric · slide 339</h1>
+    <deck-stack gap="3">
+      <deck-stat num="519" tone="orchid">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="51" tone="helico">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 340">
+    <h1 slot="title">Heads-up #340</h1>
+    <deck-callout type="info">
+      <strong>Note 340 ·</strong> a callout boxed at slide 340. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-section num="18">
+    <h1>Chapter 18</h1>
+  </deck-section>
+
+  <deck-feature eyebrow="Slide 341">
+    <h1 slot="title">Plain text slide 341</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **341** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 342">
+    <h1 slot="title">Function definition #342</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item342 = (n: number): string =&gt; `#342 · ${n}`;
+const out342 = item342(2);
+console.log(out342);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 343">
+    <h1 slot="title">Three options · slide 343</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option343 = 'a' | 'b' | 'c';
+const pick343 = (o: Option343): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 343</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 343</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #344</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 343.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 344.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 345">
+    <h1 slot="title">A metric · slide 345</h1>
+    <deck-stack gap="3">
+      <deck-stat num="705" tone="mango">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="30" tone="lime">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 346">
+    <h1 slot="title">Heads-up #346</h1>
+    <deck-callout type="danger">
+      <strong>Note 346 ·</strong> a callout boxed at slide 346. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 347">
+    <h1 slot="title">Plain text slide 347</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **347** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 348">
+    <h1 slot="title">Function definition #348</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item348 = (n: number): string =&gt; `#348 · ${n}`;
+const out348 = item348(5);
+console.log(out348);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 349">
+    <h1 slot="title">Three options · slide 349</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option349 = 'a' | 'b' | 'c';
+const pick349 = (o: Option349): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 349</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 349</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #350</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 349.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 350.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 351">
+    <h1 slot="title">A metric · slide 351</h1>
+    <deck-stack gap="3">
+      <deck-stat num="891" tone="helico">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="9" tone="ember">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 352">
+    <h1 slot="title">Heads-up #352</h1>
+    <deck-callout type="info">
+      <strong>Note 352 ·</strong> a callout boxed at slide 352. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 353">
+    <h1 slot="title">Plain text slide 353</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **353** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 354">
+    <h1 slot="title">Function definition #354</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item354 = (n: number): string =&gt; `#354 · ${n}`;
+const out354 = item354(8);
+console.log(out354);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 355">
+    <h1 slot="title">Three options · slide 355</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option355 = 'a' | 'b' | 'c';
+const pick355 = (o: Option355): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 355</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 355</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #356</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 355.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 356.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 357">
+    <h1 slot="title">A metric · slide 357</h1>
+    <deck-stack gap="3">
+      <deck-stat num="78" tone="lime">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="87" tone="orchid">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 358">
+    <h1 slot="title">Heads-up #358</h1>
+    <deck-callout type="danger">
+      <strong>Note 358 ·</strong> a callout boxed at slide 358. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 359">
+    <h1 slot="title">Plain text slide 359</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **359** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 360">
+    <h1 slot="title">Function definition #360</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item360 = (n: number): string =&gt; `#360 · ${n}`;
+const out360 = item360(11);
+console.log(out360);
+    </deck-code>
+  </deck-feature>
+
+  <deck-section num="19">
+    <h1>Chapter 19</h1>
+  </deck-section>
+
+  <deck-feature-cards eyebrow="Cards 361">
+    <h1 slot="title">Three options · slide 361</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option361 = 'a' | 'b' | 'c';
+const pick361 = (o: Option361): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 361</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 361</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #362</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 361.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 362.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 363">
+    <h1 slot="title">A metric · slide 363</h1>
+    <deck-stack gap="3">
+      <deck-stat num="264" tone="ember">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="66" tone="mango">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 364">
+    <h1 slot="title">Heads-up #364</h1>
+    <deck-callout type="info">
+      <strong>Note 364 ·</strong> a callout boxed at slide 364. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 365">
+    <h1 slot="title">Plain text slide 365</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **365** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 366">
+    <h1 slot="title">Function definition #366</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item366 = (n: number): string =&gt; `#366 · ${n}`;
+const out366 = item366(1);
+console.log(out366);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 367">
+    <h1 slot="title">Three options · slide 367</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option367 = 'a' | 'b' | 'c';
+const pick367 = (o: Option367): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 367</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 367</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #368</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 367.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 368.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 369">
+    <h1 slot="title">A metric · slide 369</h1>
+    <deck-stack gap="3">
+      <deck-stat num="450" tone="orchid">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="45" tone="helico">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 370">
+    <h1 slot="title">Heads-up #370</h1>
+    <deck-callout type="danger">
+      <strong>Note 370 ·</strong> a callout boxed at slide 370. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 371">
+    <h1 slot="title">Plain text slide 371</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **371** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 372">
+    <h1 slot="title">Function definition #372</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item372 = (n: number): string =&gt; `#372 · ${n}`;
+const out372 = item372(4);
+console.log(out372);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 373">
+    <h1 slot="title">Three options · slide 373</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option373 = 'a' | 'b' | 'c';
+const pick373 = (o: Option373): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 373</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 373</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #374</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 373.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 374.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 375">
+    <h1 slot="title">A metric · slide 375</h1>
+    <deck-stack gap="3">
+      <deck-stat num="636" tone="mango">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="24" tone="lime">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 376">
+    <h1 slot="title">Heads-up #376</h1>
+    <deck-callout type="info">
+      <strong>Note 376 ·</strong> a callout boxed at slide 376. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 377">
+    <h1 slot="title">Plain text slide 377</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **377** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 378">
+    <h1 slot="title">Function definition #378</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item378 = (n: number): string =&gt; `#378 · ${n}`;
+const out378 = item378(7);
+console.log(out378);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 379">
+    <h1 slot="title">Three options · slide 379</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option379 = 'a' | 'b' | 'c';
+const pick379 = (o: Option379): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 379</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 379</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #380</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 379.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 380.</p></deck-card>
+  </deck-split>
+
+  <deck-section num="20">
+    <h1>Chapter 20</h1>
+  </deck-section>
+
+  <deck-feature eyebrow="Numbers 381">
+    <h1 slot="title">A metric · slide 381</h1>
+    <deck-stack gap="3">
+      <deck-stat num="822" tone="helico">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="3" tone="ember">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 382">
+    <h1 slot="title">Heads-up #382</h1>
+    <deck-callout type="danger">
+      <strong>Note 382 ·</strong> a callout boxed at slide 382. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 383">
+    <h1 slot="title">Plain text slide 383</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **383** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 384">
+    <h1 slot="title">Function definition #384</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item384 = (n: number): string =&gt; `#384 · ${n}`;
+const out384 = item384(10);
+console.log(out384);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 385">
+    <h1 slot="title">Three options · slide 385</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option385 = 'a' | 'b' | 'c';
+const pick385 = (o: Option385): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 385</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 385</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #386</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 385.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 386.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 387">
+    <h1 slot="title">A metric · slide 387</h1>
+    <deck-stack gap="3">
+      <deck-stat num="09" tone="lime">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="81" tone="orchid">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 388">
+    <h1 slot="title">Heads-up #388</h1>
+    <deck-callout type="info">
+      <strong>Note 388 ·</strong> a callout boxed at slide 388. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 389">
+    <h1 slot="title">Plain text slide 389</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **389** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 390">
+    <h1 slot="title">Function definition #390</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item390 = (n: number): string =&gt; `#390 · ${n}`;
+const out390 = item390(0);
+console.log(out390);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 391">
+    <h1 slot="title">Three options · slide 391</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option391 = 'a' | 'b' | 'c';
+const pick391 = (o: Option391): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="red"><h3>Left 391</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="yellow"><h3>Right 391</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #392</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 391.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 392.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 393">
+    <h1 slot="title">A metric · slide 393</h1>
+    <deck-stack gap="3">
+      <deck-stat num="195" tone="ember">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="60" tone="mango">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 394">
+    <h1 slot="title">Heads-up #394</h1>
+    <deck-callout type="danger">
+      <strong>Note 394 ·</strong> a callout boxed at slide 394. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 395">
+    <h1 slot="title">Plain text slide 395</h1>
+    <p slot="lead" class="lead">A simple feature slide with body copy and no code.</p>
+    <deck-md>
+This is paragraph **395** of a long deck. The markdown component does
+its own parse on connect, so we get to measure the parsing cost across
+400 slides. *Italics*, `inline code`, lists ·
+
+- one
+- two
+- three
+    </deck-md>
+  </deck-feature>
+
+  <deck-feature eyebrow="Slide 396">
+    <h1 slot="title">Function definition #396</h1>
+    <p slot="lead" class="lead">A snippet of TypeScript with a few keywords and string literals.</p>
+    <deck-code lang="ts" hero>
+const item396 = (n: number): string =&gt; `#396 · ${n}`;
+const out396 = item396(3);
+console.log(out396);
+    </deck-code>
+  </deck-feature>
+
+  <deck-feature-cards eyebrow="Cards 397">
+    <h1 slot="title">Three options · slide 397</h1>
+    <p slot="lead" class="lead">Same recipe, different status tints.</p>
+    <deck-code lang="ts" hero>
+type Option397 = 'a' | 'b' | 'c';
+const pick397 = (o: Option397): number =&gt; o === 'a' ? 1 : o === 'b' ? 2 : 3;
+    </deck-code>
+    <deck-card slot="left" color="orange"><h3>Left 397</h3><p>A short justification line.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Right 397</h3><p>A counter-example line.</p></deck-card>
+  </deck-feature-cards>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Before · after #398</h1>
+    <p slot="lead" class="lead">Two columns side by side.</p>
+    <deck-card slot="left" color="red"><h3>Before</h3><p>State at iteration 397.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>After</h3><p>State at iteration 398.</p></deck-card>
+  </deck-split>
+
+  <deck-feature eyebrow="Numbers 399">
+    <h1 slot="title">A metric · slide 399</h1>
+    <deck-stack gap="3">
+      <deck-stat num="381" tone="orchid">
+        <h3 slot="claim">Throughput</h3>
+        Requests per second under a slide-flip workload.
+      </deck-stat>
+      <deck-stat num="39" tone="helico">
+        <h3 slot="claim">Latency p99</h3>
+        Milliseconds from keypress to active-attribute flip.
+      </deck-stat>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-feature eyebrow="Tip 400">
+    <h1 slot="title">Heads-up #400</h1>
+    <deck-callout type="info">
+      <strong>Note 400 ·</strong> a callout boxed at slide 400. The framework keeps redrawing under load.
+    </deck-callout>
+  </deck-feature>
+
+  <deck-takeaway kicker="End of test">
+    <deck-punch size="display">Survived <span class="accent">400</span> slides.</deck-punch>
+    <p class="caption on-dark">Check DevTools · memory snapshot, scripting time, layout time. The numbers tell the story.</p>
+  </deck-takeaway>
+
+</deck-root>
+
+</body>
+</html>

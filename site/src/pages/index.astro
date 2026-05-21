@@ -19,6 +19,7 @@ import DualUse from '../components/DualUse.astro';
 import PluginShelf from '../components/PluginShelf.astro';
 import Limits from '../components/Limits.astro';
 import Faq from '../components/Faq.astro';
+import StickyCta from '../components/StickyCta.astro';
 
 const anatomyCode = `<deck-feature eyebrow="Module">
   <h1 slot="title">Side effects</h1>
@@ -63,7 +64,7 @@ const quickstartCode = `<!doctype html>
   </section>
 
   <!-- ── Why ────────────────────────────────────────── -->
-  <Section id="why" eyebrow="Why" title="Three on-purpose constraints">
+  <Section id="why" num="01" eyebrow="Why" title="Three on-purpose constraints">
     <StatGrid>
       <Stat num="01" claim={`Open <code>index.html</code>`} tone="mango">
         No build, no dev server, no toolchain. <strong>A deck is a folder.</strong>
@@ -80,7 +81,7 @@ const quickstartCode = `<!doctype html>
   <DualUse />
 
   <!-- ── Anatomy ────────────────────────────────────── -->
-  <Section id="anatomy" eyebrow="Anatomy" title="A slide is just HTML">
+  <Section id="anatomy" num="03" eyebrow="Anatomy" title="A slide is just HTML">
     <CardGrid cols={2}>
       <CodeBlock label="Source · index.html" lang="html" code={anatomyCode} />
       <div class="notes">
@@ -98,7 +99,7 @@ const quickstartCode = `<!doctype html>
   </Section>
 
   <!-- ── Library ────────────────────────────────────── -->
-  <Section id="library" eyebrow="Library" title="Six layouts, six jobs">
+  <Section id="library" num="04" eyebrow="Library" title="Six layouts, six jobs">
     <ul class="layout-grid">
       <li>
         <LayoutPreview type="cover" />
@@ -141,7 +142,7 @@ const quickstartCode = `<!doctype html>
   </Section>
 
   <!-- ── Themes ─────────────────────────────────────── -->
-  <Section id="themes" eyebrow="Two themes" title="Pick a look · one link, one swap">
+  <Section id="themes" num="05" eyebrow="Two themes" title="Pick a look · one link, one swap">
     <ThemeSwap />
     <p class="more">
       Every component reads its colors, type and spacing from CSS custom
@@ -151,7 +152,7 @@ const quickstartCode = `<!doctype html>
   </Section>
 
   <!-- ── Quickstart ─────────────────────────────────── -->
-  <Section id="quickstart" eyebrow="60 seconds, no install" title="A deck, end to end">
+  <Section id="quickstart" num="06" eyebrow="60 seconds, no install" title="A deck, end to end">
     <CodeBlock label="my-talk/index.html" lang="html" code={quickstartCode} />
     <p class="more">
       Drop this file on any static host · GitHub Pages, S3, Netlify, your local
@@ -164,6 +165,7 @@ const quickstartCode = `<!doctype html>
 
   <PluginShelf />
   <Comparison />
+  <StickyCta />
   <Limits />
   <Faq />
   <DocsToc />

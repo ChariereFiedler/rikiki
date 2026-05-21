@@ -11,6 +11,10 @@
       that <span class="accent">stay alive</span>.
     </h1>
 
+    <p class="tagline">
+      Lit Web Components for talk decks <span class="dot">·</span> and product carousels <span class="dot">·</span> <strong>~12 KB gzip</strong> <span class="dot">·</span> zero build
+    </p>
+
     <p class="lead">
       Write a deck as plain HTML. Open <code>index.html</code> in a browser. No build step,
       no toolchain, no <code>node_modules</code> to resurrect five years from now.
@@ -71,6 +75,16 @@
     margin-bottom: var(--rik-space-4);
   }
   .title .accent { color: var(--rik-accent); }
+  .tagline {
+    font-family: var(--rik-font-mono);
+    font-size: var(--rik-font-size-sm);
+    color: var(--rik-text-inverse--muted);
+    letter-spacing: 0.02em;
+    margin-bottom: var(--rik-space-4);
+    line-height: 1.5;
+  }
+  .tagline strong { color: var(--rik-accent); font-weight: 700; }
+  .tagline .dot { color: var(--rik-text-inverse--ghost); margin: 0 4px; }
   .lead {
     font-size: var(--rik-font-size-lead);
     line-height: 1.55;
