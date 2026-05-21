@@ -27,6 +27,11 @@ const { id, eyebrow, num, title, tone = 'paper' } = Astro.props;
 
 <style>
   .section { padding: var(--rik-space-7) var(--rik-space-5); }
+  @media (max-width: 640px) {
+    /* Tighten the side padding on phones · 36px each side on a 375px
+       viewport ate 19% of the width and left code blocks no room. */
+    .section { padding: var(--rik-space-6) var(--rik-space-3); }
+  }
   .section.dark {
     background: var(--rik-surface-inverse);
     color: var(--rik-text-inverse);

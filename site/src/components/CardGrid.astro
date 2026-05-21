@@ -14,9 +14,13 @@ const { cols = 3 } = Astro.props;
     display: grid;
     gap: var(--rik-space-4);
   }
+  /* min-width: 0 on each track prevents intrinsic-min-content children
+     (e.g. <pre>, long URLs, large images) from blowing the grid past
+     the viewport on narrow screens. */
+  .grid > * { min-width: 0; }
   .cols-2 { grid-template-columns: 1fr 1fr; }
   .cols-3 { grid-template-columns: repeat(3, 1fr); }
   @media (max-width: 720px) {
-    .grid { grid-template-columns: 1fr; }
+    .cols-2, .cols-3 { grid-template-columns: 1fr; }
   }
 </style>

@@ -41,7 +41,18 @@ const path = Astro.url.pathname.replace(/\/$/, '');
 ---
 
 <aside class="sidebar">
-  <nav>
+  <button
+    type="button"
+    class="sidebar-toggle"
+    aria-expanded="false"
+    aria-controls="sidebar-nav"
+    aria-label="Toggle docs navigation"
+  >
+    <span class="hamburger" aria-hidden="true">≡</span>
+    <span class="label">Docs nav</span>
+    <span class="chevron" aria-hidden="true">▾</span>
+  </button>
+  <nav id="sidebar-nav">
     {sections.map((s) => (
       <section>
         <h4>{s.title}</h4>
@@ -67,6 +78,35 @@ const path = Astro.url.pathname.replace(/\/$/, '');
     ))}
   </nav>
 </aside>
+
+<script is:inline>
+  // Mobile toggle. The sidebar is rendered open by default so no-JS readers
+  // still get the full site nav · we collapse it client-side once we know
+  // the viewport is narrow, and let the user reopen it via the button.
+  (function () {
+    const sidebar = document.querySelector('.sidebar');
+    const toggle = sidebar && sidebar.querySelector('.sidebar-toggle');
+    if (!sidebar || !toggle) return;
+    const apply = () => {
+      const narrow = window.matchMedia('(max-width: 920px)').matches;
+      if (narrow) {
+        sidebar.classList.add('is-collapsed');
+        toggle.setAttribute('aria-expanded', 'false');
+      } else {
+        sidebar.classList.remove('is-collapsed');
+        toggle.setAttribute('aria-expanded', 'true');
+      }
+    };
+    toggle.addEventListener('click', () => {
+      const open = sidebar.classList.toggle('is-collapsed');
+      // After toggle, .is-collapsed = closed (true means just collapsed)
+      toggle.setAttribute('aria-expanded', String(!open));
+    });
+    apply();
+    // Re-sync on resize so a phone-rotated-to-landscape reflows sanely.
+    window.addEventListener('resize', apply);
+  })();
+</script>
 
 <style>
   .sidebar {
@@ -108,5 +148,50 @@ const path = Astro.url.pathname.replace(/\/$/, '');
     border-left-color: var(--rik-accent);
     background: rgba(240, 112, 32, 0.06);
     font-weight: 700;
+  }
+
+  /* ── Mobile toggle · hidden on desktop ─────────────────────── */
+  .sidebar-toggle { display: none; }
+  @media (max-width: 920px) {
+    /* On phones the sidebar takes the full layout column and is no longer
+       sticky · letting it grow with content would push everything below
+       the fold. Show the toggle, hide the nav until the user opens it. */
+    .sidebar {
+      position: static;
+      height: auto;
+      max-height: none;
+      padding: var(--rik-space-3) var(--rik-space-3) 0;
+      border-right: 0;
+      border-bottom: 1px solid var(--rik-border-default);
+    }
+    .sidebar-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px var(--rik-space-3);
+      background: var(--rik-surface-raised);
+      border: 1px solid var(--rik-border-default);
+      border-radius: var(--rik-radius-sm);
+      color: var(--rik-text-default);
+      font: 700 var(--rik-font-size-sm)/1 var(--rik-font-mono);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s;
+    }
+    .sidebar-toggle:hover { background: var(--rik-surface-raised--strong); }
+    .sidebar-toggle .hamburger {
+      font-size: 1.25rem; line-height: 1; color: var(--rik-accent);
+    }
+    .sidebar-toggle .label { flex: 1; text-align: left; }
+    .sidebar-toggle .chevron {
+      font-size: 0.85rem; transition: transform 0.15s;
+    }
+    .sidebar.is-collapsed .sidebar-toggle .chevron { transform: rotate(-90deg); }
+    .sidebar nav {
+      padding: var(--rik-space-3) 0;
+    }
+    .sidebar.is-collapsed nav { display: none; }
   }
 </style>
