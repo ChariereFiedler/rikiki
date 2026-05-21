@@ -7,7 +7,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "lint:dashes": "node scripts/lint-dashes.mjs"
+    "lint:dashes": "node scripts/lint-dashes.mjs",
+    "lint": "npm run lint:dashes && astro check"
   },
   "keywords": [],
   "author": "",
@@ -15,5 +16,9 @@
   "type": "commonjs",
   "dependencies": {
     "astro": "^6.3.6"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "typescript": "^6.0.3"
   }
 }

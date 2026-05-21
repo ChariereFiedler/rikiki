@@ -96,7 +96,7 @@ const { src = '/embed/index.html', initialSlide = 1, autoplay = 4500 } = Astro.p
     }
 
     function tick(): void {
-      if (!running || paused) return;
+      if (!running || paused || !frame) return;
       try {
         const hash = frame.contentWindow?.location.hash || '';
         const m = hash.match(/^#(\d+)/);
