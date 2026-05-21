@@ -1,0 +1,162 @@
+---
+// "Browse the docs" tile grid · 6 entry points into the documentation.
+// Pulls visitors out of the marketing page and into deep content.
+
+const tiles = [
+  {
+    href: '/docs/getting-started',
+    eyebrow: '01',
+    title: 'Install · Quickstart',
+    body: 'Three install paths · CDN, npm, git clone. First slide in one minute.',
+  },
+  {
+    href: '/docs/anatomy',
+    eyebrow: '02',
+    title: 'Anatomy of a slide',
+    body: 'How layouts, slots and atoms compose. Read this before writing.',
+  },
+  {
+    href: '/docs/components',
+    eyebrow: '03',
+    title: 'Component library',
+    body: 'Every <deck-*> element · attributes, slots, tokens, one example each.',
+  },
+  {
+    href: '/docs/navigation',
+    eyebrow: '04',
+    title: 'Navigation & overview',
+    body: '2D keyboard model, overview mode, help overlay, route-state.',
+  },
+  {
+    href: '/docs/theming',
+    eyebrow: '05',
+    title: 'Theming · design tokens',
+    body: '~140 CSS variables, BEM naming, palette + semantic layers.',
+  },
+  {
+    href: '/docs/recipes',
+    eyebrow: '06',
+    title: 'Recipes',
+    body: 'Concrete patterns · code-on-left, big-number cover, side-by-side comparison.',
+  },
+];
+---
+
+<section id="browse" class="docs-toc">
+  <div class="inner">
+    <p class="eyebrow">Documentation</p>
+    <h2>Browse the docs</h2>
+    <p class="lede">
+      Six entry points into the full reference. Pick the one that matches what
+      you came for.
+    </p>
+
+    <ul class="grid">
+      {tiles.map((t) => (
+        <li>
+          <a class="tile" href={t.href}>
+            <span class="num">{t.eyebrow}</span>
+            <h3>{t.title}</h3>
+            <p>{t.body}</p>
+            <span class="cta">Read &nbsp;→</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .docs-toc {
+    background: var(--rik-surface-page);
+    padding: var(--rik-space-7) var(--rik-space-5);
+    border-top: 1px solid var(--rik-border-default);
+  }
+  .inner { max-width: 1080px; margin: 0 auto; }
+  .eyebrow {
+    display: inline-block;
+    background: var(--rik-accent);
+    color: var(--rik-accent__on);
+    padding: 4px 10px;
+    border-radius: var(--rik-radius-pill);
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: var(--rik-space-3);
+  }
+  h2 {
+    font-family: var(--rik-font-display);
+    font-size: var(--rik-font-size-mega);
+    font-weight: 900;
+    color: var(--rik-text-default);
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    margin-bottom: var(--rik-space-3);
+  }
+  .lede {
+    font-size: var(--rik-font-size-lead);
+    color: var(--rik-text-default--muted);
+    line-height: 1.55;
+    max-width: 70ch;
+    margin-bottom: var(--rik-space-5);
+  }
+  .grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--rik-space-4);
+  }
+  @media (max-width: 880px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+  .tile {
+    display: flex; flex-direction: column;
+    gap: var(--rik-space-2);
+    padding: var(--rik-space-4);
+    background: var(--rik-surface-raised--strong);
+    border: 1px solid var(--rik-border-default);
+    border-radius: var(--rik-radius-md);
+    text-decoration: none;
+    color: inherit;
+    transition: transform var(--rik-motion-fast) var(--rik-motion__ease-out),
+                box-shadow var(--rik-motion-fast) var(--rik-motion__ease-out),
+                border-color var(--rik-motion-fast) var(--rik-motion__ease-out);
+    height: 100%;
+  }
+  .tile:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--rik-elevation-3);
+    border-color: var(--rik-accent--soft);
+    text-decoration: none;
+  }
+  .num {
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: 0.18em;
+    color: var(--rik-accent);
+  }
+  .tile h3 {
+    font-family: var(--rik-font-display);
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--rik-text-default);
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .tile p {
+    font-size: var(--rik-font-size-sm);
+    color: var(--rik-text-default--muted);
+    line-height: 1.55;
+    margin: 0;
+  }
+  .cta {
+    margin-top: auto;
+    color: var(--rik-accent);
+    font: 700 var(--rik-font-size-sm)/1 var(--rik-font-mono);
+    letter-spacing: 0.04em;
+  }
+</style>

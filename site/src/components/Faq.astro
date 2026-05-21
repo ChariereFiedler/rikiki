@@ -1,0 +1,135 @@
+---
+const items = [
+  {
+    q: 'Why "Lit Web Components" and not React / Vue / Svelte?',
+    a: 'Lit compiles to standard Web Components, which the browser understands natively. The runtime is ~6 KB gz (vs ~50 KB for React + ReactDOM) and it does not need a build step on the consumer side. A deck stays a folder · open in 2031, it still runs.',
+  },
+  {
+    q: 'Do I need to know Lit to write a deck?',
+    a: 'No. You write HTML tags. Lit is what we used internally to build the components. The consumer surface is plain HTML and CSS custom properties · no decorators, no template literals, no class extending.',
+  },
+  {
+    q: 'Can I print my deck to PDF?',
+    a: 'Yes, via the browser. Chromium with print-backgrounds enabled gives the cleanest result. There is no dedicated CLI · slides are pure HTML, so the browser print pipeline does the job.',
+  },
+  {
+    q: 'Is there a presenter mode with notes?',
+    a: 'Yes. Wrap notes in <code>&lt;deck-notes&gt;</code> inside any slide, then press P during the talk · a popup window opens with current + next slide, the notes, a timer, and slide counter. Sync is BroadcastChannel-based; no network call.',
+  },
+  {
+    q: 'How do I theme a deck for my brand?',
+    a: 'Copy <code>themes/rikiki.css</code>, change the values, link it instead of the default. ~140 CSS custom properties, organised in two layers (palette / semantic). For a single instance, override the <code>--deck-*-*</code> tokens inline on the element.',
+  },
+  {
+    q: 'What happens if I want a fancy animation that is not in the box?',
+    a: 'You can drop a <code>&lt;script&gt;</code> inside any slide and run whatever JS you want · the slide is just an HTML host. For most needs, the four built-in transitions (slide / fade / zoom / flip) are enough; for one-off effects, GSAP and friends are a script tag away.',
+  },
+  {
+    q: 'Why do you also pitch carousels?',
+    a: 'Because <code>autoplay loop swipe</code> on <code>&lt;deck-root&gt;</code> turns the same engine into a touch-friendly carousel. Same components, same theming, same 12 KB bundle. The dual-use is a side-effect of building on web standards.',
+  },
+];
+---
+
+<section id="faq" class="faq">
+  <div class="inner">
+    <p class="eyebrow">FAQ</p>
+    <h2>Common questions</h2>
+
+    <div class="list">
+      {items.map((it) => (
+        <details>
+          <summary>
+            <span class="q">{it.q}</span>
+            <span class="chev" aria-hidden="true">+</span>
+          </summary>
+          <div class="a" set:html={it.a}></div>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq {
+    background: var(--rik-surface-raised);
+    padding: var(--rik-space-7) var(--rik-space-5);
+    border-top: 1px solid var(--rik-border-default);
+  }
+  .inner { max-width: 880px; margin: 0 auto; }
+  .eyebrow {
+    display: inline-block;
+    background: var(--rik-accent);
+    color: var(--rik-accent__on);
+    padding: 4px 10px;
+    border-radius: var(--rik-radius-pill);
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: var(--rik-space-3);
+  }
+  h2 {
+    font-family: var(--rik-font-display);
+    font-size: var(--rik-font-size-mega);
+    font-weight: 900;
+    color: var(--rik-text-default);
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    margin: 0 0 var(--rik-space-5);
+  }
+  .list { display: flex; flex-direction: column; }
+  details {
+    border-top: 1px solid var(--rik-border-default);
+    padding: var(--rik-space-3) 0;
+  }
+  details:last-child { border-bottom: 1px solid var(--rik-border-default); }
+  summary {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: var(--rik-space-3);
+    cursor: pointer;
+    list-style: none;
+    padding: var(--rik-space-2) 0;
+    color: var(--rik-text-default);
+    font-family: var(--rik-font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.005em;
+    line-height: 1.35;
+    transition: color var(--rik-motion-fast) var(--rik-motion__ease-out);
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary:hover { color: var(--rik-accent--strong); }
+  .chev {
+    flex: 0 0 auto;
+    width: 28px; height: 28px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--rik-border-default);
+    border-radius: 50%;
+    color: var(--rik-text-default--faint);
+    font: 700 1.1rem/1 var(--rik-font-mono);
+    transition: transform var(--rik-motion-base) var(--rik-motion__ease-out),
+                background var(--rik-motion-fast) var(--rik-motion__ease-out),
+                color var(--rik-motion-fast) var(--rik-motion__ease-out);
+  }
+  details[open] .chev {
+    transform: rotate(45deg);
+    background: var(--rik-accent);
+    color: var(--rik-accent__on);
+    border-color: var(--rik-accent);
+  }
+  .a {
+    padding: var(--rik-space-2) 0 var(--rik-space-2);
+    color: var(--rik-text-default--muted);
+    font-size: var(--rik-font-size-body);
+    line-height: 1.65;
+    max-width: 70ch;
+  }
+  .a :global(code) {
+    font-family: var(--rik-font-mono);
+    font-size: 0.92em;
+    background: var(--rik-surface-tint);
+    color: var(--rik-text-default);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+</style>

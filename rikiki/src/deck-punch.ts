@@ -9,7 +9,7 @@
 // Tokens:
 //   --deck-punch-color · text color  · defaults to `inherit` so the
 //     punch picks up the slide's color (works on dark hooks etc.).
-//   --deck-punch-size  · font-size   · defaults to var(--fs-lead).
+//   --deck-punch-size  · font-size   · defaults to var(--rik-font-size-lead).
 //
 // `tone` and `size` map to theme tokens · zero hard-coded color.
 // ════════════════════════════════════════════════════════════════
@@ -21,19 +21,19 @@ export type DeckPunchTone = 'warn' | 'danger' | 'ok' | 'info' | 'muted' | 'accen
 export type DeckPunchSize = 'lead' | 'big' | 'mega' | 'stat' | 'display';
 
 const TONES: Record<DeckPunchTone, string> = {
-  warn:   'var(--orange)',
-  danger: 'var(--red)',
-  ok:     'var(--green)',
-  info:   'var(--yellow)',
-  muted:  'var(--muted)',
-  accent: 'var(--yellow)',
+  warn:   'var(--rik-status-warn)',
+  danger: 'var(--rik-status-danger)',
+  ok:     'var(--rik-status-success)',
+  info:   'var(--rik-accent)',
+  muted:  'var(--rik-text-default--faint)',
+  accent: 'var(--rik-accent)',
 };
 
 const SIZES: Record<DeckPunchSize, string> = {
-  lead:    'var(--fs-lead)',
-  big:     'var(--fs-big)',
-  mega:    'var(--fs-mega)',
-  stat:    'var(--fs-stat)',
+  lead:    'var(--rik-font-size-lead)',
+  big:     'var(--rik-font-size-big)',
+  mega:    'var(--rik-font-size-mega)',
+  stat:    'var(--rik-font-size-stat)',
   display: 'clamp(2.6rem, 6vw, 5rem)',
 };
 
@@ -43,11 +43,11 @@ export class DeckPunch extends LitElement {
     :host {
       display: block;
       margin: 0;
-      font-family: var(--display, var(--sans));
+      font-family: var(--rik-font-display, var(--rik-font-sans));
       font-weight: 900;
       line-height: 1.1;
       letter-spacing: -0.02em;
-      font-size: var(--deck-punch-size, var(--_size, var(--fs-lead)));
+      font-size: var(--deck-punch-size, var(--_size, var(--rik-font-size-lead)));
       /* "inherit" lets us pick up the on-dark color of cover/hook/section · the
          color is only overridden when a tone is explicitly chosen. */
       color:     var(--deck-punch-color, var(--_color, inherit));

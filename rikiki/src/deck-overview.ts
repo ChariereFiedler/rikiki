@@ -32,17 +32,17 @@ const STYLES = `
     display: flex; flex-direction: column;
     gap: 28px;
     padding: 32px 48px;
-    background: var(--bg);
+    background: var(--rik-surface-page);
     overflow: auto;
     z-index: 80;
   }
   :host([overview]) .ov-row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
   :host([overview]) .ov-row-label {
     flex: 0 0 200px;
-    font: 700 0.72rem/1.3 var(--mono);
+    font: 700 0.72rem/1.3 var(--rik-font-mono);
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: var(--rik-text-default--faint);
     padding-right: 12px;
     text-align: right;
     white-space: normal;
@@ -56,26 +56,26 @@ const STYLES = `
     flex: 0 0 auto;
     width: clamp(160px, 14vw, 260px);
     aspect-ratio: 16 / 9;
-    background: var(--card);
-    border: 2px solid var(--border);
-    border-radius: var(--r-md);
+    background: var(--rik-surface-raised);
+    border: 2px solid var(--rik-border-default);
+    border-radius: var(--rik-radius-md);
     overflow: hidden;
     cursor: pointer;
     transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
-    box-shadow: var(--shadow-card);
+    box-shadow: var(--rik-elevation-2);
   }
   :host([overview]) .ov-connector {
     flex: 0 0 auto;
     width: 16px; height: 2px;
-    background: var(--border);
+    background: var(--rik-border-default);
   }
   :host([overview]) .ov-cell:hover {
     transform: translateY(-2px);
-    border-color: var(--yellow-soft);
-    box-shadow: var(--shadow-hover);
+    border-color: var(--rik-accent--soft);
+    box-shadow: var(--rik-elevation-3);
   }
   :host([overview]) .ov-cell[data-current] {
-    border-color: var(--yellow);
+    border-color: var(--rik-accent);
     box-shadow: 0 0 0 3px rgba(247, 203, 68, 0.35);
   }
   :host([overview]) .ov-thumb {
@@ -88,8 +88,8 @@ const STYLES = `
   :host([overview]) .ov-thumb > * { display: flex !important; }
   :host([overview]) .ov-cell-label {
     position: absolute; bottom: 6px; right: 8px;
-    font: 700 0.72rem/1 var(--mono);
-    color: var(--text);
+    font: 700 0.72rem/1 var(--rik-font-mono);
+    color: var(--rik-text-default);
     background: rgba(255, 255, 255, 0.9);
     padding: 3px 7px; border-radius: 4px;
     z-index: 2;

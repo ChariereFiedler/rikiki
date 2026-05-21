@@ -1,0 +1,110 @@
+---
+// Honest limits · the things Rikiki deliberately doesn't do.
+// Lists the rejected features so visitors can self-disqualify quickly.
+---
+
+<section id="limits" class="limits">
+  <div class="inner">
+    <p class="eyebrow">Honest limits</p>
+    <h2>Not the right tool when…</h2>
+    <p class="lede">
+      Rikiki is opinionated. Here is what we deliberately didn't build,
+      so you can decide in 60 seconds whether it fits.
+    </p>
+
+    <ul class="grid">
+      <li>
+        <strong>You want a WYSIWYG editor.</strong>
+        Rikiki is "write HTML, open in a browser". There is no builder UI
+        and there won't be one.
+      </li>
+      <li>
+        <strong>You need PowerPoint-style animations on shapes.</strong>
+        Per-element timeline animations live in Keynote and Slidev, not here.
+        We do slide-level transitions (fade / slide / zoom / flip) and that's it.
+      </li>
+      <li>
+        <strong>You want a hosted SaaS.</strong>
+        There is none. You host the static files yourself · S3, GitHub Pages,
+        an nginx alias, whatever.
+      </li>
+      <li>
+        <strong>You need PowerPoint export.</strong>
+        Rikiki produces HTML. <code>.pptx</code> output is not on the roadmap.
+        You can browser-print to PDF (we recommend Chromium with print backgrounds on).
+      </li>
+      <li>
+        <strong>You're allergic to Web Components.</strong>
+        The framework is Custom Elements + Shadow DOM at its core. If your
+        team policy bans them, this isn't your tool.
+      </li>
+    </ul>
+  </div>
+</section>
+
+<style>
+  .limits {
+    background: var(--rik-surface-page);
+    padding: var(--rik-space-7) var(--rik-space-5);
+    border-top: 1px solid var(--rik-border-default);
+  }
+  .inner { max-width: 1080px; margin: 0 auto; }
+  .eyebrow {
+    display: inline-block;
+    background: var(--rik-text-default);
+    color: var(--rik-surface-page);
+    padding: 4px 10px;
+    border-radius: var(--rik-radius-pill);
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: var(--rik-space-3);
+  }
+  h2 {
+    font-family: var(--rik-font-display);
+    font-size: var(--rik-font-size-mega);
+    font-weight: 900;
+    color: var(--rik-text-default);
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    margin: 0 0 var(--rik-space-3);
+  }
+  .lede {
+    font-size: var(--rik-font-size-lead);
+    color: var(--rik-text-default--muted);
+    line-height: 1.55;
+    max-width: 65ch;
+    margin: 0 0 var(--rik-space-6);
+  }
+  .grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--rik-space-3) var(--rik-space-5);
+  }
+  @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+  .grid li {
+    font-size: var(--rik-font-size-body);
+    line-height: 1.6;
+    color: var(--rik-text-default--muted);
+    padding: var(--rik-space-3) 0;
+    border-top: 1px solid var(--rik-border-default);
+  }
+  .grid li strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--rik-text-default);
+    font-weight: 700;
+    font-size: 1.02rem;
+  }
+  .grid li code {
+    font-family: var(--rik-font-mono);
+    font-size: 0.92em;
+    background: rgba(42, 37, 32, 0.06);
+    color: var(--rik-text-default);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+</style>

@@ -17,43 +17,43 @@ marked.setOptions({ gfm: true, breaks: false });
 @customElement('deck-md')
 export class DeckMd extends LitElement {
   static override styles = css`
-    :host { display: block; color: var(--soft); font-family: var(--sans); }
-    h1, h2, h3, h4 { color: var(--text); font-weight: 700; letter-spacing: -0.01em; }
-    h2 { font-size: var(--fs-h2); margin-bottom: var(--sp-2); }
-    h3 { font-size: var(--fs-lead); margin-bottom: var(--sp-2); margin-top: var(--sp-3); }
-    h4 { font-size: var(--fs-body); margin-bottom: var(--sp-1); margin-top: var(--sp-3); }
-    p { font-size: var(--fs-body); line-height: 1.65; margin: 0 0 var(--sp-3); }
+    :host { display: block; color: var(--rik-text-default--muted); font-family: var(--rik-font-sans); }
+    h1, h2, h3, h4 { color: var(--rik-text-default); font-weight: 700; letter-spacing: -0.01em; }
+    h2 { font-size: var(--rik-font-size-h2); margin-bottom: var(--rik-space-2); }
+    h3 { font-size: var(--rik-font-size-lead); margin-bottom: var(--rik-space-2); margin-top: var(--rik-space-3); }
+    h4 { font-size: var(--rik-font-size-body); margin-bottom: var(--rik-space-1); margin-top: var(--rik-space-3); }
+    p { font-size: var(--rik-font-size-body); line-height: 1.65; margin: 0 0 var(--rik-space-3); }
     p:last-child { margin-bottom: 0; }
-    strong { color: var(--text); font-weight: 700; }
+    strong { color: var(--rik-text-default); font-weight: 700; }
     em { font-style: italic; }
     code {
-      font-family: var(--mono); font-size: var(--fs-mono-sm);
-      background: var(--surface-tint); padding: 2px 6px;
-      border-radius: var(--r-sm); color: var(--text);
+      font-family: var(--rik-font-mono); font-size: var(--rik-font-size-mono-sm);
+      background: var(--rik-surface-tint); padding: 2px 6px;
+      border-radius: var(--rik-radius-sm); color: var(--rik-text-default);
     }
     pre {
-      background: var(--deck-md-pre-bg, var(--code-bg));
-      border: 1px solid var(--deck-md-pre-border, var(--code-border));
-      border-radius: var(--r-md);
-      padding: var(--sp-3) var(--sp-4);
+      background: var(--deck-md-pre-bg, var(--rik-code__bg));
+      border: 1px solid var(--deck-md-pre-border, var(--rik-code__border));
+      border-radius: var(--rik-radius-md);
+      padding: var(--rik-space-3) var(--rik-space-4);
       overflow: auto;
-      font-family: var(--mono); font-size: var(--fs-mono);
-      line-height: 1.75; color: var(--deck-md-pre-text, var(--code-text));
-      margin: 0 0 var(--sp-3);
-      box-shadow: var(--shadow-card);
+      font-family: var(--rik-font-mono); font-size: var(--rik-font-size-mono);
+      line-height: 1.75; color: var(--deck-md-pre-text, var(--rik-code__text));
+      margin: 0 0 var(--rik-space-3);
+      box-shadow: var(--rik-elevation-2);
     }
     pre code { background: none; padding: 0; color: inherit; border-radius: 0; }
-    ul, ol { padding-left: 1.4rem; margin: 0 0 var(--sp-3); }
-    li { margin-bottom: var(--sp-1); font-size: var(--fs-body); line-height: 1.55; }
-    li::marker { color: var(--yellow); }
-    a { color: var(--yellow); text-decoration: underline; text-decoration-thickness: 1px; }
+    ul, ol { padding-left: 1.4rem; margin: 0 0 var(--rik-space-3); }
+    li { margin-bottom: var(--rik-space-1); font-size: var(--rik-font-size-body); line-height: 1.55; }
+    li::marker { color: var(--rik-accent); }
+    a { color: var(--rik-accent); text-decoration: underline; text-decoration-thickness: 1px; }
     blockquote {
-      border-left: 3px solid var(--yellow);
-      padding: var(--sp-1) var(--sp-3);
-      color: var(--muted); font-style: italic;
-      margin: 0 0 var(--sp-3);
+      border-left: 3px solid var(--rik-accent);
+      padding: var(--rik-space-1) var(--rik-space-3);
+      color: var(--rik-text-default--faint); font-style: italic;
+      margin: 0 0 var(--rik-space-3);
     }
-    hr { border: none; border-top: 1px solid var(--border); margin: var(--sp-4) 0; }
+    hr { border: none; border-top: 1px solid var(--rik-border-default); margin: var(--rik-space-4) 0; }
     .content { display: contents; }
   `;
 

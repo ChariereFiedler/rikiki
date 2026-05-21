@@ -37,18 +37,19 @@ function expandTracks(value: string | undefined): string | null {
 function expandGap(value: string | undefined): string | null {
   if (!value) return null;
   const n = parseInt(value, 10);
-  if (!Number.isNaN(n) && n >= 1 && n <= 6) return `var(--sp-${n})`;
+  if (!Number.isNaN(n) && n >= 1 && n <= 6) return `var(--rik-space-${n})`;
   return value;
 }
 
 @customElement('deck-grid')
 export class DeckGrid extends LitElement {
+  /* Customization tokens: --deck-grid-gap (used when no `gap` attr is set). */
   static override styles = css`
     :host {
       display: grid;
       grid-template-columns: var(--_cols, 1fr);
       grid-template-rows:    var(--_rows, auto);
-      gap:           var(--_gap, var(--sp-3));
+      gap:           var(--_gap, var(--deck-grid-gap, var(--rik-space-3)));
       align-items:   var(--_align, stretch);
       justify-items: var(--_justify, stretch);
       min-width: 0;

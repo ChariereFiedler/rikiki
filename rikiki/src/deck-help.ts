@@ -24,13 +24,13 @@ const STYLES = `
   }
   #kb-overlay.open { display: flex; opacity: 1; }
   .kb-card {
-    background: var(--card); color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: var(--r-lg);
+    background: var(--rik-surface-raised); color: var(--rik-text-default);
+    border: 1px solid var(--rik-border-default);
+    border-radius: var(--rik-radius-lg);
     padding: 2.2rem 2.5rem;
     box-shadow: 0 24px 80px rgba(0,0,0,0.5);
     width: min(560px, 90vw);
-    font-family: var(--sans);
+    font-family: var(--rik-font-sans);
     animation: kbSlideIn 0.22s ease;
   }
   @keyframes kbSlideIn {
@@ -42,18 +42,18 @@ const STYLES = `
     gap: 1rem;
     margin-bottom: 1.4rem;
     padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--rik-border-default);
   }
   .kb-card h3 {
-    font: 700 1.05rem/1.2 var(--sans);
+    font: 700 1.05rem/1.2 var(--rik-font-sans);
     letter-spacing: -0.01em;
-    color: var(--text);
+    color: var(--rik-text-default);
   }
   .kb-group-label {
-    font: 700 0.62rem/1 var(--mono);
+    font: 700 0.62rem/1 var(--rik-font-mono);
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: var(--rik-text-default--faint);
     margin: 0.8rem 0 0.3rem;
   }
   .kb-group-label:first-of-type { margin-top: 0; }
@@ -64,17 +64,17 @@ const STYLES = `
   }
   .kb-row .keys { display: flex; gap: 4px; align-items: center; }
   .kb-row kbd {
-    background: linear-gradient(180deg, #fff 0%, var(--bg) 100%);
-    border: 1px solid var(--border);
+    background: linear-gradient(180deg, #fff 0%, var(--rik-surface-page) 100%);
+    border: 1px solid var(--rik-border-default);
     border-bottom: 2px solid #c4c4be;
     border-radius: 5px;
     padding: 3px 9px;
-    font: 600 0.78rem/1 var(--mono);
-    color: var(--text);
+    font: 600 0.78rem/1 var(--rik-font-mono);
+    color: var(--rik-text-default);
     min-width: 22px; text-align: center;
     box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset;
   }
-  .kb-row .desc { color: var(--soft); }
+  .kb-row .desc { color: var(--rik-text-default--muted); }
 `;
 
 const MARKUP = `

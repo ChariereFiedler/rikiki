@@ -57,15 +57,15 @@ export class DeckMermaid extends LitElement {
   static override styles = css`
     :host {
       display: flex; align-items: center; justify-content: center;
-      background: var(--deck-mermaid-bg, var(--code-bg));
-      border: 1px solid var(--deck-mermaid-border, var(--code-border));
-      border-radius: var(--deck-mermaid-radius, var(--r-md));
-      padding: var(--deck-mermaid-padding, var(--sp-4));
-      box-shadow: var(--shadow-card);
+      background: var(--deck-mermaid-bg, var(--rik-code__bg));
+      border: 1px solid var(--deck-mermaid-border, var(--rik-code__border));
+      border-radius: var(--deck-mermaid-radius, var(--rik-radius-md));
+      padding: var(--deck-mermaid-padding, var(--rik-space-4));
+      box-shadow: var(--rik-elevation-2);
       overflow: hidden;
       min-width: 0;
     }
-    :host([compact]) { padding: var(--sp-2); }
+    :host([compact]) { padding: var(--rik-space-2); }
     .canvas { width: 100%; max-width: 100%; text-align: center; overflow: hidden; }
     .canvas svg { width: 100% !important; height: auto !important; max-width: 100% !important; max-height: 60vh; }
     :host([compact]) .canvas { max-width: 60%; }

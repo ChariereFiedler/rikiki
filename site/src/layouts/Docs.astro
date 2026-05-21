@@ -1,0 +1,243 @@
+---
+import Base from './Base.astro';
+import Nav from '../components/Nav.astro';
+import Sidebar from '../components/Sidebar.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  eyebrow?: string;
+}
+const { title, description, eyebrow } = Astro.props;
+const pageTitle = `${title} · Rikiki docs`;
+---
+
+<Base title={pageTitle} description={description}>
+  <Nav />
+  <div class="layout">
+    <Sidebar />
+    <main class="content">
+      <article>
+        {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+        <h1>{title}</h1>
+        {description && <p class="lede">{description}</p>}
+        <slot />
+      </article>
+    </main>
+    <aside class="toc" aria-label="On this page">
+      <p class="toc-head">On this page</p>
+      <ul id="toc-list"></ul>
+    </aside>
+  </div>
+  <Footer />
+</Base>
+
+<script is:inline>
+  // Auto-build the right-side TOC from h2[id] inside the article.
+  (function () {
+    const list = document.getElementById('toc-list');
+    if (!list) return;
+    const article = document.querySelector('.content > article');
+    if (!article) return;
+    const heads = article.querySelectorAll('h2[id], h3[id]');
+    if (heads.length === 0) {
+      const aside = list.closest('.toc');
+      if (aside) aside.style.display = 'none';
+      return;
+    }
+    heads.forEach((h) => {
+      const li = document.createElement('li');
+      li.className = h.tagName === 'H3' ? 'lvl-3' : 'lvl-2';
+      const a = document.createElement('a');
+      a.href = '#' + h.id;
+      a.textContent = h.textContent.replace(/#$/, '').trim();
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+    // Highlight the active section based on scroll position.
+    const links = new Map();
+    list.querySelectorAll('a').forEach((a) => {
+      const id = a.getAttribute('href').slice(1);
+      links.set(id, a);
+    });
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        const a = links.get(e.target.id);
+        if (!a) return;
+        if (e.isIntersecting) a.classList.add('is-active');
+        // We don't remove on out · the last-seen-active behaviour reads better.
+      });
+      // Keep only the topmost visible heading active to avoid noise.
+      const visible = Array.from(links.values()).filter((a) => a.classList.contains('is-active'));
+      if (visible.length > 1) visible.slice(1).forEach((a) => a.classList.remove('is-active'));
+    }, { rootMargin: '0px 0px -75% 0px', threshold: 0 });
+    heads.forEach((h) => io.observe(h));
+  })();
+</script>
+
+<style is:global>
+  /* Generic prose styles shared across docs articles */
+  .content > article > h2 {
+    font-family: var(--rik-font-display);
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--rik-text-default);
+    margin: var(--rik-space-6) 0 var(--rik-space-3);
+    padding-bottom: var(--rik-space-2);
+    border-bottom: 3px solid var(--rik-accent);
+    display: inline-block;
+    width: fit-content;
+    scroll-margin-top: 80px;
+  }
+  .content > article > h3 {
+    font-family: var(--rik-font-display);
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--rik-text-default);
+    margin: var(--rik-space-5) 0 var(--rik-space-2);
+    scroll-margin-top: 80px;
+  }
+  .content > article > p,
+  .content > article > ul,
+  .content > article > ol {
+    font-size: var(--rik-font-size-body);
+    line-height: 1.7;
+    color: var(--rik-text-default--muted);
+    margin: 0 0 var(--rik-space-3);
+    max-width: 75ch;
+  }
+  .content > article ul,
+  .content > article ol {
+    padding-left: 1.4rem;
+  }
+  .content > article li { margin-bottom: 0.3rem; }
+  .content > article strong { color: var(--rik-text-default); font-weight: 700; }
+  .content > article a {
+    color: var(--rik-accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+  .content > article a:hover { text-decoration-thickness: 2px; }
+  .content > article :not(pre) > code {
+    font-family: var(--rik-font-mono);
+    font-size: 0.92em;
+    background: rgba(42, 37, 32, 0.06);
+    color: var(--rik-text-default);
+    padding: 2px 6px;
+    border-radius: 5px;
+  }
+  .content > article pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    border-radius: 0;
+    font-size: inherit;
+  }
+  /* Anchor link badge next to h2/h3 on hover */
+  .content > article h2[id], .content > article h3[id] { position: relative; }
+  .content > article h2[id]::after, .content > article h3[id]::after {
+    content: '#';
+    position: absolute; left: -1.2em; top: 0;
+    color: var(--rik-text-default--faint);
+    opacity: 0;
+    transition: opacity 0.12s;
+  }
+  .content > article h2[id]:hover::after,
+  .content > article h3[id]:hover::after { opacity: 1; }
+</style>
+
+<style>
+  .layout {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr) 220px;
+    max-width: 1440px;
+    margin: 0 auto;
+    min-height: calc(100vh - 60px);
+  }
+  .content {
+    padding: var(--rik-space-6) var(--rik-space-6);
+    max-width: 920px;
+    min-width: 0;
+  }
+  /* ── Right-side TOC ───────────────────────────────── */
+  .toc {
+    position: sticky;
+    top: 60px;
+    align-self: start;
+    padding: var(--rik-space-6) var(--rik-space-4) var(--rik-space-6) 0;
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+  }
+  .toc-head {
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--rik-text-default--faint);
+    margin: 0 0 var(--rik-space-3);
+    padding-left: var(--rik-space-3);
+  }
+  .toc ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-left: 1px solid var(--rik-border-default);
+  }
+  .toc li { margin: 0; }
+  .toc a {
+    display: block;
+    padding: 6px var(--rik-space-3);
+    margin-left: -1px;
+    border-left: 1px solid transparent;
+    color: var(--rik-text-default--faint);
+    text-decoration: none;
+    font-size: var(--rik-font-size-sm);
+    line-height: 1.35;
+    transition: color var(--rik-motion-fast) var(--rik-motion__ease-out),
+                border-color var(--rik-motion-fast) var(--rik-motion__ease-out);
+  }
+  .toc a:hover { color: var(--rik-text-default); text-decoration: none; }
+  .toc a.is-active {
+    color: var(--rik-accent--strong);
+    border-left-color: var(--rik-accent);
+    font-weight: 700;
+  }
+  .toc .lvl-3 a { padding-left: var(--rik-space-5); font-size: 0.82rem; }
+  article > .eyebrow {
+    display: table;
+    padding: 4px 10px;
+    background: var(--rik-accent);
+    color: var(--rik-surface-inverse);
+    border-radius: var(--rik-radius-pill);
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin: 0 0 var(--rik-space-3);
+  }
+  article > h1 {
+    font-family: var(--rik-font-display);
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 900;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    color: var(--rik-text-default);
+    margin-bottom: var(--rik-space-3);
+  }
+  article > .lede {
+    font-size: var(--rik-font-size-lead);
+    line-height: 1.55;
+    color: var(--rik-text-default--faint);
+    max-width: 70ch;
+    margin: 0 0 var(--rik-space-5);
+  }
+  @media (max-width: 1180px) {
+    .layout { grid-template-columns: 240px minmax(0, 1fr); }
+    .toc { display: none; }
+  }
+  @media (max-width: 920px) {
+    .layout { grid-template-columns: 1fr; }
+    .content { padding: var(--rik-space-4); }
+  }
+</style>

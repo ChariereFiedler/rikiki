@@ -6,10 +6,11 @@
 import './deck-root.js';
 import './deck-cover.js';
 import './deck-section.js';
-import './deck-hero.js';
+import './deck-feature.js';
 import './deck-split.js';
-import './deck-hero-detail.js';
-import './deck-hook.js';
+import './deck-feature-cards.js';
+import './deck-photo.js';
+import './deck-takeaway.js';
 import './deck-md.js';
 import './deck-code.js';
 import './deck-callout.js';
@@ -25,6 +26,7 @@ import './deck-grid.js';
 import './deck-punch.js';
 import './deck-stat.js';
 import './deck-shortcut.js';
+import './deck-notes.js';  // 380 B · hidden by default; read by the presenter plugin
 
 // Mermaid optionnel (chargé via CDN si <deck-mermaid> est présent)
 // Voir starter.html pour l'init mermaid.

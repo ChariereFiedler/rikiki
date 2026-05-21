@@ -14,7 +14,7 @@ export class DeckStepList extends LitElement {
   static override styles = css`
     :host {
       display: flex; flex-direction: column;
-      gap: var(--gap-xs);
+      gap: var(--rik-space-2xs);
     }
   `;
   override render() { return html`<slot></slot>`; }
@@ -22,38 +22,45 @@ export class DeckStepList extends LitElement {
 
 @customElement('deck-step')
 export class DeckStep extends LitElement {
+  /* Customization tokens:
+       --deck-step-bg / --deck-step-border / --deck-step-radius
+       --deck-step-padding-x / --deck-step-padding-y / --deck-step-shadow
+       --deck-step-num-bg / --deck-step-num-color / --deck-step-num-size
+       --deck-step-label-color / --deck-step-chip-bg / --deck-step-chip-color */
   static override styles = css`
     :host {
-      display: flex; align-items: center; gap: var(--sp-3);
-      background: var(--surface-card);
-      border: 1px solid var(--border);
-      border-radius: var(--r-md);
-      padding: var(--gap-xs) var(--sp-3);
-      box-shadow: var(--shadow-card);
-      font-family: var(--sans);
-      font-size: var(--fs-body);
+      display: flex; align-items: center; gap: var(--rik-space-3);
+      background: var(--deck-step-bg, var(--rik-surface-raised--strong));
+      border: 1px solid var(--deck-step-border, var(--rik-border-default));
+      border-radius: var(--deck-step-radius, var(--rik-radius-md));
+      padding: var(--deck-step-padding-y, var(--rik-space-2xs)) var(--deck-step-padding-x, var(--rik-space-3));
+      box-shadow: var(--deck-step-shadow, var(--rik-elevation-2));
+      font-family: var(--rik-font-sans);
+      font-size: var(--rik-font-size-body);
     }
     .step-num {
       flex: 0 0 auto;
-      width: var(--icon-sm); height: var(--icon-sm);
+      width: var(--deck-step-num-size, var(--rik-icon-sm));
+      height: var(--deck-step-num-size, var(--rik-icon-sm));
       display: inline-flex; align-items: center; justify-content: center;
-      background: var(--yellow); color: var(--dark);
+      background: var(--deck-step-num-bg, var(--rik-accent));
+      color: var(--deck-step-num-color, var(--rik-accent__on, var(--rik-surface-inverse)));
       border-radius: 50%;
-      font: 700 var(--fs-micro)/1 var(--sans);
+      font: 700 var(--rik-font-size-xs)/1 var(--rik-font-sans);
     }
     .label {
       flex: 1;
-      font-family: var(--mono); font-weight: 600;
-      color: var(--text);
+      font-family: var(--rik-font-mono); font-weight: 600;
+      color: var(--deck-step-label-color, var(--rik-text-default));
     }
     .chip {
       flex: 0 0 auto;
       display: inline-block;
-      padding: 2px var(--sp-2);
-      background: var(--surface-tint);
-      color: var(--muted);
-      border-radius: var(--r-pill);
-      font: 600 var(--fs-small)/1.4 var(--sans);
+      padding: 2px var(--rik-space-2);
+      background: var(--deck-step-chip-bg, var(--rik-surface-tint));
+      color: var(--deck-step-chip-color, var(--rik-text-default--faint));
+      border-radius: var(--rik-radius-pill);
+      font: 600 var(--rik-font-size-sm)/1.4 var(--rik-font-sans);
     }
   `;
 

@@ -1,255 +1,397 @@
 /* ════════════════════════════════════════════════════════════════
-   RIKIKI · Rikiki theme (default)
-   Tropical-jungle palette inspired by tordu-jardin.fr · acid greens,
-   mango orange, orchid pink on a deep nocturnal navy. Display in
-   Unbounded, body in Inter, mono in Space Mono · all from Google
-   Fonts so you don't have to host anything.
+   RIKIKI · default theme
+   Token system · three layers:
+     1. Palette (--rik-palette-*) · raw colors, do NOT consume directly.
+     2. Semantic (--rik-<role>--<modifier>) · this is the public API.
+     3. Component (--deck-<tag>-*) · declared per-component, default to
+        semantic tokens; override on the host to retheme one instance.
+   To swap the palette, replace this file with one that re-declares the
+   same semantic names. Components and decks never see the palette.
    ════════════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400..900&family=Inter:wght@400..700&family=Space+Mono:wght@400;700&display=swap');
+/* Variable-axis fonts: Unbounded (variable weight 400-900), Inter (variable
+   weight 100-900 + opsz), Space Mono static. Switching Inter to its variable
+   build cuts the loaded payload to one file and unlocks `font-variation-settings`. */
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400..900&family=Inter:opsz,wght@14..32,100..900&family=Space+Mono:wght@400;700&display=swap');
 
 :root {
-  /* ── Palette · paper mode (default for slides) ─────── */
-  --bg:      #faf8f5;   /* paper */
-  --card:    #f0ede8;   /* paper-mid */
-  --border:  #e0dbd4;   /* paper-rule */
-  --dark:    #06080f;   /* void · for inverted surfaces */
+  /* ─────────────────────────────────────────────────────────────
+     LAYER 1 · PALETTE (private, theme-internal)
+     ───────────────────────────────────────────────────────────── */
+  --rik-palette-paper-0:   #ffffff;
+  --rik-palette-paper-50:  #faf8f5;
+  --rik-palette-paper-100: #f0ede8;
+  --rik-palette-paper-200: #e0dbd4;
 
-  --text:    #2a2520;   /* ink */
-  --soft:    #4a4540;   /* ink-mid */
-  --muted:   #7a7570;   /* ink-light */
+  --rik-palette-ink-500:   #7a7570;
+  --rik-palette-ink-700:   #4a4540;
+  --rik-palette-ink-900:   #2a2520;
 
-  /* Accents · tropical, saturated.
-     Mango is the primary brand accent (CTA, focus, title underlines), in line
-     with the tordu-jardin distribution where mango outnumbers every other
-     accent ~10:1. Lime stays available as a secondary organic punch. */
-  --yellow:       #f07020;   /* mango · primary accent */
-  --yellow-soft:  rgba(240, 112, 32, 0.18);
+  --rik-palette-night-900: #06080f;
+  --rik-palette-night-800: #0a0e18;
+  --rik-palette-night-700: #0f1422;
+  --rik-palette-night-600: #161c2e;
+  --rik-palette-night-500: #1e2840;
+  --rik-palette-night-400: #263350;
+  --rik-palette-night-100: #e8e4f0;
 
-  --red:    #e84828;     /* ember */
-  --green:  #00c8a0;     /* helico */
-  --orange: #e8581a;     /* mango pushed warmer · for orange-coded cards */
-  --purple: #c050e0;     /* orchid */
-  --lime:   #b8e830;     /* lime · secondary acid punch */
-  --cyan:   #00ddb0;     /* canary */
+  --rik-palette-mango-700: #b65820;
+  --rik-palette-mango-500: #f07020;
+  --rik-palette-mango-200: rgba(240, 112, 32, 0.50);
+  --rik-palette-mango-100: rgba(240, 112, 32, 0.18);
+  --rik-palette-mango-50:  rgba(240, 112, 32, 0.06);
 
-  /* Semantic surfaces & borders */
-  --surface-bad:    rgba(232, 72, 40, 0.10);
-  --border-bad:     rgba(232, 72, 40, 0.45);
-  --surface-ok:     rgba(0, 200, 160, 0.10);
-  --border-ok:      rgba(0, 200, 160, 0.45);
-  --surface-warn:   rgba(232, 88, 26, 0.10);
-  --border-warn:    rgba(232, 88, 26, 0.40);
-  --surface-info-faint:  rgba(240, 112, 32, 0.06);
-  --surface-info:        rgba(240, 112, 32, 0.12);
-  --surface-info-strong: rgba(240, 112, 32, 0.20);
-  --border-info:         rgba(240, 112, 32, 0.50);
-  --text-info:           #b65820;
+  /* Rikiki status tints · saturated, presence. bg alpha 0.18, border 0.70 */
+  --rik-palette-ember-500: #e84828;
+  --rik-palette-ember-200: rgba(232, 72, 40, 0.70);
+  --rik-palette-ember-100: rgba(232, 72, 40, 0.18);
 
-  /* Neutral surfaces */
-  --surface-card:   #ffffff;
-  --surface-soft:   #f0ede8;
-  --surface-tint:        rgba(42, 37, 32, 0.04);
-  --surface-tint-strong: rgba(42, 37, 32, 0.07);
+  --rik-palette-helico-500: #00c8a0;
+  --rik-palette-helico-200: rgba(0, 200, 160, 0.70);
+  --rik-palette-helico-100: rgba(0, 200, 160, 0.18);
 
-  /* On-dark (used by deck-cover, deck-section, deck-hook) */
-  --on-dark-text:    #e8e4f0;   /* white */
-  --on-dark-muted:   rgba(232, 228, 240, 0.55);
-  --on-dark-soft:    rgba(232, 228, 240, 0.72);
-  --on-dark-faint:   rgba(232, 228, 240, 0.32);
-  --on-dark-surface: rgba(232, 228, 240, 0.05);
-  --on-dark-border:  rgba(232, 228, 240, 0.12);
+  --rik-palette-warm-500:  #e8581a;
+  --rik-palette-warm-200:  rgba(232, 88, 26, 0.65);
+  --rik-palette-warm-100:  rgba(232, 88, 26, 0.18);
 
-  /* Deep nocturnal layers (cover/section background) */
-  --void:    #06080f;
-  --deep:    #0a0e18;
-  --layer:   #0f1422;
-  --bark:    #161c2e;
-  --wire:    #1e2840;
-  --mold:    #263350;
+  --rik-palette-orchid-500: #c050e0;
+  --rik-palette-lime-500:   #b8e830;
+  --rik-palette-canary-500: #00ddb0;
 
-  /* ── Type families ──────────────────────────────────── */
-  --sans:    'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --display: 'Unbounded', 'Inter', system-ui, sans-serif;
-  --mono:    'Space Mono', 'JetBrains Mono', ui-monospace, monospace;
+  /* ─────────────────────────────────────────────────────────────
+     LAYER 2 · SEMANTIC (consumer-facing, BEM)
+     ───────────────────────────────────────────────────────────── */
 
-  /* ── Spacing (base 0.5rem, ratio ~1.5) ──────────────── */
-  --sp-1: 0.5rem;
-  --sp-2: 0.75rem;
-  --sp-3: 1rem;
-  --sp-4: 1.5rem;
-  --sp-5: 2.25rem;
-  --sp-6: 3.5rem;
+  /* Surfaces */
+  --rik-surface-page:                 var(--rik-palette-paper-50);
+  --rik-surface-raised:               var(--rik-palette-paper-100);
+  --rik-surface-raised--strong:       var(--rik-palette-paper-0);
+  --rik-surface-sunken:               var(--rik-palette-paper-100);
+  --rik-surface-tint:                 rgba(42, 37, 32, 0.04);
+  --rik-surface-tint--strong:         rgba(42, 37, 32, 0.07);
+  --rik-surface-inverse:              var(--rik-palette-night-900);
+  --rik-surface-inverse--soft:        var(--rik-palette-night-800);
+  --rik-surface-inverse--soft-2:      var(--rik-palette-night-700);
+  --rik-surface-inverse--soft-3:      var(--rik-palette-night-600);
+  --rik-surface-inverse--soft-4:      var(--rik-palette-night-500);
+  --rik-surface-inverse--soft-5:      var(--rik-palette-night-400);
+  --rik-surface-inverse__overlay:     rgba(232, 228, 240, 0.05);
 
-  /* ── Type scale ────────────────────────────────────── */
-  --fs-display: 2.8rem;
-  --fs-section: 2.4rem;
-  --fs-h1:      1.85rem;
-  --fs-h2:      1.3rem;
-  --fs-lead:    1rem;
-  --fs-body:    0.92rem;
-  --fs-small:   0.8rem;
-  --fs-micro:   0.7rem;
-  --fs-mono:    0.88rem;
-  --fs-mono-sm: 0.8rem;
+  /* Text */
+  --rik-text-default:                 var(--rik-palette-ink-900);
+  --rik-text-default--muted:          var(--rik-palette-ink-700);
+  --rik-text-default--faint:          var(--rik-palette-ink-500);
+  --rik-text-inverse:                 var(--rik-palette-night-100);
+  --rik-text-inverse--muted:          rgba(232, 228, 240, 0.72);
+  --rik-text-inverse--faint:          rgba(232, 228, 240, 0.55);
+  --rik-text-inverse--ghost:          rgba(232, 228, 240, 0.32);
 
-  /* ── Radii · Rikiki goes a touch more playful than Siliceum ────── */
-  --r-xs: 6px;
-  --r-sm: 8px;
-  --r-md: 14px;
-  --r-lg: 20px;
-  --r-pill: 9999px;
+  /* Borders */
+  --rik-border-default:               var(--rik-palette-paper-200);
+  --rik-border-default--subtle:       rgba(42, 37, 32, 0.06);
+  --rik-border-inverse:               rgba(232, 228, 240, 0.12);
 
-  /* ── Icon sizes ────────────────────────────────────── */
-  --icon-xs: 16px;
-  --icon-sm: 22px;
-  --icon-md: 28px;
-  --icon-lg: 40px;
-  --icon-xl: 56px;
-  --icon-2xl: 72px;
+  /* Accent (brand) */
+  --rik-accent:                       var(--rik-palette-mango-500);
+  --rik-accent--soft:                 var(--rik-palette-mango-100);
+  --rik-accent--faint:                var(--rik-palette-mango-50);
+  --rik-accent--strong:               var(--rik-palette-mango-700);
+  --rik-accent__on:                   var(--rik-palette-paper-0);
 
-  /* ── Hair gaps ─────────────────────────────────────── */
-  --gap-hair: 4px;
-  --gap-xs:   6px;
+  /* Status · success */
+  --rik-status-success:               var(--rik-palette-helico-500);
+  --rik-status-success__bg:           var(--rik-palette-helico-100);
+  --rik-status-success__border:       var(--rik-palette-helico-200);
 
-  /* ── Display sizes for big numbers / hooks ─────────── */
-  --fs-stat:    clamp(3.5rem, 7vw, 5.5rem);
-  --fs-hook-q:  clamp(2.2rem, 4.5vw, 3.8rem);
-  --fs-big:     2.4rem;
-  --fs-mega:    2rem;
-  --fs-strong:  1.4rem;
+  /* Status · danger */
+  --rik-status-danger:                var(--rik-palette-ember-500);
+  --rik-status-danger__bg:            var(--rik-palette-ember-100);
+  --rik-status-danger__border:        var(--rik-palette-ember-200);
 
-  /* ── Semantic opacities ────────────────────────────── */
-  --opacity-faint: 0.5;
-  --opacity-soft:  0.7;
+  /* Status · warn (uses the warm tone, distinct from accent) */
+  --rik-status-warn:                  var(--rik-palette-warm-500);
+  --rik-status-warn__bg:              var(--rik-palette-warm-100);
+  --rik-status-warn__border:          var(--rik-palette-warm-200);
 
-  /* ── Shadows ───────────────────────────────────────── */
-  --shadow-card:  0 1px 3px rgba(6, 8, 15, 0.06), 0 4px 12px rgba(6, 8, 15, 0.06);
-  --shadow-hover: 0 2px 6px rgba(6, 8, 15, 0.10), 0 8px 20px rgba(6, 8, 15, 0.10);
+  /* Status · info (low-emphasis accent variant) */
+  --rik-status-info:                  var(--rik-palette-mango-500);
+  --rik-status-info__text:            var(--rik-palette-mango-700);
+  --rik-status-info__bg:              var(--rik-palette-mango-50);
+  --rik-status-info__bg--mid:         rgba(240, 112, 32, 0.12);
+  --rik-status-info__bg--strong:      rgba(240, 112, 32, 0.20);
+  --rik-status-info__border:          var(--rik-palette-mango-200);
 
-  /* ── Slide padding ─────────────────────────────────── */
-  --slide-pad-y: 2rem;
-  --slide-pad-x: 4rem;
+  /* Interactive */
+  --rik-interactive-bg:               transparent;
+  --rik-interactive-bg--hover:        rgba(42, 37, 32, 0.04);
+  --rik-interactive-bg--active:       rgba(42, 37, 32, 0.07);
+  --rik-interactive-bg--selected:     var(--rik-accent--soft);
+  --rik-interactive-fg:               var(--rik-accent);
+  --rik-interactive-fg--hover:        var(--rik-accent--strong);
 
-  /* ── Title block height ────────────────────────────── */
-  --title-block: 4.5rem;
+  /* Focus ring */
+  --rik-focus-ring:                   var(--rik-accent);
+  --rik-focus-ring--width:            2px;
+  --rik-focus-ring--offset:           2px;
 
-  /* ── Code-block surface + syntax palette ───────────── */
-  /* Components default to these · override per-instance to retheme. */
-  --code-bg:     #0f0f10;
-  --code-border: #232325;
-  --code-text:   #f4f4f5;
-  --code-cmt:    #546e7a;   /* comment (italic) */
-  --code-kw:     #c792ea;   /* keyword / tag      · purple */
-  --code-str:    #c3e88d;   /* string             · acid green */
-  --code-num:    #f78c6c;   /* number / hex       · orange */
-  --code-ty:     #ffcb6b;   /* type               · gold */
-  --code-prop:   #80cbc4;   /* property / attr    · teal */
-  --code-fn:     #82aaff;   /* function           · blue */
+  /* Link · mango-500 on paper is 3.2:1 (fails WCAG AA for body text).
+     Default link uses mango-700 (≥4.5:1); hover bumps to the brighter
+     accent for visual feedback. */
+  --rik-link:                         var(--rik-accent--strong);
+  --rik-link--hover:                  var(--rik-accent);
+  --rik-link--visited:                var(--rik-palette-orchid-500);
+
+  /* Selection */
+  --rik-selection__bg:                var(--rik-accent);
+  --rik-selection__text:              var(--rik-palette-paper-0);
+
+  /* Decorative palette (when a slide explicitly needs a hue) */
+  --rik-decor-orchid:                 var(--rik-palette-orchid-500);
+  --rik-decor-lime:                   var(--rik-palette-lime-500);
+  --rik-decor-canary:                 var(--rik-palette-canary-500);
+
+  /* Elevation */
+  --rik-elevation-1:                  0 1px 2px rgba(6, 8, 15, 0.04);
+  --rik-elevation-2:                  0 1px 3px rgba(6, 8, 15, 0.06), 0 4px 12px rgba(6, 8, 15, 0.06);
+  --rik-elevation-3:                  0 2px 6px rgba(6, 8, 15, 0.10), 0 8px 20px rgba(6, 8, 15, 0.10);
+
+  /* Motion */
+  --rik-motion-fast:                  120ms;
+  --rik-motion-base:                  200ms;
+  --rik-motion-slow:                  400ms;
+  --rik-motion__ease-out:             cubic-bezier(0.16, 1, 0.3, 1);
+  --rik-motion__ease-in-out:          cubic-bezier(0.65, 0, 0.35, 1);
+  --rik-motion__ease-spring:          cubic-bezier(0.5, 1.8, 0.3, 1);
+
+  /* Z-index scale */
+  --rik-z-base:                       0;
+  --rik-z-sticky:                     200;
+  --rik-z-overlay:                    300;
+  --rik-z-modal:                      400;
+  --rik-z-toast:                      500;
+  --rik-z-tooltip:                    600;
+
+  /* Typography · families */
+  --rik-font-sans:                    'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --rik-font-display:                 'Unbounded', 'Inter', system-ui, sans-serif;
+  --rik-font-mono:                    'Space Mono', 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Typography · body scale · modular ratio 1.25 (major third) from 1rem.
+     html root-size is `clamp(14px, 2.35vh, 42px)` so rems scale with viewport.
+     New `--rik-text-*` aliases follow a documented t-shirt scale; the
+     historical `--rik-font-size-*` names map to the same values for back-compat. */
+  --rik-text-2xs:                     0.64rem;     /* 1 / 1.25^2 */
+  --rik-text-xs:                      0.8rem;      /* 1 / 1.25 */
+  --rik-text-sm:                      1rem;
+  --rik-text-base:                    1.25rem;     /* 1.25 */
+  --rik-text-md:                      1.563rem;    /* 1.25^2 */
+  --rik-text-lg:                      1.953rem;    /* 1.25^3 */
+  --rik-text-xl:                      2.441rem;    /* 1.25^4 */
+  --rik-text-2xl:                     3.052rem;    /* 1.25^5 */
+  --rik-text-3xl:                     3.815rem;    /* 1.25^6 */
+  --rik-text-4xl:                     4.768rem;    /* 1.25^7 */
+
+  /* Legacy names · kept aligned to the new scale.
+     Fixed in 2026-05-20: --rik-font-size-mega was smaller than -big · the
+     order is now monotonic (strong < big < mega < hook < stat). */
+  --rik-font-size-xs:                 var(--rik-text-2xs);
+  --rik-font-size-sm:                 var(--rik-text-xs);
+  --rik-font-size-body:               0.92rem;     /* between -xs and -sm */
+  --rik-font-size-lead:               var(--rik-text-sm);
+  --rik-font-size-h2:                 var(--rik-text-base);
+  --rik-font-size-h1:                 var(--rik-text-md);
+  --rik-font-size-section:            var(--rik-text-lg);
+  --rik-font-size-display:            var(--rik-text-xl);
+  --rik-font-size-mono:               0.88rem;
+  --rik-font-size-mono-sm:            var(--rik-text-xs);
+
+  /* Display-class · big numbers, hook punchlines */
+  --rik-font-size-strong:             var(--rik-text-base);   /* 1.25rem */
+  --rik-font-size-big:                var(--rik-text-lg);     /* 1.953rem */
+  --rik-font-size-mega:               var(--rik-text-2xl);    /* 3.052rem · now > big */
+  --rik-font-size-hook:               clamp(2.2rem, 4.5vw, 3.8rem);
+  --rik-font-size-stat:               clamp(3.5rem, 7vw, 5.5rem);
+
+  /* Spacing */
+  --rik-space-hair:                   4px;
+  --rik-space-2xs:                    6px;
+  --rik-space-1:                      0.5rem;
+  --rik-space-2:                      0.75rem;
+  --rik-space-3:                      1rem;
+  --rik-space-4:                      1.5rem;
+  --rik-space-5:                      2.25rem;
+  --rik-space-6:                      3.5rem;
+
+  /* Radius */
+  --rik-radius-xs:                    6px;
+  --rik-radius-sm:                    8px;
+  --rik-radius-md:                    14px;
+  --rik-radius-lg:                    20px;
+  --rik-radius-pill:                  9999px;
+
+  /* Icon sizes */
+  --rik-icon-xs:                      16px;
+  --rik-icon-sm:                      22px;
+  --rik-icon-md:                      28px;
+  --rik-icon-lg:                      40px;
+  --rik-icon-xl:                      56px;
+  --rik-icon-2xl:                     72px;
+
+  /* Opacity scale */
+  --rik-opacity-faint:                0.5;
+  --rik-opacity-soft:                 0.7;
+
+  /* Slide layout */
+  --rik-slide-padding-y:              3.5rem;
+  --rik-slide-padding-x:              4rem;
+  --rik-title-block:                  4.5rem;
+
+  /* Code surface + syntax (BEM elements under "code") */
+  --rik-code__bg:                     #0f0f10;
+  --rik-code__border:                 #232325;
+  --rik-code__text:                   #f4f4f5;
+  --rik-code__syntax-comment:         #8b95a0;
+  --rik-code__syntax-keyword:         #c792ea;
+  --rik-code__syntax-string:          #c3e88d;
+  --rik-code__syntax-number:          #f78c6c;
+  --rik-code__syntax-type:            #ffcb6b;
+  --rik-code__syntax-property:        #80cbc4;
+  --rik-code__syntax-function:        #82aaff;
 }
 
-/* ── Minimal reset ─────────────────────────────────── */
+/* Reduced motion · zero out durations and replace the spring ease with a
+   linear out-curve. Per Yannick: the spring overshoot (1.8) is a vestibular
+   trigger. WCAG 2.3.3 compliance. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --rik-motion-fast:                  0ms;
+    --rik-motion-base:                  0ms;
+    --rik-motion-slow:                  0ms;
+    --rik-motion__ease-spring:          var(--rik-motion__ease-out);
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────
+   Minimal reset (don't override the padding of slotted components)
+   ──────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 body, h1, h2, h3, h4, p, ul, ol, li, blockquote, pre, table, td, th,
 figure, dl, dd { margin: 0; padding: 0; }
 html { font-size: clamp(14px, 2.35vh, 42px); }
-html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); }
-body { font-family: var(--sans); color: var(--text); }
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--rik-surface-page); }
+body { font-family: var(--rik-font-sans); color: var(--rik-text-default); }
 
-/* No theme-specific gradients on slides themselves · slide layouts handle
-   their own background via shadow-DOM `:host { background: ... }` rules.
-   Anything we set here would either need `!important` (which would break
-   clones in overview when the theme switches at runtime) or rely on
-   theme-only variables that overview clones can't resolve. */
+::selection { background: var(--rik-selection__bg); color: var(--rik-selection__text); }
 
-/* ── Light-DOM helpers (apply to slotted children) ──── */
-.accent { color: var(--yellow); }
-.accent-red    { color: var(--red); }
-.accent-orange { color: var(--orange); }
-.accent-green  { color: var(--green); }
-.accent-purple { color: var(--purple); }
-.accent-lime   { color: var(--lime); }
-.sub      { font-size: var(--fs-h2); color: var(--on-dark-soft); line-height: 1.45; max-width: 60ch; }
-.display  { font-family: var(--display); font-size: clamp(3rem, 7vw, 5.5rem); font-weight: 900; line-height: 1.05; letter-spacing: -0.03em; }
-.display.danger { color: var(--red); }
-.caption.on-dark { color: var(--on-dark-soft); font-size: var(--fs-lead); }
-.lead     { font-size: var(--fs-lead); color: var(--muted); line-height: 1.5; max-width: 75ch; }
+/* ────────────────────────────────────────────────────────────────
+   Light-DOM helpers (apply to slotted children of deck-* hosts)
+   ──────────────────────────────────────────────────────────────── */
+.accent          { color: var(--rik-accent); }
+.accent-danger   { color: var(--rik-status-danger); }
+.accent-warn     { color: var(--rik-status-warn); }
+.accent-success  { color: var(--rik-status-success); }
+.accent-orchid   { color: var(--rik-decor-orchid); }
+.accent-lime     { color: var(--rik-decor-lime); }
 
-/* ── Slide titles (h1 in light DOM, slotted) ───────── */
-deck-hero > h1,
+.sub {
+  font-size: var(--rik-font-size-h2);
+  color: var(--rik-text-inverse--muted);
+  line-height: 1.45;
+  max-width: 60ch;
+}
+.display {
+  font-family: var(--rik-font-display);
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+.display.danger      { color: var(--rik-status-danger); }
+.caption.on-dark     { color: var(--rik-text-inverse--muted); font-size: var(--rik-font-size-lead); }
+.lead {
+  font-size: var(--rik-font-size-lead);
+  color: var(--rik-text-default--faint);
+  line-height: 1.5;
+  max-width: 75ch;
+}
+
+/* Slide titles (h1 in light DOM, slotted) */
+deck-feature > h1,
 deck-split > h1,
-deck-hero-detail > h1 {
-  font-family: var(--display);
-  font-size: var(--fs-h1);
-  font-weight: 800;                         /* heavier in Rikiki · Unbounded */
-  color: var(--text);
+deck-feature-cards > h1 {
+  font-family: var(--rik-font-display);
+  font-size: var(--rik-font-size-h1);
+  font-weight: 800;
+  color: var(--rik-text-default);
   letter-spacing: -0.025em;
   line-height: 1.1;
-  margin-bottom: var(--sp-4);
-  padding-bottom: var(--sp-2);
-  border-bottom: 4px solid var(--yellow);   /* thicker accent rule in Rikiki */
+  margin-bottom: var(--rik-space-4);
+  padding-bottom: var(--rik-space-2);
+  border-bottom: 4px solid var(--rik-accent);
   display: inline-block;
   align-self: flex-start;
 }
-/* Cover · XL title on dark */
 deck-cover > h1 {
-  font-family: var(--display);
+  font-family: var(--rik-font-display);
   font-size: clamp(3.6rem, 9vw, 8.5rem);
   font-weight: 900;
-  color: var(--on-dark-text);
+  color: var(--rik-text-inverse);
   line-height: 1.02;
   letter-spacing: -0.035em;
-  margin-bottom: var(--sp-4);
+  margin-bottom: var(--rik-space-4);
 }
-/* Section · centered accent title */
 deck-section > h1 {
-  font-family: var(--display);
-  font-size: var(--fs-section);
+  font-family: var(--rik-font-display);
+  font-size: var(--rik-font-size-section);
   font-weight: 900;
-  color: var(--yellow);
+  color: var(--rik-accent);
   line-height: 1.02;
   letter-spacing: -0.03em;
   max-width: 18ch;
   text-align: center;
 }
-deck-section > h1 em { color: var(--on-dark-soft); font-style: normal; font-weight: 700; }
+deck-section > h1 em {
+  color: var(--rik-text-inverse--muted);
+  font-style: normal;
+  font-weight: 700;
+}
 
-/* ── Slotted sub-headings ───────────────────────────── */
+/* Slotted sub-headings */
 deck-cover > .sub, deck-cover > p.sub {
   display: block;
-  font-size: var(--fs-h2);
-  color: var(--on-dark-soft);
-  margin-bottom: var(--sp-6);
+  font-size: var(--rik-font-size-h2);
+  color: var(--rik-text-inverse--muted);
+  margin-bottom: var(--rik-space-6);
   max-width: 60ch;
   line-height: 1.45;
 }
 
-deck-hero > .lead,
+deck-feature > .lead,
 deck-split > .lead,
-deck-hero-detail > .lead {
+deck-feature-cards > .lead {
   display: block;
-  font-size: var(--fs-lead);
-  color: var(--muted);
+  font-size: var(--rik-font-size-lead);
+  color: var(--rik-text-default--faint);
   line-height: 1.5;
-  margin-bottom: var(--sp-4);
+  margin-bottom: var(--rik-space-4);
   max-width: 75ch;
 }
 
-/* ── Inline code in light DOM (slotted) ─────────────── */
-deck-hero code, deck-split code, deck-hero-detail code, deck-md code {
-  font-family: var(--mono);
-  font-size: var(--fs-mono-sm);
-  background: var(--surface-tint);
+/* Inline code in light DOM (slotted) */
+deck-feature code, deck-split code, deck-feature-cards code, deck-md code {
+  font-family: var(--rik-font-mono);
+  font-size: var(--rik-font-size-mono-sm);
+  background: var(--rik-surface-tint);
   padding: 2px 6px;
-  border-radius: var(--r-sm);
-  color: var(--text);
+  border-radius: var(--rik-radius-sm);
+  color: var(--rik-text-default);
 }
 deck-code code { all: unset; }
 
-/* ── Light-DOM utility blocks ───────────────────────── */
+/* Light-DOM utility blocks */
 .card-text {
-  font-size: var(--fs-body);
-  color: var(--soft);
+  font-size: var(--rik-font-size-body);
+  color: var(--rik-text-default--muted);
   line-height: 1.55;
   margin: 0;
 }
@@ -258,31 +400,31 @@ table.dense {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: var(--fs-body);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
+  font-size: var(--rik-font-size-body);
+  border: 1px solid var(--rik-border-default);
+  border-radius: var(--rik-radius-md);
   overflow: hidden;
-  background: var(--surface-card);
-  box-shadow: var(--shadow-card);
+  background: var(--rik-surface-raised--strong);
+  box-shadow: var(--rik-elevation-2);
 }
 table.dense th {
   text-align: left;
-  padding: 10px var(--sp-3);
-  color: var(--muted);
-  font-size: var(--fs-micro);
+  padding: 10px var(--rik-space-3);
+  color: var(--rik-text-default--faint);
+  font-size: var(--rik-font-size-xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface-soft);
+  border-bottom: 1px solid var(--rik-border-default);
+  background: var(--rik-surface-sunken);
 }
 table.dense td {
-  padding: 10px var(--sp-3);
-  border-bottom: 1px solid var(--border);
-  color: var(--soft);
+  padding: 10px var(--rik-space-3);
+  border-bottom: 1px solid var(--rik-border-default);
+  color: var(--rik-text-default--muted);
   line-height: 1.4;
 }
 table.dense tr:last-child td { border-bottom: none; }
-table.dense td.ok  { color: var(--green);  font-weight: 700; }
-table.dense td.no  { color: var(--red); }
-table.dense td.meh { color: var(--orange); }
+table.dense td.ok  { color: var(--rik-status-success);  font-weight: 700; }
+table.dense td.no  { color: var(--rik-status-danger); }
+table.dense td.meh { color: var(--rik-status-warn); }

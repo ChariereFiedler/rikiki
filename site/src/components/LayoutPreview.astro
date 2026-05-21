@@ -1,0 +1,130 @@
+---
+// Pixel-accurate layout previews. Each card embeds a tiny iframe that
+// renders the *real* <deck-*> Web Components, scaled down to fit the card.
+// Heavy in iframes, but lazy-loaded so they only fetch when scrolled into
+// view · the home page itself ships no JS for this.
+interface Props {
+  type: 'cover' | 'section' | 'hero' | 'split' | 'hero-detail' | 'hook';
+}
+const { type } = Astro.props;
+
+// One self-contained HTML per layout. The iframe will scale the deck
+// to ~30 % so a 1920×1080 slide fits a ~560×315 card.
+const decks: Record<Props['type'], string> = {
+  cover: `
+    <deck-cover brand="rikiki · docs" speaker="Jane Smith" company="Acme">
+      <h1>Hello, <span class="accent">world</span>.</h1>
+      <p class="sub">Sub-title or opening question.</p>
+    </deck-cover>`,
+
+  section: `
+    <deck-section num="02">
+      <h1>Anatomy</h1>
+    </deck-section>`,
+
+  hero: `
+    <deck-feature eyebrow="Module">
+      <h1 slot="title">Side effects</h1>
+      <p slot="lead" class="lead">A module can act on import.</p>
+      <deck-code lang="ts" hero>import './polyfill';
+const greet = (n) => \`Hi \${n}\`;</deck-code>
+    </deck-feature>`,
+
+  split: `
+    <deck-split cols="1-1">
+      <h1 slot="title">Two takes</h1>
+      <deck-card slot="left" color="red"><h3>Problem</h3><p>Bundler explodes.</p></deck-card>
+      <deck-card slot="right" color="green"><h3>Fix</h3><p>Ship plain HTML.</p></deck-card>
+    </deck-split>`,
+
+  'hero-detail': `
+    <deck-feature-cards eyebrow="Deep dive">
+      <h1 slot="title">One thing at a time</h1>
+      <deck-code lang="ts" hero>function run() { return 42; }</deck-code>
+      <deck-card slot="left" color="yellow"><h3>What changes</h3></deck-card>
+      <deck-card slot="right" color="green"><h3>What stays</h3></deck-card>
+    </deck-feature-cards>`,
+
+  hook: `
+    <deck-takeaway kicker="The whole point">
+      <deck-punch size="display">Source = output.</deck-punch>
+      <p class="caption on-dark">A deck is a folder.</p>
+    </deck-takeaway>`,
+};
+
+const labels: Record<Props['type'], string> = {
+  cover: 'deck-cover preview',
+  section: 'deck-section preview',
+  hero: 'deck-feature preview',
+  split: 'deck-split preview',
+  'hero-detail': 'deck-feature-cards preview',
+  hook: 'deck-takeaway preview',
+};
+
+const srcdoc = `<!doctype html><html><head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/rikiki/themes/rikiki.css">
+  <script type="module" src="/rikiki/dist/index.js"></script>
+  <style>
+    html, body { width: 100%; height: 100%; overflow: hidden; }
+    body { display: flex; }
+    deck-root { flex: 1; }
+  </style>
+</head><body>
+  <deck-root>${decks[type]}</deck-root>
+</body></html>`;
+---
+
+<div class="layout-preview" data-type={type}>
+  <iframe
+    srcdoc={srcdoc}
+    title={labels[type]}
+    loading="lazy"
+    aria-hidden="true"
+    tabindex="-1"
+  ></iframe>
+</div>
+
+<style>
+  .layout-preview {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: var(--rik-surface-sunken);
+    border: 1px solid var(--rik-border-default);
+    border-radius: var(--rik-radius-sm);
+    margin-bottom: var(--rik-space-3);
+  }
+  /* Scaled-down 1920×1080 deck → 480×270 area · 25% scale */
+  iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1920px;
+    height: 1080px;
+    transform: scale(0.25);
+    transform-origin: top left;
+    border: 0;
+    pointer-events: none;
+  }
+  /* The iframe is fixed at 1920×1080; the .layout-preview is fluid.
+     We use a CSS container query to recompute the scale based on width. */
+  @container (max-width: 1920px) {
+    iframe { /* fallback handled by JS-less ResizeObserver alt */ }
+  }
+</style>
+
+<script is:inline define:vars={{ type }}>
+  // Rescale each preview iframe so it fits the card width regardless of
+  // viewport. The deck inside is fixed at 1920×1080.
+  document.querySelectorAll('.layout-preview[data-type="' + type + '"]').forEach((el) => {
+    const iframe = el.querySelector('iframe');
+    if (!iframe) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const w = entry.contentRect.width;
+      const s = w / 1920;
+      iframe.style.transform = 'scale(' + s + ')';
+    });
+    ro.observe(el);
+  });
+</script>

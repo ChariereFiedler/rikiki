@@ -1,0 +1,238 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import CodeBlock from '../../components/CodeBlock.astro';
+
+const transitionUsage = `<!-- Set on deck-root · the entire deck animates -->
+<deck-root transition="slide">
+  <deck-cover>...</deck-cover>
+  <deck-section>...</deck-section>
+  <deck-feature>...</deck-feature>
+</deck-root>`;
+
+const transitionPerSlide = `<!-- Per-slide override · data-transition wins over the parent attribute -->
+<deck-root transition="fade">
+  <deck-cover>...</deck-cover>
+  <deck-section data-transition="zoom">...</deck-section>
+  <deck-takeaway data-transition="flip">...</deck-takeaway>
+</deck-root>`;
+
+const presenterUsage = `<deck-root>
+  <deck-cover>
+    <h1>Hello</h1>
+  </deck-cover>
+  <deck-feature>
+    <h1 slot="title">My slide</h1>
+    <p slot="lead">Audience sees this.</p>
+
+    <deck-notes>
+      Speaker-only text. Only visible in the presenter window.
+      - Bullet point one
+      - Pause for laughter
+      - Mention the rollout date
+    </deck-notes>
+  </deck-feature>
+</deck-root>`;
+
+const shikiUsage = `<!doctype html>
+<html>
+<head>
+  <link rel="stylesheet" href="rikiki/themes/rikiki.css">
+  <script type="module" src="rikiki/dist/index.js"></script>
+
+  <!-- Opt-in Shiki highlighter · pulls Shiki from esm.sh on first highlight -->
+  <script type="module">
+    import { installShiki } from './rikiki/dist/shiki-plugin.js';
+    await installShiki({
+      theme: 'one-dark-pro',
+      langs: ['ts', 'tsx', 'html', 'css', 'json'],
+    });
+  </script>
+</head>
+<body>
+  <deck-root>
+    <deck-feature>
+      <h1 slot="title">Real syntax</h1>
+      <deck-code lang="ts" hero>
+        const fn = <T,>(x: T): T => x;
+      </deck-code>
+    </deck-feature>
+  </deck-root>
+</body>
+</html>`;
+---
+
+<Docs
+  title="Plugins"
+  eyebrow="Reference"
+  description="Optional add-ons · activated by an attribute on deck-root or an explicit import. None of them are in the core bundle · they fetch on first use only."
+>
+
+<h2 id="overview">The four plugins</h2>
+<p>
+  Rikiki ships four optional modules. The core (<code>dist/index.js</code>,
+  ~12 KB gzip) doesn't load any of them. Each one fetches separately the
+  first time it's needed, so a deck that doesn't use a plugin pays nothing
+  for it.
+</p>
+
+<table class="plugins">
+  <thead>
+    <tr><th>Plugin</th><th>Size (gz)</th><th>Activated by</th><th>Use-case</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="#transition"><code>deck-transition</code></a></td>
+      <td>~1.7 KB</td>
+      <td><code>transition="..."</code> attr on <code>deck-root</code></td>
+      <td>Slide-in / fade / zoom / flip animations between slides</td>
+    </tr>
+    <tr>
+      <td><a href="#presenter"><code>deck-presenter</code></a></td>
+      <td>~2.9 KB</td>
+      <td>Press <kbd>P</kbd></td>
+      <td>Speaker window with notes + next-slide preview + timer</td>
+    </tr>
+    <tr>
+      <td><a href="#shiki"><code>shiki-plugin</code></a></td>
+      <td>~0.6 KB + Shiki from CDN</td>
+      <td>Explicit <code>import + installShiki()</code></td>
+      <td>Production-grade syntax highlighting for <code>deck-code</code></td>
+    </tr>
+    <tr>
+      <td><a href="#notes"><code>deck-notes</code></a></td>
+      <td>~0.4 KB (auto-loaded with core)</td>
+      <td>Use the <code>deck-notes</code> element</td>
+      <td>Speaker notes (read by <code>deck-presenter</code>)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="transition">deck-transition · animations between slides</h2>
+<p>
+  Setting a <code>transition</code> attribute on <code>deck-root</code>
+  triggers a lazy import of the plugin on first navigation. The plugin then
+  cross-fades both the outgoing and incoming slides on every navigation
+  (no background flash regardless of slide colors).
+</p>
+
+<CodeBlock label="basic usage" lang="html" code={transitionUsage} />
+
+<h3 id="transition-options">Available transitions</h3>
+<table class="opts">
+  <thead><tr><th>Value</th><th>Effect</th><th>Default duration</th></tr></thead>
+  <tbody>
+    <tr><td><code>slide</code></td>            <td>Auto-directional horizontal. Forward enters from the right, backward from the left.</td><td>560 ms</td></tr>
+    <tr><td><code>slide-right</code></td>      <td>Same as <code>slide</code> but starts in the left-to-right direction (still auto-flips on backward nav).</td><td>560 ms</td></tr>
+    <tr><td><code>slide-up</code></td>         <td>Auto-directional vertical. Forward enters from below, backward from above.</td><td>520 ms</td></tr>
+    <tr><td><code>slide-down</code></td>       <td>Mirror of <code>slide-up</code>.</td><td>520 ms</td></tr>
+    <tr><td><code>fade</code></td>             <td>Soft scale-up · the default if no value matches.</td><td>480 ms</td></tr>
+    <tr><td><code>zoom</code></td>             <td>Aggressive scale-up with spring ease (good for hooks/punchlines).</td><td>520 ms</td></tr>
+    <tr><td><code>flip</code></td>             <td>3D rotateY · subtle card-flip feel.</td><td>560 ms</td></tr>
+  </tbody>
+</table>
+
+<h3 id="transition-per-slide">Per-slide override</h3>
+<p>
+  Set <code>data-transition</code> on any slide host to override the
+  deck-wide default for that slide only.
+</p>
+<CodeBlock label="per-slide" lang="html" code={transitionPerSlide} />
+
+<p>
+  All transitions are transform-only · no opacity, no background animation,
+  no flashing. Honours <code>prefers-reduced-motion: reduce</code> (animations
+  disable cleanly).
+</p>
+
+<h2 id="presenter">deck-presenter · speaker window</h2>
+<p>
+  Press <kbd>P</kbd> during the talk · a popup window opens (you'll need
+  to allow popups for the deck's origin). The window shows:
+</p>
+<ul>
+  <li><strong>Current slide</strong> · live mirror of what the audience sees</li>
+  <li><strong>Next slide</strong> · preview of what's coming</li>
+  <li><strong>Speaker notes</strong> · the text content of <code>deck-notes</code> inside the current slide</li>
+  <li><strong>Timer</strong> · auto-starts, pause / resume / reset buttons</li>
+  <li><strong>Slide counter</strong> · current / total</li>
+</ul>
+<p>
+  The popup syncs with the main deck via <code>BroadcastChannel</code> · no
+  localStorage races, no postMessage ceremony. Forward keyboard input from
+  the popup also drives the main deck, so you can use one laptop with the
+  second screen mirroring the audience view.
+</p>
+
+<h3 id="notes">Speaker notes · the deck-notes element</h3>
+<p>
+  Add <code>deck-notes</code> inside any slide host. The element is hidden
+  in the audience view (<code>:host &#123; display: none &#125;</code>) and read by
+  the presenter window via <code>textContent</code>. Free-form text · use
+  markdown-style bullets if you want, but it's rendered as
+  <code>white-space: pre-wrap</code>.
+</p>
+<CodeBlock label="notes example" lang="html" code={presenterUsage} />
+
+<h2 id="shiki">shiki-plugin · production code highlighting</h2>
+<p>
+  The default <code>deck-code</code> highlighter is a hand-rolled regex pass
+  (~10 keywords per language, no template literal awareness, no JSX). Good
+  enough for blog snippets, brittle for serious prod code.
+</p>
+<p>
+  Opt in to <a href="https://shiki.style" rel="noopener">Shiki</a> when you
+  need real syntax highlighting · TextMate grammars, full theme set, JSX/TSX,
+  template literal interpolation. Shiki itself is ~300 KB · the plugin
+  fetches it from <code>esm.sh</code> on first use, so the cost is paid only
+  if you opt in.
+</p>
+<CodeBlock label="install shiki" lang="html" code={shikiUsage} />
+<p>
+  After install, every existing and future <code>deck-code</code> instance
+  re-renders through Shiki. Languages that aren't loaded fall back to the
+  regex highlighter so the deck never breaks.
+</p>
+
+<h2 id="cost">Cost model</h2>
+<p>
+  Plugin costs are paid <strong>only when you opt in</strong>:
+</p>
+<ul>
+  <li>A deck without <code>transition</code> on its root never fetches <code>deck-transition.js</code>.</li>
+  <li>A deck without an <code>installShiki()</code> call never fetches Shiki.</li>
+  <li>Speaker who never presses <kbd>P</kbd> never fetches <code>deck-presenter.js</code>.</li>
+  <li><code>deck-notes</code> ships with the core (0.4 KB) but if you don't use the element, it's just one unused custom-element registration.</li>
+</ul>
+<p>
+  Core (<code>dist/index.js</code>) stays at ~12 KB gzip regardless of which
+  plugins your deck eventually uses.
+</p>
+
+<style is:global>
+  table.plugins,
+  table.opts {
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--rik-space-3) 0 var(--rik-space-5);
+    font-size: var(--rik-font-size-sm);
+  }
+  table.plugins th,
+  table.plugins td,
+  table.opts th,
+  table.opts td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--rik-border-default);
+    vertical-align: top;
+  }
+  table.plugins th,
+  table.opts th {
+    background: var(--rik-surface-sunken);
+    color: var(--rik-text-default--faint);
+    font: 700 var(--rik-font-size-xs)/1.2 var(--rik-font-mono);
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+  }
+</style>
+
+</Docs>

@@ -1,0 +1,154 @@
+---
+// Side-by-side compare against Slidev / reveal.js / Marp / Spectacle.
+// Highlights Rikiki's "zero build" and "Web Components, no DSL" stance.
+
+interface Row {
+  label: string;
+  values: [string, string, string, string, string];
+  good?: number;
+}
+
+const headers = ['Rikiki', 'Slidev', 'reveal.js', 'Marp', 'Spectacle'];
+const rows: Row[] = [
+  { label: 'Source format',       values: ['HTML',         'Markdown + Vue',  'HTML + JS',     'Markdown',      'JSX'],          good: 0 },
+  { label: 'Build step needed',   values: ['no',           'yes (Vite)',      'optional',      'yes (CLI)',     'yes (webpack)'], good: 0 },
+  { label: 'Runtime bundle (gz)', values: ['~11 KB',       '~600 KB',         '~80 KB',        '~50 KB',        '~250 KB'],      good: 0 },
+  { label: 'Themes via CSS vars', values: ['yes',          'partial (UnoCSS)','no',            'partial',       'no'],           good: 0 },
+  { label: 'Per-deck dependency', values: ['1 CSS + 1 JS', 'package.json',    'reveal.js dir', 'marp-cli',      'package.json'], good: 0 },
+  { label: 'Works in 5 years',    values: ['yes',          'depends on Vue',  'yes',           'depends on CLI','depends on JSX'], good: 0 },
+  { label: 'Export to PDF',       values: ['browser print','built-in',        'plugin',        'built-in',      'plugin'] },
+  { label: 'Live reload',         values: ['~70-line poll','HMR',             'no',            'CLI watch',     'HMR'] },
+];
+---
+
+<section id="vs" class="section">
+  <div class="inner">
+    <p class="eyebrow">Comparison</p>
+    <h2>Where Rikiki sits</h2>
+    <p class="lede">
+      Every framework picks a build-time vs run-time trade-off. Rikiki picks
+      run-time only, so your deck is just a folder. Here is how the choice
+      cascades.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="row-head"></th>
+            {headers.map((h, i) => (
+              <th class:list={['col', i === 0 && 'us']}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr>
+              <th class="row-head">{r.label}</th>
+              {r.values.map((v, i) => (
+                <td class:list={['cell', r.good === i && 'good', i === 0 && 'us']}>
+                  {v}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <p class="caveat">
+      <strong>Read this fairly:</strong> Slidev, reveal.js, Marp and Spectacle
+      are excellent. Rikiki is for the case where you want to open a folder
+      five years from now and still give the talk. That single constraint
+      explains every other column.
+    </p>
+  </div>
+</section>
+
+<style>
+  .section {
+    background: var(--rik-surface-page);
+    padding: var(--rik-space-7) var(--rik-space-5);
+    border-top: 1px solid var(--rik-border-default);
+  }
+  .inner { max-width: 1080px; margin: 0 auto; }
+  .eyebrow {
+    display: inline-block;
+    background: var(--rik-accent);
+    color: var(--rik-accent__on);
+    padding: 4px 10px;
+    border-radius: var(--rik-radius-pill);
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: var(--rik-space-3);
+  }
+  h2 {
+    font-family: var(--rik-font-display);
+    font-size: var(--rik-font-size-mega);
+    font-weight: 900;
+    color: var(--rik-text-default);
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    margin-bottom: var(--rik-space-3);
+  }
+  .lede {
+    font-size: var(--rik-font-size-lead);
+    color: var(--rik-text-default--muted);
+    line-height: 1.55;
+    max-width: 70ch;
+    margin-bottom: var(--rik-space-5);
+  }
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--rik-radius-md);
+    border: 1px solid var(--rik-border-default);
+    box-shadow: var(--rik-elevation-2);
+    background: var(--rik-surface-raised--strong);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--rik-font-size-body);
+  }
+  th, td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--rik-border-default);
+  }
+  thead th {
+    font: 800 var(--rik-font-size-sm)/1.2 var(--rik-font-display);
+    background: var(--rik-surface-sunken);
+    color: var(--rik-text-default);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  thead th.us { color: var(--rik-accent); }
+  tbody th.row-head {
+    background: var(--rik-surface-sunken);
+    color: var(--rik-text-default--muted);
+    font: 700 var(--rik-font-size-sm)/1.3 var(--rik-font-mono);
+    white-space: nowrap;
+    width: 1px;
+  }
+  .cell {
+    color: var(--rik-text-default--muted);
+    font-family: var(--rik-font-mono);
+    font-size: var(--rik-font-size-sm);
+  }
+  .cell.us {
+    color: var(--rik-text-default);
+    background: var(--rik-accent--faint);
+    font-weight: 700;
+  }
+  tr:last-child th, tr:last-child td { border-bottom: 0; }
+
+  .caveat {
+    margin-top: var(--rik-space-4);
+    font-size: var(--rik-font-size-sm);
+    color: var(--rik-text-default--faint);
+    line-height: 1.6;
+    max-width: 75ch;
+  }
+  .caveat strong { color: var(--rik-text-default); }
+</style>

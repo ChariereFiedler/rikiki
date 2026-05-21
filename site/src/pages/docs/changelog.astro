@@ -1,0 +1,59 @@
+---
+import Docs from '../../layouts/Docs.astro';
+---
+
+<Docs
+  title="Changelog"
+  eyebrow="Reference"
+  description="Notable changes. Follows Keep a Changelog · the project is on semver."
+>
+
+<h2 id="unreleased">Unreleased</h2>
+
+<h3>Added</h3>
+<ul>
+  <li>Initial public release.</li>
+  <li>
+    <strong>23 <code>&lt;deck-*&gt;</code> Web Components</strong> · 6 layouts
+    (cover, section, hero, hero-detail, split, hook) and 17 atoms (md, code,
+    callout, card, mermaid, stat, badge, metric, tier-list, step-list,
+    kicker, stack, grid, punch, shortcut, kbd, plus root).
+  </li>
+  <li>
+    <strong>Two ship-ready themes</strong> · <code>rikiki</code> (tropical
+    palette on dark) and <code>siliceum</code> (warm paper with a yellow
+    accent). Each is fully token-driven · ~100 CSS custom properties.
+  </li>
+  <li>
+    <strong>2D keyboard navigation</strong> · ←/→ between sections, ↑/↓
+    within a section, Space for linear, with linear fallback at boundaries
+    so no arrow ever feels dead.
+  </li>
+  <li>
+    <strong>Path-style overview mode</strong> (<kbd>O</kbd>) à la reveal.js,
+    one row per chapter, sub-slides flowing right.
+  </li>
+  <li>
+    <strong>Lazy-loaded modules</strong> · <code>deck-overview.js</code> and
+    <code>deck-help.js</code> fetch on demand · -12 % on the initial bundle.
+  </li>
+  <li>
+    <strong>Live-reload helper</strong> (<code>?live</code>) · ~70 lines, no
+    WebSocket, polls Last-Modified.
+  </li>
+  <li>
+    <strong>TypeScript-first sources</strong> · the framework is built from
+    <code>.ts</code> with <code>@customElement</code>/<code>@property</code>
+    decorators · consumer-side stays zero-build.
+  </li>
+</ul>
+
+<h3>Performance budget</h3>
+<ul>
+  <li><strong>11.3 KB gzip</strong> · <code>dist/index.js</code> (everything in one import)</li>
+  <li><strong>1.6 KB gzip</strong> · lazy overview module</li>
+  <li><strong>1.4 KB gzip</strong> · lazy help module</li>
+  <li>Lit + decorators externalized to jsdelivr (~21 KB gzip, cached across decks).</li>
+</ul>
+
+</Docs>

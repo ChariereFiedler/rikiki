@@ -3,17 +3,16 @@
 ---
 
 <nav class="nav">
-  <a href="#top" class="brand">
+  <a href="/" class="brand" aria-label="Home">
     <span class="brand-mark">●</span>
     <span class="brand-name">rikiki</span>
   </a>
 
   <div class="links">
-    <a href="#why">Why</a>
-    <a href="#anatomy">Anatomy</a>
-    <a href="#library">Library</a>
-    <a href="#themes">Themes</a>
-    <a href="#quickstart">Quickstart</a>
+    <a href="/docs/">Docs</a>
+    <a href="/docs/components">Components</a>
+    <a href="/docs/theming">Theming</a>
+    <a href="/docs/changelog">Changelog</a>
     <a href="https://github.com" class="cta">Source ↗</a>
   </div>
 </nav>
@@ -22,39 +21,39 @@
   .nav {
     position: sticky; top: 0; z-index: 100;
     display: flex; align-items: center; justify-content: space-between;
-    padding: var(--sp-3) var(--sp-5);
+    padding: var(--rik-space-3) var(--rik-space-5);
     background: rgba(250, 248, 245, 0.85);
     backdrop-filter: blur(12px) saturate(1.2);
-    border-bottom: 1px solid var(--border);
-    font-family: var(--mono);
-    font-size: var(--fs-small);
+    border-bottom: 1px solid var(--rik-border-default);
+    font-family: var(--rik-font-mono);
+    font-size: var(--rik-font-size-sm);
   }
   .brand {
     display: inline-flex; align-items: center; gap: 8px;
     text-decoration: none;
-    color: var(--text);
+    color: var(--rik-text-default);
     font-weight: 700;
   }
-  .brand-mark { color: var(--mango); font-size: 1.3rem; line-height: 1; }
+  .brand-mark { color: var(--rik-accent); font-size: 1.3rem; line-height: 1; }
   .brand-name {
-    font-family: var(--display); font-weight: 800;
+    font-family: var(--rik-font-display); font-weight: 800;
     letter-spacing: -0.01em; font-size: 1.05rem;
   }
-  .links { display: inline-flex; align-items: center; gap: var(--sp-4); }
+  .links { display: inline-flex; align-items: center; gap: var(--rik-space-4); }
   .links a {
-    color: var(--muted);
+    color: var(--rik-text-default--faint);
     text-decoration: none;
     transition: color 0.15s ease;
   }
-  .links a:hover { color: var(--text); text-decoration: none; }
+  .links a:hover { color: var(--rik-text-default); text-decoration: none; }
   .links .cta {
-    color: var(--dark);
-    background: var(--mango);
+    color: var(--rik-surface-inverse);
+    background: var(--rik-accent);
     padding: 6px 12px;
-    border-radius: var(--r-pill);
+    border-radius: var(--rik-radius-pill);
     font-weight: 700;
   }
-  .links .cta:hover { color: var(--dark); }
+  .links .cta:hover { color: var(--rik-surface-inverse); }
   @media (max-width: 640px) {
     .links a:not(.cta) { display: none; }
   }

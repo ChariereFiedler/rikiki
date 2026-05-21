@@ -76,36 +76,36 @@ export class DeckCode extends LitElement {
   static override styles = css`
     :host {
       display: block;
-      background: var(--deck-code-bg, var(--code-bg));
-      border: 1px solid var(--deck-code-border, var(--code-border));
-      border-radius: var(--deck-code-radius, var(--r-md));
-      padding: var(--deck-code-padding-y, var(--sp-3)) var(--deck-code-padding-x, var(--sp-4));
-      font-family: var(--mono);
-      font-size: var(--fs-mono);
+      background: var(--deck-code-bg, var(--rik-code__bg));
+      border: 1px solid var(--deck-code-border, var(--rik-code__border));
+      border-radius: var(--deck-code-radius, var(--rik-radius-md));
+      padding: var(--deck-code-padding-y, var(--rik-space-3)) var(--deck-code-padding-x, var(--rik-space-4));
+      font-family: var(--rik-font-mono);
+      font-size: var(--rik-font-size-mono);
       line-height: 1.7;
-      color: var(--deck-code-text, var(--code-text));
-      box-shadow: var(--shadow-card);
+      color: var(--deck-code-text, var(--rik-code__text));
+      box-shadow: var(--rik-elevation-2);
       overflow: auto;
       white-space: pre;
     }
-    :host([hero]) { display: flex; align-items: safe center; padding: var(--sp-4) var(--sp-5); }
+    :host([hero]) { display: flex; align-items: safe center; padding: var(--rik-space-4) var(--rik-space-5); }
     :host([nested]) {
       box-shadow: none;
-      border-radius: var(--r-sm);
-      padding: var(--sp-2) var(--sp-3);
+      border-radius: var(--rik-radius-sm);
+      padding: var(--rik-space-2) var(--rik-space-3);
     }
     pre { margin: 0; font: inherit; color: inherit; }
     code { display: block; width: 100%; font: inherit; color: inherit; }
     .line { transition: opacity 0.25s ease; display: block; }
     .line.dim { opacity: 0.25; }
     .line.lit { opacity: 1; }
-    .kw   { color: var(--deck-code-syntax-kw,   var(--code-kw)); }
-    .fn   { color: var(--deck-code-syntax-fn,   var(--code-fn)); }
-    .str  { color: var(--deck-code-syntax-str,  var(--code-str)); }
-    .num  { color: var(--deck-code-syntax-num,  var(--code-num)); }
-    .cmt  { color: var(--deck-code-syntax-cmt,  var(--code-cmt)); font-style: italic; }
-    .ty   { color: var(--deck-code-syntax-ty,   var(--code-ty)); }
-    .prop { color: var(--deck-code-syntax-prop, var(--code-prop)); }
+    .kw   { color: var(--deck-code-syntax-kw,   var(--rik-code__syntax-keyword)); }
+    .fn   { color: var(--deck-code-syntax-fn,   var(--rik-code__syntax-function)); }
+    .str  { color: var(--deck-code-syntax-str,  var(--rik-code__syntax-string)); }
+    .num  { color: var(--deck-code-syntax-num,  var(--rik-code__syntax-number)); }
+    .cmt  { color: var(--deck-code-syntax-cmt,  var(--rik-code__syntax-comment)); font-style: italic; }
+    .ty   { color: var(--deck-code-syntax-ty,   var(--rik-code__syntax-type)); }
+    .prop { color: var(--deck-code-syntax-prop, var(--rik-code__syntax-property)); }
   `;
 
   @property({ type: String }) override lang: string = '';

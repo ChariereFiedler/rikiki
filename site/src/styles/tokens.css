@@ -1,67 +1,176 @@
 /* ════════════════════════════════════════════════════════════════
    Rikiki site · design tokens
-   Mirrors the framework's `themes/rikiki.css` so the marketing site
-   speaks the same visual language as the decks it ships.
+   Same token contract as the framework's themes/rikiki.css. The site
+   reuses the BEM-style --rik-* names so a custom theme drops into both.
+   Two layers: palette (private) → semantic (consumed throughout).
    ════════════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400..900&family=Inter:wght@400..700&family=Space+Mono:wght@400;700&display=swap');
+/* Variable-axis Inter · opsz + full weight range. */
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400..900&family=Inter:opsz,wght@14..32,100..900&family=Space+Mono:wght@400;700&display=swap');
 
 :root {
+  /* ─────────────────────────────────────────────────────────────
+     LAYER 1 · PALETTE
+     ───────────────────────────────────────────────────────────── */
+  --rik-palette-paper-0:   #ffffff;
+  --rik-palette-paper-50:  #faf8f5;
+  --rik-palette-paper-100: #f0ede8;
+  --rik-palette-paper-200: #e0dbd4;
+
+  --rik-palette-ink-500:   #7a7570;
+  --rik-palette-ink-700:   #4a4540;
+  --rik-palette-ink-900:   #2a2520;
+
+  --rik-palette-night-900: #06080f;
+  --rik-palette-night-800: #0a0e18;
+  --rik-palette-night-700: #0f1422;
+  --rik-palette-night-100: #e8e4f0;
+
+  --rik-palette-mango-700: #b65820;
+  --rik-palette-mango-500: #f07020;
+  --rik-palette-mango-200: rgba(240, 112, 32, 0.50);
+  --rik-palette-mango-100: rgba(240, 112, 32, 0.18);
+  --rik-palette-mango-50:  rgba(240, 112, 32, 0.06);
+
+  --rik-palette-ember-500: #e84828;
+  --rik-palette-ember-200: rgba(232, 72, 40, 0.45);
+  --rik-palette-ember-100: rgba(232, 72, 40, 0.10);
+
+  --rik-palette-helico-500: #00c8a0;
+  --rik-palette-helico-200: rgba(0, 200, 160, 0.45);
+  --rik-palette-helico-100: rgba(0, 200, 160, 0.10);
+
+  --rik-palette-orchid-500: #c050e0;
+  --rik-palette-lime-500:   #b8e830;
+
+  /* ─────────────────────────────────────────────────────────────
+     LAYER 2 · SEMANTIC
+     ───────────────────────────────────────────────────────────── */
+
   /* Surfaces */
-  --bg:      #faf8f5;
-  --card:    #f0ede8;
-  --border:  #e0dbd4;
-  --dark:    #06080f;
-  --deep:    #0a0e18;
-  --layer:   #0f1422;
+  --rik-surface-page:                 var(--rik-palette-paper-50);
+  --rik-surface-raised:               var(--rik-palette-paper-100);
+  --rik-surface-raised--strong:       var(--rik-palette-paper-0);
+  --rik-surface-sunken:               var(--rik-palette-paper-100);
+  --rik-surface-tint:                 rgba(42, 37, 32, 0.04);
+  --rik-surface-tint--strong:         rgba(42, 37, 32, 0.07);
+  --rik-surface-inverse:              var(--rik-palette-night-900);
+  --rik-surface-inverse--soft:        var(--rik-palette-night-800);
+  --rik-surface-inverse--soft-2:      var(--rik-palette-night-700);
 
   /* Text */
-  --text:    #2a2520;
-  --soft:    #4a4540;
-  --muted:   #7a7570;
+  --rik-text-default:                 var(--rik-palette-ink-900);
+  --rik-text-default--muted:          var(--rik-palette-ink-700);
+  --rik-text-default--faint:          var(--rik-palette-ink-500);
+  --rik-text-inverse:                 var(--rik-palette-night-100);
+  --rik-text-inverse--muted:          rgba(232, 228, 240, 0.72);
+  --rik-text-inverse--faint:          rgba(232, 228, 240, 0.55);
+  --rik-text-inverse--ghost:          rgba(232, 228, 240, 0.32);
 
-  /* Accents · tropical-jungle */
-  --mango:   #f07020;   /* primary */
-  --helico:  #00c8a0;
-  --orchid:  #c050e0;
-  --lime:    #b8e830;
-  --ember:   #e84828;
+  /* Borders */
+  --rik-border-default:               var(--rik-palette-paper-200);
+  --rik-border-default--subtle:       rgba(42, 37, 32, 0.06);
+  --rik-border-inverse:               rgba(232, 228, 240, 0.12);
 
-  /* On-dark */
-  --on-dark-text:    #e8e4f0;
-  --on-dark-soft:    rgba(232, 228, 240, 0.72);
-  --on-dark-muted:   rgba(232, 228, 240, 0.55);
-  --on-dark-faint:   rgba(232, 228, 240, 0.32);
-  --on-dark-border:  rgba(232, 228, 240, 0.12);
+  /* Accent (brand) */
+  --rik-accent:                       var(--rik-palette-mango-500);
+  --rik-accent--soft:                 var(--rik-palette-mango-100);
+  --rik-accent--faint:                var(--rik-palette-mango-50);
+  --rik-accent--strong:               var(--rik-palette-mango-700);
+  --rik-accent__on:                   var(--rik-palette-paper-0);
 
-  /* Type */
-  --sans:    'Inter', system-ui, sans-serif;
-  --display: 'Unbounded', 'Inter', sans-serif;
-  --mono:    'Space Mono', ui-monospace, monospace;
+  /* Status */
+  --rik-status-success:               var(--rik-palette-helico-500);
+  --rik-status-success__bg:           var(--rik-palette-helico-100);
+  --rik-status-success__border:       var(--rik-palette-helico-200);
+  --rik-status-danger:                var(--rik-palette-ember-500);
+  --rik-status-danger__bg:            var(--rik-palette-ember-100);
+  --rik-status-danger__border:        var(--rik-palette-ember-200);
+
+  /* Interactive */
+  --rik-interactive-bg--hover:        rgba(42, 37, 32, 0.04);
+  --rik-interactive-bg--active:       rgba(42, 37, 32, 0.07);
+  --rik-interactive-bg--selected:     var(--rik-accent--soft);
+  --rik-interactive-fg:               var(--rik-accent);
+  --rik-interactive-fg--hover:        var(--rik-accent--strong);
+
+  /* Focus, link, selection */
+  --rik-focus-ring:                   var(--rik-accent);
+  --rik-focus-ring--width:            2px;
+  --rik-focus-ring--offset:           2px;
+  /* mango-500 on paper is 3.2:1 (fails WCAG AA); accent--strong is 4.6:1. */
+  --rik-link:                         var(--rik-accent--strong);
+  --rik-link--hover:                  var(--rik-accent);
+  --rik-selection__bg:                var(--rik-accent);
+  --rik-selection__text:              var(--rik-palette-paper-0);
+
+  /* Decorative palette */
+  --rik-decor-orchid:                 var(--rik-palette-orchid-500);
+  --rik-decor-lime:                   var(--rik-palette-lime-500);
+
+  /* Elevation */
+  --rik-elevation-1:                  0 1px 2px rgba(6, 8, 15, 0.04);
+  --rik-elevation-2:                  0 1px 3px rgba(6, 8, 15, 0.06), 0 4px 12px rgba(6, 8, 15, 0.06);
+  --rik-elevation-3:                  0 2px 6px rgba(6, 8, 15, 0.10), 0 8px 20px rgba(6, 8, 15, 0.10);
+
+  /* Motion */
+  --rik-motion-fast:                  120ms;
+  --rik-motion-base:                  200ms;
+  --rik-motion-slow:                  400ms;
+  --rik-motion__ease-out:             cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Z-index */
+  --rik-z-sticky:                     200;
+  --rik-z-overlay:                    300;
+  --rik-z-modal:                      400;
+
+  /* Typography */
+  --rik-font-sans:                    'Inter', system-ui, sans-serif;
+  --rik-font-display:                 'Unbounded', 'Inter', sans-serif;
+  --rik-font-mono:                    'Space Mono', ui-monospace, monospace;
+
+  /* Type scale · site is more web-aesthetic than slides; larger sizes */
+  --rik-font-size-display:            clamp(3rem, 7vw, 5.5rem);
+  --rik-font-size-mega:               clamp(2rem, 4.5vw, 3.5rem);
+  --rik-font-size-h1:                 clamp(2rem, 4vw, 2.8rem);
+  --rik-font-size-h2:                 clamp(1.4rem, 2.2vw, 2rem);
+  --rik-font-size-lead:               1.15rem;
+  --rik-font-size-body:               1rem;
+  --rik-font-size-sm:                 0.88rem;
+  --rik-font-size-xs:                 0.72rem;
+  --rik-font-size-mono:               0.92rem;
 
   /* Spacing */
-  --sp-1: 0.5rem;
-  --sp-2: 0.75rem;
-  --sp-3: 1rem;
-  --sp-4: 1.5rem;
-  --sp-5: 2.25rem;
-  --sp-6: 3.5rem;
-  --sp-7: 5rem;
+  --rik-space-hair:                   4px;
+  --rik-space-2xs:                    6px;
+  --rik-space-1:                      0.5rem;
+  --rik-space-2:                      0.75rem;
+  --rik-space-3:                      1rem;
+  --rik-space-4:                      1.5rem;
+  --rik-space-5:                      2.25rem;
+  --rik-space-6:                      3.5rem;
+  --rik-space-7:                      5rem;
 
-  /* Radii */
-  --r-sm: 8px;
-  --r-md: 14px;
-  --r-lg: 20px;
-  --r-pill: 9999px;
+  /* Radius */
+  --rik-radius-xs:                    6px;
+  --rik-radius-sm:                    8px;
+  --rik-radius-md:                    14px;
+  --rik-radius-lg:                    20px;
+  --rik-radius-pill:                  9999px;
+}
 
-  /* Type scale */
-  --fs-display: clamp(3rem, 7vw, 5.5rem);
-  --fs-mega:    clamp(2rem, 4.5vw, 3.5rem);
-  --fs-h2:      clamp(1.4rem, 2.2vw, 2rem);
-  --fs-lead:    1.15rem;
-  --fs-body:    1rem;
-  --fs-small:   0.88rem;
-  --fs-micro:   0.72rem;
+/* The site is light-only by design. Authored dark sections (hero, hook,
+   embedded deck cover) handle their own contrast. A future opt-in dark theme
+   would be added back as a separate stylesheet · don't auto-flip via
+   prefers-color-scheme · it fights the authored design. */
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --rik-motion-fast:                  0ms;
+    --rik-motion-base:                  0ms;
+    --rik-motion-slow:                  0ms;
+  }
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -69,25 +178,25 @@ body, h1, h2, h3, h4, p, ul, ol, li, blockquote, pre, figure, dl, dd { margin: 0
 
 html { scroll-behavior: smooth; }
 body {
-  font-family: var(--sans);
-  color: var(--text);
-  background: var(--bg);
+  font-family: var(--rik-font-sans);
+  color: var(--rik-text-default);
+  background: var(--rik-surface-page);
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-a { color: var(--mango); text-decoration: none; }
-a:hover { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+a { color: var(--rik-link); text-decoration: none; }
+a:hover { color: var(--rik-link--hover); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
 
 code, kbd {
-  font-family: var(--mono);
+  font-family: var(--rik-font-mono);
   font-size: 0.92em;
 }
 code {
-  background: rgba(42, 37, 32, 0.06);
+  background: var(--rik-surface-tint);
   padding: 2px 6px;
   border-radius: 5px;
 }
 
-::selection { background: var(--mango); color: var(--on-dark-text); }
+::selection { background: var(--rik-selection__bg); color: var(--rik-selection__text); }

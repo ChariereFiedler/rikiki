@@ -9,39 +9,39 @@ import { slideBase } from './shared-styles.js';
 @customElement('deck-section')
 export class DeckSection extends LitElement {
   /* Tokens:
-       --deck-section-bg          (defaults to --dark)
-       --deck-section-num-color   small section number      (--on-dark-faint)
-       --deck-section-rule-color  line on each side         (--on-dark-border)
-       --deck-section-title-color (defaults to --yellow)
-       --deck-section-em-color    italic inside h1          (--on-dark-soft) */
+       --deck-section-bg          (defaults to --rik-surface-inverse)
+       --deck-section-num-color   small section number      (--rik-text-inverse--ghost)
+       --deck-section-rule-color  line on each side         (--rik-border-inverse)
+       --deck-section-title-color (defaults to --rik-accent)
+       --deck-section-em-color    italic inside h1          (--rik-text-inverse--muted) */
   static override styles = [...slideBase, css`
     :host {
-      background: var(--deck-section-bg, var(--dark));
-      color: var(--on-dark-text);
+      background: var(--deck-section-bg, var(--rik-surface-inverse));
+      color: var(--rik-text-inverse);
       justify-content: center; align-items: center; text-align: center;
     }
     .sec-num {
-      font-size: var(--fs-micro); font-weight: 700; letter-spacing: 0.16em;
+      font-size: var(--rik-font-size-xs); font-weight: 700; letter-spacing: 0.16em;
       text-transform: uppercase;
-      color: var(--deck-section-num-color, var(--on-dark-faint));
-      margin-bottom: var(--sp-3);
+      color: var(--deck-section-num-color, var(--rik-text-inverse--ghost));
+      margin-bottom: var(--rik-space-3);
       display: inline-flex; align-items: center; gap: 0.8rem;
-      font-family: var(--mono);
+      font-family: var(--rik-font-mono);
     }
     .sec-num::before, .sec-num::after {
       content: ''; width: 32px; height: 1px;
-      background: var(--deck-section-rule-color, var(--on-dark-border));
+      background: var(--deck-section-rule-color, var(--rik-border-inverse));
     }
     ::slotted(h1) {
-      font-size: var(--fs-section); font-weight: 900;
-      color: var(--deck-section-title-color, var(--yellow));
+      font-size: var(--rik-font-size-section); font-weight: 900;
+      color: var(--deck-section-title-color, var(--rik-accent));
       line-height: 1.02; letter-spacing: -0.03em;
       max-width: 18ch;
       border: none; padding: 0; margin: 0;
       text-align: center; align-self: center;
     }
     ::slotted(h1 em) {
-      color: var(--deck-section-em-color, var(--on-dark-soft));
+      color: var(--deck-section-em-color, var(--rik-text-inverse--muted));
       font-style: normal; font-weight: 700;
     }
   `];

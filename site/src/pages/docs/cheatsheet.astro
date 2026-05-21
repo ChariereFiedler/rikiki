@@ -1,0 +1,119 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import CodeBlock from '../../components/CodeBlock.astro';
+
+const coverEx = `<deck-cover brand="my-talk · 2026" speaker="Jane">
+  <h1>Hello, <span class="accent">world</span>.</h1>
+  <p class="sub">A 12-min talk about the thing.</p>
+</deck-cover>`;
+
+const sectionEx = `<deck-section num="02">
+  <h1>Why this matters</h1>
+</deck-section>`;
+
+const heroEx = `<deck-feature eyebrow="Module">
+  <h1 slot="title">The whole point</h1>
+  <p slot="lead" class="lead">One sentence that frames the slide.</p>
+  <deck-code lang="ts" hero>
+    const greet = (name: string) => \`Hello, \${name}\`;
+  </deck-code>
+</deck-feature>`;
+
+const splitEx = `<deck-split cols="1-1">
+  <h1 slot="title">Two takes</h1>
+  <deck-card slot="left" color="red">
+    <h3>Before</h3>
+    <p>Bundler explodes.</p>
+  </deck-card>
+  <deck-card slot="right" color="green">
+    <h3>After</h3>
+    <p>Ship plain HTML.</p>
+  </deck-card>
+</deck-split>`;
+
+const hookEx = `<deck-takeaway kicker="Take-home">
+  <deck-punch size="display">Source = output.</deck-punch>
+  <p class="caption on-dark">A deck is a folder.</p>
+</deck-takeaway>`;
+
+const fullDeckEx = `<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="rikiki/themes/rikiki.css">
+  <script type="module" src="rikiki/dist/index.js"></script>
+</head>
+<body>
+  <deck-root>
+    ${coverEx}
+    ${sectionEx}
+    ${heroEx}
+    ${splitEx}
+    ${hookEx}
+  </deck-root>
+</body>
+</html>`;
+---
+
+<Docs
+  title="Cheatsheet · your first deck in 5 components"
+  eyebrow="Getting started"
+  description="The five elements you actually need for a 10-minute talk. Copy, paste, ship. Read the full Component library page later, when you know what to look for."
+>
+
+<p>
+  Rikiki has 23 components but you don't need them on day one. Pick these five,
+  give your talk, come back later for the rest. Each example below is
+  self-contained · drop it inside <code>&lt;deck-root&gt;</code> in the order
+  that fits your story.
+</p>
+
+<h2 id="cover">1 · Cover</h2>
+<p>The opening slide. Title, optional sub-title, optional brand + speaker. Always first.</p>
+<CodeBlock label="cover" lang="html" code={coverEx} />
+
+<h2 id="section">2 · Section</h2>
+<p>
+  Use this every time you want a chapter break. It also tells the framework
+  where the 2D navigation columns are · <kbd>←</kbd>/<kbd>→</kbd> jumps from one
+  <code>&lt;deck-section&gt;</code> to the next, <kbd>↑</kbd>/<kbd>↓</kbd> walks
+  the slides inside.
+</p>
+<CodeBlock label="section" lang="html" code={sectionEx} />
+
+<h2 id="hero">3 · Hero with code</h2>
+<p>
+  The workhorse · a title, a one-line lead, then one focal block (code,
+  diagram, big number). 80 % of your slides will look like this.
+</p>
+<CodeBlock label="hero" lang="html" code={heroEx} />
+
+<h2 id="split">4 · Split for comparison</h2>
+<p>
+  Two columns · before / after, problem / fix, A / B. Pass <code>cols="1-1"</code>
+  for equal columns or <code>"1-2"</code> for an asymmetric split.
+</p>
+<CodeBlock label="split" lang="html" code={splitEx} />
+
+<h2 id="hook">5 · Hook for the punch line</h2>
+<p>
+  Close on a dark slide with one big sentence the audience leaves with. Don't
+  use this more than once or twice per deck · it loses weight if it's everywhere.
+</p>
+<CodeBlock label="hook" lang="html" code={hookEx} />
+
+<h2 id="ship">Putting it together</h2>
+<p>That's a complete deck. Drop it in a file, open it, give the talk.</p>
+<CodeBlock label="my-talk/index.html" lang="html" code={fullDeckEx} />
+
+<h2 id="next">When you outgrow these five</h2>
+<ul>
+  <li>For a callout / warning box · <a href="/docs/components#deck-callout"><code>&lt;deck-callout&gt;</code></a></li>
+  <li>For a big metric on the cover · <a href="/docs/components#deck-stat"><code>&lt;deck-stat&gt;</code></a></li>
+  <li>For markdown body text · <a href="/docs/components#deck-md"><code>&lt;deck-md&gt;</code></a></li>
+  <li>For a flowchart · <a href="/docs/components#deck-mermaid"><code>&lt;deck-mermaid&gt;</code></a></li>
+  <li>For speaker notes + presenter window · <a href="/docs/components#deck-notes"><code>&lt;deck-notes&gt;</code></a> then press <kbd>P</kbd></li>
+  <li>The full reference · <a href="/docs/components">Component library</a></li>
+</ul>
+
+</Docs>

@@ -1,0 +1,112 @@
+---
+const sections = [
+  {
+    title: 'Getting started',
+    links: [
+      { href: '/docs/',                  label: 'Overview' },
+      { href: '/docs/getting-started',   label: 'Install · Quickstart' },
+      { href: '/docs/cheatsheet',        label: 'Cheatsheet · 5 components' },
+      { href: '/docs/lit-and-shadow-dom',label: 'Lit & Shadow DOM' },
+      { href: '/docs/anatomy',           label: 'Anatomy of a slide' },
+    ],
+  },
+  {
+    title: 'Components',
+    links: [
+      { href: '/docs/components',         label: 'Library overview' },
+      { href: '/docs/components#layouts', label: 'Layouts (6)' },
+      { href: '/docs/components#atoms',   label: 'Atoms (17)' },
+    ],
+  },
+  {
+    title: 'Guides',
+    links: [
+      { href: '/docs/navigation',  label: 'Navigation & overview' },
+      { href: '/docs/theming',     label: 'Theming · design tokens' },
+      { href: '/docs/recipes',     label: 'Recipes' },
+    ],
+  },
+  {
+    title: 'Reference',
+    links: [
+      { href: '/docs/api',         label: 'deck-root API' },
+      { href: '/docs/plugins',     label: 'Plugins' },
+      { href: '/docs/changelog',   label: 'Changelog' },
+      { href: '/docs/contributing', label: 'Contributing' },
+    ],
+  },
+];
+
+const path = Astro.url.pathname.replace(/\/$/, '');
+---
+
+<aside class="sidebar">
+  <nav>
+    {sections.map((s) => (
+      <section>
+        <h4>{s.title}</h4>
+        <ul>
+          {s.links.map((l) => {
+            const [linkPath, linkHash] = l.href.split('#');
+            const cleanPath = linkPath!.replace(/\/$/, '');
+            const isPathMatch = cleanPath === path;
+            const isActive = isPathMatch && !linkHash;
+            return (
+              <li>
+                <a
+                  href={l.href}
+                  class={isActive ? 'active' : ''}
+                  data-path={cleanPath}
+                  data-hash={linkHash ?? ''}
+                >{l.label}</a>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+    ))}
+  </nav>
+</aside>
+
+<style>
+  .sidebar {
+    position: sticky;
+    top: 60px;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+    padding: var(--rik-space-5) 0 var(--rik-space-5) var(--rik-space-4);
+    border-right: 1px solid var(--rik-border-default);
+    background: var(--rik-surface-page);
+  }
+  nav { display: flex; flex-direction: column; gap: var(--rik-space-4); }
+  section { display: flex; flex-direction: column; gap: 6px; }
+  h4 {
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--rik-text-default--faint);
+    padding: 0 var(--rik-space-3);
+  }
+  ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px; }
+  a {
+    display: block;
+    padding: 6px var(--rik-space-3);
+    color: var(--rik-text-default--muted);
+    text-decoration: none;
+    font-size: var(--rik-font-size-sm);
+    border-left: 2px solid transparent;
+    border-radius: 0 var(--rik-radius-sm) var(--rik-radius-sm) 0;
+    transition: color 0.12s, background 0.12s, border-color 0.12s;
+  }
+  a:hover {
+    color: var(--rik-text-default);
+    background: rgba(42, 37, 32, 0.04);
+    text-decoration: none;
+  }
+  a.active {
+    color: var(--rik-accent);
+    border-left-color: var(--rik-accent);
+    background: rgba(240, 112, 32, 0.06);
+    font-weight: 700;
+  }
+</style>

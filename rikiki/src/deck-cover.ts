@@ -21,21 +21,21 @@ interface MetaItem { l: string; v: string; }
 @customElement('deck-cover')
 export class DeckCover extends LitElement {
   /* Tokens:
-       --deck-cover-bg          slide background          (defaults to --dark)
-       --deck-cover-text        primary on-dark text      (--on-dark-text)
-       --deck-cover-soft        soft on-dark text         (--on-dark-soft)
-       --deck-cover-muted       very soft on-dark text    (--on-dark-muted)
-       --deck-cover-faint       faintest on-dark text     (--on-dark-faint)
-       --deck-cover-border      meta separator border     (--on-dark-border) */
+       --deck-cover-bg          slide background          (defaults to --rik-surface-inverse)
+       --deck-cover-text        primary on-dark text      (--rik-text-inverse)
+       --deck-cover-soft        soft on-dark text         (--rik-text-inverse--muted)
+       --deck-cover-muted       very soft on-dark text    (--rik-text-inverse--faint)
+       --deck-cover-faint       faintest on-dark text     (--rik-text-inverse--ghost)
+       --deck-cover-border      meta separator border     (--rik-border-inverse) */
   static override styles = [...slideBase, css`
     :host {
-      background: var(--deck-cover-bg, var(--dark));
+      background: var(--deck-cover-bg, var(--rik-surface-inverse));
       justify-content: center;
-      color: var(--deck-cover-text, var(--on-dark-text));
+      color: var(--deck-cover-text, var(--rik-text-inverse));
     }
     .brand {
-      display: inline-flex; align-items: center; gap: var(--sp-3);
-      margin-bottom: var(--sp-5);
+      display: inline-flex; align-items: center; gap: var(--rik-space-3);
+      margin-bottom: var(--rik-space-5);
       align-self: flex-start;
     }
     .brand-tile {
@@ -44,45 +44,45 @@ export class DeckCover extends LitElement {
     }
     .brand-tile img { width: 100%; height: 100%; display: block; }
     .brand-name {
-      font-family: var(--display, inherit);
-      font-size: var(--fs-micro); font-weight: 700;
+      font-family: var(--rik-font-display, inherit);
+      font-size: var(--rik-font-size-xs); font-weight: 700;
       letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--deck-cover-soft, var(--on-dark-soft));
+      color: var(--deck-cover-soft, var(--rik-text-inverse--muted));
     }
     .brand-context {
-      font-size: var(--fs-micro); font-weight: 700;
-      color: var(--deck-cover-muted, var(--on-dark-muted));
+      font-size: var(--rik-font-size-xs); font-weight: 700;
+      color: var(--deck-cover-muted, var(--rik-text-inverse--faint));
       letter-spacing: 0.2em; text-transform: uppercase;
-      padding-left: var(--sp-3);
-      border-left: 1px solid var(--deck-cover-border, var(--on-dark-border));
+      padding-left: var(--rik-space-3);
+      border-left: 1px solid var(--deck-cover-border, var(--rik-border-inverse));
     }
     ::slotted(h1) {
       font-size: clamp(3.6rem, 9vw, 8.5rem); font-weight: 900;
-      color: var(--deck-cover-text, var(--on-dark-text));
+      color: var(--deck-cover-text, var(--rik-text-inverse));
       line-height: 1.02; letter-spacing: -0.035em;
-      margin-bottom: var(--sp-4);
+      margin-bottom: var(--rik-space-4);
       border: none; padding: 0;
     }
     ::slotted(.sub) {
-      font-size: var(--fs-h2);
-      color: var(--deck-cover-muted, var(--on-dark-muted));
-      margin-bottom: var(--sp-6); max-width: 60ch; line-height: 1.45;
+      font-size: var(--rik-font-size-h2);
+      color: var(--deck-cover-muted, var(--rik-text-inverse--faint));
+      margin-bottom: var(--rik-space-6); max-width: 60ch; line-height: 1.45;
       display: block;
     }
     .meta {
-      display: flex; gap: var(--sp-6);
-      border-top: 1px solid var(--deck-cover-border, var(--on-dark-border));
-      padding-top: var(--sp-4);
+      display: flex; gap: var(--rik-space-6);
+      border-top: 1px solid var(--deck-cover-border, var(--rik-border-inverse));
+      padding-top: var(--rik-space-4);
     }
     .meta-item strong {
-      display: block; font-size: var(--fs-micro); letter-spacing: 0.12em;
+      display: block; font-size: var(--rik-font-size-xs); letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--deck-cover-faint, var(--on-dark-faint));
+      color: var(--deck-cover-faint, var(--rik-text-inverse--ghost));
       margin-bottom: 6px; font-weight: 700;
     }
     .meta-item span {
-      color: var(--deck-cover-text, var(--on-dark-text));
-      font-size: var(--fs-body); font-weight: 600;
+      color: var(--deck-cover-text, var(--rik-text-inverse));
+      font-size: var(--rik-font-size-body); font-weight: 600;
     }
   `];
 

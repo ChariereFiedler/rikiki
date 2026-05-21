@@ -1,86 +1,254 @@
 ---
-// Two theme mockups side-by-side · static visual, no interactivity.
-// Mirrors slide 14 of the rikiki-tour deck.
+// Interactive theme swap · two clickable theme tiles + a live preview iframe
+// that re-renders with the picked theme. The preview uses a deck-feature with
+// a code block so the swap shows real typography + accent + code surface.
+
+// Five slides covering every visual register · dark cover, feature with code,
+// split with status-tinted cards, callout, and a closing takeaway. Cycles
+// every 3.5 s so you see each layout under each theme.
+const sampleDeckHtml = `
+  <deck-cover brand="rikiki · live" speaker="Theme demo">
+    <h1>Same markup,<br><span class="accent">different brand.</span></h1>
+    <p class="sub">One stylesheet swap. The whole deck flips.</p>
+  </deck-cover>
+
+  <deck-section num="01">
+    <h1>Anatomy</h1>
+  </deck-section>
+
+  <deck-feature eyebrow="Module">
+    <h1 slot="title">A slide of code.</h1>
+    <p slot="lead" class="lead">Type, accent rule, code surface.</p>
+    <deck-code lang="ts" hero>
+const greet = (name: string) =&gt; \`Hi, \${name}\`;
+const out = greet('rikiki');
+    </deck-code>
+  </deck-feature>
+
+  <deck-split cols="1-1">
+    <h1 slot="title">Status colors</h1>
+    <deck-card slot="left" color="red"><h3>Danger</h3><p>Status warn surface.</p></deck-card>
+    <deck-card slot="right" color="green"><h3>Success</h3><p>Status ok surface.</p></deck-card>
+  </deck-split>
+
+  <deck-takeaway kicker="The whole point">
+    <deck-punch size="display">Source <span class="accent">=</span> output.</deck-punch>
+    <p class="caption on-dark">A deck is a folder.</p>
+  </deck-takeaway>
+`;
+
+function frame(themeHref: string): string {
+  return `<!doctype html><html><head><meta charset="UTF-8">
+<link rel="stylesheet" href="${themeHref}">
+<script type="module" src="/rikiki/dist/index.js"></scr` + `ipt>
+<style>
+  html,body { width:100%; height:100%; overflow:hidden; margin:0; }
+  body { display:flex; background: var(--rik-surface-page); }
+  deck-root { flex:1; }
+</style>
+</head><body>
+<deck-root autoplay="3500" loop transition="fade">${sampleDeckHtml}</deck-root>
+</body></html>`;
+}
+
+const rikikiFrame   = frame('/rikiki/themes/rikiki.css');
+const siliceumFrame = frame('/rikiki/themes/siliceum.css');
 ---
 
-<div class="themes">
-  <article class="card rikiki">
-    <header>
-      <h3>rikiki · default</h3>
-      <span class="pill">active</span>
-    </header>
-    <p>
-      Tropical-jungle palette · <b>mango</b> primary, <b>helico</b> teal, <b>orchid</b>, <b>lime</b>.
-      Unbounded + Inter + Space Mono via Google Fonts.
-    </p>
-    <pre><code>&lt;link rel="stylesheet"
-      href="rikiki/tokens.css"&gt;</code></pre>
-  </article>
+<div class="theme-swap">
+  <div class="picker" role="tablist" aria-label="Active theme">
+    <button type="button" class="tile rikiki is-active" data-theme="rikiki" role="tab" aria-selected="true">
+      <span class="swatches" aria-hidden="true">
+        <span class="sw bg-rikiki-0"></span>
+        <span class="sw bg-rikiki-1"></span>
+        <span class="sw bg-rikiki-2"></span>
+        <span class="sw bg-rikiki-3"></span>
+      </span>
+      <span class="text">
+        <span class="name">rikiki <span class="default">default</span></span>
+        <span class="desc">Tropical-jungle · mango · Unbounded + Inter</span>
+      </span>
+      <code class="link">themes/rikiki.css</code>
+    </button>
 
-  <article class="card siliceum">
-    <header>
-      <h3>siliceum · warm paper</h3>
-    </header>
-    <p>
-      Warm paper palette · <code>#F7CB44</code> yellow accent, Source Sans Pro +
-      JetBrains Mono, self-hosted woff2.
-    </p>
-    <pre><code>&lt;link rel="stylesheet"
-      href="rikiki/themes/siliceum.css"&gt;</code></pre>
-  </article>
+    <button type="button" class="tile siliceum" data-theme="siliceum" role="tab" aria-selected="false">
+      <span class="swatches" aria-hidden="true">
+        <span class="sw bg-siliceum-0"></span>
+        <span class="sw bg-siliceum-1"></span>
+        <span class="sw bg-siliceum-2"></span>
+        <span class="sw bg-siliceum-3"></span>
+      </span>
+      <span class="text">
+        <span class="name">siliceum <span class="warm">warm paper</span></span>
+        <span class="desc">Yellow accent · Source Sans Pro + JetBrains Mono</span>
+      </span>
+      <code class="link">themes/siliceum.css</code>
+    </button>
+  </div>
+
+  <figure class="preview">
+    <figcaption>
+      <span>Live preview</span>
+      <span class="tip">Click a theme above · the slide below re-renders.</span>
+    </figcaption>
+    <div class="frame">
+      <iframe id="theme-preview-frame" srcdoc={rikikiFrame} title="Theme live preview" loading="lazy"></iframe>
+    </div>
+  </figure>
 </div>
 
+<script is:inline define:vars={{ rikikiFrame, siliceumFrame }}>
+  const map = { rikiki: rikikiFrame, siliceum: siliceumFrame };
+  const iframe = document.getElementById('theme-preview-frame');
+  document.querySelectorAll('.theme-swap .tile').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const t = btn.dataset.theme;
+      if (!t || !iframe) return;
+      // Capture current slide BEFORE reloading the iframe so the theme swap
+      // doesn't reset the viewer back to slide #1.
+      let restoreHash = '#1';
+      try {
+        const dr = iframe.contentDocument && iframe.contentDocument.querySelector('deck-root');
+        if (dr && typeof dr.current === 'number') {
+          restoreHash = '#' + (dr.current + 1);
+        } else {
+          const h = iframe.contentWindow && iframe.contentWindow.location.hash;
+          if (h && /^#\d+/.test(h)) restoreHash = h;
+        }
+      } catch (e) { /* cross-origin · ignore */ }
+      iframe.srcdoc = map[t];
+      const onLoad = () => {
+        try { iframe.contentWindow.location.hash = restoreHash; } catch (e) { /* noop */ }
+        iframe.removeEventListener('load', onLoad);
+      };
+      iframe.addEventListener('load', onLoad);
+      document.querySelectorAll('.theme-swap .tile').forEach((b) => {
+        const active = b === btn;
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-selected', String(active));
+      });
+    });
+  });
+</script>
+
 <style>
-  .themes {
+  .theme-swap {
+    display: flex; flex-direction: column;
+    gap: var(--rik-space-4);
+  }
+
+  /* ── Picker · two theme tiles side by side ────── */
+  .picker {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--sp-4);
+    gap: var(--rik-space-3);
   }
-  @media (max-width: 720px) {
-    .themes { grid-template-columns: 1fr; }
+  @media (max-width: 720px) { .picker { grid-template-columns: 1fr; } }
+
+  .tile {
+    appearance: none;
+    background: var(--rik-surface-raised--strong);
+    border: 1px solid var(--rik-border-default);
+    border-radius: var(--rik-radius-md);
+    padding: var(--rik-space-3) var(--rik-space-4);
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: var(--rik-space-3);
+    align-items: center;
+    text-align: left;
+    font: inherit;
+    transition: transform var(--rik-motion-fast) var(--rik-motion__ease-out),
+                box-shadow var(--rik-motion-fast) var(--rik-motion__ease-out),
+                border-color var(--rik-motion-fast) var(--rik-motion__ease-out);
   }
-  .card {
-    position: relative;
-    padding: var(--sp-5);
-    border-radius: var(--r-lg);
-    border: 1px solid var(--border);
-    box-shadow: 0 1px 3px rgba(6,8,15,0.04), 0 4px 12px rgba(6,8,15,0.04);
+  .tile:hover { transform: translateY(-2px); box-shadow: var(--rik-elevation-2); }
+  .tile.is-active {
+    border-color: var(--rik-accent);
+    box-shadow: 0 0 0 1px var(--rik-accent) inset, var(--rik-elevation-2);
   }
-  .card.rikiki  { background: rgba(240, 112, 32, 0.08); border-color: rgba(240, 112, 32, 0.40); }
-  .card.siliceum { background: rgba(247, 203, 68, 0.10); border-color: rgba(247, 203, 68, 0.45); }
-  header {
-    display: flex; justify-content: space-between; align-items: baseline;
-    margin-bottom: var(--sp-3);
+
+  /* Swatches · 4 squares in a 2×2 grid that preview the palette */
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(2, 14px);
+    grid-template-rows: repeat(2, 14px);
+    gap: 2px;
+    flex: 0 0 auto;
   }
-  h3 {
-    font: 800 var(--fs-h2) / 1.1 var(--display);
-    color: var(--text);
-    letter-spacing: -0.01em;
+  .sw { border-radius: 3px; }
+  .bg-rikiki-0   { background: #06080f; }
+  .bg-rikiki-1   { background: #f07020; }
+  .bg-rikiki-2   { background: #00c8a0; }
+  .bg-rikiki-3   { background: #faf8f5; }
+  .bg-siliceum-0 { background: #0a0a0a; }
+  .bg-siliceum-1 { background: #F7CB44; }
+  .bg-siliceum-2 { background: #ea580c; }
+  .bg-siliceum-3 { background: #fafaf8; }
+
+  .text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .name {
+    font: 800 1.05rem/1.2 var(--rik-font-display);
+    color: var(--rik-text-default);
+    letter-spacing: -0.005em;
   }
-  .pill {
-    background: var(--mango);
-    color: var(--dark);
-    padding: 3px 9px;
-    border-radius: var(--r-pill);
-    font: 700 var(--fs-micro)/1 var(--mono);
-    letter-spacing: 0.14em;
+  .default, .warm {
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: 0.12em;
     text-transform: uppercase;
+    color: var(--rik-text-default--faint);
+    margin-left: 4px;
   }
-  p {
-    font-size: var(--fs-body);
-    color: var(--soft);
-    line-height: 1.6;
-    margin: 0 0 var(--sp-4);
+  .desc {
+    font-size: var(--rik-font-size-sm);
+    color: var(--rik-text-default--muted);
+    line-height: 1.4;
   }
-  p :global(b) { color: var(--text); }
-  pre {
+  .link {
+    font: 700 var(--rik-font-size-xs)/1.2 var(--rik-font-mono);
+    color: var(--rik-text-default--faint);
+    background: var(--rik-surface-tint);
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .tile.is-active .link {
+    background: var(--rik-accent--faint);
+    color: var(--rik-accent--strong);
+  }
+
+  /* ── Live preview ────────────────────────────── */
+  .preview {
     margin: 0;
-    background: #0f0f10;
-    color: #f4f4f5;
-    border-radius: var(--r-md);
-    padding: var(--sp-3) var(--sp-4);
-    font: 0.85rem/1.6 var(--mono);
-    overflow: auto;
+    display: flex; flex-direction: column;
+    gap: var(--rik-space-2);
   }
-  code { display: block; }
+  figcaption {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: var(--rik-space-3);
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--rik-text-default--faint);
+  }
+  .tip {
+    letter-spacing: 0.04em;
+    text-transform: none;
+    font-weight: 400;
+    color: var(--rik-text-default--faint);
+  }
+  .frame {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-radius: var(--rik-radius-md);
+    border: 1px solid var(--rik-border-default);
+    background: var(--rik-surface-sunken);
+    box-shadow: var(--rik-elevation-2);
+  }
+  iframe {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    border: 0;
+  }
 </style>

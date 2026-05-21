@@ -1,0 +1,88 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import CodeBlock from '../../components/CodeBlock.astro';
+
+const overrideExample = `<deck-cover style="--deck-cover-bg: navy;"><h1>Hello</h1></deck-cover>`;
+const globalOverride = `:root { --rik-accent: #007acc; }`;
+const slotExample = `<deck-feature><h1 slot="title">Hello</h1></deck-feature>`;
+---
+
+<Docs
+  title="Lit, Shadow DOM, and how to override styles"
+  eyebrow="Getting started"
+  description="Two minutes."
+>
+
+<h2 id="lit">Do I need to learn Lit?</h2>
+<p>
+  No. Lit is what we used to build the components. You write HTML tags such as
+  <code>deck-cover</code>, <code>deck-feature</code>, <code>deck-code</code>, and
+  that is it. Lit is an implementation detail; you never write a class, never
+  call a tagged template literal, never see a decorator.
+</p>
+<p>
+  You only meet Lit if you decide to write your own component (see
+  <a href="/docs/contributing">Contributing</a>). For 100 percent of decks,
+  you stay in HTML-land.
+</p>
+
+<h2 id="shadow-dom">What about Shadow DOM?</h2>
+<p>
+  Every <code>deck-*</code> element renders inside its own Shadow DOM. That
+  means the framework's internal CSS can't leak onto your page, and your
+  page's stray CSS can't reach inside a component and break it.
+</p>
+<p>
+  In practice you can't use a regular CSS selector to retheme a component.
+  A rule such as <code>deck-cover h1</code> with a color in your stylesheet
+  has no effect, because the heading lives in shadow.
+</p>
+<p>
+  That sounds scary the first time. It is not · we exposed the right hooks so
+  you don't need to break Shadow DOM to retheme anything. There are exactly
+  three patterns.
+</p>
+
+<h2 id="override-instance">Pattern 1 · Override one instance via tokens</h2>
+<p>
+  Every component declares CSS custom properties named with the
+  <code>--deck-TAG-*</code> convention. Set them on the host and they cross
+  the shadow boundary.
+</p>
+<CodeBlock label="inline override" lang="html" code={overrideExample} />
+
+<h2 id="override-global">Pattern 2 · Override globally</h2>
+<p>
+  Add a stylesheet <em>after</em> the theme link and override the
+  <code>--rik-*</code> tokens at the document root or scoped to specific hosts.
+</p>
+<CodeBlock label="local.css" lang="css" code={globalOverride} />
+
+<h2 id="override-slot">Pattern 3 · Pass content via slots (light DOM)</h2>
+<p>
+  Anything you put as a direct child of a component is your HTML in light DOM.
+  It is not shadowed, so your CSS reaches it normally. That is why text
+  content, code, and custom HTML always work like you would expect.
+</p>
+<CodeBlock label="slot example" lang="html" code={slotExample} />
+
+<h2 id="rule">The one-line rule</h2>
+<p>
+  Override colors and shapes with the <code>--rik-*</code> and
+  <code>--deck-*</code> tokens; don't try to write CSS selectors that reach
+  inside a component.
+</p>
+<p>
+  Need a token that doesn't exist? Open an issue, we add them when it's
+  reasonable. Until then, you can always wrap your custom HTML in a slot.
+</p>
+
+<h2 id="recap">Recap</h2>
+<ul>
+  <li>Lit: we use it, you don't. You write HTML.</li>
+  <li>Shadow DOM is why your CSS can't accidentally break the framework. The tokens are the bridge.</li>
+  <li>Override tokens, not selectors. Either inline on a host, or globally on the document root.</li>
+  <li>Slot content stays in your CSS world. Anything you put inside a layout component can be styled normally.</li>
+</ul>
+
+</Docs>

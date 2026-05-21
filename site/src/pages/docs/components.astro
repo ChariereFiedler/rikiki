@@ -1,0 +1,565 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import CodeBlock from '../../components/CodeBlock.astro';
+import ComponentPreview from '../../components/ComponentPreview.astro';
+
+const layoutTags = new Set(['deck-cover', 'deck-section', 'deck-feature', 'deck-split', 'deck-feature-cards', 'deck-takeaway']);
+
+interface Component {
+  tag: string;
+  summary: string;
+  attrs?: { name: string; type: string; note?: string }[];
+  slots?: { name: string; note: string }[];
+  example: string;
+  tokens?: string[];
+}
+
+const layouts: Component[] = [
+  {
+    tag: 'deck-cover',
+    summary: 'Opening slide · XL title on dark, optional brand mark, meta block.',
+    attrs: [
+      { name: 'brand',       type: 'string',  note: 'Text label · split on " · " (first segment = brand name)' },
+      { name: 'brand-src',   type: 'URL',     note: 'Optional logo path' },
+      { name: 'speaker',     type: 'string' },
+      { name: 'company',     type: 'string' },
+      { name: 'duration',    type: 'string' },
+      { name: 'audience',    type: 'string' },
+      { name: 'runtime',     type: 'string' },
+    ],
+    slots: [
+      { name: '(default)', note: 'Title (h1) and subtitle (.sub)' },
+    ],
+    example: `<deck-cover brand="rikiki · docs" speaker="Jane">
+  <h1>Hello, <span class="accent">world</span>.</h1>
+  <p class="sub">Sub-title or opening question.</p>
+</deck-cover>`,
+    tokens: ['--deck-cover-bg', '--deck-cover-text', '--deck-cover-soft', '--deck-cover-muted', '--deck-cover-faint', '--deck-cover-border'],
+  },
+  {
+    tag: 'deck-section',
+    summary: 'Chapter separator · number + centered title on dark. Marks a 2D-nav boundary.',
+    attrs: [{ name: 'num', type: 'string', note: 'Small label above the title' }],
+    slots: [{ name: '(default)', note: 'Title (h1)' }],
+    example: `<deck-section num="02">
+  <h1>Anatomy</h1>
+</deck-section>`,
+    tokens: ['--deck-section-bg', '--deck-section-num-color', '--deck-section-title-color', '--deck-section-em-color', '--deck-section-rule-color'],
+  },
+  {
+    tag: 'deck-feature',
+    summary: 'One focal block · code, table, mermaid, big stat.',
+    attrs: [{ name: 'eyebrow', type: 'string', note: 'Small pill above the title' }],
+    slots: [
+      { name: 'title', note: 'h1' },
+      { name: 'lead',  note: 'one-line intro' },
+      { name: '(default)', note: 'The focal block · usually deck-code, deck-mermaid, or a custom widget' },
+    ],
+    example: `<deck-feature eyebrow="Module">
+  <h1 slot="title">Side effects</h1>
+  <p slot="lead" class="lead">A module can act on import.</p>
+  <deck-code lang="ts" hero>
+    import './polyfill';
+  </deck-code>
+</deck-feature>`,
+    tokens: ['--deck-eyebrow-bg', '--deck-eyebrow-color', '--deck-eyebrow-radius', '--deck-eyebrow-padding-x', '--deck-eyebrow-padding-y'],
+  },
+  {
+    tag: 'deck-split',
+    summary: 'Two or three columns of cards.',
+    attrs: [
+      { name: 'cols',    type: '"1-1" | "1-2" | "2-1" | "3"', note: 'Default 1-1' },
+      { name: 'gap',     type: '1..6',                        note: 'maps to var(--rik-space-N)' },
+      { name: 'col-gap', type: '1..6',                        note: 'gap between children inside a column' },
+    ],
+    slots: [
+      { name: 'title / lead', note: 'header above the columns' },
+      { name: 'left / right', note: '2-col layout' },
+      { name: 'a / b / c',    note: '3-col layout' },
+    ],
+    example: `<deck-split cols="1-1">
+  <h1 slot="title">Two takes</h1>
+  <deck-card slot="left" color="red">Problem</deck-card>
+  <deck-card slot="right" color="green">Fix</deck-card>
+</deck-split>`,
+    tokens: ['--deck-split-gap', '--deck-split-col-gap', '--deck-eyebrow-bg', '--deck-eyebrow-color'],
+  },
+  {
+    tag: 'deck-feature-cards',
+    summary: 'Hero on top, two detail cards underneath.',
+    attrs: [{ name: 'eyebrow', type: 'string' }],
+    slots: [
+      { name: 'title / lead', note: 'header' },
+      { name: '(default)',    note: 'the hero block · usually deck-code or deck-mermaid' },
+      { name: 'left / right', note: 'the two detail cards' },
+    ],
+    example: `<deck-feature-cards eyebrow="Deep dive">
+  <h1 slot="title">One thing at a time</h1>
+  <deck-code lang="ts" hero>function run() { return 42; }</deck-code>
+  <deck-card slot="left">What changes</deck-card>
+  <deck-card slot="right">What stays</deck-card>
+</deck-feature-cards>`,
+    tokens: ['--deck-feature-cards-gap', '--deck-feature-cards-col-gap', '--deck-feature-cards-hero-flex', '--deck-feature-cards-detail-flex', '--deck-eyebrow-bg', '--deck-eyebrow-color'],
+  },
+  {
+    tag: 'deck-takeaway',
+    summary: 'Centered punchline on dark · the take-home line.',
+    attrs: [{ name: 'kicker', type: 'string', note: 'Small caption above the punch' }],
+    slots: [{ name: '(default)', note: 'Use <deck-punch size="display"> for the big text' }],
+    example: `<deck-takeaway kicker="The whole point">
+  <deck-punch size="display">Source = output.</deck-punch>
+  <p class="caption on-dark">A deck is a folder.</p>
+</deck-takeaway>`,
+    tokens: ['--deck-takeaway-bg', '--deck-takeaway-display-color', '--deck-takeaway-caption-color', '--deck-takeaway-gap'],
+  },
+];
+
+const atoms: Component[] = [
+  {
+    tag: 'deck-code',
+    summary: 'Code block with light syntax highlighting · js, ts, html, css.',
+    attrs: [
+      { name: 'lang',        type: 'js | ts | html | css | …' },
+      { name: 'hero',        type: 'boolean', note: 'centers vertically as the focal block' },
+      { name: 'nested',      type: 'boolean', note: 'no shadow, lighter border (inside a card)' },
+      { name: 'step-groups', type: 'JSON',    note: '[[1,2],[3,4]] · highlight subsets of lines on each step' },
+    ],
+    example: `<deck-code lang="ts" hero>
+  const greet = (n: string) => \`Hi, \${n}\`;
+</deck-code>`,
+    tokens: ['--deck-code-bg', '--deck-code-border', '--deck-code-text', '--deck-code-radius', '--deck-code-padding-x', '--deck-code-padding-y', '--deck-code-syntax-{kw,str,num,cmt,ty,prop,fn}'],
+  },
+  {
+    tag: 'deck-md',
+    summary: 'Markdown body · GFM, tables, lists, code, **bold**, *italic*.',
+    example: `<deck-md>
+  **Markdown** body with \`inline code\`, lists, and links.
+</deck-md>`,
+    tokens: ['--deck-md-pre-bg', '--deck-md-pre-border', '--deck-md-pre-text'],
+  },
+  {
+    tag: 'deck-callout',
+    summary: 'Boxed note with icon · info / warn / danger / ok.',
+    attrs: [{ name: 'type', type: 'info | warn | danger | ok' }],
+    example: `<deck-callout type="warn">
+  <strong>Heads up ·</strong> this changes the public API.
+</deck-callout>`,
+    tokens: ['--deck-callout-bg', '--deck-callout-border', '--deck-callout-stroke', '--deck-callout-radius', '--deck-callout-padding-x', '--deck-callout-padding-y'],
+  },
+  {
+    tag: 'deck-card',
+    summary: 'Tinted card · yellow, orange, green, red.',
+    attrs: [
+      { name: 'color',   type: 'yellow | orange | green | red' },
+      { name: 'center',  type: 'boolean' },
+      { name: 'compact', type: 'boolean', note: 'reduced padding' },
+    ],
+    example: `<deck-card color="green">
+  <h3>Tinted card</h3>
+  <p>Used inside splits and grids.</p>
+</deck-card>`,
+    tokens: ['--deck-card-bg', '--deck-card-border', '--deck-card-text', '--deck-card-title-color', '--deck-card-radius', '--deck-card-padding-x', '--deck-card-padding-y', '--deck-card-shadow', '--deck-card-gap'],
+  },
+  {
+    tag: 'deck-mermaid',
+    summary: 'Mermaid diagram · loaded on demand from CDN. The only opt-in CDN dependency.',
+    attrs: [{ name: 'compact', type: 'boolean', note: 'reduced padding and max-width' }],
+    example: `<deck-mermaid>
+  graph LR
+  a --> b --> c
+</deck-mermaid>`,
+    tokens: ['--deck-mermaid-bg', '--deck-mermaid-border', '--deck-mermaid-padding', '--deck-mermaid-radius'],
+  },
+  {
+    tag: 'deck-stat',
+    summary: 'Big-number visual · for promises, metrics, milestones.',
+    attrs: [
+      { name: 'num',  type: 'string',                      note: 'Huge display-font number' },
+      { name: 'tone', type: 'yellow|orange|green|red|purple|lime|cyan' },
+    ],
+    slots: [
+      { name: 'claim',     note: 'Mid-size headline below the number' },
+      { name: '(default)', note: 'One line of body text' },
+    ],
+    example: `<deck-stat num="01" tone="orange">
+  <h3 slot="claim">Open index.html</h3>
+  No build, no toolchain.
+</deck-stat>`,
+    tokens: ['--deck-stat-color', '--deck-stat-num-size', '--deck-stat-num-weight', '--deck-stat-claim-color', '--deck-stat-body-color', '--deck-stat-border-width', '--deck-stat-padding-x', '--deck-stat-padding-y', '--deck-stat-gap'],
+  },
+  {
+    tag: 'deck-badge',
+    summary: 'Status pill · bad / ok / info / warn / neutral.',
+    attrs: [{ name: 'type', type: 'bad | ok | info | warn | neutral' }],
+    example: `<deck-badge type="ok">production-ready</deck-badge>`,
+    tokens: ['--deck-badge-bg', '--deck-badge-fg', '--deck-badge-border', '--deck-badge-radius', '--deck-badge-padding-x', '--deck-badge-padding-y'],
+  },
+  {
+    tag: 'deck-metric',
+    summary: 'One-line metric · label + value · severity colored.',
+    attrs: [
+      { name: 'value',    type: 'string' },
+      { name: 'severity', type: 'bad | warn | ok | info' },
+      { name: 'mono',     type: 'boolean' },
+    ],
+    example: `<deck-metric-list>
+  <deck-metric value="5"  severity="bad">Files parsed</deck-metric>
+  <deck-metric value="1"  severity="ok">Used</deck-metric>
+</deck-metric-list>`,
+    tokens: ['--deck-metric-bg', '--deck-metric-border', '--deck-metric-text', '--deck-metric-radius', '--deck-metric-padding-x', '--deck-metric-padding-y', '--deck-metric-shadow', '--deck-metric-label-color', '--deck-metric-value-{bad,warn,ok,info}'],
+  },
+  {
+    tag: 'deck-tier-list',
+    summary: 'Tier list · for JIT levels, severity ladders, ranking.',
+    attrs: [
+      { name: 'name',     type: 'string' },
+      { name: 'speed',    type: 'string', note: 'right-side number' },
+      { name: 'severity', type: 'muted | warn | ok' },
+      { name: 'hot',      type: 'boolean' },
+    ],
+    example: `<deck-tier-list>
+  <deck-tier name="LLInt" speed="×1">Bytecode</deck-tier>
+  <deck-tier name="FTL"   speed="×100" hot>LLVM</deck-tier>
+</deck-tier-list>`,
+    tokens: ['--deck-tier-bg', '--deck-tier-border', '--deck-tier-radius', '--deck-tier-padding-x', '--deck-tier-padding-y', '--deck-tier-shadow', '--deck-tier-name-color', '--deck-tier-desc-color', '--deck-tier-speed-{muted,warn,ok}', '--deck-tier-hot-bg', '--deck-tier-hot-border', '--deck-tier-hot-color'],
+  },
+  {
+    tag: 'deck-step-list',
+    summary: 'Numbered steps · big circle bullet, mono label, chip note.',
+    attrs: [
+      { name: 'n',    type: 'string', note: 'Number or letter' },
+      { name: 'note', type: 'string', note: 'Right-aligned chip' },
+    ],
+    example: `<deck-step-list>
+  <deck-step n="1" note="opens the deck">Cover</deck-step>
+  <deck-step n="2" note="chapter break">Section</deck-step>
+</deck-step-list>`,
+    tokens: ['--deck-step-bg', '--deck-step-border', '--deck-step-radius', '--deck-step-padding-x', '--deck-step-padding-y', '--deck-step-shadow', '--deck-step-num-bg', '--deck-step-num-color', '--deck-step-num-size', '--deck-step-label-color', '--deck-step-chip-bg', '--deck-step-chip-color'],
+  },
+  {
+    tag: 'deck-shortcut',
+    summary: 'Keyboard shortcut row · keys + label + note. Pairs with <deck-shortcut-list>.',
+    attrs: [
+      { name: 'keys',  type: 'string', note: 'Space-separated · e.g. "Space PgDn"' },
+      { name: 'label', type: 'string' },
+      { name: 'note',  type: 'string' },
+    ],
+    example: `<deck-shortcut-list>
+  <deck-shortcut keys="O" label="Overview" note="Path layout"/>
+  <deck-shortcut keys="?" label="Help" note="Full shortcut overlay"/>
+</deck-shortcut-list>`,
+    tokens: ['--deck-kbd-bg', '--deck-kbd-color', '--deck-kbd-border', '--deck-kbd-radius', '--deck-kbd-padding-x', '--deck-kbd-padding-y', '--deck-kbd-accent-bg', '--deck-kbd-ok-bg'],
+  },
+  {
+    tag: 'deck-punch',
+    summary: 'Big punchline text · sized via attribute, color via tone.',
+    attrs: [
+      { name: 'size',   type: 'lead | big | mega | stat | display' },
+      { name: 'tone',   type: 'warn | danger | ok | info | muted | accent' },
+      { name: 'weight', type: '700 | 800 | 900' },
+      { name: 'align',  type: 'left | center | right' },
+    ],
+    example: `<deck-punch size="display">Source = output.</deck-punch>`,
+    tokens: ['--deck-punch-color', '--deck-punch-size'],
+  },
+  {
+    tag: 'deck-stack',
+    summary: 'Vertical (or horizontal) flex container · the most-used spacing helper.',
+    attrs: [
+      { name: 'gap',       type: '1..6' },
+      { name: 'direction', type: 'column | row' },
+      { name: 'align',     type: 'start | center | end | stretch' },
+      { name: 'justify',   type: 'start | center | end | between | around' },
+    ],
+    example: `<deck-stack gap="3">
+  <deck-callout>One</deck-callout>
+  <deck-callout>Two</deck-callout>
+</deck-stack>`,
+    tokens: ['--deck-stack-gap'],
+  },
+  {
+    tag: 'deck-grid',
+    summary: 'Grid container · n columns by 1..12 or explicit template.',
+    attrs: [
+      { name: 'cols', type: '1..12 | "1fr 2fr" | ...' },
+      { name: 'gap',  type: '1..6' },
+      { name: 'fill', type: 'boolean' },
+    ],
+    example: `<deck-grid cols="3" gap="3" fill>
+  <deck-card>a</deck-card>
+  <deck-card>b</deck-card>
+  <deck-card>c</deck-card>
+</deck-grid>`,
+    tokens: ['--deck-grid-gap'],
+  },
+  {
+    tag: 'deck-kicker',
+    summary: 'Caption-style label above a section · uppercase, mono.',
+    example: `<deck-kicker>Before</deck-kicker>`,
+    tokens: ['--deck-kicker-color', '--deck-kicker-on-dark-color', '--deck-kicker-font-size', '--deck-kicker-tracking', '--deck-kicker-margin'],
+  },
+  {
+    tag: 'deck-notes',
+    summary: 'Speaker notes for a slide · hidden by default, surfaced in the presenter window (press P). Free-form text content.',
+    slots: [
+      { name: '(default)', note: 'Plain text or markup · displayed as-is in the presenter window' },
+    ],
+    example: `<deck-feature>
+  <h1 slot="title">My slide</h1>
+  <deck-notes>
+    Talking points:
+    - Mention the migration story
+    - Pause for laughter on the Java joke
+  </deck-notes>
+</deck-feature>`,
+  },
+];
+---
+
+<Docs
+  title="Component library"
+  eyebrow="Reference"
+  description="Every <deck-*> element · attributes, slots, tokens, live preview. 24 components total, but you'll only meet five on day one."
+>
+
+<h2 id="mental-model">Mental model · which one do I need?</h2>
+<p>The 24 components fit in five buckets. Use this as a triage map.</p>
+<ul>
+  <li>
+    <strong>Layouts (6)</strong> · the slide's overall shape ·
+    <a href="#deck-cover"><code>deck-cover</code></a>,
+    <a href="#deck-section"><code>deck-section</code></a>,
+    <a href="#deck-feature"><code>deck-feature</code></a>,
+    <a href="#deck-split"><code>deck-split</code></a>,
+    <a href="#deck-feature-cards"><code>deck-feature-cards</code></a>,
+    <a href="#deck-takeaway"><code>deck-takeaway</code></a>.
+  </li>
+  <li>
+    <strong>The five you'll always use</strong> · the talk-shaping atoms ·
+    <a href="#deck-code"><code>deck-code</code></a>,
+    <a href="#deck-md"><code>deck-md</code></a>,
+    <a href="#deck-card"><code>deck-card</code></a>,
+    <a href="#deck-callout"><code>deck-callout</code></a>,
+    <a href="#deck-badge"><code>deck-badge</code></a>.
+  </li>
+  <li>
+    <strong>Domain atoms (8)</strong> · reach for when the slide needs one ·
+    <a href="#deck-stat"><code>deck-stat</code></a>,
+    <a href="#deck-metric"><code>deck-metric</code></a>,
+    <a href="#deck-tier-list"><code>deck-tier-list</code></a>,
+    <a href="#deck-step-list"><code>deck-step-list</code></a>,
+    <a href="#deck-shortcut"><code>deck-shortcut</code></a>,
+    <a href="#deck-mermaid"><code>deck-mermaid</code></a>,
+    <a href="#deck-punch"><code>deck-punch</code></a>,
+    <a href="#deck-kicker"><code>deck-kicker</code></a>.
+  </li>
+  <li>
+    <strong>Layout helpers (2)</strong> · plumbing for spacing ·
+    <a href="#deck-stack"><code>deck-stack</code></a>,
+    <a href="#deck-grid"><code>deck-grid</code></a>.
+  </li>
+  <li>
+    <strong>Presenter helpers (3)</strong> · for the day of the talk ·
+    <a href="#deck-notes"><code>deck-notes</code></a>,
+    plus the lazy-loaded <code>deck-overview</code> (press <kbd>O</kbd>) and
+    <code>deck-presenter</code> (press <kbd>P</kbd>).
+  </li>
+</ul>
+<p>
+  New to Rikiki? Read the <a href="/docs/cheatsheet">5-component cheatsheet</a>
+  first · don't try to learn all 24 before your first talk.
+</p>
+
+
+<p>
+  Rikiki ships <strong>6 layouts</strong> and <strong>18 atoms</strong>. The
+  layouts define a slide's overall structure; the atoms fill the slots. Both
+  groups follow the same design-token contract · override
+  <code>--deck-&lt;tag&gt;-*</code> on the host to retheme a single instance,
+  or globally on <code>:root</code>.
+</p>
+
+<h2 id="layouts">Layouts</h2>
+<p>One per typical slide kind. Pick the layout that matches the slide's job.</p>
+
+{layouts.map((c) => (
+  <article class="comp">
+    <h3 id={c.tag}><code>&lt;{c.tag}&gt;</code></h3>
+    <p class="summary">{c.summary}</p>
+    {c.attrs && (
+      <>
+        <p class="block-head">Attributes</p>
+        <table class="attrs">
+          <thead><tr><th>Attribute</th><th>Type</th><th>Notes</th></tr></thead>
+          <tbody>
+            {c.attrs.map((a) => (
+              <tr>
+                <td><code>{a.name}</code></td>
+                <td><code>{a.type}</code></td>
+                <td>{a.note ?? ''}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </>
+    )}
+    {c.slots && (
+      <>
+        <p class="block-head">Slots</p>
+        <table class="attrs">
+          <thead><tr><th>Slot</th><th>What goes in</th></tr></thead>
+          <tbody>
+            {c.slots.map((s) => (
+              <tr>
+                <td><code>{s.name}</code></td>
+                <td>{s.note}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </>
+    )}
+    <p class="block-head">Example</p>
+    <CodeBlock lang="html" code={c.example} />
+    <ComponentPreview code={c.example} full={layoutTags.has(c.tag)} />
+    {c.tokens && (
+      <>
+        <p class="block-head">Customization tokens</p>
+        <p class="tokens">{c.tokens.map((t) => <code>{t}</code>).reduce((acc: any, t, i) => i === 0 ? [t] : [...acc, ' · ', t], [])}</p>
+      </>
+    )}
+  </article>
+))}
+
+<h2 id="atoms">Atoms</h2>
+<p>The building blocks you slot inside layouts.</p>
+
+{atoms.map((c) => (
+  <article class="comp">
+    <h3 id={c.tag}><code>&lt;{c.tag}&gt;</code></h3>
+    <p class="summary">{c.summary}</p>
+    {c.attrs && (
+      <>
+        <p class="block-head">Attributes</p>
+        <table class="attrs">
+          <thead><tr><th>Attribute</th><th>Type</th><th>Notes</th></tr></thead>
+          <tbody>
+            {c.attrs.map((a) => (
+              <tr>
+                <td><code>{a.name}</code></td>
+                <td><code>{a.type}</code></td>
+                <td>{a.note ?? ''}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </>
+    )}
+    {c.slots && (
+      <>
+        <p class="block-head">Slots</p>
+        <table class="attrs">
+          <thead><tr><th>Slot</th><th>What goes in</th></tr></thead>
+          <tbody>
+            {c.slots.map((s) => (
+              <tr>
+                <td><code>{s.name}</code></td>
+                <td>{s.note}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </>
+    )}
+    <p class="block-head">Example</p>
+    <CodeBlock lang="html" code={c.example} />
+    <ComponentPreview code={c.example} full={layoutTags.has(c.tag)} />
+    {c.tokens && (
+      <>
+        <p class="block-head">Customization tokens</p>
+        <p class="tokens">{c.tokens.map((t) => <code>{t}</code>).reduce((acc: any, t, i) => i === 0 ? [t] : [...acc, ' · ', t], [])}</p>
+      </>
+    )}
+  </article>
+))}
+
+<style>
+  /* Aerated layout · one component per "page-break" block, generous padding,
+     subtle alternating background to separate sections at a glance. */
+  .comp {
+    padding: var(--rik-space-6) 0 var(--rik-space-7);
+    border-bottom: 1px solid var(--rik-border-default);
+  }
+  .comp:last-child { border-bottom: none; }
+  .comp h3 {
+    margin: 0 0 var(--rik-space-3);
+    font-size: 1.4rem !important;
+  }
+  .comp h3 code {
+    background: var(--rik-accent--faint) !important;
+    color: var(--rik-text-default) !important;
+    padding: 4px 10px !important;
+    border-radius: var(--rik-radius-sm) !important;
+    font-size: 0.95em !important;
+  }
+  .summary {
+    color: var(--rik-text-default--muted);
+    font-size: var(--rik-font-size-lead);
+    line-height: 1.6;
+    margin: 0 0 var(--rik-space-5);
+    max-width: 70ch;
+  }
+  .comp > * {
+    margin-top: var(--rik-space-4);
+  }
+  .comp > h3 { margin-top: 0; }
+
+  /* Small heading above each sub-block for scannability */
+  .comp .block-head {
+    font-family: var(--rik-font-mono);
+    font-size: var(--rik-font-size-xs);
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--rik-text-default--faint);
+    margin: var(--rik-space-5) 0 var(--rik-space-2);
+  }
+
+  table.attrs {
+    width: 100%; max-width: 720px;
+    border-collapse: collapse;
+    margin: 0 0 var(--rik-space-3);
+    font-size: var(--rik-font-size-sm);
+  }
+  table.attrs th, table.attrs td {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--rik-border-default);
+    vertical-align: top;
+  }
+  table.attrs th {
+    background: var(--rik-surface-raised);
+    color: var(--rik-text-default--faint);
+    font: 700 var(--rik-font-size-xs)/1.2 var(--rik-font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  table.attrs td code {
+    background: rgba(42, 37, 32, 0.06);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  p.tokens {
+    font-size: var(--rik-font-size-sm);
+    color: var(--rik-text-default--faint);
+    margin: var(--rik-space-3) 0 0;
+  }
+  p.tokens code {
+    background: rgba(240, 112, 32, 0.10);
+    color: var(--rik-text-default);
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+</style>
+
+</Docs>

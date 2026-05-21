@@ -1,0 +1,97 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import CodeBlock from '../../components/CodeBlock.astro';
+
+const setup = `git clone <repo>
+cd rikiki
+npm install
+npm run build       # esbuild + tsc --emitDeclarationOnly
+npm run watch       # esbuild --watch (dev sourcemaps)
+npm run typecheck   # tsc --noEmit (must stay clean)`;
+
+const newComponent = `// src/deck-myname.ts
+import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+
+@customElement('deck-myname')
+export class DeckMyname extends LitElement {
+  static override styles = css\`
+    :host { display: block; padding: var(--rik-space-3); }
+  \`;
+
+  @property({ type: String }) tone?: string;
+
+  override render() {
+    return html\`<slot></slot>\`;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-myname': DeckMyname;
+  }
+}`;
+---
+
+<Docs
+  title="Contributing"
+  eyebrow="Reference"
+  description="Setup, conventions, PR flow. Short on purpose."
+>
+
+<h2 id="setup">Setup</h2>
+<CodeBlock label="terminal" lang="js" code={setup} />
+
+<p>
+  <code>dist/</code> is versioned · the zero-build promise applies to deck
+  authors, not contributors. Always commit the rebuilt <code>dist/</code> with
+  your source change so consumers don't need to run anything.
+</p>
+
+<h2 id="conventions">Conventions</h2>
+<ul>
+  <li><strong>English</strong> for code, comments and commit messages.</li>
+  <li><strong>No magic numbers</strong> in CSS · everything goes through tokens (<code>--sp-*</code>, <code>--fs-*</code>, etc.).</li>
+  <li><strong>No em-dashes (·)</strong> in slide content · prefer ` · ` (middle dot).</li>
+  <li><strong>Read MANIFESTO.md first</strong> before proposing a feature · the rejected-features list saves time.</li>
+</ul>
+
+<h2 id="add-component">Adding a component</h2>
+
+<ol>
+  <li>Create <code>src/deck-myname.ts</code>.</li>
+  <li>Extend <code>LitElement</code>, decorate with <code>@customElement</code> and <code>@property</code>.</li>
+  <li>Expose <strong>per-component tokens</strong> with sensible defaults from the theme palette · users should be able to retheme via <code>--deck-myname-*</code>.</li>
+  <li>Register it in <code>src/index.ts</code> if it should be auto-loaded with the full bundle.</li>
+  <li>Run <code>npm run build</code> · commit both <code>src/</code> and <code>dist/</code>.</li>
+</ol>
+
+<CodeBlock label="src/deck-myname.ts" lang="ts" code={newComponent} />
+
+<h2 id="pr-flow">Pull requests</h2>
+<ul>
+  <li>One self-contained change per PR.</li>
+  <li>Include a short rationale · what changed, why, what was considered and rejected.</li>
+  <li>If the change is visual, attach a before/after screenshot.</li>
+  <li><code>npm run build</code> must succeed · <code>npm run typecheck</code> must stay at <strong>0 errors</strong>.</li>
+</ul>
+
+<h2 id="bundle-budget">Bundle budget</h2>
+<p>
+  The framework promises ~25 KB gzip for the core. The current floor is
+  11.3 KB. PRs that grow the bundle by more than <strong>1 KB gzip</strong>
+  need to justify the increase · prefer extracting to a lazy module
+  (<code>deck-overview.js</code> / <code>deck-help.js</code> are the
+  precedent).
+</p>
+
+<p>To measure your change:</p>
+<CodeBlock label="terminal" lang="js" code="npm run build && gzip -9 < dist/index.js | wc -c" />
+
+<h2 id="license">License</h2>
+<p>
+  By contributing you agree that your contribution is licensed under the
+  project's MIT license.
+</p>
+
+</Docs>

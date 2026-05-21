@@ -84,7 +84,7 @@
 </head>
 <body>
 
-<deck-root>
+<deck-root transition="slide">
 
 <!-- ════════════════════════════════════════════════════════════════
      1 · COVER
@@ -124,7 +124,7 @@
 <!-- ════════════════════════════════════════════════════════════════
      4 · Architecture · mermaid does the diagram
      ════════════════════════════════════════════════════════════════ -->
-<deck-hero eyebrow="Architecture">
+<deck-feature eyebrow="Architecture">
   <h1 slot="title">Three thin layers</h1>
   <deck-mermaid>
     graph TB
@@ -136,7 +136,7 @@
       classDef pkg  fill:#00c8a0,stroke:#067a64,color:#fff,stroke-width:2px
       classDef std  fill:#161c2e,stroke:#1e2840,color:#e8e4f0,stroke-width:2px
   </deck-mermaid>
-</deck-hero>
+</deck-feature>
 
 <!-- ════════════════════════════════════════════════════════════════
      5 · SECTION · Anatomy
@@ -150,7 +150,7 @@
   <h1 slot="title">A slide is just HTML</h1>
   <div slot="left">
     <deck-code lang="html">
-      &lt;deck-hero eyebrow="Module"&gt;
+      &lt;deck-feature eyebrow="Module"&gt;
         &lt;h1 slot="title"&gt;Side effects&lt;/h1&gt;
         &lt;p slot="lead" class="lead"&gt;
           A module can act on import.
@@ -158,12 +158,12 @@
         &lt;deck-code lang="ts" hero&gt;
           import './polyfill';
         &lt;/deck-code&gt;
-      &lt;/deck-hero&gt;
+      &lt;/deck-feature&gt;
     </deck-code>
   </div>
   <deck-stack slot="right" gap="3">
     <deck-callout type="info">
-      <strong>Layouts</strong> · <code>&lt;deck-hero&gt;</code> and friends provide structure · title, lead, body.
+      <strong>Layouts</strong> · <code>&lt;deck-feature&gt;</code> and friends provide structure · title, lead, body.
     </deck-callout>
     <deck-callout type="ok">
       <strong>Slots</strong> · <code>slot="title"</code>, <code>slot="lead"</code>, <code>slot="left"</code>, <code>slot="right"</code>.
@@ -182,17 +182,17 @@
 <!-- ════════════════════════════════════════════════════════════════
      8 · Layouts cheat-sheet · deck-step-list
      ════════════════════════════════════════════════════════════════ -->
-<deck-hero eyebrow="Layouts">
+<deck-feature eyebrow="Layouts">
   <h1 slot="title">Six layouts, six jobs</h1>
   <deck-step-list>
     <deck-step n="1" note="Opening slide · XL title on dark, optional brand mark, meta block.">&lt;deck-cover&gt;</deck-step>
     <deck-step n="2" note="Chapter separator · number + centered title on dark.">&lt;deck-section&gt;</deck-step>
-    <deck-step n="3" note="One focal block · code, table, mermaid, big stat.">&lt;deck-hero&gt;</deck-step>
+    <deck-step n="3" note="One focal block · code, table, mermaid, big stat.">&lt;deck-feature&gt;</deck-step>
     <deck-step n="4" note="Two or three columns · cols=&quot;1-1&quot;, &quot;1-2&quot;, &quot;3&quot;. gap is a design-token attribute.">&lt;deck-split&gt;</deck-step>
-    <deck-step n="5" note="Hero on top, two detail cards below · slot=&quot;left&quot;, slot=&quot;right&quot;.">&lt;deck-hero-detail&gt;</deck-step>
-    <deck-step n="6" note="Centered punchline on dark · the take-home line.">&lt;deck-hook&gt;</deck-step>
+    <deck-step n="5" note="Hero on top, two detail cards below · slot=&quot;left&quot;, slot=&quot;right&quot;.">&lt;deck-feature-cards&gt;</deck-step>
+    <deck-step n="6" note="Centered punchline on dark · the take-home line.">&lt;deck-takeaway&gt;</deck-step>
   </deck-step-list>
-</deck-hero>
+</deck-feature>
 
 <!-- ════════════════════════════════════════════════════════════════
      9 · Atoms · shown, not described · deck-split + deck-stack
@@ -273,7 +273,7 @@
 <!-- ════════════════════════════════════════════════════════════════
      12 · All shortcuts · framework component <deck-shortcut-list>
      ════════════════════════════════════════════════════════════════ -->
-<deck-hero eyebrow="Shortcuts">
+<deck-feature eyebrow="Shortcuts">
   <h1 slot="title">Every key, on one page</h1>
   <deck-shortcut-list col-gap="5">
     <deck-shortcut keys="← →"      label="Section"          note="Jump between top-level chapters."></deck-shortcut>
@@ -287,7 +287,7 @@
     <deck-shortcut keys="Esc"      label="Close overlay"    note="Closes overview, help, or any temporary view."></deck-shortcut>
     <deck-shortcut keys="#N"       label="Deep link"        note="URL hash · #5 shares slide 5 directly."></deck-shortcut>
   </deck-shortcut-list>
-</deck-hero>
+</deck-feature>
 
 <!-- ════════════════════════════════════════════════════════════════
      13 · SECTION · Themes
@@ -339,7 +339,7 @@
 <!-- ════════════════════════════════════════════════════════════════
      16 · The whole HTML file
      ════════════════════════════════════════════════════════════════ -->
-<deck-hero eyebrow="60 seconds, no install">
+<deck-feature eyebrow="60 seconds, no install">
   <h1 slot="title">A deck, end to end</h1>
   <deck-code lang="html" hero>
     &lt;!doctype html&gt;
@@ -354,23 +354,23 @@
         &lt;deck-cover brand="my-talk"&gt;
           &lt;h1&gt;Hello, &lt;span class="accent"&gt;world&lt;/span&gt;.&lt;/h1&gt;
         &lt;/deck-cover&gt;
-        &lt;deck-hero eyebrow="One slide"&gt;
+        &lt;deck-feature eyebrow="One slide"&gt;
           &lt;h1 slot="title"&gt;That's all you need.&lt;/h1&gt;
           &lt;deck-md&gt;Write **markdown**, drop `&lt;deck-*&gt;` blocks, navigate with arrows.&lt;/deck-md&gt;
-        &lt;/deck-hero&gt;
+        &lt;/deck-feature&gt;
       &lt;/deck-root&gt;
     &lt;/body&gt;
     &lt;/html&gt;
   </deck-code>
-</deck-hero>
+</deck-feature>
 
 <!-- ════════════════════════════════════════════════════════════════
      17 · Closing hook · framework only
      ════════════════════════════════════════════════════════════════ -->
-<deck-hook kicker="The whole point">
+<deck-takeaway kicker="The whole point">
   <deck-punch size="display" weight="900">Source = output.</deck-punch>
   <p class="caption on-dark">A deck is a folder · open it in 2031, edit one character, give it again.</p>
-</deck-hook>
+</deck-takeaway>
 
 </deck-root>
 

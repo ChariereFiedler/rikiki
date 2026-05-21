@@ -2,6 +2,7 @@
 import Base       from '../layouts/Base.astro';
 import Nav        from '../components/Nav.astro';
 import Hero       from '../components/Hero.astro';
+import LiveDemo   from '../components/LiveDemo.astro';
 import Section    from '../components/Section.astro';
 import Stat       from '../components/Stat.astro';
 import StatGrid   from '../components/StatGrid.astro';
@@ -11,8 +12,15 @@ import CodeBlock  from '../components/CodeBlock.astro';
 import ThemeSwap  from '../components/ThemeSwap.astro';
 import Hook       from '../components/Hook.astro';
 import Footer     from '../components/Footer.astro';
+import LayoutPreview from '../components/LayoutPreview.astro';
+import Comparison from '../components/Comparison.astro';
+import DocsToc from '../components/DocsToc.astro';
+import DualUse from '../components/DualUse.astro';
+import PluginShelf from '../components/PluginShelf.astro';
+import Limits from '../components/Limits.astro';
+import Faq from '../components/Faq.astro';
 
-const anatomyCode = `<deck-hero eyebrow="Module">
+const anatomyCode = `<deck-feature eyebrow="Module">
   <h1 slot="title">Side effects</h1>
   <p slot="lead" class="lead">
     A module can act on import.
@@ -20,7 +28,7 @@ const anatomyCode = `<deck-hero eyebrow="Module">
   <deck-code lang="ts" hero>
     import './polyfill';
   </deck-code>
-</deck-hero>`;
+</deck-feature>`;
 
 const quickstartCode = `<!doctype html>
 <html>
@@ -34,10 +42,10 @@ const quickstartCode = `<!doctype html>
     <deck-cover brand="my-talk">
       <h1>Hello, <span class="accent">world</span>.</h1>
     </deck-cover>
-    <deck-hero eyebrow="One slide">
+    <deck-feature eyebrow="One slide">
       <h1 slot="title">That's all you need.</h1>
       <deck-md>Write **markdown**, drop &lt;deck-*&gt; blocks, navigate with arrows.</deck-md>
-    </deck-hero>
+    </deck-feature>
   </deck-root>
 </body>
 </html>`;
@@ -46,6 +54,13 @@ const quickstartCode = `<!doctype html>
 <Base>
   <Nav />
   <Hero />
+
+  <!-- ── Live demo embedded right after the hero ─────── -->
+  <section class="demo-band">
+    <div class="demo-inner">
+      <LiveDemo />
+    </div>
+  </section>
 
   <!-- ── Why ────────────────────────────────────────── -->
   <Section id="why" eyebrow="Why" title="Three on-purpose constraints">
@@ -56,11 +71,13 @@ const quickstartCode = `<!doctype html>
       <Stat num="02" claim="Alive in 2031" tone="helico">
         Web standards only · Custom Elements, Shadow DOM, ES Modules, CSS variables.
       </Stat>
-      <Stat num="03" claim="~11 KB gzip" tone="lime">
-        Lit + 23 components. <strong>Anything bigger is opt-in.</strong>
+      <Stat num="03" claim="~12 KB gzip" tone="lime">
+        Lit + 24 components. <strong>Anything bigger is opt-in.</strong>
       </Stat>
     </StatGrid>
   </Section>
+
+  <DualUse />
 
   <!-- ── Anatomy ────────────────────────────────────── -->
   <Section id="anatomy" eyebrow="Anatomy" title="A slide is just HTML">
@@ -68,7 +85,7 @@ const quickstartCode = `<!doctype html>
       <CodeBlock label="Source · index.html" lang="html" code={anatomyCode} />
       <div class="notes">
         <Card title="Layouts">
-          <p><code>&lt;deck-hero&gt;</code> and friends provide structure · title, lead, body.</p>
+          <p><code>&lt;deck-feature&gt;</code> and friends provide structure · title, lead, body.</p>
         </Card>
         <Card title="Slots">
           <p><code>slot="title"</code>, <code>slot="lead"</code>, <code>slot="left"</code>, <code>slot="right"</code>.</p>
@@ -82,16 +99,40 @@ const quickstartCode = `<!doctype html>
 
   <!-- ── Library ────────────────────────────────────── -->
   <Section id="library" eyebrow="Library" title="Six layouts, six jobs">
-    <CardGrid cols={3}>
-      <Card title="<deck-cover>"><p>Opening slide · XL title on dark, optional brand mark, meta block.</p></Card>
-      <Card title="<deck-section>"><p>Chapter separator · number + centered title on dark.</p></Card>
-      <Card title="<deck-hero>"><p>One focal block · code, table, mermaid, big stat.</p></Card>
-      <Card title="<deck-split>"><p>Two or three columns · <code>cols="1-1"</code>, <code>"1-2"</code>, <code>"3"</code>.</p></Card>
-      <Card title="<deck-hero-detail>"><p>Hero on top, two detail cards below.</p></Card>
-      <Card title="<deck-hook>"><p>Centered punchline on dark · the take-home line.</p></Card>
-    </CardGrid>
+    <ul class="layout-grid">
+      <li>
+        <LayoutPreview type="cover" />
+        <h3>&lt;deck-cover&gt;</h3>
+        <p>Opening slide · XL title on dark, optional brand mark, meta block.</p>
+      </li>
+      <li>
+        <LayoutPreview type="section" />
+        <h3>&lt;deck-section&gt;</h3>
+        <p>Chapter separator · number + centered title on dark.</p>
+      </li>
+      <li>
+        <LayoutPreview type="hero" />
+        <h3>&lt;deck-feature&gt;</h3>
+        <p>One focal block · code, table, mermaid, big stat.</p>
+      </li>
+      <li>
+        <LayoutPreview type="split" />
+        <h3>&lt;deck-split&gt;</h3>
+        <p>Two or three columns · <code>cols="1-1"</code>, <code>"1-2"</code>, <code>"3"</code>.</p>
+      </li>
+      <li>
+        <LayoutPreview type="hero-detail" />
+        <h3>&lt;deck-feature-cards&gt;</h3>
+        <p>Hero on top, two detail cards below.</p>
+      </li>
+      <li>
+        <LayoutPreview type="hook" />
+        <h3>&lt;deck-takeaway&gt;</h3>
+        <p>Centered punchline on dark · the take-home line.</p>
+      </li>
+    </ul>
     <p class="more">
-      Plus 17 atoms · <code>md</code>, <code>code</code>, <code>callout</code>,
+      Plus 18 atoms · <code>md</code>, <code>code</code>, <code>callout</code>,
       <code>card</code>, <code>mermaid</code>, <code>stat</code>, <code>badge</code>,
       <code>metric</code>, <code>tier-list</code>, <code>step-list</code>,
       <code>kicker</code>, <code>stack</code>, <code>grid</code>, <code>punch</code>,
@@ -116,7 +157,16 @@ const quickstartCode = `<!doctype html>
       Drop this file on any static host · GitHub Pages, S3, Netlify, your local
       <code>python -m http.server</code>. No build, no environment.
     </p>
+    <p class="more">
+      Want a more guided walk-through? &nbsp;<a href="/docs/cheatsheet">→ Your first deck in 5 components</a>.
+    </p>
   </Section>
+
+  <PluginShelf />
+  <Comparison />
+  <Limits />
+  <Faq />
+  <DocsToc />
 
   <Hook
     kicker="The whole point"
@@ -128,18 +178,76 @@ const quickstartCode = `<!doctype html>
 </Base>
 
 <style>
+  .demo-band {
+    /* Dark on top so the preview overlaps the hero · pulls into the dark
+       portion via the negative top-margin on .demo-inner. */
+    background: linear-gradient(180deg, var(--rik-surface-inverse) 0%, var(--rik-surface-inverse) 80px, var(--rik-surface-page) 80px);
+    padding: 0 var(--rik-space-5) var(--rik-space-6);
+  }
+  .demo-inner {
+    max-width: 1080px;
+    margin: -80px auto 0;     /* preview crosses the hero/paper boundary */
+    position: relative;
+  }
   .notes {
     display: flex; flex-direction: column;
-    gap: var(--sp-3);
+    gap: var(--rik-space-3);
   }
   .more {
-    margin-top: var(--sp-5);
-    font-size: var(--fs-body);
-    color: var(--muted);
+    margin-top: var(--rik-space-5);
+    font-size: var(--rik-font-size-body);
+    color: var(--rik-text-default--faint);
     line-height: 1.65;
     max-width: 75ch;
   }
   .more code {
-    color: var(--text);
+    color: var(--rik-text-default);
+  }
+
+  /* Library section · 6 layouts with mini schematics on top of each card */
+  .layout-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--rik-space-4);
+  }
+  @media (max-width: 880px) {
+    .layout-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .layout-grid { grid-template-columns: 1fr; }
+  }
+  .layout-grid li {
+    display: flex; flex-direction: column;
+    gap: var(--rik-space-2);
+    padding: var(--rik-space-3);
+    background: var(--rik-surface-raised--strong);
+    border: 1px solid var(--rik-border-default);
+    border-radius: var(--rik-radius-md);
+    box-shadow: var(--rik-elevation-1);
+  }
+  .layout-grid h3 {
+    font-family: var(--rik-font-mono);
+    font-size: var(--rik-font-size-body);
+    font-weight: 700;
+    color: var(--rik-text-default);
+    letter-spacing: -0.005em;
+    margin: var(--rik-space-1) 0 0;
+  }
+  .layout-grid p {
+    font-size: var(--rik-font-size-sm);
+    color: var(--rik-text-default--muted);
+    line-height: 1.5;
+    margin: 0;
+  }
+  .layout-grid code {
+    font-family: var(--rik-font-mono);
+    font-size: 0.9em;
+    background: var(--rik-surface-tint);
+    color: var(--rik-text-default);
+    padding: 1px 5px;
+    border-radius: 3px;
   }
 </style>

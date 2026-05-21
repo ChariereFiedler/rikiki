@@ -1,5 +1,5 @@
 ---
-// Closing hook · derived from <deck-hook>. Big punchline on dark.
+// Closing hook · derived from <deck-takeaway>. Big punchline on dark.
 interface Props {
   kicker?: string;
   punch: string;
@@ -18,9 +18,9 @@ const { kicker, punch, caption } = Astro.props;
 
 <style>
   .hook {
-    background: var(--dark);
-    color: var(--on-dark-text);
-    padding: var(--sp-7) var(--sp-5);
+    background: var(--rik-surface-inverse);
+    color: var(--rik-text-inverse);
+    padding: var(--rik-space-7) var(--rik-space-5);
     text-align: center;
   }
   .inner {
@@ -28,29 +28,29 @@ const { kicker, punch, caption } = Astro.props;
     margin: 0 auto;
     display: flex; flex-direction: column;
     align-items: center;
-    gap: var(--sp-3);
+    gap: var(--rik-space-3);
   }
   .kicker {
-    font-family: var(--mono);
-    font-size: var(--fs-micro);
+    font-family: var(--rik-font-mono);
+    font-size: var(--rik-font-size-xs);
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--on-dark-faint);
-    margin-bottom: var(--sp-2);
+    color: var(--rik-text-inverse--ghost);
+    margin-bottom: var(--rik-space-2);
   }
   .punch {
-    font-family: var(--display);
-    font-size: var(--fs-display);
+    font-family: var(--rik-font-display);
+    font-size: var(--rik-font-size-display);
     font-weight: 900;
     line-height: 1;
     letter-spacing: -0.04em;
-    color: var(--on-dark-text);
+    color: var(--rik-text-inverse);
   }
-  .punch :global(.accent) { color: var(--mango); }
+  .punch :global(.accent) { color: var(--rik-accent); }
   .caption {
-    font-size: var(--fs-lead);
-    color: var(--on-dark-muted);
+    font-size: var(--rik-font-size-lead);
+    color: var(--rik-text-inverse--faint);
     max-width: 50ch;
-    margin-top: var(--sp-3);
+    margin-top: var(--rik-space-3);
   }
 </style>

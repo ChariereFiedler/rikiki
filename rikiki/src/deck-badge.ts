@@ -22,19 +22,19 @@ export class DeckBadge extends LitElement {
   static override styles = css`
     :host {
       display: inline-block;
-      padding: var(--deck-badge-padding-y, var(--sp-1)) var(--deck-badge-padding-x, var(--sp-3));
-      margin-bottom: var(--sp-2);
-      font: 700 var(--fs-micro)/1.2 var(--sans);
+      padding: var(--deck-badge-padding-y, var(--rik-space-1)) var(--deck-badge-padding-x, var(--rik-space-3));
+      margin-bottom: var(--rik-space-2);
+      font: 700 var(--rik-font-size-xs)/1.2 var(--rik-font-sans);
       letter-spacing: 0.1em; text-transform: uppercase;
-      border-radius: var(--deck-badge-radius, var(--r-pill));
-      background: var(--deck-badge-bg, var(--surface-tint));
-      color: var(--deck-badge-fg, var(--muted));
-      border: 1px solid var(--deck-badge-border, var(--border));
+      border-radius: var(--deck-badge-radius, var(--rik-radius-pill));
+      background: var(--deck-badge-bg, var(--rik-surface-tint));
+      color: var(--deck-badge-fg, var(--rik-text-default--faint));
+      border: 1px solid var(--deck-badge-border, var(--rik-border-default));
     }
-    :host([type="bad"])  { --deck-badge-bg: var(--surface-bad);          --deck-badge-fg: var(--red);       --deck-badge-border: var(--border-bad); }
-    :host([type="ok"])   { --deck-badge-bg: var(--surface-ok);           --deck-badge-fg: var(--green);     --deck-badge-border: var(--border-ok); }
-    :host([type="info"]) { --deck-badge-bg: var(--surface-info-strong);  --deck-badge-fg: var(--text-info); --deck-badge-border: var(--border-info); }
-    :host([type="warn"]) { --deck-badge-bg: var(--surface-warn);         --deck-badge-fg: var(--orange);    --deck-badge-border: var(--border-warn); }
+    :host([type="bad"])  { --deck-badge-bg: var(--rik-status-danger__bg);          --deck-badge-fg: var(--rik-status-danger);       --deck-badge-border: var(--rik-status-danger__border); }
+    :host([type="ok"])   { --deck-badge-bg: var(--rik-status-success__bg);           --deck-badge-fg: var(--rik-status-success);     --deck-badge-border: var(--rik-status-success__border); }
+    :host([type="info"]) { --deck-badge-bg: var(--rik-status-info__bg--strong);  --deck-badge-fg: var(--rik-status-info__text); --deck-badge-border: var(--rik-status-info__border); }
+    :host([type="warn"]) { --deck-badge-bg: var(--rik-status-warn__bg);         --deck-badge-fg: var(--rik-status-warn);    --deck-badge-border: var(--rik-status-warn__border); }
   `;
 
   @property({ type: String }) type?: DeckBadgeType;

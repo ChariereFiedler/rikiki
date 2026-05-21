@@ -1,0 +1,98 @@
+---
+import Docs from '../../layouts/Docs.astro';
+---
+
+<Docs
+  title="Navigation"
+  eyebrow="Concepts"
+  description="Two axes, one safe key. The 2D model only kicks in when you actually have sections."
+>
+
+<h2 id="two-axes">Two axes</h2>
+<p>
+  When your deck contains at least two chapters (a chapter is opened by a
+  <code>&lt;deck-section&gt;</code>) and at least one of them has more than one
+  slide, Rikiki switches to a <strong>2D navigation</strong> mirroring
+  reveal.js:
+</p>
+
+<table class="keys">
+  <thead><tr><th>Key</th><th>Action</th><th>Edge fallback</th></tr></thead>
+  <tbody>
+    <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Previous / next chapter</td><td>Linear step at deck edges</td></tr>
+    <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Walk slides inside a chapter</td><td>Crosses into next chapter linearly</td></tr>
+    <tr><td><kbd>Space</kbd> <kbd>PgDn</kbd></td><td>Linear next · always advances</td><td>·</td></tr>
+    <tr><td><kbd>PgUp</kbd></td><td>Linear previous</td><td>·</td></tr>
+    <tr><td><kbd>Home</kbd> <kbd>End</kbd></td><td>First / last slide</td><td>·</td></tr>
+  </tbody>
+</table>
+
+<p>
+  When you don't have <code>&lt;deck-section&gt;</code> markers, all arrow
+  keys act linearly (the 2D model is hidden).
+</p>
+
+<h2 id="overview">Overview mode</h2>
+<p>
+  Press <kbd>O</kbd> to open a path-style overview: one row per chapter,
+  sub-slides flow rightward, the current slide is highlighted. Click any
+  thumbnail to jump there. Press <kbd>Esc</kbd> or <kbd>O</kbd> again to
+  close.
+</p>
+
+<p>
+  The overview module is <strong>lazy-loaded</strong> · the JS and CSS
+  fetch on first <kbd>O</kbd>. Same for the help overlay below.
+</p>
+
+<h2 id="help">Help overlay</h2>
+<p>
+  Press <kbd>?</kbd> or <kbd>H</kbd> for the full keyboard cheatsheet. The
+  list adapts to whether 2D nav applies in the current deck.
+</p>
+
+<h2 id="hash">URL hash</h2>
+<p>
+  The canonical URL is <code>#N</code> · slide N (1-indexed, flat). You can
+  share <code>#5</code> and the deck opens on slide 5. Inputs of the form
+  <code>#chapter.slide</code> (e.g. <code>#2.3</code>) are also accepted but
+  rewritten to the flat form so the share link stays simple.
+</p>
+
+<h2 id="kb-hint">The bottom-left hint</h2>
+<p>
+  Rikiki shows a small keyboard cheatsheet in the bottom-left corner: it
+  always lists <kbd>←</kbd> <kbd>→</kbd>, <kbd>O</kbd>, <kbd>?</kbd> · and
+  adds <kbd>↑</kbd> <kbd>↓</kbd> automatically when 2D nav is active.
+</p>
+
+<style>
+  table.keys {
+    width: 100%; max-width: 720px;
+    border-collapse: collapse;
+    margin: var(--rik-space-4) 0;
+  }
+  table.keys th, table.keys td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--rik-border-default);
+  }
+  table.keys th {
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--rik-text-default--faint);
+  }
+  kbd {
+    display: inline-block;
+    padding: 3px 7px; margin-right: 2px;
+    background: var(--rik-surface-raised);
+    border: 1px solid var(--rik-border-default);
+    border-bottom: 2px solid #c4c4be;
+    border-radius: 4px;
+    font: 700 0.85rem/1 var(--rik-font-mono);
+    color: var(--rik-text-default);
+    min-width: 22px; text-align: center;
+  }
+</style>
+
+</Docs>

@@ -18,25 +18,31 @@ type Chapter = { startIdx: number; slides: Slide[] };
 
 @customElement('deck-root')
 export class DeckRoot extends LitElement {
+  /* Customization tokens:
+       --deck-root-bg (page background under all slides)
+       --deck-root-progress-color / --deck-root-progress-height
+       --deck-root-counter-color / --deck-root-dot-bg / --deck-root-dot-active-bg
+       --deck-root-kb-hint-color (the bottom-left keyboard hint chip) */
   static override styles = css`
     :host {
       display: block;
       width: 100vw;
       height: 100vh;
       position: relative;
-      background: var(--bg);
+      background: var(--deck-root-bg, var(--rik-surface-page));
     }
     #progress {
       position: fixed; bottom: 0; left: 0;
-      height: 3px; background: linear-gradient(90deg, var(--yellow), var(--yellow-soft));
+      height: var(--deck-root-progress-height, 3px);
+      background: var(--deck-root-progress-color, linear-gradient(90deg, var(--rik-accent), var(--rik-accent--soft)));
       transition: width 0.25s ease;
       z-index: 100;
     }
     #counter {
       position: fixed; bottom: 1rem; right: 1.5rem;
-      font-size: var(--fs-micro);
-      color: var(--muted);
-      font-family: var(--mono);
+      font-size: var(--rik-font-size-xs);
+      color: var(--deck-root-counter-color, var(--rik-text-default--faint));
+      font-family: var(--rik-font-mono);
       z-index: 100;
     }
     #step-dots {
@@ -45,14 +51,18 @@ export class DeckRoot extends LitElement {
       display: flex; gap: 6px;
       z-index: 100;
     }
-    .dot { width: 6px; height: 6px; border-radius: 50%; background: #d4d4d0; transition: background 0.2s; }
-    .dot.active { background: var(--yellow); }
+    .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--deck-root-dot-bg, #d4d4d0);
+      transition: background 0.2s;
+    }
+    .dot.active { background: var(--deck-root-dot-active-bg, var(--rik-accent)); }
 
     #kb-hint {
       position: fixed; bottom: 1rem; left: 1.5rem;
       display: inline-flex; align-items: center; gap: 6px;
-      font: 600 0.62rem/1 var(--mono);
-      color: var(--muted);
+      font: 600 0.62rem/1 var(--rik-font-mono);
+      color: var(--deck-root-kb-hint-color, var(--rik-text-default--faint));
       z-index: 100;
       opacity: 0.5;
       transition: opacity 0.2s ease;
@@ -60,21 +70,49 @@ export class DeckRoot extends LitElement {
     }
     #kb-hint:hover { opacity: 1; }
     #kb-hint kbd {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-bottom: 2px solid var(--border);
+      background: var(--rik-surface-raised);
+      border: 1px solid var(--rik-border-default);
+      border-bottom: 2px solid var(--rik-border-default);
       border-radius: 4px;
       padding: 2px 6px;
-      color: var(--text);
+      color: var(--rik-text-default);
       font: inherit;
       min-width: 16px; text-align: center;
     }
     #kb-hint .sep { opacity: 0.4; }
+
+    /* Black / white overlay · raised over everything, dismissed by any key
+       (handled in _onKey) or a click. */
+    #blank {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      cursor: pointer;
+    }
+    #blank[data-tone="black"] { background: #000; }
+    #blank[data-tone="white"] { background: #fff; }
   `;
 
   @state() current = 0;
   @state() step = 0;
+  /** When non-null, a full-screen overlay covers the deck (clicker B/./W/,
+   *  keys). Pressing any key dismisses it · same convention as PowerPoint. */
+  @state() blank: 'black' | 'white' | null = null;
   @property({ type: Boolean, reflect: true }) overview = false;
+  /** Optional slide transition · "slide" | "fade" | "zoom". When set, the
+   *  deck-transition.js plugin is fetched on first navigation. Per-slide
+   *  override available via `data-transition` on the slide host. */
+  @property({ type: String, reflect: true }) transition: string | null = null;
+  /** Carousel-mode auto-advance · milliseconds between slides.
+   *  Pauses on hover / focus, restarts on mouse-leave. Resets on any
+   *  user-triggered navigation. Use 0 (default) to disable. */
+  @property({ type: Number, reflect: true }) autoplay = 0;
+  /** Wrap around at the deck edges. When advancing past the last slide,
+   *  jump to the first; when going back from the first, jump to the last. */
+  @property({ type: Boolean, reflect: true }) loop = false;
+  /** Enable pointer-driven horizontal swipe for navigation (touch + mouse).
+   *  Translates a swipe ≥ 60 px into an advance / back navigation. */
+  @property({ type: Boolean, reflect: true }) swipe = false;
 
   // Flat list of all <deck-*> children (excluding deck-root itself)
   private slides: Slide[] = [];
@@ -82,6 +120,15 @@ export class DeckRoot extends LitElement {
   private chapters: Chapter[] = [];
   // Cached teardown for the overview mount (the module is imported lazily)
   private _overviewTeardown: (() => void) | null = null;
+  // True after the transition plugin has been fetched once
+  private _transitionLoaded = false;
+  // Autoplay timer + paused state · paused while overview/help/hover is up
+  private _autoplayTimer: number | null = null;
+  private _autoplayPaused = false;
+  // Swipe tracking · start coordinates and the active pointer id
+  private _swipeStartX = 0;
+  private _swipeStartY = 0;
+  private _swipePointerId: number | null = null;
 
   override firstUpdated(): void {
     this.slides = Array.from(this.querySelectorAll<Slide>(':scope > *')).filter((el) =>
@@ -97,13 +144,74 @@ export class DeckRoot extends LitElement {
     this.requestUpdate();
     window.addEventListener('keydown', this._onKey);
     window.addEventListener('hashchange', this._onHash);
+    if (this.autoplay > 0) this._startAutoplay();
+    if (this.swipe) {
+      this.addEventListener('pointerdown', this._onPointerDown);
+      this.addEventListener('pointerup',   this._onPointerUp);
+      this.addEventListener('pointercancel', this._onPointerUp);
+      // Pause autoplay while user hovers · resume on leave
+      this.addEventListener('mouseenter', this._onHoverEnter);
+      this.addEventListener('mouseleave', this._onHoverLeave);
+    } else if (this.autoplay > 0) {
+      this.addEventListener('mouseenter', this._onHoverEnter);
+      this.addEventListener('mouseleave', this._onHoverLeave);
+    }
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     window.removeEventListener('keydown', this._onKey);
     window.removeEventListener('hashchange', this._onHash);
+    this._stopAutoplay();
+    this.removeEventListener('pointerdown',  this._onPointerDown);
+    this.removeEventListener('pointerup',    this._onPointerUp);
+    this.removeEventListener('pointercancel', this._onPointerUp);
+    this.removeEventListener('mouseenter',   this._onHoverEnter);
+    this.removeEventListener('mouseleave',   this._onHoverLeave);
   }
+
+  /* ── Autoplay ─────────────────────────────────────────────────── */
+  private _startAutoplay(): void {
+    this._stopAutoplay();
+    if (this.autoplay <= 0 || this._autoplayPaused) return;
+    this._autoplayTimer = window.setInterval(() => this._autoTick(), this.autoplay);
+  }
+  private _stopAutoplay(): void {
+    if (this._autoplayTimer !== null) {
+      window.clearInterval(this._autoplayTimer);
+      this._autoplayTimer = null;
+    }
+  }
+  private _autoTick(): void {
+    if (this.overview) return;
+    const atEnd = this.current >= this.slides.length - 1 && this.step >= this._maxSteps();
+    if (atEnd && this.loop) this._goTo(0);
+    else this._advance();
+  }
+  private _onHoverEnter = (): void => { this._autoplayPaused = true; this._stopAutoplay(); };
+  private _onHoverLeave = (): void => { this._autoplayPaused = false; if (this.autoplay > 0) this._startAutoplay(); };
+
+  /* ── Swipe ────────────────────────────────────────────────────── */
+  private _onPointerDown = (e: PointerEvent): void => {
+    if (!this.swipe || e.pointerType === 'mouse' && e.button !== 0) return;
+    // Ignore swipes that start inside an interactive child (links, inputs, kbd-hint, …)
+    const target = e.target as HTMLElement | null;
+    if (target?.closest('a, button, input, textarea, [contenteditable]')) return;
+    this._swipePointerId = e.pointerId;
+    this._swipeStartX = e.clientX;
+    this._swipeStartY = e.clientY;
+  };
+  private _onPointerUp = (e: PointerEvent): void => {
+    if (this._swipePointerId === null || e.pointerId !== this._swipePointerId) return;
+    const dx = e.clientX - this._swipeStartX;
+    const dy = e.clientY - this._swipeStartY;
+    this._swipePointerId = null;
+    // Require a horizontal swipe at least 60 px and ≥ 2× the vertical drift
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 2) return;
+    this._stopAutoplay();
+    if (dx < 0) this._advance(); else this._back();
+    if (this.autoplay > 0 && !this._autoplayPaused) this._startAutoplay();
+  };
 
   /** Group slides into chapters bounded by <deck-section> markers. */
   private _buildChapters(): void {
@@ -181,6 +289,12 @@ export class DeckRoot extends LitElement {
   private _onKey = (e: KeyboardEvent): void => {
     if (e.target && (e.target as HTMLElement).matches?.('input,textarea,[contenteditable]')) return;
 
+    // Any user keyboard input resets the autoplay countdown so an explicit
+    // press doesn't immediately get followed by an auto-advance.
+    if (this.autoplay > 0 && !this._autoplayPaused) {
+      this._startAutoplay();
+    }
+
     // Overview mode swallows most keys · only O / Esc / Enter exit it.
     if (this.overview) {
       if (e.key === 'Escape' || e.key === 'o' || e.key === 'O' || e.key === 'Enter') {
@@ -190,9 +304,19 @@ export class DeckRoot extends LitElement {
       return;
     }
 
+    // Black / white screen (PowerPoint-style clicker keys: B, W, period, comma)
+    if (this.blank) {
+      e.preventDefault();
+      this.blank = null;
+      return;
+    }
+    if (e.key === '.' || e.key === 'b' || e.key === 'B') { e.preventDefault(); this.blank = 'black'; return; }
+    if (e.key === ',' || e.key === 'w' || e.key === 'W') { e.preventDefault(); this.blank = 'white'; return; }
+
     if (e.key === '?' || e.key === 'h' || e.key === 'H') { void this._toggleHelp(); return; }
     if (e.key === 'Escape')                              { void this._closeHelp(); return; }
     if (e.key === 'o' || e.key === 'O')                  { e.preventDefault(); this.overview = true; return; }
+    if (e.key === 'p' || e.key === 'P')                  { e.preventDefault(); void this._togglePresenter(); return; }
     if (e.key === 'Home')                                { this._goTo(0); return; }
     if (e.key === 'End')                                 { this._goTo(this.slides.length - 1); return; }
     if (e.key === ' ' || e.key === 'PageDown')           { e.preventDefault(); this._advance(); return; }
@@ -240,6 +364,12 @@ export class DeckRoot extends LitElement {
     const mod = await import('./deck-help.js');
     mod.toggleHelp(this);
   }
+
+  /** Lazy-import the presenter (speaker-notes window) plugin on first P press. */
+  private async _togglePresenter(): Promise<void> {
+    const mod = await import('./deck-presenter.js');
+    mod.installPresenter(this);
+  }
   private async _closeHelp(): Promise<void> {
     const mod = await import('./deck-help.js');
     mod.closeHelp(this);
@@ -285,6 +415,8 @@ export class DeckRoot extends LitElement {
       this._writeHash();
     } else if (this.current < this.slides.length - 1) {
       this._goTo(this.current + 1);
+    } else if (this.loop) {
+      this._goTo(0);
     }
   }
 
@@ -296,6 +428,12 @@ export class DeckRoot extends LitElement {
       this._writeHash();
     } else if (this.current > 0) {
       this._goTo(this.current - 1);
+      this.step = this._maxSteps();
+      this._applyStep();
+      this._updateUI();
+      this._writeHash();
+    } else if (this.loop) {
+      this._goTo(this.slides.length - 1);
       this.step = this._maxSteps();
       this._applyStep();
       this._updateUI();
@@ -321,6 +459,8 @@ export class DeckRoot extends LitElement {
   }
 
   private _applyActive(): void {
+    const previous = this.slides.find((s) => s.hasAttribute('active')) ?? null;
+    const next = this.slides[this.current] ?? null;
     this.slides.forEach((s, i) => {
       const isCurrent = i === this.current;
       s.toggleAttribute('active', isCurrent);
@@ -329,6 +469,19 @@ export class DeckRoot extends LitElement {
           .forEach((m) => m.render?.());
       }
     });
+    // Lazy-load the transition plugin the first time we navigate when the
+    // user has opted in via the `transition` attribute. The plugin attaches
+    // its own listener for the `slide-change` event below.
+    if (this.transition && !this._transitionLoaded) {
+      this._transitionLoaded = true;
+      void import('./deck-transition.js').then((m) => m.installTransitions(this));
+    }
+    if (previous !== next) {
+      this.dispatchEvent(new CustomEvent('slide-change', {
+        detail: { current: next, previous },
+        bubbles: false,
+      }));
+    }
   }
 
   private _applyStep(): void {
@@ -376,9 +529,12 @@ export class DeckRoot extends LitElement {
         <span>·</span>
         <kbd>O</kbd>
         <span>·</span>
+        <kbd>P</kbd>
+        <span>·</span>
         <kbd>?</kbd>
       </div>
       <slot></slot>
+      ${this.blank ? html`<div id="blank" data-tone="${this.blank}" @click=${() => { this.blank = null; }}></div>` : ''}
     `;
   }
 }

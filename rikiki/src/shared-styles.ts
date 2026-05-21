@@ -11,12 +11,12 @@ export const slideShell = css`
     display: none;
     position: absolute;
     inset: 0;
-    padding: var(--slide-pad-y) var(--slide-pad-x);
+    padding: var(--rik-slide-padding-y) var(--rik-slide-padding-x);
     flex-direction: column;
     overflow: hidden;
-    background: var(--bg);
-    font-family: var(--sans);
-    color: var(--text);
+    background: var(--rik-surface-page);
+    font-family: var(--rik-font-sans);
+    color: var(--rik-text-default);
   }
   :host([active]) { display: flex; }
 `;
@@ -24,82 +24,85 @@ export const slideShell = css`
 // Typographie de base
 export const typo = css`
   h1 {
-    font-size: var(--fs-h1);
+    font-size: var(--rik-font-size-h1);
     font-weight: 700;
-    color: var(--text);
+    color: var(--rik-text-default);
     letter-spacing: -0.022em;
     line-height: 1.15;
-    margin-bottom: var(--sp-4);
-    padding-bottom: var(--sp-2);
-    border-bottom: 3px solid var(--yellow);
+    margin-bottom: var(--rik-space-4);
+    padding-bottom: var(--rik-space-2);
+    border-bottom: 3px solid var(--rik-accent);
     display: inline-block;
     align-self: flex-start;
     flex: 0 0 auto;
   }
-  h1 .accent { color: var(--yellow); }
+  h1 .accent { color: var(--rik-accent); }
   ::slotted(p), p {
-    font-size: var(--fs-body);
+    font-size: var(--rik-font-size-body);
     line-height: 1.65;
-    color: var(--soft);
+    color: var(--rik-text-default--muted);
     margin: 0;
   }
-  ::slotted(strong), strong { color: var(--text); font-weight: 700; }
+  ::slotted(strong), strong { color: var(--rik-text-default); font-weight: 700; }
   ::slotted(code), code {
-    font-family: var(--mono);
-    font-size: var(--fs-mono-sm);
+    font-family: var(--rik-font-mono);
+    font-size: var(--rik-font-size-mono-sm);
     background: rgba(0,0,0,0.06);
     padding: 2px 6px;
-    border-radius: var(--r-sm);
-    color: var(--text);
+    border-radius: var(--rik-radius-sm);
+    color: var(--rik-text-default);
   }
 `;
 
 // Helpers (lbl, lead, kicker, caption)
 export const helpers = css`
+  /* Eyebrow pill · customizable per slide-host via:
+       --deck-eyebrow-bg / --deck-eyebrow-color
+       --deck-eyebrow-padding-x / --deck-eyebrow-padding-y / --deck-eyebrow-radius */
   .lbl {
     display: inline-block;
-    padding: 4px 12px;
-    background: var(--yellow);
-    color: var(--dark);
-    border-radius: 9999px;
-    font-size: var(--fs-micro);
+    padding: var(--deck-eyebrow-padding-y, 4px) var(--deck-eyebrow-padding-x, 12px);
+    background: var(--deck-eyebrow-bg, var(--rik-accent));
+    color: var(--deck-eyebrow-color, var(--rik-accent__on, var(--rik-surface-inverse)));
+    border-radius: var(--deck-eyebrow-radius, var(--rik-radius-pill));
+    font-size: var(--rik-font-size-xs);
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    margin-bottom: var(--sp-1);
+    margin-bottom: var(--rik-space-1);
     align-self: flex-start;
   }
   .lead {
-    font-size: var(--fs-lead);
-    color: var(--muted);
+    font-size: var(--rik-font-size-lead);
+    color: var(--rik-text-default--faint);
     line-height: 1.5;
-    margin-bottom: var(--sp-4);
+    margin-bottom: var(--rik-space-4);
     max-width: 75ch;
     flex: 0 0 auto;
   }
   .kicker {
-    font-size: var(--fs-micro);
+    font-size: var(--rik-font-size-xs);
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: var(--sp-3);
+    color: var(--rik-text-default--faint);
+    margin-bottom: var(--rik-space-3);
     display: block;
   }
   .kicker.on-dark { color: rgba(255,255,255,0.35); }
   .caption {
-    font-size: var(--fs-small);
-    color: var(--muted);
+    font-size: var(--rik-font-size-sm);
+    color: var(--rik-text-default--faint);
     line-height: 1.55;
   }
   .caption.on-dark { color: rgba(255,255,255,0.5); }
   .col-label {
-    font-size: var(--fs-micro);
+    font-size: var(--rik-font-size-xs);
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: var(--sp-2);
+    color: var(--rik-text-default--faint);
+    margin-bottom: var(--rik-space-2);
   }
 `;
 

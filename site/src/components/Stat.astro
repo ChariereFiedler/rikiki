@@ -17,39 +17,39 @@ const { num, claim, tone = 'mango' } = Astro.props;
 <style>
   .stat {
     display: flex; flex-direction: column;
-    gap: var(--sp-2);
-    padding: var(--sp-4) var(--sp-3);
-    border-left: 4px solid var(--_c, var(--mango));
+    gap: var(--rik-space-2);
+    padding: var(--rik-space-4) var(--rik-space-3);
+    border-left: 4px solid var(--_c, var(--rik-accent));
     min-width: 0;
   }
-  .stat.mango  { --_c: var(--mango); }
-  .stat.helico { --_c: var(--helico); }
-  .stat.orchid { --_c: var(--orchid); }
-  .stat.lime   { --_c: var(--lime); }
-  .stat.ember  { --_c: var(--ember); }
+  .stat.mango  { --_c: var(--rik-accent); }
+  .stat.helico { --_c: var(--rik-status-success); }
+  .stat.orchid { --_c: var(--rik-decor-orchid); }
+  .stat.lime   { --_c: var(--rik-decor-lime); }
+  .stat.ember  { --_c: var(--rik-status-danger); }
 
   .num {
-    font-family: var(--display);
+    font-family: var(--rik-font-display);
     font-size: clamp(3rem, 6vw, 5rem);
     font-weight: 900;
     line-height: 0.9;
-    color: var(--_c, var(--mango));
+    color: var(--_c, var(--rik-accent));
     letter-spacing: -0.04em;
   }
   .claim {
-    font-family: var(--display);
+    font-family: var(--rik-font-display);
     font-size: 1.4rem;
     font-weight: 800;
-    color: var(--text);
+    color: var(--rik-text-default);
     line-height: 1.15;
     letter-spacing: -0.02em;
     margin: 0;
   }
   .body {
-    font-size: var(--fs-body);
-    color: var(--muted);
+    font-size: var(--rik-font-size-body);
+    color: var(--rik-text-default--faint);
     line-height: 1.5;
-    margin-top: var(--sp-2);
+    margin-top: var(--rik-space-2);
   }
-  .body :global(strong) { color: var(--text); font-weight: 700; }
+  .body :global(strong) { color: var(--rik-text-default); font-weight: 700; }
 </style>

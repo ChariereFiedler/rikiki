@@ -27,7 +27,7 @@
   </deck-section>
 
   <!-- T3 · HERO with code block ──────────────────────────────── -->
-  <deck-hero eyebrow="Topic">
+  <deck-feature eyebrow="Topic">
     <h1 slot="title">Headline · sharp claim</h1>
     <p slot="lead" class="lead">One sentence that frames why this slide matters. Keep it short.</p>
     <deck-code lang="js" hero>
@@ -37,7 +37,7 @@
 
       greet('world');
     </deck-code>
-  </deck-hero>
+  </deck-feature>
 
   <!-- T4 · SPLIT, 2 cards ────────────────────────────────────── -->
   <deck-split eyebrow="Compare">
@@ -63,7 +63,7 @@
   </deck-split>
 
   <!-- T5 · HERO + DETAIL ─────────────────────────────────────── -->
-  <deck-hero-detail eyebrow="Deep dive">
+  <deck-feature-cards eyebrow="Deep dive">
     <h1 slot="title">One thing at a time</h1>
     <p slot="lead" class="lead">A focused snippet with two short notes underneath.</p>
     <deck-code lang="ts" hero>
@@ -85,16 +85,16 @@
         The contract you keep · API surface, public types, IDs.
       </deck-md>
     </deck-card>
-  </deck-hero-detail>
+  </deck-feature-cards>
 
   <!-- HOOK · dark centered punchline ─────────────────────────── -->
-  <deck-hook kicker="The number that matters">
+  <deck-takeaway kicker="The number that matters">
     <p class="display">~1 second</p>
     <p class="caption on-dark">describe the unit · who pays the cost, and when</p>
     <deck-callout type="danger">
       <strong>Concrete consequence</strong> users feel, before any mitigation.
     </deck-callout>
-  </deck-hook>
+  </deck-takeaway>
 
   <!-- T4 · SPLIT, 3 cards ────────────────────────────────────── -->
   <deck-split eyebrow="Actions" cols="3">

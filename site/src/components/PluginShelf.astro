@@ -1,0 +1,201 @@
+---
+const plugins = [
+  {
+    name: 'transitions',
+    file: 'deck-transition.js',
+    size: '1.7 KB gz',
+    activate: 'transition="slide"',
+    summary: 'Slide-in / fade / zoom / flip · auto-directional. Cross-fades outgoing + incoming, no background flash.',
+    href: '/docs/plugins#transition',
+  },
+  {
+    name: 'speaker mode',
+    file: 'deck-presenter.js',
+    size: '2.9 KB gz',
+    activate: 'press P',
+    summary: 'Popup window · current + next slide + speaker notes + timer. Syncs via BroadcastChannel.',
+    href: '/docs/plugins#presenter',
+  },
+  {
+    name: 'shiki',
+    file: 'shiki-plugin.js',
+    size: '0.6 KB gz + Shiki CDN',
+    activate: 'installShiki()',
+    summary: 'Production-grade syntax for deck-code · TextMate grammars, JSX/TSX, template literals. Fallback to default highlighter when a lang is missing.',
+    href: '/docs/plugins#shiki',
+  },
+  {
+    name: 'notes',
+    file: 'deck-notes',
+    size: '0.4 KB (in core)',
+    activate: '<deck-notes>',
+    summary: 'Hidden slot for speaker notes · surfaced in the presenter window. Free-form text, pre-wrap.',
+    href: '/docs/plugins#notes',
+  },
+];
+---
+
+<section id="plugins" class="shelf">
+  <div class="inner">
+    <p class="eyebrow">Plugin shelf</p>
+    <h2>Four opt-in modules. Nothing else loads.</h2>
+    <p class="lede">
+      The 12 KB core ships none of these. Each one fetches on first use,
+      so a deck that doesn't need a feature never pays for it.
+    </p>
+
+    <ul class="grid">
+      {plugins.map((p) => (
+        <li>
+          <a class="plugin" href={p.href}>
+            <header>
+              <span class="dot" aria-hidden="true"></span>
+              <h3>{p.name}</h3>
+              <span class="size">{p.size}</span>
+            </header>
+            <p class="summary">{p.summary}</p>
+            <footer>
+              <code class="file">{p.file}</code>
+              <span class="how">{p.activate}</span>
+            </footer>
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <p class="footer-note">
+      Total surface if you turn every plugin on at once · <strong>~6 KB gzip extra</strong>,
+      plus Shiki from CDN if you opt in. <a href="/docs/plugins">Read the plugin reference →</a>
+    </p>
+  </div>
+</section>
+
+<style>
+  .shelf {
+    background: var(--rik-surface-page);
+    padding: var(--rik-space-7) var(--rik-space-5);
+    border-top: 1px solid var(--rik-border-default);
+  }
+  .inner { max-width: 1080px; margin: 0 auto; }
+  .eyebrow {
+    display: inline-block;
+    background: var(--rik-accent);
+    color: var(--rik-accent__on);
+    padding: 4px 10px;
+    border-radius: var(--rik-radius-pill);
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: var(--rik-space-3);
+  }
+  h2 {
+    font-family: var(--rik-font-display);
+    font-size: var(--rik-font-size-mega);
+    font-weight: 900;
+    color: var(--rik-text-default);
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    margin: 0 0 var(--rik-space-3);
+    max-width: 22ch;
+  }
+  .lede {
+    font-size: var(--rik-font-size-lead);
+    color: var(--rik-text-default--muted);
+    line-height: 1.55;
+    max-width: 65ch;
+    margin: 0 0 var(--rik-space-6);
+  }
+
+  .grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--rik-space-3);
+  }
+  @media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px)  { .grid { grid-template-columns: 1fr; } }
+
+  .plugin {
+    display: flex; flex-direction: column;
+    gap: var(--rik-space-2);
+    padding: var(--rik-space-4);
+    height: 100%;
+    background: var(--rik-surface-raised--strong);
+    border: 1px solid var(--rik-border-default);
+    border-radius: var(--rik-radius-md);
+    text-decoration: none !important;
+    color: inherit;
+    transition: transform var(--rik-motion-fast) var(--rik-motion__ease-out),
+                box-shadow var(--rik-motion-fast) var(--rik-motion__ease-out),
+                border-color var(--rik-motion-fast) var(--rik-motion__ease-out);
+  }
+  .plugin:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--rik-elevation-3);
+    border-color: var(--rik-accent--soft);
+  }
+  .plugin header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 8px;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--rik-accent);
+    display: inline-block;
+  }
+  .plugin h3 {
+    font-family: var(--rik-font-display);
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--rik-text-default);
+    letter-spacing: -0.005em;
+    line-height: 1.2;
+    margin: 0;
+  }
+  .size {
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    color: var(--rik-text-default--faint);
+    white-space: nowrap;
+  }
+  .summary {
+    font-size: var(--rik-font-size-sm);
+    color: var(--rik-text-default--muted);
+    line-height: 1.55;
+    margin: 0;
+    flex: 1;
+  }
+  .plugin footer {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-top: var(--rik-space-2);
+    border-top: 1px solid var(--rik-border-default);
+  }
+  .file {
+    font: 700 var(--rik-font-size-xs)/1.2 var(--rik-font-mono);
+    color: var(--rik-text-default--faint);
+  }
+  .how {
+    font: 700 var(--rik-font-size-xs)/1.2 var(--rik-font-mono);
+    color: var(--rik-accent--strong);
+  }
+
+  .footer-note {
+    margin-top: var(--rik-space-5);
+    font-size: var(--rik-font-size-sm);
+    color: var(--rik-text-default--faint);
+    line-height: 1.6;
+  }
+  .footer-note strong { color: var(--rik-text-default); }
+  .footer-note a {
+    color: var(--rik-accent--strong);
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .footer-note a:hover { text-decoration: underline; }
+</style>

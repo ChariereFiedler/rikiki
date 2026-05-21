@@ -1,0 +1,205 @@
+---
+// Inline demo · embeds the rikiki-tour example inside an iframe sized like
+// a slide preview. Comes with prev/next/overview buttons that postMessage
+// keys into the iframe, plus a "fullscreen" link that opens the deck in a
+// new tab. No Rikiki JS is loaded on the parent page · the iframe is the
+// only cost, and only for visitors who actually watch it.
+interface Props {
+  src?: string;
+  initialSlide?: number;
+  /** Cycle through slides automatically (in ms). 0 disables. Default 4500ms. */
+  autoplay?: number;
+}
+const { src = '/embed/index.html', initialSlide = 1, autoplay = 4500 } = Astro.props;
+---
+
+<figure class="demo">
+  <header class="bar">
+    <span class="dots" aria-hidden="true">
+      <span></span><span></span><span></span>
+    </span>
+    <span class="label">examples/rikiki-tour</span>
+    <a class="open" href={src} target="_blank" rel="noopener">Open ↗</a>
+  </header>
+
+  <div class="frame">
+    <iframe
+      id="demo-frame"
+      src={`${src}#${initialSlide}`}
+      title="Rikiki · live demo"
+      loading="lazy"
+      allowfullscreen
+    ></iframe>
+  </div>
+
+  <footer class="controls">
+    <button type="button" data-key="ArrowLeft"  aria-label="Previous">‹</button>
+    <button type="button" data-key="Space"      aria-label="Next slide">Next slide ›</button>
+    <span class="sep">·</span>
+    <button type="button" id="autoplay-toggle" aria-label="Toggle autoplay" data-autoplay={String(autoplay)}>
+      <span class="ap-icon">▶</span>
+      <span class="ap-label">Pause</span>
+    </button>
+    <button type="button" data-key="o" aria-label="Overview">Overview</button>
+    <button type="button" data-key="?" aria-label="Shortcuts">Shortcuts</button>
+    <span class="hint">auto-cycles · pauses on hover</span>
+  </footer>
+</figure>
+
+<script>
+  const frame = document.getElementById('demo-frame') as HTMLIFrameElement | null;
+  if (frame) {
+    const sendKey = (key: string) => {
+      try {
+        frame.contentWindow?.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+      } catch { /* cross-origin · open-in-new-tab is the fallback */ }
+    };
+
+    // Manual controls
+    document.querySelectorAll<HTMLButtonElement>('.demo .controls [data-key]').forEach((btn) => {
+      btn.addEventListener('click', () => sendKey(btn.dataset['key']!));
+    });
+
+    // Autoplay · cycles through slides, loops back at the end. Uses location.hash
+    // inside the iframe to detect the last slide and reset to 1.
+    const toggle = document.getElementById('autoplay-toggle') as HTMLButtonElement | null;
+    const interval = parseInt(toggle?.dataset['autoplay'] ?? '0', 10);
+    const demoEl = document.querySelector<HTMLElement>('.demo');
+    let timer: number | undefined;
+    let running = interval > 0;
+    let paused = false;
+
+    function setLabel(): void {
+      if (!toggle) return;
+      const label = toggle.querySelector('.ap-label');
+      const icon = toggle.querySelector('.ap-icon');
+      if (running && !paused) {
+        if (label) label.textContent = 'Pause';
+        if (icon) icon.textContent = '⏸';
+      } else {
+        if (label) label.textContent = 'Play';
+        if (icon) icon.textContent = '▶';
+      }
+    }
+
+    function tick(): void {
+      if (!running || paused) return;
+      try {
+        const hash = frame.contentWindow?.location.hash || '';
+        const m = hash.match(/^#(\d+)/);
+        const cur = m ? parseInt(m[1]!, 10) : 1;
+        // The rikiki-tour has 17 slides · loop back when we hit the last
+        if (cur >= 17) {
+          frame.contentWindow!.location.hash = '#1';
+        } else {
+          sendKey(' ');
+        }
+      } catch {
+        sendKey(' ');
+      }
+    }
+
+    function start(): void { stop(); if (running && !paused && interval > 0) timer = window.setInterval(tick, interval); }
+    function stop(): void { if (timer !== undefined) { window.clearInterval(timer); timer = undefined; } }
+
+    toggle?.addEventListener('click', () => {
+      running = !running;
+      setLabel();
+      if (running) start(); else stop();
+    });
+
+    // Pause on hover / focus, resume on leave
+    demoEl?.addEventListener('mouseenter', () => { paused = true; setLabel(); stop(); });
+    demoEl?.addEventListener('mouseleave', () => { paused = false; setLabel(); if (running) start(); });
+
+    setLabel();
+    if (running) start();
+  }
+</script>
+
+<style>
+  .demo {
+    margin: 0;
+    border-radius: var(--rik-radius-lg);
+    overflow: hidden;
+    background: var(--rik-surface-raised);
+    border: 1px solid var(--rik-border-default);
+    box-shadow: 0 8px 32px rgba(6, 8, 15, 0.08);
+  }
+  .bar {
+    display: flex; align-items: center; gap: var(--rik-space-3);
+    padding: 8px var(--rik-space-3);
+    background: var(--rik-surface-inverse);
+    color: var(--rik-text-inverse--muted);
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: 0.1em;
+  }
+  .dots { display: inline-flex; gap: 5px; }
+  .dots span {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--rik-text-inverse--ghost);
+  }
+  .dots span:nth-child(1) { background: var(--rik-status-danger); }
+  .dots span:nth-child(2) { background: var(--rik-accent); }
+  .dots span:nth-child(3) { background: var(--rik-status-success); }
+  .label {
+    flex: 1;
+    color: var(--rik-text-inverse--faint);
+    text-transform: uppercase;
+  }
+  .open {
+    color: var(--rik-accent);
+    text-decoration: none;
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .open:hover { text-decoration: underline; }
+  .frame {
+    position: relative;
+    /* 16:10 instead of 16:9 · the rikiki-tour has a couple of dense slides
+       (the 2D-model one in particular) that need extra vertical breathing
+       room. Real talks tend to be 16:9 · this is a marketing-embed choice. */
+    aspect-ratio: 16 / 10;
+    background: var(--rik-surface-inverse);
+  }
+  iframe {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    border: 0;
+  }
+  .controls {
+    display: flex; align-items: center; flex-wrap: wrap;
+    gap: var(--rik-space-2);
+    padding: var(--rik-space-3) var(--rik-space-4);
+    background: #ffffff;
+    border-top: 1px solid var(--rik-border-default);
+    font-family: var(--rik-font-mono);
+    font-size: var(--rik-font-size-sm);
+  }
+  .controls button {
+    appearance: none;
+    background: var(--rik-surface-raised);
+    border: 1px solid var(--rik-border-default);
+    border-bottom: 2px solid #c4c4be;
+    border-radius: var(--rik-radius-sm);
+    padding: 6px 12px;
+    font: 700 var(--rik-font-size-sm)/1 var(--rik-font-mono);
+    color: var(--rik-text-default);
+    cursor: pointer;
+    transition: transform 0.1s ease, background 0.1s;
+  }
+  .controls button:hover { background: #ffffff; transform: translateY(-1px); }
+  .controls button:active { transform: translateY(0); }
+  .controls .sep { color: var(--rik-text-default--faint); padding: 0 4px; }
+  .controls .hint {
+    flex: 1; text-align: right;
+    color: var(--rik-text-default--faint);
+    font-size: var(--rik-font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  @media (max-width: 640px) {
+    .controls .hint { display: none; }
+  }
+</style>

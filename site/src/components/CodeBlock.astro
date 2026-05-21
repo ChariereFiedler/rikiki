@@ -8,6 +8,7 @@ interface Props {
   label?: string;
 }
 const { lang = 'html', code, label } = Astro.props;
+const langLabel = label ?? lang.toUpperCase();
 
 function highlight(src: string, lang: string): string {
   let s = src.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -32,6 +33,27 @@ function highlight(src: string, lang: string): string {
     s = s.replace(/(['"`])((?:\\.|(?!\1)[^\\])*)\1/g, (m) => put('str', m));
     s = s.replace(/\b(const|let|var|function|return|if|else|class|extends|new|export|import|from|as|await|async|of|in|typeof|true|false|null|undefined)\b/g,
       (m) => put('kw', m));
+  } else if (lang === 'css') {
+    // Comments first
+    s = s.replace(/(\/\*[\s\S]*?\*\/)/g, (m) => put('cmt', m));
+    // Strings
+    s = s.replace(/("[^"]*"|'[^']*')/g, (m) => put('str', m));
+    // CSS custom properties · --foo
+    s = s.replace(/(--[a-zA-Z][a-zA-Z0-9_-]*)/g, (m) => put('prop', m));
+    // At-rules · @media, @import, @keyframes
+    s = s.replace(/(@[a-zA-Z-]+)/g, (m) => put('kw', m));
+    // Hex colors · #f07020, #fff
+    s = s.replace(/(#[0-9a-fA-F]{3,8})\b/g, (m) => put('num', m));
+    // Numeric values with units · 12px, 1.5rem, 50%, 100vh
+    s = s.replace(/\b(\d+(?:\.\d+)?(?:px|rem|em|vh|vw|vmin|vmax|ch|%|ms|s|deg|fr)?)\b/g,
+      (m) => put('num', m));
+    // Pseudo-classes / pseudo-elements
+    s = s.replace(/(:{1,2}[a-zA-Z-]+(?:\([^)]*\))?)/g, (m) => put('ty', m));
+    // CSS functions · var, calc, clamp, rgb, etc.
+    s = s.replace(/\b(var|calc|clamp|min|max|rgb|rgba|hsl|hsla|linear-gradient|radial-gradient|cubic-bezier|url|attr|env)(?=\()/g,
+      (m) => put('fn', m));
+    // Property names (followed by a colon)
+    s = s.replace(/\b([a-zA-Z-]+)(?=\s*:)/g, (m) => put('prop', m));
   }
   return s.replace(/P(\d+)E/g, (_m, i: string) => stash[+i] ?? '');
 }
@@ -40,30 +62,41 @@ const highlighted = highlight(code.trim(), lang);
 
 <figure class="code">
   {label && <figcaption class="label">{label}</figcaption>}
-  <pre><code set:html={highlighted}></code></pre>
+  <div class="block">
+    <pre><code set:html={highlighted}></code></pre>
+    <button type="button" class="copy" aria-label="Copy code to clipboard" data-code={code.trim()}>
+      <span class="icon" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+      </span>
+      <span class="label-text">Copy</span>
+    </button>
+  </div>
 </figure>
 
 <style>
   .code {
     margin: 0;
     display: flex; flex-direction: column;
-    gap: var(--sp-2);
+    gap: var(--rik-space-2);
   }
   .label {
-    font: 700 var(--fs-micro)/1 var(--mono);
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: var(--rik-text-default--faint);
   }
   pre {
     margin: 0;
     background: #0f0f10;
     color: #f4f4f5;
     border: 1px solid #232325;
-    border-radius: var(--r-md);
-    padding: var(--sp-4);
+    border-radius: var(--rik-radius-md);
+    padding: var(--rik-space-4);
     overflow: auto;
-    font-family: var(--mono);
+    font-family: var(--rik-font-mono);
     font-size: 0.92rem;
     line-height: 1.7;
     box-shadow: 0 4px 12px rgba(0,0,0,0.06);
@@ -72,6 +105,62 @@ const highlighted = highlight(code.trim(), lang);
   pre :global(.kw)   { color: #c792ea; }
   pre :global(.str)  { color: #c3e88d; }
   pre :global(.prop) { color: #80cbc4; }
-  pre :global(.cmt)  { color: #546e7a; font-style: italic; }
+  pre :global(.cmt)  { color: #8b95a0; font-style: italic; }
   pre :global(.num)  { color: #f78c6c; }
+  pre :global(.ty)   { color: #ffcb6b; }
+  pre :global(.fn)   { color: #82aaff; }
+
+  /* Copy button · sits top-right of the code block, only visible on hover */
+  .block { position: relative; }
+  .copy {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 6px;
+    color: rgba(244, 244, 245, 0.7);
+    font: 700 11px/1 var(--rik-font-mono);
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+  }
+  .block:hover .copy,
+  .copy:focus-visible { opacity: 1; }
+  .copy:hover { background: rgba(255, 255, 255, 0.12); color: #f4f4f5; }
+  .copy.copied { background: rgba(195, 232, 141, 0.18); color: #c3e88d; border-color: rgba(195, 232, 141, 0.35); }
+  .copy .icon { display: inline-flex; }
 </style>
+
+<script is:inline>
+  document.querySelectorAll('.code .copy').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const code = btn.getAttribute('data-code') || '';
+      try {
+        await navigator.clipboard.writeText(code);
+      } catch {
+        /* fallback · select + execCommand for older browsers */
+        const ta = document.createElement('textarea');
+        ta.value = code;
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); } catch { /* noop */ }
+        ta.remove();
+      }
+      const label = btn.querySelector('.label-text');
+      const original = label?.textContent;
+      btn.classList.add('copied');
+      if (label) label.textContent = 'Copied';
+      window.setTimeout(() => {
+        btn.classList.remove('copied');
+        if (label && original) label.textContent = original;
+      }, 1400);
+    });
+  });
+</script>

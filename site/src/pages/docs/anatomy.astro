@@ -1,0 +1,102 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import CodeBlock from '../../components/CodeBlock.astro';
+
+const source = `<deck-feature eyebrow="Module">
+  <h1 slot="title">Side effects</h1>
+  <p slot="lead" class="lead">
+    A module can act on import.
+  </p>
+  <deck-code lang="ts" hero>
+    import './polyfill';
+  </deck-code>
+</deck-feature>`;
+
+const minimal = `<deck-root>
+  <deck-cover><h1>Cover</h1></deck-cover>
+  <deck-feature><h1 slot="title">Body</h1></deck-feature>
+  <deck-takeaway>The point.</deck-takeaway>
+</deck-root>`;
+---
+
+<Docs
+  title="Anatomy of a slide"
+  eyebrow="Concepts"
+  description="A slide is an HTML element. Layouts give it structure, atoms fill the slots."
+>
+
+<h2 id="three-layers">Three layers, always</h2>
+<p>
+  Every slide is built from three concentric layers, top to bottom:
+</p>
+
+<ol>
+  <li>
+    <strong>A layout component</strong> · <code>&lt;deck-cover&gt;</code>,
+    <code>&lt;deck-feature&gt;</code>, <code>&lt;deck-split&gt;</code>,
+    <code>&lt;deck-feature-cards&gt;</code>, <code>&lt;deck-section&gt;</code>,
+    or <code>&lt;deck-takeaway&gt;</code>.
+  </li>
+  <li>
+    <strong>Named slots</strong> · the layout exposes <code>slot="title"</code>,
+    <code>slot="lead"</code>, <code>slot="left"</code>, <code>slot="right"</code>.
+    What you put there gets projected into the right spot.
+  </li>
+  <li>
+    <strong>Atoms</strong> · <code>&lt;deck-code&gt;</code>,
+    <code>&lt;deck-md&gt;</code>, <code>&lt;deck-callout&gt;</code>,
+    <code>&lt;deck-card&gt;</code>, <code>&lt;deck-mermaid&gt;</code>, and the
+    others fill the slots.
+  </li>
+</ol>
+
+<CodeBlock label="A typical hero slide" lang="html" code={source} />
+
+<h2 id="deck-root"><code>&lt;deck-root&gt;</code> · the wrapper</h2>
+<p>
+  Every slide lives inside one <code>&lt;deck-root&gt;</code>. It manages
+  navigation, the active-slide state, URL hash routing, the keyboard hint
+  and the progress bar.
+</p>
+
+<CodeBlock label="The minimal deck" lang="html" code={minimal} />
+
+<h2 id="sections">Sections enable 2D navigation</h2>
+<p>
+  A <code>&lt;deck-section&gt;</code> isn't just a divider · it marks a chapter
+  boundary. If you have at least two chapters and one of them has multiple
+  slides, the deck switches to <strong>2D navigation</strong>:
+</p>
+
+<ul>
+  <li><kbd>←</kbd> / <kbd>→</kbd> · jump between sections</li>
+  <li><kbd>↑</kbd> / <kbd>↓</kbd> · walk slides inside a section</li>
+  <li><kbd>Space</kbd> · always advances linearly</li>
+</ul>
+
+<p>
+  Without sections, all arrow keys do the same thing · linear next/prev.
+  See <a href="/docs/navigation">Navigation</a> for the full key map.
+</p>
+
+<h2 id="rendering">How a slide renders</h2>
+<p>
+  The browser parses your HTML. Each <code>&lt;deck-*&gt;</code> element is a
+  Custom Element registered by Rikiki. On <code>connectedCallback</code> it
+  attaches a Shadow DOM and renders its template · slotted children flow
+  into the named placeholders. The result:
+</p>
+
+<ul>
+  <li>Your CSS doesn't leak <em>into</em> the components (Shadow DOM isolates them).</li>
+  <li>Theme variables (<code>--rik-accent</code>, <code>--rik-surface-page</code>, …) <em>do</em> cross the boundary · they inherit from <code>:root</code>.</li>
+  <li>Each slide's <code>:host</code> rule decides the background, padding, layout direction.</li>
+</ul>
+
+<h2 id="next">Next</h2>
+<ul>
+  <li><a href="/docs/components">Browse every component</a> with its attributes and slots.</li>
+  <li><a href="/docs/theming">Override the tokens</a> to retheme the whole deck.</li>
+</ul>
+
+</Docs>

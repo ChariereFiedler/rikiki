@@ -24,10 +24,10 @@ rikiki/
 │   ├── deck-root.ts          ← deck wrapper · navigation, overview, hash, kb hints
 │   ├── deck-cover.ts         ← layouts
 │   ├── deck-section.ts
-│   ├── deck-hero.ts
+│   ├── deck-feature.ts
 │   ├── deck-split.ts
-│   ├── deck-hero-detail.ts
-│   ├── deck-hook.ts
+│   ├── deck-feature-cards.ts
+│   ├── deck-takeaway.ts
 │   ├── deck-md.ts            ← atoms
 │   ├── deck-code.ts
 │   ├── deck-callout.ts
@@ -57,10 +57,10 @@ To re-theme: copy a theme file, change the values, that's it. All components fol
 |---|---|
 | `<deck-cover>` | Opening slide (dark, XL title, meta block) |
 | `<deck-section>` | Chapter separator (dark, number + title) |
-| `<deck-hero>` | One focal block, full width (code, table, mermaid) |
+| `<deck-feature>` | One focal block, full width (code, table, mermaid) |
 | `<deck-split cols="1-1\|1-2\|2-1\|3">` | Two or three columns |
-| `<deck-hero-detail>` | Hero + two detail cards underneath |
-| `<deck-hook>` | Centered punchline on dark · the take-home line |
+| `<deck-feature-cards>` | Hero + two detail cards underneath |
+| `<deck-takeaway>` | Centered punchline on dark · the take-home line |
 
 ### Atoms
 
@@ -79,13 +79,13 @@ Plus `<deck-badge>`, `<deck-metric>`, `<deck-tier-list>`, `<deck-step-list>`, `<
 ### Slide with markdown + code
 
 ```html
-<deck-hero eyebrow="Module">
+<deck-feature eyebrow="Module">
   <h1 slot="title">Side effects</h1>
   <p slot="lead" class="lead">A module can **act** on import.</p>
   <deck-code lang="ts" hero>
     import './polyfill';  // executed at import time
   </deck-code>
-</deck-hero>
+</deck-feature>
 ```
 
 ### Side-by-side comparison

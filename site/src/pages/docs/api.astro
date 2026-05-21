@@ -1,0 +1,144 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import CodeBlock from '../../components/CodeBlock.astro';
+
+const stepGroups = `<deck-code lang="js" hero step-groups='[[1,2],[3,4],[1,2,3,4,5]]'>
+  const a = 1;
+  const b = 2;
+  function sum() {
+    return a + b;
+  }
+  sum();
+</deck-code>`;
+
+const carouselExample = `<!-- Carousel mode · auto-advance every 4 s, wrap at end, swipe enabled -->
+<deck-root autoplay="4000" loop swipe transition="slide">
+  <deck-feature>
+    <h1 slot="title">Slide 1</h1>
+  </deck-feature>
+  <deck-feature>
+    <h1 slot="title">Slide 2</h1>
+  </deck-feature>
+  <deck-feature>
+    <h1 slot="title">Slide 3</h1>
+  </deck-feature>
+</deck-root>`;
+---
+
+<Docs
+  title="<deck-root> API"
+  eyebrow="Reference"
+  description="Programmatic surface · navigation methods, lifecycle, and the keyboard event you can intercept."
+>
+
+<h2 id="properties">Reactive properties</h2>
+<table class="t">
+  <thead><tr><th>Property</th><th>Type</th><th>What it controls</th></tr></thead>
+  <tbody>
+    <tr><td><code>current</code></td>   <td><code>number</code> (state)</td>           <td>Index of the active slide (0-based).</td></tr>
+    <tr><td><code>step</code></td>      <td><code>number</code> (state)</td>           <td>Current step within the active slide (0 = first reveal).</td></tr>
+    <tr><td><code>overview</code></td>  <td><code>boolean</code> (reflected)</td>      <td>Toggles the overview mode.</td></tr>
+    <tr><td><code>transition</code></td><td><code>string</code> (reflected)</td>       <td>Lazy-loads the transition plugin. See <a href="/docs/plugins#transition">Plugins · transitions</a>.</td></tr>
+    <tr><td><code>autoplay</code></td>  <td><code>number</code> ms (reflected)</td>    <td>Auto-advance interval. <code>0</code> disables. Pauses on hover, resets on user nav.</td></tr>
+    <tr><td><code>loop</code></td>      <td><code>boolean</code> (reflected)</td>      <td>Wrap around at the deck edges (carousel mode).</td></tr>
+    <tr><td><code>swipe</code></td>     <td><code>boolean</code> (reflected)</td>      <td>Enable pointer-driven horizontal swipe navigation (touch + mouse).</td></tr>
+  </tbody>
+</table>
+
+<h2 id="carousel">Carousel mode</h2>
+<p>
+  Combine <code>autoplay</code>, <code>loop</code>, <code>swipe</code> and
+  <code>transition</code> to turn a deck into a fully-functional carousel.
+  The four attributes are mutually independent · you can use any subset.
+</p>
+<CodeBlock label="carousel" lang="html" code={carouselExample} />
+<p>
+  Behaviour notes:
+</p>
+<ul>
+  <li>Autoplay pauses while the pointer is over the deck and while the overview is open.</li>
+  <li>Any keyboard navigation resets the autoplay countdown so a manual nudge doesn't double-jump.</li>
+  <li>Swipe threshold is 60 px horizontal and at most 2× the vertical drift · accidental vertical scrolls are ignored.</li>
+  <li>Swipe is automatically disabled inside links, buttons, inputs, and other interactive children.</li>
+</ul>
+
+<h2 id="keys">Built-in key bindings</h2>
+<table class="t">
+  <thead><tr><th>Key</th><th>Behavior</th></tr></thead>
+  <tbody>
+    <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Section nav · linear fallback at edges</td></tr>
+    <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Sub-slide nav · linear fallback at section boundaries</td></tr>
+    <tr><td><kbd>Space</kbd> <kbd>PgDn</kbd></td><td>Linear next</td></tr>
+    <tr><td><kbd>PgUp</kbd></td><td>Linear previous</td></tr>
+    <tr><td><kbd>Home</kbd> <kbd>End</kbd></td><td>First / last slide</td></tr>
+    <tr><td><kbd>O</kbd></td><td>Toggle overview · lazy-loads <code>deck-overview.js</code> on first press</td></tr>
+    <tr><td><kbd>P</kbd></td><td>Toggle presenter window · lazy-loads <code>deck-presenter.js</code></td></tr>
+    <tr><td><kbd>?</kbd> <kbd>H</kbd></td><td>Open help · lazy-loads <code>deck-help.js</code> on first press</td></tr>
+    <tr><td><kbd>B</kbd> <kbd>.</kbd></td><td>Black screen (clicker convention) · any key dismisses</td></tr>
+    <tr><td><kbd>W</kbd> <kbd>,</kbd></td><td>White screen (clicker convention) · any key dismisses</td></tr>
+    <tr><td><kbd>Esc</kbd></td><td>Close any overlay / blank screen</td></tr>
+  </tbody>
+</table>
+
+<h2 id="hash">URL hash</h2>
+<p>
+  The canonical URL is <code>#N</code> · slide N (1-indexed, flat). Other
+  forms accepted on input only:
+</p>
+<ul>
+  <li><code>#C.N</code> · chapter C, sub-slide N · rewritten to flat.</li>
+  <li><code>#N.s</code> · slide N at step <code>s</code>.</li>
+</ul>
+
+<h2 id="steps">Step-reveal in <code>&lt;deck-code&gt;</code></h2>
+<p>
+  Reveal subsets of lines progressively. <code>step-groups</code> is a JSON
+  array of arrays · each inner array lists the 1-based line numbers to
+  highlight at that step. Step 0 = all lines visible at full opacity.
+</p>
+<CodeBlock label="A 3-step code reveal" lang="html" code={stepGroups} />
+
+<h2 id="extending">Extending</h2>
+<p>
+  To add a layout or atom, write a class that extends <code>LitElement</code>,
+  decorate it with <code>@customElement('deck-myname')</code>, and import the
+  file from your deck. The new tag is immediately usable inside any slide ·
+  no registration step in <code>deck-root</code>.
+</p>
+
+<style>
+  table.t {
+    width: 100%; max-width: 760px;
+    border-collapse: collapse;
+    margin: var(--rik-space-3) 0 var(--rik-space-4);
+  }
+  table.t th, table.t td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--rik-border-default);
+    vertical-align: top;
+  }
+  table.t th {
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--rik-text-default--faint);
+  }
+  table.t code {
+    background: rgba(42, 37, 32, 0.06);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  kbd {
+    display: inline-block;
+    padding: 3px 7px; margin-right: 2px;
+    background: var(--rik-surface-raised);
+    border: 1px solid var(--rik-border-default);
+    border-bottom: 2px solid #c4c4be;
+    border-radius: 4px;
+    font: 700 0.85rem/1 var(--rik-font-mono);
+    color: var(--rik-text-default);
+    min-width: 22px; text-align: center;
+  }
+</style>
+
+</Docs>

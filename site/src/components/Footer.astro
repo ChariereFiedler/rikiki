@@ -9,12 +9,14 @@ const year = new Date().getFullYear();
       <span class="name">rikiki</span>
     </div>
     <nav class="nav">
-      <a href="#why">Why</a>
-      <a href="#anatomy">Anatomy</a>
-      <a href="#library">Library</a>
-      <a href="#themes">Themes</a>
-      <a href="#quickstart">Quickstart</a>
-      <a href="/demo/">Live tour</a>
+      <a href="/docs/">Docs</a>
+      <a href="/docs/getting-started">Getting started</a>
+      <a href="/docs/components">Components</a>
+      <a href="/docs/theming">Theming</a>
+      <a href="/docs/recipes">Recipes</a>
+      <a href="/docs/api">API</a>
+      <a href="/docs/changelog">Changelog</a>
+      <a href="/docs/contributing">Contributing</a>
       <a href="https://github.com">Source</a>
     </nav>
     <p class="meta">MIT · ©{year} · made with the framework</p>
@@ -23,39 +25,39 @@ const year = new Date().getFullYear();
 
 <style>
   .footer {
-    background: var(--dark);
-    color: var(--on-dark-muted);
-    padding: var(--sp-6) var(--sp-5);
+    background: var(--rik-surface-inverse);
+    color: var(--rik-text-inverse--faint);
+    padding: var(--rik-space-6) var(--rik-space-5);
   }
   .inner {
     max-width: 1080px;
     margin: 0 auto;
     display: flex; flex-direction: column;
-    gap: var(--sp-3);
+    gap: var(--rik-space-3);
   }
   .brand {
     display: inline-flex; align-items: center; gap: 8px;
-    color: var(--on-dark-text);
-    font: 800 1.05rem/1 var(--display);
+    color: var(--rik-text-inverse);
+    font: 800 1.05rem/1 var(--rik-font-display);
   }
-  .dot { color: var(--mango); }
+  .dot { color: var(--rik-accent); }
   .nav {
     display: flex; flex-wrap: wrap;
-    gap: var(--sp-3) var(--sp-4);
-    font-family: var(--mono);
-    font-size: var(--fs-small);
+    gap: var(--rik-space-3) var(--rik-space-4);
+    font-family: var(--rik-font-mono);
+    font-size: var(--rik-font-size-sm);
   }
   .nav a {
-    color: var(--on-dark-soft);
+    color: var(--rik-text-inverse--muted);
     text-decoration: none;
   }
-  .nav a:hover { color: var(--mango); text-decoration: none; }
+  .nav a:hover { color: var(--rik-accent); text-decoration: none; }
   .meta {
-    font-family: var(--mono);
-    font-size: var(--fs-micro);
-    color: var(--on-dark-faint);
-    margin-top: var(--sp-2);
-    border-top: 1px solid var(--on-dark-border);
-    padding-top: var(--sp-3);
+    font-family: var(--rik-font-mono);
+    font-size: var(--rik-font-size-xs);
+    color: var(--rik-text-inverse--ghost);
+    margin-top: var(--rik-space-2);
+    border-top: 1px solid var(--rik-border-inverse);
+    padding-top: var(--rik-space-3);
   }
 </style>

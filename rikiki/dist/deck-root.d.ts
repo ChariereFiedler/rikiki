@@ -3,12 +3,42 @@ export declare class DeckRoot extends LitElement {
     static styles: import("lit").CSSResult;
     current: number;
     step: number;
+    /** When non-null, a full-screen overlay covers the deck (clicker B/./W/,
+     *  keys). Pressing any key dismisses it · same convention as PowerPoint. */
+    blank: 'black' | 'white' | null;
     overview: boolean;
+    /** Optional slide transition · "slide" | "fade" | "zoom". When set, the
+     *  deck-transition.js plugin is fetched on first navigation. Per-slide
+     *  override available via `data-transition` on the slide host. */
+    transition: string | null;
+    /** Carousel-mode auto-advance · milliseconds between slides.
+     *  Pauses on hover / focus, restarts on mouse-leave. Resets on any
+     *  user-triggered navigation. Use 0 (default) to disable. */
+    autoplay: number;
+    /** Wrap around at the deck edges. When advancing past the last slide,
+     *  jump to the first; when going back from the first, jump to the last. */
+    loop: boolean;
+    /** Enable pointer-driven horizontal swipe for navigation (touch + mouse).
+     *  Translates a swipe ≥ 60 px into an advance / back navigation. */
+    swipe: boolean;
     private slides;
     private chapters;
     private _overviewTeardown;
+    private _transitionLoaded;
+    private _autoplayTimer;
+    private _autoplayPaused;
+    private _swipeStartX;
+    private _swipeStartY;
+    private _swipePointerId;
     firstUpdated(): void;
     disconnectedCallback(): void;
+    private _startAutoplay;
+    private _stopAutoplay;
+    private _autoTick;
+    private _onHoverEnter;
+    private _onHoverLeave;
+    private _onPointerDown;
+    private _onPointerUp;
     /** Group slides into chapters bounded by <deck-section> markers. */
     private _buildChapters;
     /** True when at least one chapter has multiple slides and there are 2+ chapters. */
@@ -22,6 +52,8 @@ export declare class DeckRoot extends LitElement {
     private _onKey;
     /** Lazy-import the help module the first time the user opens it. */
     private _toggleHelp;
+    /** Lazy-import the presenter (speaker-notes window) plugin on first P press. */
+    private _togglePresenter;
     private _closeHelp;
     /** Lazy-import the overview module the first time the user opens it. */
     private _renderOverviewIfActive;

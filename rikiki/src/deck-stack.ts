@@ -34,11 +34,12 @@ const ALIGN: Record<DeckStackAlign, string> = {
 
 @customElement('deck-stack')
 export class DeckStack extends LitElement {
+  /* Customization tokens: --deck-stack-gap (used when no `gap` attr is set). */
   static override styles = css`
     :host {
       display: flex;
       flex-direction: var(--_dir, column);
-      gap: var(--_gap, var(--sp-3));
+      gap: var(--_gap, var(--deck-stack-gap, var(--rik-space-3)));
       align-items: var(--_align, stretch);
       justify-content: var(--_justify, flex-start);
       min-width: 0;
@@ -56,7 +57,7 @@ export class DeckStack extends LitElement {
     if (this.gap) {
       const n = parseInt(this.gap, 10);
       if (!Number.isNaN(n) && n >= 1 && n <= 6) {
-        this.style.setProperty('--_gap', `var(--sp-${n})`);
+        this.style.setProperty('--_gap', `var(--rik-space-${n})`);
       } else {
         this.style.setProperty('--_gap', this.gap);
       }

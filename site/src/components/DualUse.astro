@@ -1,0 +1,261 @@
+---
+import CodeBlock from './CodeBlock.astro';
+
+const slidesCode = `<deck-root transition="slide">
+  <deck-cover>...</deck-cover>
+  <deck-section>...</deck-section>
+  <deck-feature>
+    <deck-notes>Pause for laughter.</deck-notes>
+  </deck-feature>
+</deck-root>`;
+
+const carouselCode = `<deck-root autoplay="4000" loop swipe transition="slide">
+  <deck-feature>...</deck-feature>
+  <deck-feature>...</deck-feature>
+  <deck-feature>...</deck-feature>
+</deck-root>`;
+---
+
+<section id="dual" class="dual">
+  <div class="inner">
+    <p class="eyebrow">Two products, one folder</p>
+    <h2>It runs your talk. It also runs your landing-page carousel.</h2>
+    <p class="lede">
+      Same components. Same theming. Same bundle. Add
+      <code>autoplay loop swipe</code> to <code>deck-root</code> and the deck
+      becomes a touch-friendly carousel · no second framework, no extra
+      dependency.
+    </p>
+
+    <div class="grid">
+      <!-- ─── Slides ─────────────────────────────────── -->
+      <article class="case case-slides">
+        <div class="stripe" aria-hidden="true"></div>
+        <header>
+          <span class="icon" aria-hidden="true">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="4" width="20" height="14" rx="2"></rect>
+              <path d="M2 20h20"></path>
+              <path d="M9 9l5 3-5 3V9z" fill="currentColor"></path>
+            </svg>
+          </span>
+          <div class="head-text">
+            <span class="tag">Use case A</span>
+            <h3>Slides for technical talks</h3>
+          </div>
+        </header>
+
+        <ul class="features">
+          <li><span class="check" aria-hidden="true">✓</span>2D keyboard nav · sections + sub-slides</li>
+          <li><span class="check" aria-hidden="true">✓</span>Speaker notes + presenter window <span class="kbd">P</span></li>
+          <li><span class="check" aria-hidden="true">✓</span>Overview mode <span class="kbd">O</span> · path layout</li>
+          <li><span class="check" aria-hidden="true">✓</span>Step-reveal in <code>&lt;deck-code&gt;</code></li>
+          <li><span class="check" aria-hidden="true">✓</span>Opt-in Shiki for production-grade syntax</li>
+        </ul>
+
+        <CodeBlock lang="html" code={slidesCode} label="markup" />
+      </article>
+
+      <!-- ─── Carousels ──────────────────────────────── -->
+      <article class="case case-carousel">
+        <div class="stripe" aria-hidden="true"></div>
+        <header>
+          <span class="icon" aria-hidden="true">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"></path>
+              <path d="M21 4v4h-4"></path>
+              <path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"></path>
+              <path d="M3 20v-4h4"></path>
+            </svg>
+          </span>
+          <div class="head-text">
+            <span class="tag">Use case B</span>
+            <h3>Carousels for product pages</h3>
+          </div>
+        </header>
+
+        <ul class="features">
+          <li><span class="check" aria-hidden="true">✓</span>Auto-advance · <code>autoplay="N"</code> ms</li>
+          <li><span class="check" aria-hidden="true">✓</span>Wraps · <code>loop</code> at the edges</li>
+          <li><span class="check" aria-hidden="true">✓</span>Touch swipe · 60 px threshold, ignores buttons/links</li>
+          <li><span class="check" aria-hidden="true">✓</span>Pauses on hover, resets on click</li>
+          <li><span class="check" aria-hidden="true">✓</span>Step-dots indicator out of the box</li>
+        </ul>
+
+        <CodeBlock lang="html" code={carouselCode} label="markup" />
+      </article>
+    </div>
+
+    <p class="caveat">
+      The dual-use isn't a marketing accident · it's a side-effect of building
+      the deck engine on Web Components and CSS custom properties. The same
+      contract serves both audiences.
+    </p>
+  </div>
+</section>
+
+<style>
+  .dual {
+    background: var(--rik-surface-raised);
+    padding: var(--rik-space-7) var(--rik-space-5);
+    border-top: 1px solid var(--rik-border-default);
+    border-bottom: 1px solid var(--rik-border-default);
+  }
+  .inner { max-width: 1080px; margin: 0 auto; }
+
+  .eyebrow {
+    display: inline-block;
+    background: var(--rik-accent);
+    color: var(--rik-accent__on);
+    padding: 4px 10px;
+    border-radius: var(--rik-radius-pill);
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: var(--rik-space-3);
+  }
+  h2 {
+    font-family: var(--rik-font-display);
+    font-size: var(--rik-font-size-mega);
+    font-weight: 900;
+    color: var(--rik-text-default);
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    margin: 0 0 var(--rik-space-3);
+    max-width: 22ch;
+  }
+  .lede {
+    font-size: var(--rik-font-size-lead);
+    color: var(--rik-text-default--muted);
+    line-height: 1.55;
+    max-width: 72ch;
+    margin: 0 0 var(--rik-space-6);
+  }
+  .lede code {
+    font-family: var(--rik-font-mono);
+    font-size: 0.92em;
+    background: rgba(42, 37, 32, 0.06);
+    color: var(--rik-text-default);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  /* ─── Grid + cards ───────────────────────────────────── */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--rik-space-4);
+  }
+  @media (max-width: 880px) { .grid { grid-template-columns: 1fr; } }
+
+  .case {
+    position: relative;
+    background: var(--rik-surface-raised--strong);
+    border: 1px solid var(--rik-border-default);
+    border-radius: var(--rik-radius-md);
+    padding: var(--rik-space-5);
+    display: flex; flex-direction: column;
+    gap: var(--rik-space-4);
+    overflow: hidden;
+    transition: transform var(--rik-motion-base) var(--rik-motion__ease-out),
+                box-shadow var(--rik-motion-base) var(--rik-motion__ease-out);
+  }
+  .case:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--rik-elevation-3);
+  }
+  .stripe {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 4px;
+  }
+  .case-slides .stripe   { background: linear-gradient(90deg, var(--rik-accent), var(--rik-accent--strong)); }
+  .case-carousel .stripe { background: linear-gradient(90deg, var(--rik-status-success), var(--rik-decor-lime)); }
+
+  /* ─── Card header ─────────────────────────────────── */
+  header {
+    display: flex;
+    align-items: center;
+    gap: var(--rik-space-3);
+    padding-top: 4px;
+  }
+  .icon {
+    flex: 0 0 auto;
+    width: 56px; height: 56px;
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    border-radius: var(--rik-radius-md);
+    background: var(--rik-surface-sunken);
+  }
+  .case-slides .icon   { color: var(--rik-accent); background: var(--rik-accent--faint); }
+  .case-carousel .icon { color: var(--rik-status-success); background: rgba(0, 200, 160, 0.10); }
+  .head-text { display: flex; flex-direction: column; gap: 4px; }
+  .tag {
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--rik-text-default--faint);
+  }
+  .case h3 {
+    font-family: var(--rik-font-display);
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: var(--rik-text-default);
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  /* ─── Feature list ───────────────────────────────── */
+  .features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex; flex-direction: column;
+    gap: 10px;
+    font-size: var(--rik-font-size-body);
+    line-height: 1.5;
+    color: var(--rik-text-default--muted);
+  }
+  .features li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+  .features code {
+    font-family: var(--rik-font-mono);
+    font-size: 0.92em;
+    background: rgba(42, 37, 32, 0.06);
+    color: var(--rik-text-default);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .check {
+    width: 18px; height: 18px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    font: 700 11px/1 var(--rik-font-mono);
+    color: var(--rik-accent__on);
+    margin-top: 3px;
+  }
+  .case-slides   .check { background: var(--rik-accent); }
+  .case-carousel .check { background: var(--rik-status-success); }
+  .kbd {
+    display: inline-block;
+    padding: 1px 6px;
+    background: var(--rik-surface-raised);
+    border: 1px solid var(--rik-border-default);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    font: 700 0.78em/1.2 var(--rik-font-mono);
+    color: var(--rik-text-default);
+  }
+
+  .caveat {
+    margin-top: var(--rik-space-5);
+    font-size: var(--rik-font-size-sm);
+    color: var(--rik-text-default--faint);
+    line-height: 1.6;
+    max-width: 75ch;
+  }
+</style>

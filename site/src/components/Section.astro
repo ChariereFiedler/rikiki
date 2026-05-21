@@ -20,11 +20,11 @@ const { id, eyebrow, title, tone = 'paper' } = Astro.props;
 
 <style>
   .section {
-    padding: var(--sp-7) var(--sp-5);
+    padding: var(--rik-space-7) var(--rik-space-5);
   }
   .section.dark {
-    background: var(--dark);
-    color: var(--on-dark-text);
+    background: var(--rik-surface-inverse);
+    color: var(--rik-text-inverse);
   }
   .inner {
     max-width: 1080px;
@@ -33,27 +33,27 @@ const { id, eyebrow, title, tone = 'paper' } = Astro.props;
   .eyebrow {
     display: table;             /* hugs content but breaks the flow before title */
     padding: 4px 10px;
-    background: var(--mango);
-    color: var(--dark);
-    border-radius: var(--r-pill);
-    font: 700 var(--fs-micro)/1 var(--mono);
+    background: var(--rik-accent);
+    color: var(--rik-surface-inverse);
+    border-radius: var(--rik-radius-pill);
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    margin-bottom: var(--sp-3);
+    margin-bottom: var(--rik-space-3);
   }
   .title {
-    font-family: var(--display);
-    font-size: var(--fs-mega);
+    font-family: var(--rik-font-display);
+    font-size: var(--rik-font-size-mega);
     font-weight: 800;
     line-height: 1.1;
     letter-spacing: -0.025em;
-    color: var(--text);
-    margin-bottom: var(--sp-5);
-    padding-bottom: var(--sp-2);
-    border-bottom: 4px solid var(--mango);
+    color: var(--rik-text-default);
+    margin-bottom: var(--rik-space-5);
+    padding-bottom: var(--rik-space-2);
+    border-bottom: 4px solid var(--rik-accent);
     display: inline-block;
     align-self: flex-start;
   }
-  .dark .title { color: var(--on-dark-text); }
-  .body { margin-top: var(--sp-4); }
+  .dark .title { color: var(--rik-text-inverse); }
+  .body { margin-top: var(--rik-space-4); }
 </style>

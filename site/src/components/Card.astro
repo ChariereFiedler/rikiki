@@ -15,11 +15,11 @@ const { tone, title } = Astro.props;
 <style>
   .card {
     display: flex; flex-direction: column;
-    gap: var(--sp-2);
+    gap: var(--rik-space-2);
     background: #ffffff;
-    border: 1px solid var(--border);
-    border-radius: var(--r-lg);
-    padding: var(--sp-4);
+    border: 1px solid var(--rik-border-default);
+    border-radius: var(--rik-radius-lg);
+    padding: var(--rik-space-4);
     box-shadow: 0 1px 3px rgba(6,8,15,0.04), 0 4px 12px rgba(6,8,15,0.04);
   }
   .card.yellow { background: rgba(240, 112, 32, 0.06); border-color: rgba(240, 112, 32, 0.45); }
@@ -27,24 +27,24 @@ const { tone, title } = Astro.props;
   .card.green  { background: rgba(0, 200, 160, 0.10); border-color: rgba(0, 200, 160, 0.45); }
   .card.red    { background: rgba(232, 72, 40, 0.10); border-color: rgba(232, 72, 40, 0.45); }
   h3 {
-    font-family: var(--display);
-    font-size: var(--fs-h2);
+    font-family: var(--rik-font-display);
+    font-size: var(--rik-font-size-h2);
     font-weight: 700;
-    color: var(--text);
+    color: var(--rik-text-default);
     letter-spacing: -0.01em;
     line-height: 1.2;
     margin: 0;
   }
   .body {
-    font-size: var(--fs-body);
-    color: var(--soft);
+    font-size: var(--rik-font-size-body);
+    color: var(--rik-text-default--muted);
     line-height: 1.55;
   }
   .body :global(p) { margin: 0; }
-  .body :global(strong) { color: var(--text); font-weight: 700; }
+  .body :global(strong) { color: var(--rik-text-default); font-weight: 700; }
   .body :global(code) {
-    font-family: var(--mono); font-size: var(--fs-small);
-    background: rgba(42, 37, 32, 0.06); color: var(--text);
+    font-family: var(--rik-font-mono); font-size: var(--rik-font-size-sm);
+    background: rgba(42, 37, 32, 0.06); color: var(--rik-text-default);
     padding: 2px 6px; border-radius: 5px;
   }
 </style>

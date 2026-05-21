@@ -1,0 +1,69 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import Card from '../../components/Card.astro';
+import CardGrid from '../../components/CardGrid.astro';
+---
+
+<Docs
+  title="Rikiki documentation"
+  eyebrow="Docs"
+  description="A tiny Lit Web Components framework for technical presentations. Write a deck as plain HTML, open index.html, give the talk · five years from now too."
+>
+
+<h2 id="map">Where to start</h2>
+<p>
+  Pick the entry point that matches what you came for.
+</p>
+
+<CardGrid cols={2}>
+  <Card title="New to Rikiki?">
+    <p>Install in a minute, write your first slide, learn the navigation keys.</p>
+    <p><a href="/docs/getting-started">→ Getting started</a></p>
+  </Card>
+  <Card title="Looking up a component?">
+    <p>Every <code>&lt;deck-*&gt;</code> in one page · attributes, slots, tokens, parts.</p>
+    <p><a href="/docs/components">→ Component library</a></p>
+  </Card>
+  <Card title="Want to rebrand?">
+    <p>~100 CSS custom properties · two themes ship, write a third by copy-paste.</p>
+    <p><a href="/docs/theming">→ Theming guide</a></p>
+  </Card>
+  <Card title="Need a specific layout?">
+    <p>Patterns for code-on-left, side-by-side, three-column, big-number slides.</p>
+    <p><a href="/docs/recipes">→ Recipes</a></p>
+  </Card>
+</CardGrid>
+
+<h2 id="design">Design principles</h2>
+<p>
+  Rikiki is opinionated about three things. The rest is up to you.
+</p>
+<ol>
+  <li>
+    <strong>Zero build for deck authors.</strong>
+    A deck is a folder · drop it on any static host, it runs. No Node, no
+    bundler, no <code>node_modules</code> to resurrect.
+  </li>
+  <li>
+    <strong>Web standards over framework lore.</strong>
+    Custom Elements, Shadow DOM, ES Modules and CSS Custom Properties have
+    been stable W3C specs since 2018. They will outlive Vite.
+  </li>
+  <li>
+    <strong>Light by default, extensible on demand.</strong>
+    The bundle is ~11 KB gzip. The overview mode and the help overlay
+    lazy-load on first use. Anything bigger ships as an opt-in module.
+  </li>
+</ol>
+
+<h2 id="not-for-you">Not the right tool when…</h2>
+<ul>
+  <li>You want a builder UI · Rikiki is "write HTML, open in a browser".</li>
+  <li>You need fancy transitions · the framework toggles <code>display</code>, no GPU animation between slides.</li>
+  <li>You want a hosted SaaS · there is none. You host the static files yourself.</li>
+  <li>You want PowerPoint compatibility · Rikiki produces HTML, not <code>.pptx</code>.</li>
+</ul>
+
+<p>For everything else · keep reading.</p>
+
+</Docs>

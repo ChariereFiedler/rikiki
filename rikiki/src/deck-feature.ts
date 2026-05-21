@@ -1,24 +1,24 @@
 // ════════════════════════════════════════════════════════════════
-// <deck-hero eyebrow="ESM">
+// <deck-feature eyebrow="ESM">
 //   <h1>Title</h1>
 //   <p slot="lead">Optional hook line.</p>
 //   <deck-code lang="js">...</deck-code>     <!-- or any focal block -->
-// </deck-hero>
+// </deck-feature>
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { slideBase } from './shared-styles.js';
 
-@customElement('deck-hero')
-export class DeckHero extends LitElement {
+@customElement('deck-feature')
+export class DeckFeature extends LitElement {
   static override styles = [...slideBase, css`
     :host { justify-content: flex-start; }
     .body {
       flex: 1; min-height: 0;
       display: flex; flex-direction: column;
       justify-content: flex-start;
-      gap: var(--sp-3);
+      gap: var(--rik-space-3);
       overflow: hidden;
     }
     ::slotted(deck-code:not([nested])),
@@ -43,6 +43,6 @@ export class DeckHero extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'deck-hero': DeckHero;
+    'deck-feature': DeckFeature;
   }
 }

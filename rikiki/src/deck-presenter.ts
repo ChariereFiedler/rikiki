@@ -1,0 +1,271 @@
+// ════════════════════════════════════════════════════════════════
+// Speaker / presenter window plugin · NOT in the core bundle.
+//
+// Activated by pressing `P` on the speaker's laptop (deck-root keyboard
+// handler lazy-imports this module). The plugin opens a popup window
+// that mirrors the deck's current slide, shows the next slide as a
+// preview, displays `<deck-notes>` content, and runs a presentation
+// timer. State sync uses BroadcastChannel · no localStorage races,
+// no postMessage ceremony.
+//
+// Usage in the deck (nothing to configure):
+//   <deck-root>
+//     <deck-feature>
+//       <h1 slot="title">My slide</h1>
+//       <deck-notes>What I want to say here.</deck-notes>
+//     </deck-feature>
+//   </deck-root>
+//
+// Press P · presenter window opens on the second screen.
+// ════════════════════════════════════════════════════════════════
+
+import type { DeckRoot } from './deck-root.js';
+
+const CHANNEL = 'rik-presenter';
+
+interface PresenterState {
+  current: number;
+  total: number;
+  // Outer HTML of the active slide (live mirror in the presenter)
+  slideHtml: string;
+  // Outer HTML of the next slide (or null if at the end)
+  nextHtml: string | null;
+  // Notes extracted from <deck-notes> inside the active slide
+  notes: string;
+  // Tokens.css URL so the popup looks like the deck
+  themeHref: string;
+}
+
+let popup: Window | null = null;
+let channel: BroadcastChannel | null = null;
+let installed: WeakSet<DeckRoot> | null = null;
+
+function readState(host: DeckRoot): PresenterState {
+  const slides = Array.from(host.children).filter((el) =>
+    el.tagName.toLowerCase().startsWith('deck-')
+  ) as HTMLElement[];
+  const current = slides.findIndex((s) => s.hasAttribute('active'));
+  const slide = slides[current] ?? null;
+  const next = slides[current + 1] ?? null;
+  const notesEl = slide?.querySelector('deck-notes');
+  const notes = (notesEl?.textContent ?? '').trim();
+  // Find the active theme link · falls back to a sensible CDN default
+  const themeLink = document.querySelector<HTMLLinkElement>(
+    'link[rel="stylesheet"][href*="rikiki"], link[rel="stylesheet"][href*="tokens"], link[rel="stylesheet"][href*="theme"]'
+  );
+  const themeHref = themeLink?.href ?? '';
+  return {
+    current: current + 1,
+    total: slides.length,
+    slideHtml: slide?.outerHTML ?? '',
+    nextHtml: next?.outerHTML ?? null,
+    notes,
+    themeHref,
+  };
+}
+
+function broadcast(host: DeckRoot): void {
+  if (!channel) return;
+  channel.postMessage({ type: 'state', state: readState(host) });
+}
+
+const PRESENTER_HTML = (initial: PresenterState): string => `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rikiki · presenter</title>
+${initial.themeHref ? `<link rel="stylesheet" href="${initial.themeHref}">` : ''}
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #0f1422; color: #fafafa; font-family: var(--rik-font-sans, system-ui); }
+  .grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 1fr auto;
+    gap: 16px;
+    padding: 16px;
+    height: 100vh;
+    box-sizing: border-box;
+  }
+  .panel {
+    background: #1e2840;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .panel header {
+    font: 700 11px/1 var(--rik-font-mono, monospace);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    padding: 10px 14px;
+    color: rgba(232,228,240,0.45);
+    background: #161c2e;
+  }
+  .panel .body { flex: 1; min-height: 0; padding: 16px; overflow: hidden; }
+  .panel iframe { width: 100%; height: 100%; border: 0; background: white; border-radius: 8px; }
+  #notes { font-size: 17px; line-height: 1.6; white-space: pre-wrap; padding: 20px; overflow: auto; color: #e8e4f0; }
+  #notes:empty::before { content: 'No notes for this slide.'; color: rgba(232,228,240,0.4); font-style: italic; }
+  #footer {
+    grid-column: 1 / -1;
+    display: flex; align-items: center; justify-content: space-between;
+    background: #1e2840;
+    border-radius: 12px;
+    padding: 14px 20px;
+    font: 700 16px/1 var(--rik-font-mono, monospace);
+  }
+  #timer { font-size: 28px; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  #counter { color: rgba(232,228,240,0.6); }
+  button {
+    background: transparent;
+    border: 1px solid rgba(232,228,240,0.2);
+    color: inherit;
+    font: inherit;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button:hover { background: rgba(255,255,255,0.06); }
+  .ghost { color: rgba(232,228,240,0.4); }
+</style>
+</head>
+<body>
+<div class="grid">
+  <section class="panel" id="current">
+    <header>Current</header>
+    <div class="body"><iframe id="current-frame" srcdoc=""></iframe></div>
+  </section>
+  <section class="panel" id="next">
+    <header>Next</header>
+    <div class="body"><iframe id="next-frame" srcdoc=""></iframe></div>
+  </section>
+  <section class="panel" id="notes-panel" style="grid-column: 1 / -1;">
+    <header>Speaker notes</header>
+    <div id="notes" class="body"></div>
+  </section>
+  <div id="footer">
+    <div><span id="timer">00:00</span> <button id="timer-toggle">Pause</button> <button id="timer-reset">Reset</button></div>
+    <div id="counter">${initial.current} / ${initial.total}</div>
+    <div><span class="ghost">P to close</span></div>
+  </div>
+</div>
+<script>
+  const channel = new BroadcastChannel('${CHANNEL}');
+  const current = document.getElementById('current-frame');
+  const next = document.getElementById('next-frame');
+  const notes = document.getElementById('notes');
+  const counter = document.getElementById('counter');
+  const timerEl = document.getElementById('timer');
+  const toggleBtn = document.getElementById('timer-toggle');
+  const resetBtn = document.getElementById('timer-reset');
+
+  let running = true;
+  let startedAt = Date.now();
+  let elapsed = 0;
+  function fmt(ms) {
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    const h = Math.floor(m / 60);
+    const pad = (n) => String(n).padStart(2, '0');
+    return h > 0 ? (h + ':' + pad(m % 60) + ':' + pad(s % 60)) : (pad(m) + ':' + pad(s % 60));
+  }
+  function tick() {
+    if (running) timerEl.textContent = fmt(elapsed + (Date.now() - startedAt));
+    requestAnimationFrame(tick);
+  }
+  tick();
+  toggleBtn.onclick = () => {
+    if (running) { elapsed += Date.now() - startedAt; running = false; toggleBtn.textContent = 'Resume'; }
+    else { startedAt = Date.now(); running = true; toggleBtn.textContent = 'Pause'; }
+  };
+  resetBtn.onclick = () => { startedAt = Date.now(); elapsed = 0; running = true; toggleBtn.textContent = 'Pause'; };
+
+  function wrapFrame(slideHtml) {
+    const themeHref = ${JSON.stringify(initial.themeHref)};
+    const themeLink = themeHref ? '<link rel="stylesheet" href="' + themeHref + '">' : '';
+    // Use the consumer's rikiki bundle URL · we cannot guess it perfectly, so
+    // assume it sits next to the theme css.
+    const bundleHref = themeHref.replace(/themes\\/[^/]+\\.css.*$/, 'dist/index.js');
+    return '<!doctype html><html><head><meta charset="UTF-8">' + themeLink +
+      '<script type="module" src="' + bundleHref + '"><' + '/script>' +
+      '<style>html,body{margin:0;padding:0;height:100%;overflow:hidden}body{display:flex}deck-root{flex:1}deck-root>*{display:flex!important}</style>' +
+      '</head><body><deck-root>' + slideHtml + '</deck-root></body></html>';
+  }
+
+  channel.onmessage = (e) => {
+    if (e.data?.type !== 'state') return;
+    const s = e.data.state;
+    counter.textContent = s.current + ' / ' + s.total;
+    notes.textContent = s.notes;
+    if (s.slideHtml) current.srcdoc = wrapFrame(s.slideHtml);
+    if (s.nextHtml)  next.srcdoc = wrapFrame(s.nextHtml);
+    else next.srcdoc = '<!doctype html><html><body style="background:#0f1422;color:rgba(232,228,240,0.4);display:flex;align-items:center;justify-content:center;font-family:system-ui">End of deck</body></html>';
+  };
+
+  // Initial paint from the seed state
+  const seed = ${JSON.stringify(initial)};
+  channel.postMessage({ type: 'state', state: seed });
+
+  // Forward keys back to the main window (so the speaker can drive nav from the laptop)
+  window.addEventListener('keydown', (e) => {
+    if (e.target.matches && e.target.matches('input,textarea,button')) return;
+    channel.postMessage({ type: 'key', key: e.key, shift: e.shiftKey });
+  });
+
+  // Tell main window we're alive
+  channel.postMessage({ type: 'hello' });
+</script>
+</body>
+</html>`;
+
+export function installPresenter(host: DeckRoot): void {
+  installed = installed ?? new WeakSet<DeckRoot>();
+  if (installed.has(host)) {
+    // Toggle · already open, close it
+    popup?.close();
+    popup = null;
+    return;
+  }
+  installed.add(host);
+
+  channel = new BroadcastChannel(CHANNEL);
+
+  // When the main deck advances, push the new state to the popup.
+  host.addEventListener('slide-change', () => broadcast(host));
+
+  // Forward key events from the popup back to the main window's keyboard handler.
+  channel.addEventListener('message', (e: MessageEvent) => {
+    const data = e.data as { type: string; key?: string; shift?: boolean };
+    if (data?.type === 'key' && data.key) {
+      window.dispatchEvent(new KeyboardEvent('keydown', {
+        key: data.key,
+        shiftKey: !!data.shift,
+        bubbles: true,
+      }));
+    }
+    if (data?.type === 'hello') {
+      // Popup just appeared · send a fresh state snapshot
+      broadcast(host);
+    }
+  });
+
+  const state = readState(host);
+  popup = window.open('', 'rikiki-presenter', 'width=1280,height=800,popup=yes');
+  if (!popup) {
+    console.warn('[rikiki/presenter] popup was blocked · allow popups for this site');
+    installed.delete(host);
+    return;
+  }
+  popup.document.open();
+  popup.document.write(PRESENTER_HTML(state));
+  popup.document.close();
+
+  // Tidy up if the popup is closed externally
+  const watch = setInterval(() => {
+    if (popup && popup.closed) {
+      clearInterval(watch);
+      installed?.delete(host);
+      popup = null;
+    }
+  }, 1000);
+}

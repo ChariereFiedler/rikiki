@@ -1,0 +1,93 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import CodeBlock from '../../components/CodeBlock.astro';
+
+const npmCmd = `npm install rikiki`;
+
+const minDeck = `<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="rikiki/tokens.css">
+  <script type="module" src="rikiki/dist/index.js"></script>
+</head>
+<body>
+  <deck-root>
+    <deck-cover brand="my-talk">
+      <h1>Hello, <span class="accent">world</span>.</h1>
+    </deck-cover>
+    <deck-feature eyebrow="One slide">
+      <h1 slot="title">That's all you need.</h1>
+      <deck-md>
+        Write **markdown**, drop &lt;deck-*&gt; blocks, navigate with arrows.
+      </deck-md>
+    </deck-feature>
+  </deck-root>
+</body>
+</html>`;
+
+const cdnDeck = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rikiki/tokens.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/rikiki/dist/index.js"></script>`;
+
+const serve = `# Any static server works · pick one you already have:
+python3 -m http.server 7799
+# or
+npx serve .
+# or just open the file directly in Chrome (modules need http:// though)`;
+---
+
+<Docs
+  title="Getting started"
+  eyebrow="Quickstart"
+  description="From zero to a live deck in three steps. No build, no toolchain."
+>
+
+<h2 id="install">1 · Install</h2>
+<p>
+  Pick the install style that fits your workflow.
+</p>
+
+<h3 id="install-cdn">Via CDN (no install)</h3>
+<p>Add two lines to any HTML page. Zero tooling, zero dependencies.</p>
+<CodeBlock label="<head>" lang="html" code={cdnDeck} />
+
+<h3 id="install-npm">Via npm (versioned, offline-friendly)</h3>
+<CodeBlock label="terminal" lang="js" code={npmCmd} />
+<p>
+  Then reference the files relative to <code>node_modules/rikiki/</code> · or
+  copy <code>node_modules/rikiki</code> next to your deck and commit it.
+</p>
+
+<h3 id="install-clone">Via git clone (contributors)</h3>
+<p>
+  Clone the repo, the <code>rikiki/</code> folder is what you ship. Run
+  <code>npm install</code> inside it only if you plan to rebuild from sources.
+</p>
+
+<h2 id="first-deck">2 · Your first deck</h2>
+<p>
+  Create a single HTML file. <strong>That's the whole project.</strong>
+</p>
+<CodeBlock label="my-talk/index.html" lang="html" code={minDeck} />
+
+<h2 id="serve">3 · Serve it</h2>
+<p>
+  Modules need <code>http://</code> · don't double-click the file. Run any
+  static server from the parent folder:
+</p>
+<CodeBlock label="terminal" lang="js" code={serve} />
+
+<p>
+  Open <code>http://localhost:7799/my-talk/</code> and press <code>→</code> to
+  go through the slides. That's the loop.
+</p>
+
+<h2 id="next">Where to go next</h2>
+<ul>
+  <li><a href="/docs/anatomy">Anatomy of a slide</a> · how a <code>&lt;deck-*&gt;</code> element maps to what you see.</li>
+  <li><a href="/docs/components">The component library</a> · all 23 elements with their attributes and slots.</li>
+  <li><a href="/docs/navigation">Navigation</a> · ←/→, ↑/↓, Space, O, ? · and the 2D model behind them.</li>
+  <li><a href="/docs/theming">Theming</a> · how the design tokens work and how to write a new theme.</li>
+</ul>
+
+</Docs>

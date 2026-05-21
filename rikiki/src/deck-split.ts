@@ -23,6 +23,9 @@ export type DeckSplitCols = '1-1' | '1-2' | '2-1' | '3';
 
 @customElement('deck-split')
 export class DeckSplit extends LitElement {
+  /* Customization tokens:
+       --deck-split-gap (between columns, default 5 / 4 for 3-col)
+       --deck-split-col-gap (between children inside a column, default 3) */
   static override styles = [...slideBase, css`
     :host { justify-content: flex-start; }
     .body {
@@ -30,15 +33,15 @@ export class DeckSplit extends LitElement {
       display: grid;
       grid-template-columns: 1fr 1fr;
       grid-template-rows: minmax(0, 1fr);
-      gap: var(--_gap, var(--sp-5));
+      gap: var(--_gap, var(--deck-split-gap, var(--rik-space-5)));
     }
     :host([cols="1-2"]) .body { grid-template-columns: 1fr 2fr; }
     :host([cols="2-1"]) .body { grid-template-columns: 2fr 1fr; }
-    :host([cols="3"])   .body { grid-template-columns: 1fr 1fr 1fr; gap: var(--_gap, var(--sp-4)); }
+    :host([cols="3"])   .body { grid-template-columns: 1fr 1fr 1fr; gap: var(--_gap, var(--deck-split-gap, var(--rik-space-4))); }
     .col {
       display: flex; flex-direction: column;
       min-height: 0; min-width: 0;
-      gap: var(--_col-gap, var(--sp-3));
+      gap: var(--_col-gap, var(--deck-split-col-gap, var(--rik-space-3)));
       overflow: hidden;
     }
     .col.center { justify-content: center; }
@@ -52,7 +55,7 @@ export class DeckSplit extends LitElement {
   /** Map '1'..'6' to var(--sp-N); fall through to raw values otherwise. */
   private _resolveSp(v: string): string {
     const n = parseInt(v, 10);
-    if (!Number.isNaN(n) && n >= 1 && n <= 6) return `var(--sp-${n})`;
+    if (!Number.isNaN(n) && n >= 1 && n <= 6) return `var(--rik-space-${n})`;
     return v;
   }
 

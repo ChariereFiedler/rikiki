@@ -1,0 +1,261 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import CodeBlock from '../../components/CodeBlock.astro';
+
+const swap = `<!-- Default: tropical Rikiki -->
+<link rel="stylesheet" href="rikiki/themes/rikiki.css">
+
+<!-- Or: warm-paper Siliceum -->
+<link rel="stylesheet" href="rikiki/themes/siliceum.css">
+
+<!-- Or: your own -->
+<link rel="stylesheet" href="themes/my-brand.css">`;
+
+const override = `:root {
+  --rik-accent:           #ff0066;
+  --rik-status-success:   #00aa44;
+}`;
+
+const componentOverride = `<deck-card style="
+  --deck-card-bg: #1a0f2e;
+  --deck-card-text: #fde9a3;
+  --deck-card-radius: 4px;
+">
+  <h3>One-off retheming</h3>
+  <p>Tokens cross the Shadow DOM boundary; CSS selectors don't.</p>
+</deck-card>`;
+
+const newTheme = `/* themes/my-brand.css · a minimal third theme.
+   Re-declare only what you want to change · the rest cascades from
+   whichever theme is loaded BEFORE this one. */
+
+:root {
+  /* ── LAYER 1 · palette (internal · never consumed by components) ── */
+  --rik-palette-mango-500: #d97706;
+  --rik-palette-mango-700: #92400e;
+  --rik-palette-mango-100: rgba(217, 119, 6, 0.18);
+
+  /* ── LAYER 2 · semantic (consumed everywhere) ── */
+  --rik-surface-page:    #f6f4ed;
+  --rik-surface-raised:  #ffffff;
+  --rik-text-default:    #1a1810;
+  --rik-text-default--muted:  #4a4540;
+  --rik-text-default--faint:  #8a8580;
+  --rik-border-default:  #e5e0d4;
+  --rik-accent:          var(--rik-palette-mango-500);
+  --rik-accent--strong:  var(--rik-palette-mango-700);
+  --rik-accent--soft:    var(--rik-palette-mango-100);
+  --rik-link:            var(--rik-accent--strong);
+
+  /* Fonts · IBM Plex example */
+  --rik-font-sans:       'IBM Plex Sans', system-ui, sans-serif;
+  --rik-font-display:    'IBM Plex Sans Condensed', sans-serif;
+  --rik-font-mono:       'IBM Plex Mono', ui-monospace, monospace;
+}`;
+
+const darkMode = `<!-- 1. Honour the OS preference (default if no attr is set) -->
+<html>
+
+<!-- 2. Force light regardless of OS -->
+<html data-rik-theme="light">
+
+<!-- 3. Force dark regardless of OS -->
+<html data-rik-theme="dark">`;
+
+const reduceMotion = `@media (prefers-reduced-motion: reduce) {
+  :root {
+    --rik-motion-fast: 0ms;
+    --rik-motion-base: 0ms;
+    --rik-motion-slow: 0ms;
+    --rik-motion__ease-spring: var(--rik-motion__ease-out);
+  }
+}`;
+
+const allTokens = `/* SEMANTIC LAYER · consumer-facing
+ *  Naming · --rik-<block>__<element>--<modifier> (BEM).
+ *  Components consume these · NOT --rik-palette-* (those are private). */
+
+/* Surfaces */
+--rik-surface-page  / --rik-surface-raised / --rik-surface-raised--strong
+--rik-surface-sunken / --rik-surface-tint / --rik-surface-tint--strong
+--rik-surface-inverse / --rik-surface-inverse--soft / --rik-surface-inverse__overlay
+
+/* Text */
+--rik-text-default / --rik-text-default--muted / --rik-text-default--faint
+--rik-text-inverse / --rik-text-inverse--muted / --rik-text-inverse--faint / --rik-text-inverse--ghost
+
+/* Borders */
+--rik-border-default / --rik-border-default--subtle / --rik-border-inverse
+
+/* Accent */
+--rik-accent / --rik-accent--soft / --rik-accent--faint / --rik-accent--strong / --rik-accent__on
+
+/* Status (success / danger / warn / info) */
+--rik-status-success      / --rik-status-success__bg      / --rik-status-success__border
+--rik-status-danger       / --rik-status-danger__bg       / --rik-status-danger__border
+--rik-status-warn         / --rik-status-warn__bg         / --rik-status-warn__border
+--rik-status-info         / __bg / __bg--mid / __bg--strong / __border / __text
+
+/* Interactive */
+--rik-interactive-bg / --rik-interactive-bg--hover / --rik-interactive-bg--active / --rik-interactive-bg--selected
+--rik-interactive-fg / --rik-interactive-fg--hover
+
+/* Focus / link / selection */
+--rik-focus-ring / --rik-focus-ring--width / --rik-focus-ring--offset
+--rik-link / --rik-link--hover / --rik-link--visited
+--rik-selection__bg / --rik-selection__text
+
+/* Decorative palette (when you need a specific hue) */
+--rik-decor-orchid / --rik-decor-lime / --rik-decor-canary
+
+/* Elevation, motion, z-index */
+--rik-elevation-{1,2,3}
+--rik-motion-{fast,base,slow} / --rik-motion__ease-{out,in-out,spring}
+--rik-z-{base,sticky,overlay,modal,toast,tooltip}
+
+/* Typography · modular scale 1.25 + legacy aliases */
+--rik-font-sans / --rik-font-display / --rik-font-mono
+--rik-text-{2xs,xs,sm,base,md,lg,xl,2xl,3xl,4xl}
+--rik-font-size-{display,section,h1,h2,lead,body,sm,xs,mono,mono-sm,strong,big,mega,hook,stat}
+
+/* Space / radius / icon */
+--rik-space-{hair,2xs,1,2,3,4,5,6}
+--rik-radius-{xs,sm,md,lg,pill}
+--rik-icon-{xs,sm,md,lg,xl,2xl}
+
+/* Slide chrome */
+--rik-slide-padding-y / --rik-slide-padding-x / --rik-title-block
+
+/* Code surface · used by deck-code */
+--rik-code__bg / --rik-code__border / --rik-code__text
+--rik-code__syntax-{keyword,string,number,comment,type,property,function}`;
+---
+
+<Docs
+  title="Theming · design tokens"
+  eyebrow="Guides"
+  description="~140 CSS custom properties, two layers, BEM-named. Swap a stylesheet, you swap the brand. No Sass, no JS, no build."
+>
+
+<h2 id="model">The mental model · two layers</h2>
+<p>
+  Rikiki's tokens are organised in two layers (three if you count component-scoped
+  overrides):
+</p>
+<ol>
+  <li><strong>Palette</strong> · raw colors with internal names
+  (<code>--rik-palette-mango-500</code>, <code>--rik-palette-night-900</code>).
+  <em>Private.</em> Components don't read them; you only touch them when writing a new theme.</li>
+  <li><strong>Semantic</strong> · intent-based names following BEM
+  (<code>--rik-surface-page</code>, <code>--rik-status-success__border</code>,
+  <code>--rik-accent--strong</code>). <em>This is the public API.</em></li>
+  <li><strong>Component-scoped</strong> · <code>--deck-&lt;tag&gt;-*</code> overrides
+  that default to the matching semantic token. Use them to retheme one instance
+  without touching <code>:root</code>.</li>
+</ol>
+
+<h2 id="swap">Swap a whole theme</h2>
+<p>One stylesheet, one swap. The semantic layer is identical across themes · only the palette values change underneath.</p>
+<CodeBlock label="<head>" lang="html" code={swap} />
+
+<p>Two themes ship with the package:</p>
+<ul>
+  <li><strong>rikiki</strong> · tropical-jungle palette on a deep navy. Unbounded + Inter (variable axes) + Space Mono via Google Fonts. <em>Default.</em></li>
+  <li><strong>siliceum</strong> · warm paper with a gold accent. Source Sans Pro + JetBrains Mono, self-hosted woff2.</li>
+</ul>
+
+<h2 id="override-root">Override one or two tokens</h2>
+<p>
+  Keep the theme but tweak one semantic value. Set the token on <code>:root</code> · all components follow.
+</p>
+<CodeBlock label="Inside your deck's <style>" lang="css" code={override} />
+
+<h2 id="override-component">Override one component instance</h2>
+<p>
+  Every component exposes its own <code>--deck-&lt;tag&gt;-*</code> tokens.
+  Set them inline on the host and they cross the Shadow DOM boundary · regular
+  CSS selectors don't, so this is the supported way to retheme one block.
+</p>
+<CodeBlock label="One-off override" lang="html" code={componentOverride} />
+<p>
+  See the <a href="/docs/components">Component library</a> for the
+  per-component token list (every component declares its own
+  <code>--deck-&lt;tag&gt;-*</code> family · 9–12 tokens per component on average).
+</p>
+
+<h2 id="naming">Naming convention</h2>
+<p>BEM with explicit prefixes:</p>
+<ul>
+  <li><code>--rik-</code> · framework prefix (avoids collisions with consumer CSS)</li>
+  <li><code>__element</code> · sub-part inside a block (<code>__bg</code>, <code>__border</code>, <code>__text</code>)</li>
+  <li><code>--modifier</code> · variant or state (<code>--soft</code>, <code>--strong</code>, <code>--hover</code>, <code>--faint</code>)</li>
+</ul>
+<p>
+  <strong>No color name in the semantic layer.</strong> Names
+  like <code>--yellow</code>, <code>--orange</code>, <code>--green</code> belong
+  to the palette layer only. The semantic API is intent · the palette is
+  implementation.
+</p>
+
+<h2 id="motion">Reduced motion</h2>
+<p>
+  Both shipped themes zero out the motion tokens under
+  <code>prefers-reduced-motion: reduce</code>. The spring-ease curve (overshoot
+  1.8) is neutralised to a standard ease-out. WCAG 2.3.3 compliance, vestibular
+  safety. If you author your own theme, copy this pattern:
+</p>
+<CodeBlock label="themes/my-brand.css (excerpt)" lang="css" code={reduceMotion} />
+
+<h2 id="contrast">Contrast notes</h2>
+<p>
+  The brand accent <code>#f07020</code> on paper is <strong>3.2:1</strong>,
+  which fails WCAG AA for body text. Both themes route <code>--rik-link</code>
+  through <code>--rik-accent--strong</code> (a darker shade that passes 4.5:1).
+  If you write a custom theme, audit your <code>--rik-link</code> against your
+  page background; the link CSS in Rikiki uses underlines, so non-text contrast
+  is 3:1 · but body links read as text and should pass AA.
+</p>
+
+<h2 id="typography">Type scale</h2>
+<p>
+  Body sizes follow a modular ratio of <strong>1.25 (major third)</strong>
+  anchored at <code>1rem</code>. The new t-shirt aliases (<code>--rik-text-2xs</code>
+  through <code>--rik-text-4xl</code>) and the legacy
+  <code>--rik-font-size-*</code> tokens point to the same values.
+</p>
+<p>
+  Note that the slide root applies <code>html {`{`} font-size: clamp(14px, 2.35vh, 42px) {`}`}</code>
+  so every <code>rem</code> scales with the viewport height. That's a deliberate
+  choice for slides; if you embed Rikiki in a regular page (the marketing site
+  does), drop that rule from your own stylesheet.
+</p>
+
+<h2 id="write-theme">Write a third theme</h2>
+<p>
+  Re-declare the palette, semantic surfaces, accent and fonts. Everything else
+  inherits from defaults. Drop the file next to <code>rikiki.css</code>, point
+  a <code>&lt;link&gt;</code> at it.
+</p>
+<CodeBlock label="themes/my-brand.css" lang="css" code={newTheme} />
+
+<h2 id="shadow">Why tokens, not CSS selectors</h2>
+<p>
+  Every Rikiki component lives in its own Shadow DOM. <strong>Regular CSS
+  selectors don't cross the boundary</strong> · <code>deck-cover h1{`{`}color:
+  red{`}`}</code> from your stylesheet has no effect. CSS custom properties
+  DO inherit through the shadow boundary, which is why the entire override
+  surface is tokens-only.
+</p>
+<p>
+  Concretely: every component declares its custom property reads with the
+  semantic fallback, e.g.
+  <code>background: var(--deck-cover-bg, var(--rik-surface-inverse))</code>.
+  Override <code>--deck-cover-bg</code> for one instance, override
+  <code>--rik-surface-inverse</code> for all of them.
+</p>
+
+<h2 id="all-tokens">Token reference</h2>
+<p>The full semantic-layer surface, grouped by domain:</p>
+<CodeBlock label="Semantic tokens" lang="css" code={allTokens} />
+
+</Docs>

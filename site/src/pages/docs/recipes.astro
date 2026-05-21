@@ -1,0 +1,108 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import CodeBlock from '../../components/CodeBlock.astro';
+
+const codeHero = `<deck-feature eyebrow="ESM">
+  <h1 slot="title">Side effects</h1>
+  <p slot="lead" class="lead">
+    A module can act on import.
+  </p>
+  <deck-code lang="ts" hero>
+    import './polyfill';
+  </deck-code>
+</deck-feature>`;
+
+const sideBySide = `<deck-split cols="1-1">
+  <h1 slot="title">Two takes</h1>
+  <deck-card slot="left" color="red">
+    <h3>Problem</h3>
+    <deck-md>Be specific about what fails.</deck-md>
+  </deck-card>
+  <deck-card slot="right" color="green">
+    <h3>Fix</h3>
+    <deck-md>The smallest change that works.</deck-md>
+  </deck-card>
+</deck-split>`;
+
+const threeUp = `<deck-split cols="3" eyebrow="Actions">
+  <h1 slot="title">Three levers</h1>
+  <deck-card slot="a" color="yellow"><h3>① …</h3></deck-card>
+  <deck-card slot="b" color="orange"><h3>② …</h3></deck-card>
+  <deck-card slot="c" color="green"><h3>③ …</h3></deck-card>
+</deck-split>`;
+
+const stats = `<deck-feature eyebrow="Promises">
+  <h1 slot="title">Three on-purpose constraints</h1>
+  <deck-grid cols="3" gap="5">
+    <deck-stat num="01" tone="orange">
+      <h3 slot="claim">Open index.html</h3>
+      No build, no toolchain.
+    </deck-stat>
+    <deck-stat num="02" tone="green">
+      <h3 slot="claim">Alive in 2031</h3>
+      Web standards only.
+    </deck-stat>
+    <deck-stat num="03" tone="lime">
+      <h3 slot="claim">~11 KB gzip</h3>
+      Lit + 23 components.
+    </deck-stat>
+  </deck-grid>
+</deck-feature>`;
+
+const hook = `<deck-takeaway kicker="The whole point">
+  <deck-punch size="display">Source = output.</deck-punch>
+  <p class="caption on-dark">
+    Open the same folder in 2031.
+  </p>
+</deck-takeaway>`;
+
+const codeWithDetail = `<deck-feature-cards eyebrow="Deep dive">
+  <h1 slot="title">One thing at a time</h1>
+  <p slot="lead" class="lead">
+    Focal snippet with two short notes underneath.
+  </p>
+  <deck-code lang="ts" hero>
+    function run() { return 42; }
+  </deck-code>
+  <deck-card slot="left" color="yellow">
+    <h3>What changes</h3>
+    <deck-md>Plain-language summary.</deck-md>
+  </deck-card>
+  <deck-card slot="right" color="orange">
+    <h3>What stays</h3>
+    <deck-md>The API contract.</deck-md>
+  </deck-card>
+</deck-feature-cards>`;
+---
+
+<Docs
+  title="Recipes"
+  eyebrow="Guides"
+  description="Drop-in patterns for the slide shapes that come up again and again in technical decks."
+>
+
+<h2 id="hero-code">A focal code block</h2>
+<p>Hero layout with a single big code snippet · the most common technical slide.</p>
+<CodeBlock label="Pattern" lang="html" code={codeHero} />
+
+<h2 id="side-by-side">Side-by-side comparison</h2>
+<p>Problem vs fix, before vs after, static vs dynamic · two tinted cards in a split.</p>
+<CodeBlock label="Pattern" lang="html" code={sideBySide} />
+
+<h2 id="three-up">Three-up cards</h2>
+<p>Three levers, three things, three steps · use <code>cols="3"</code>.</p>
+<CodeBlock label="Pattern" lang="html" code={threeUp} />
+
+<h2 id="big-numbers">Promises / metrics with big numbers</h2>
+<p>Use <code>&lt;deck-stat&gt;</code> instead of stuffing big text into a card.</p>
+<CodeBlock label="Pattern" lang="html" code={stats} />
+
+<h2 id="punch">Take-home punchline</h2>
+<p>Close a chapter (or the whole deck) with a centered punch on dark.</p>
+<CodeBlock label="Pattern" lang="html" code={hook} />
+
+<h2 id="code-detail">Code on top, two notes underneath</h2>
+<p>When the code needs commentary · <code>&lt;deck-feature-cards&gt;</code> caps the diagram at 40% so the code stays readable.</p>
+<CodeBlock label="Pattern" lang="html" code={codeWithDetail} />
+
+</Docs>
