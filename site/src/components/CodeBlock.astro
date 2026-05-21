@@ -81,6 +81,10 @@ const highlighted = highlight(code.trim(), lang);
     margin: 0;
     display: flex; flex-direction: column;
     gap: var(--rik-space-2);
+    /* min-width: 0 lets us shrink inside a grid/flex parent · without it
+       the <pre>'s intrinsic min-content width (one line of code) wins and
+       the figure overflows its grid track on narrow viewports. */
+    min-width: 0;
   }
   .label {
     font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
@@ -111,7 +115,7 @@ const highlighted = highlight(code.trim(), lang);
   pre :global(.fn)   { color: #82aaff; }
 
   /* Copy button · sits top-right of the code block, only visible on hover */
-  .block { position: relative; }
+  .block { position: relative; min-width: 0; }
   .copy {
     position: absolute;
     top: 10px;
