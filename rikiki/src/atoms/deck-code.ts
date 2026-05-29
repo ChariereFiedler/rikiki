@@ -88,11 +88,15 @@ export class DeckCode extends LitElement {
       overflow: auto;
       white-space: pre;
     }
-    :host([hero]) { display: flex; align-items: safe center; padding: var(--rik-space-4) var(--rik-space-5); }
+    :host([hero]) {
+      display: flex;
+      align-items: safe center;
+      padding: var(--deck-code-padding-y, var(--rik-space-4)) var(--deck-code-padding-x, var(--rik-space-5));
+    }
     :host([nested]) {
       box-shadow: none;
       border-radius: var(--rik-radius-sm);
-      padding: var(--rik-space-2) var(--rik-space-3);
+      padding: var(--deck-code-padding-y, var(--rik-space-2)) var(--deck-code-padding-x, var(--rik-space-3));
     }
     pre { margin: 0; font: inherit; color: inherit; }
     code { display: block; width: 100%; font: inherit; color: inherit; }
