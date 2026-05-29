@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-05-29
+
+### Fixed
+- `<deck-code>` `hero` and `nested` variants now honor the documented
+  `--deck-code-padding-x` / `--deck-code-padding-y` custom properties. They
+  were hard-coded, so deck authors could not tune the padding as the component
+  contract promised. Defaults are unchanged.
+
+## [0.1.0] - 2026-05-21
+
 ### Added
 - Initial public release.
 - 20 `<deck-*>` Web Components (cover, section, hero, hero-detail, split, hook,
