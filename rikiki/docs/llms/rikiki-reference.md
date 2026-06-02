@@ -274,8 +274,10 @@ export default {
 ```
 
 - **`.html` partials** are inlined verbatim (one or more `deck-*` elements each).
-- **`.md` partials** are wrapped into a `<deck-feature><deck-md>…</deck-md></deck-feature>`
-  slide automatically.
+- **`.md` partials** can hold one or many slides. A line that is exactly `---`
+  splits the file into separate slides (reveal.js convention); each chunk is
+  wrapped into its own `<deck-feature><deck-md>…</deck-md></deck-feature>`. Use
+  `***` for a horizontal rule inside a slide (since `---` is the slide break).
 
 Run it:
 
