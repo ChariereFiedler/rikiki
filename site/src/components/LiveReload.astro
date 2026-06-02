@@ -1,0 +1,159 @@
+---
+// Authoring-time DX highlight · rikiki's built-in livereload poller. Edit a
+// slide, the deck reloads itself on the slide you were on. The toast chip
+// below is a static mock of the real fixed bottom-left pill (dark bg,
+// accent text, mono, uppercase) · purely decorative here.
+import CodeBlock from './CodeBlock.astro';
+
+const enableCode = `# open the deck with ?live
+your-deck.html?live`;
+---
+
+<section id="livereload" class="livereload">
+  <div class="inner">
+    <header class="head">
+      <p class="eyebrow"><span class="num">DX</span> Livereload</p>
+      <h2>Edit a slide. The deck reloads itself.</h2>
+      <p class="lede">
+        A tiny built-in poller watches your deck files and reloads the page
+        the moment one changes · landing you right back on the slide you were
+        editing. Zero config, authoring-only, never shipped to the audience.
+      </p>
+    </header>
+
+    <div class="grid">
+      <div class="enable">
+        <CodeBlock label="Enable · one query string" lang="html" code={enableCode} />
+        <p class="note">
+          Append <code>?live</code> to the deck URL · the core lazy-imports the
+          poller on demand. Prefer it always on while authoring? Load
+          <code>dist/livereload.js</code> directly and it auto-starts on import.
+        </p>
+      </div>
+
+      <figure class="mock" aria-hidden="true">
+        <figcaption>What you see</figcaption>
+        <div class="screen">
+          <span class="toast">livereload on</span>
+          <span class="toast reload">reload · deck-feature.js</span>
+        </div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<style>
+  .livereload {
+    background: var(--rik-surface-page);
+    padding: var(--rik-space-7) var(--rik-space-5);
+  }
+  @media (max-width: 640px) {
+    .livereload { padding: var(--rik-space-6) var(--rik-space-3); }
+  }
+  .inner { max-width: 1080px; margin: 0 auto; }
+
+  .head { max-width: 70ch; margin-bottom: var(--rik-space-6); }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--rik-accent);
+    color: var(--rik-accent__on);
+    padding: 4px 14px 4px 4px;
+    border-radius: var(--rik-radius-pill);
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin: 0 0 var(--rik-space-3);
+  }
+  .eyebrow .num {
+    background: var(--rik-accent__on);
+    color: var(--rik-accent--strong);
+    padding: 4px 7px;
+    border-radius: var(--rik-radius-pill);
+  }
+  h2 {
+    font-family: var(--rik-font-display);
+    font-size: var(--rik-font-size-mega);
+    font-weight: 800;
+    color: var(--rik-text-default);
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    margin: 0 0 var(--rik-space-3);
+    max-width: 22ch;
+    padding-bottom: var(--rik-space-2);
+    border-bottom: 4px solid var(--rik-accent);
+    display: inline-block;
+  }
+  .lede {
+    font-size: var(--rik-font-size-lead);
+    color: var(--rik-text-default--muted);
+    line-height: 1.55;
+    margin: var(--rik-space-3) 0 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--rik-space-4);
+    align-items: start;
+  }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+
+  .note {
+    margin-top: var(--rik-space-3);
+    font-size: var(--rik-font-size-body);
+    color: var(--rik-text-default--faint);
+    line-height: 1.65;
+  }
+  .note code {
+    font-family: var(--rik-font-mono);
+    font-size: 0.9em;
+    background: var(--rik-surface-tint);
+    color: var(--rik-text-default);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  /* ── Static mock of the real fixed bottom-left toast pill ── */
+  .mock {
+    margin: 0;
+    display: flex; flex-direction: column;
+    gap: var(--rik-space-2);
+  }
+  .mock figcaption {
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--rik-text-default--faint);
+  }
+  /* A miniature "slide" surface so the toast sits where it really lands:
+     pinned to the bottom-left corner, just like position:fixed at runtime. */
+  .screen {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    border-radius: var(--rik-radius-md);
+    border: 1px solid var(--rik-border-default);
+    background:
+      radial-gradient(circle at 80% 20%, rgba(247, 203, 68, 0.06) 0%, transparent 50%),
+      var(--rik-surface-inverse);
+    box-shadow: var(--rik-elevation-2);
+    overflow: hidden;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    gap: 8px;
+    padding: 12px;
+  }
+  /* Reproduces the runtime style · #0a0a0a bg, #F7CB44 text + border,
+     600 11px monospace, uppercase, 6px radius. */
+  .toast {
+    align-self: flex-start;
+    padding: 6px 12px;
+    background: #0a0a0a;
+    color: #F7CB44;
+    border: 1px solid #F7CB44;
+    border-radius: 6px;
+    font: 600 11px/1.4 monospace;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .toast.reload { opacity: 0.55; }
+</style>
