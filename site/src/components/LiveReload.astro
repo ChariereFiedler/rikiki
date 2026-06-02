@@ -140,6 +140,20 @@ const defaultSrc = `<deck-cover brand="rikiki · live" speaker="You">
     const swap = (slide: string): void => {
       const doc = frame.contentDocument;
       if (!doc || !doc.body) return;
+      // Stay on the slide the user is viewing · read the active slide's index
+      // off the old deck, then seed the hash so the fresh deck-root lands there
+      // on init (deck-root reads location.hash in firstUpdated). Mirrors how the
+      // real livereload keeps the hash across a reload.
+      const prev = doc.querySelector('deck-root');
+      let idx = 0;
+      if (prev) {
+        const slides = Array.from(prev.children).filter((c) => c.tagName.startsWith('DECK-'));
+        idx = Math.max(0, slides.findIndex((s) => s.hasAttribute('active')));
+      }
+      try {
+        const cw = frame.contentWindow;
+        if (cw) cw.location.hash = '#' + (idx + 1);
+      } catch { /* srcdoc may reject hash writes · falls back to slide 1 */ }
       doc.body.innerHTML = '<deck-root>' + slide + '</deck-root>';
       const dr = doc.body.firstElementChild as HTMLElement | null;
       if (dr) {
