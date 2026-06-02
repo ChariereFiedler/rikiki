@@ -70,7 +70,7 @@ const cdnRewrite = {
     // browser fetches them on demand. deck-root uses
     //   await import('./deck-overview.js')
     // which would otherwise be inlined back into deck-root.
-    b.onResolve({ filter: /^\.\/(deck-overview|deck-help|deck-transition|deck-presenter)\.js$/ }, (args) => ({
+    b.onResolve({ filter: /^\.\/(deck-overview|deck-help|deck-transition|deck-presenter|livereload)\.js$/ }, (args) => ({
       path: args.path,
       external: true,
     }));
