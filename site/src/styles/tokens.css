@@ -86,6 +86,9 @@
   --rik-status-danger:                var(--rik-palette-ember-500);
   --rik-status-danger__bg:            var(--rik-palette-ember-100);
   --rik-status-danger__border:        var(--rik-palette-ember-200);
+  --rik-status-warn:                  #e8a23d;
+  --rik-status-warn__bg:              rgba(232, 162, 61, 0.12);
+  --rik-status-warn__border:          rgba(232, 162, 61, 0.45);
 
   /* Interactive */
   --rik-interactive-bg--hover:        rgba(42, 37, 32, 0.04);
