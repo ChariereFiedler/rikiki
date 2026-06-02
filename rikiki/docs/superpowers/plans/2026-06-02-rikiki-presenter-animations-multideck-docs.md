@@ -791,6 +791,45 @@ after a clean reload (was 39+).
 
 ---
 
+# CHANTIER 6 — Feature livereload (landing + docs + real `?live` wiring)
+
+Added on user request: "met en avant le livereload dans la landing page et la doc."
+
+**Background:** `rikiki/src/livereload.ts` polls `Last-Modified`/etag of deck
+files and auto-reloads on change (toast feedback). Its header comment claims
+"Enable by adding `?live` to the URL, or by loading this module directly," but
+**`?live` is not actually wired anywhere** — only loading `dist/livereload.js`
+directly works (it auto-starts via a bottom IIFE).
+
+### 6a — Wire `?live` for real (rikiki)
+- In `rikiki/src/index.ts`, after the component imports, add an opt-in guard:
+  ```ts
+  // Livereload · opt-in via ?live (loads the poller only when asked).
+  if (new URLSearchParams(location.search).has('live')) {
+    import('./livereload.js');
+  }
+  ```
+- Fix the `livereload.ts` header comment so it matches reality (both `?live`
+  via index.js and direct module load enable it).
+- `npm run typecheck` + `npm run build`. Verify `dist/index.js` contains the
+  `?live` guard and that `?live` lazy-imports `livereload.js`.
+
+### 6b — Landing-page highlight (site)
+- Add a livereload showcase to `site/src/pages/index.astro` (a dedicated
+  `Section` with a short pitch + a `CodeBlock` showing the one-line enable
+  `…/starter.html?live`, and a small visual of the "livereload on" / "reload ·
+  file" toast). Reuse existing components (`Section`, `Card`, `CodeBlock`) and
+  the site's token styling; do not invent a new design language.
+- Place it near the other DX/feature sections (e.g. after `LiveDemo` or with
+  the plugins/DX cluster). Match the surrounding tone.
+
+### 6c — Docs
+- Add a "Livereload" section to `docs/llms/rikiki-reference.md` (Chantier 4):
+  how to enable (`?live` or load `dist/livereload.js`), what it polls, the
+  toast, and that it's authoring-only.
+
+---
+
 ## Final verification
 
 - [ ] `npm run typecheck` — PASS

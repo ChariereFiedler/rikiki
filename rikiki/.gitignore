@@ -1,0 +1,5 @@
+
+# Playwright MCP scratch + assembled deck outputs (sources live in <deck>/parts/)
+.playwright-mcp/
+livereload-section.jpeg
+decks/*/*.html
