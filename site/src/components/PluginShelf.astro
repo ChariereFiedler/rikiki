@@ -2,7 +2,8 @@
 const plugins = [
   { role: 'transitions',    name: 'deck-transition',  file: 'deck-transition.js',  kb: 1.7, activate: 'transition="slide"',     summary: 'Slide, fade, zoom, flip. Picks its own direction. Cross-fades old and new, no background flash.', href: '/docs/plugins#transition', glyph: 'transitions' },
   { role: 'presenter mode', name: 'deck-presenter',   file: 'deck-presenter.js',   kb: 2.9, activate: 'press P',                 summary: 'A popup with the current slide, the next one, your notes and a timer. Syncs over BroadcastChannel.',           href: '/docs/plugins#presenter',  glyph: 'presenter' },
-  { role: 'syntax',         name: 'shiki-plugin',     file: 'shiki-plugin.js',     kb: 0.6, activate: 'installShiki()',          summary: 'Real syntax highlighting for deck-code. TextMate grammars, JSX, TSX, template literals.',           href: '/docs/plugins#shiki',      glyph: 'syntax' },
+  { role: 'syntax',         name: 'shiki',            file: 'shiki.js',            kb: 0.6, activate: 'installShiki()',          summary: 'Real syntax highlighting for deck-code. TextMate grammars, JSX, TSX, template literals.',           href: '/docs/plugins#shiki',      glyph: 'syntax' },
+  { role: 'click reveals',  name: 'click-stages',     file: 'click-stages.js',     kb: 0.8, activate: 'installClickStages()',    summary: 'Reveal elements one click at a time. data-click and data-anim. Builds on the step engine, reverses cleanly.', href: '/docs/plugins#click-stages', glyph: 'clicks' },
   { role: 'speaker notes',  name: 'deck-notes',       file: 'deck-notes',          kb: 0.4, activate: '<deck-notes>',            summary: 'A hidden slot that surfaces in the presenter window. Free text, kept as written.',                          href: '/docs/plugins#notes',      glyph: 'notes' },
 ];
 const totalKb = plugins.reduce((s, p) => s + p.kb, 0).toFixed(1);
@@ -12,7 +13,7 @@ const totalKb = plugins.reduce((s, p) => s + p.kb, 0).toFixed(1);
   <div class="inner">
     <header class="head">
       <p class="eyebrow"><span class="num">07</span> Plugin shelf</p>
-      <h2>Four opt-in modules. Nothing else loads.</h2>
+      <h2>Five opt-in modules. Nothing else loads.</h2>
       <p class="lede">
         The ~14 KB core ships none of these. Each one fetches on first use.
         A deck that never asks for a feature never pays for it.
@@ -57,6 +58,14 @@ const totalKb = plugins.reduce((s, p) => s + p.kb, 0).toFixed(1);
                   <path d="M6 6 H30 V25 H17 L10 32 V25 H6 Z"></path>
                   <path d="M11 13 L25 13" opacity="0.7"></path>
                   <path d="M11 18 L22 18" opacity="0.5"></path>
+                </svg>
+              )}
+              {p.glyph === 'clicks' && (
+                <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 6 L6 22 L11 18 L14 25 L17 23 L14 16 L20 16 Z"></path>
+                  <path d="M24 9 L29 9" opacity="0.6"></path>
+                  <path d="M24 14 L31 14" opacity="0.45"></path>
+                  <path d="M24 19 L29 19" opacity="0.3"></path>
                 </svg>
               )}
             </span>

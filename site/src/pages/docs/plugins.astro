@@ -41,7 +41,7 @@ const shikiUsage = `<!doctype html>
 
   <!-- Opt-in Shiki highlighter · pulls Shiki from esm.sh on first highlight -->
   <script type="module">
-    import { installShiki } from './rikiki/dist/shiki-plugin.js';
+    import { installShiki } from './rikiki/dist/shiki.js';
     await installShiki({
       theme: 'one-dark-pro',
       langs: ['ts', 'tsx', 'html', 'css', 'json'],
@@ -59,6 +59,31 @@ const shikiUsage = `<!doctype html>
   </deck-root>
 </body>
 </html>`;
+
+const clickStagesUsage = `<!doctype html>
+<html>
+<head>
+  <link rel="stylesheet" href="rikiki/themes/rikiki.css">
+  <script type="module" src="rikiki/dist/index.js"></script>
+
+  <!-- Opt-in click-through reveals -->
+  <script type="module">
+    import { installClickStages } from './rikiki/dist/click-stages.js';
+    installClickStages();
+  </script>
+</head>
+<body>
+  <deck-root>
+    <deck-feature>
+      <h1 slot="title">Build it up</h1>
+      <p data-click>Shows on the first click.</p>
+      <p data-click data-anim="slide-up">Then this one, sliding up.</p>
+      <p data-click="3" data-anim="scale">Jumps straight to click 3.</p>
+      <p data-click-hide>Here now, gone on the next click.</p>
+    </deck-feature>
+  </deck-root>
+</body>
+</html>`;
 ---
 
 <Docs
@@ -67,9 +92,9 @@ const shikiUsage = `<!doctype html>
   description="Optional add-ons · activated by an attribute on deck-root or an explicit import. None of them are in the core bundle · they fetch on first use only."
 >
 
-<h2 id="overview">The four plugins</h2>
+<h2 id="overview">The five plugins</h2>
 <p>
-  Rikiki ships four optional modules. The core (<code>dist/index.js</code>,
+  Rikiki ships five optional modules. The core (<code>dist/index.js</code>,
   ~14 KB gzip) doesn't load any of them. Each one fetches separately the
   first time it's needed, so a deck that doesn't use a plugin pays nothing
   for it.
@@ -93,10 +118,16 @@ const shikiUsage = `<!doctype html>
       <td>Speaker window with notes + next-slide preview + timer</td>
     </tr>
     <tr>
-      <td><a href="#shiki"><code>shiki-plugin</code></a></td>
+      <td><a href="#shiki"><code>shiki</code></a></td>
       <td>~0.6 KB + Shiki from CDN</td>
       <td>Explicit <code>import + installShiki()</code></td>
       <td>Production-grade syntax highlighting for <code>deck-code</code></td>
+    </tr>
+    <tr>
+      <td><a href="#click-stages"><code>click-stages</code></a></td>
+      <td>~0.8 KB</td>
+      <td>Explicit <code>import + installClickStages()</code></td>
+      <td>Reveal elements one click at a time (Slidev-style <code>v-click</code>)</td>
     </tr>
     <tr>
       <td><a href="#notes"><code>deck-notes</code></a></td>
@@ -173,7 +204,7 @@ const shikiUsage = `<!doctype html>
 </p>
 <CodeBlock label="notes example" lang="html" code={presenterUsage} />
 
-<h2 id="shiki">shiki-plugin · production code highlighting</h2>
+<h2 id="shiki">shiki · production code highlighting</h2>
 <p>
   The default <code>deck-code</code> highlighter is a hand-rolled regex pass
   (~10 keywords per language, no template literal awareness, no JSX). Good
@@ -193,6 +224,32 @@ const shikiUsage = `<!doctype html>
   regex highlighter so the deck never breaks.
 </p>
 
+<h2 id="click-stages">click-stages · reveal elements on click</h2>
+<p>
+  Slidev-style click-through. Tag any element with <code>data-click</code> and
+  it stays hidden until you click, then fades in. The step dots at the bottom
+  count the reveals, and stepping back hides them again. It builds on the same
+  step engine <code>deck-code</code> already uses, so one slide can mix click
+  reveals and code <code>step-groups</code>.
+</p>
+<CodeBlock label="install click-stages" lang="html" code={clickStagesUsage} />
+
+<h3 id="click-stages-attrs">Attributes</h3>
+<table class="opts">
+  <thead><tr><th>Attribute</th><th>Effect</th></tr></thead>
+  <tbody>
+    <tr><td><code>data-click</code></td><td>Hidden until the next click, then revealed.</td></tr>
+    <tr><td><code>data-click="N"</code></td><td>Revealed on click N specifically.</td></tr>
+    <tr><td><code>data-click-hide</code></td><td>Visible at first, hidden on the next click.</td></tr>
+    <tr><td><code>data-anim="..."</code></td><td>How it enters · <code>fade</code> (default), <code>slide-up</code>, <code>slide-left</code>, <code>scale</code>.</td></tr>
+  </tbody>
+</table>
+<p>
+  Nothing loads unless you call <code>installClickStages()</code>. Honours
+  <code>prefers-reduced-motion: reduce</code> · reveals snap in without the
+  transform when the reader asks for less motion.
+</p>
+
 <h2 id="cost">Cost model</h2>
 <p>
   Plugin costs are paid <strong>only when you opt in</strong>:
@@ -200,6 +257,7 @@ const shikiUsage = `<!doctype html>
 <ul>
   <li>A deck without <code>transition</code> on its root never fetches <code>deck-transition.js</code>.</li>
   <li>A deck without an <code>installShiki()</code> call never fetches Shiki.</li>
+  <li>No <code>installClickStages()</code> call means <code>click-stages.js</code> never loads.</li>
   <li>Speaker who never presses <kbd>P</kbd> never fetches <code>deck-presenter.js</code>.</li>
   <li><code>deck-notes</code> ships with the core (0.4 KB) but if you don't use the element, it's just one unused custom-element registration.</li>
 </ul>
