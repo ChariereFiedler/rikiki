@@ -13,9 +13,12 @@ const here = (rel: string): string => new URL(rel, import.meta.url).href;
 // Watch the deck's actual theme stylesheet(s) wherever they live · the old
 // hardcoded here('./tokens.css') assumed the theme sat next to this module in
 // dist/, which 404s (the theme lives at the package root, not in dist/).
+const sameOrigin = (href: string): boolean => {
+  try { return new URL(href, location.href).origin === location.origin; } catch { return false; }
+};
 const themeHrefs = Array.from(
   document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')
-).map((l) => l.href);
+).map((l) => l.href).filter(sameOrigin);  // skip cross-origin (CDN fonts) · HEAD would CORS-error every poll
 
 const FILES = [
   ...themeHrefs,
