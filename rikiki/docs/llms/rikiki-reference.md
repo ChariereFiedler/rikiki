@@ -1,9 +1,9 @@
-# Rikiki — LLM reference
+# Rikiki · LLM reference
 
 Exhaustive, self-consistent reference for authoring valid **rikiki** decks. Every
 tag, attribute, slot, and token below was derived from the source in this repo
 (`src/index.ts` is the canonical component list; `themes/rikiki.css` is the
-canonical token list). Do not invent tags, attributes, or tokens — use only what
+canonical token list). Do not invent tags, attributes, or tokens · use only what
 is listed here.
 
 ---
@@ -15,7 +15,7 @@ plain HTML: there is **no build step** to author or run one. You load a theme
 stylesheet, then the component bundle, then write a `<deck-root>` that wraps
 `deck-*` slide elements.
 
-Load order matters — **theme CSS first, then `dist/index.js`**:
+Load order matters · **theme CSS first, then `dist/index.js`**:
 
 ```html
 <link rel="stylesheet" href="./tokens.css">
@@ -133,19 +133,19 @@ Direct children of `<deck-root>`. Each is one slide.
 |-----|---------|----------------|------------------|
 | `deck-callout` | Highlighted note box | `type` (`info`/`warn`/`danger`/`ok`) | default (text / `deck-md`) |
 | `deck-card` | Tinted card | `color` (`yellow`/`orange`/`green`/`red`), `center`, `compact` | default (`<h3>` + body) |
-| `deck-md` | Render Markdown (GFM) | — | default = raw Markdown text |
+| `deck-md` | Render Markdown (GFM) | · | default = raw Markdown text |
 | `deck-mermaid` | Render a Mermaid diagram (loads Mermaid from CDN) | `compact` | default = Mermaid source |
 | `deck-stat` | Big-number visual | `num`, `tone` (`yellow`/`orange`/`green`/`red`/`purple`/`lime`/`cyan`) | `claim` (`<h3>`), default = body line |
-| `deck-metric-list` | Wraps `deck-metric` rows | — | `deck-metric` children |
+| `deck-metric-list` | Wraps `deck-metric` rows | · | `deck-metric` children |
 | `deck-metric` | One metric row | `severity` (`bad`/`warn`/`ok`/`info`), `value` | default = label |
-| `deck-tier-list` | Tier ladder | — | `deck-tier`, `deck-tier-arrow` children |
-| `deck-tier` | One tier row | `name`, `desc`, `speed`, `severity` (`muted`/`warn`/`ok`/`hot`), `hot` | — |
-| `deck-tier-arrow` | Separator note between tiers | — | default = text |
-| `deck-step-list` | Numbered step ladder | — | `deck-step` children |
+| `deck-tier-list` | Tier ladder | · | `deck-tier`, `deck-tier-arrow` children |
+| `deck-tier` | One tier row | `name`, `desc`, `speed`, `severity` (`muted`/`warn`/`ok`/`hot`), `hot` | · |
+| `deck-tier-arrow` | Separator note between tiers | · | default = text |
+| `deck-step-list` | Numbered step ladder | · | `deck-step` children |
 | `deck-step` | One step row | `n`, `note` | default = label |
 | `deck-shortcut-list` | Two-column shortcut grid | `gap` (1..6) | `deck-shortcut` children |
 | `deck-shortcut` | One keyboard-shortcut row | `keys` (space-separated), `label`, `note` | default = note |
-| `deck-kbd` | Inline key chip | — | default = key text |
+| `deck-kbd` | Inline key chip | · | default = key text |
 | `deck-stack` | Flex stack helper | `gap` (1..6), `direction` (`row`/`column`), `align` (`start`/`center`/`end`/`stretch`), `justify` (`start`/`center`/`end`/`between`/`around`) | children |
 | `deck-grid` | CSS grid helper | `cols` (1..12 or template), `rows`, `gap` (1..6 or CSS), `align`, `justify`, `fill` | children |
 
@@ -162,11 +162,11 @@ Direct children of `<deck-root>`. Each is one slide.
 
 ### deck-code details
 
-- `lang` — drives highlighting: `js` / `ts` / `json` (default), `html` / `xml` /
+- `lang` · drives highlighting: `js` / `ts` / `json` (default), `html` / `xml` /
   `svg`, `css` / `scss` / `less`.
-- `hero` — centers the block vertically as the slide's focal element.
-- `nested` — lighter border, no shadow (for use inside a `deck-card`).
-- `step-groups` — a JSON array attribute that turns the snippet into a stepped
+- `hero` · centers the block vertically as the slide's focal element.
+- `nested` · lighter border, no shadow (for use inside a `deck-card`).
+- `step-groups` · a JSON array attribute that turns the snippet into a stepped
   reveal; the number of groups becomes the slide's step count (see §7).
 
 Highlighting is done client-side with a built-in highlighter (no build step). An
@@ -185,7 +185,7 @@ slide's `step` so they also work inside presenter mirror iframes.
 - **`steps="N"`** (or `data-steps="N"`) on a slide host declares N reveal steps.
 - **`[data-step-block]`** elements inside a slide are hidden until their step is
   reached. `<deck-root>` toggles their visibility as `step` advances.
-- **`deck-code[step-groups='[…]']`** — a code block whose `step-groups` JSON
+- **`deck-code[step-groups='[…]']`** · a code block whose `step-groups` JSON
   array defines line groups revealed step by step; its group count sets the
   slide's step count automatically.
 
@@ -194,7 +194,7 @@ The step dots at the bottom of the deck reflect the active slide's step count.
 ### Click-stages plugin (per-element reveals)
 
 `src/plugins/click-stages.ts` adds Slidev-style `v-click`-style reveals. It is
-**opt-in** — not part of the core bundle. Install it after rikiki loads:
+**opt-in** · not part of the core bundle. Install it after rikiki loads:
 
 ```html
 <script type="module" src="./dist/index.js"></script>
@@ -254,7 +254,7 @@ It is hidden in the deck itself; only the presenter window reads its text.
 ## 9 · Multi-deck assembly
 
 Split a long talk into small partial files and assemble them into one deck at
-build time. The assembler is `build/vite-deck.mjs` (pure Node — no runtime
+build time. The assembler is `build/vite-deck.mjs` (pure Node · no runtime
 weight added).
 
 A `deck.config.js` (or `.json`) describes the deck:
@@ -291,7 +291,7 @@ The default output file is named from `title` and written next to the config.
 ### Bundling caveat for assembled decks
 
 > The single-file export step (`bundle.mjs`, §11) only rewrites paths that use
-> the `rikiki/…` convention — specifically references matching
+> the `rikiki/…` convention · specifically references matching
 > `rikiki/(dist|themes|tokens.css)` (as the decks under `examples/` do). It does
 > **not** resolve plain relative paths like `../../dist/index.js`.
 >
@@ -313,9 +313,9 @@ hrefs, the rikiki component files in `dist/`, and the deck HTML itself.
 
 Enable it two ways:
 
-- **`?live`** on the deck URL — `dist/index.js` lazy-imports the poller only when
+- **`?live`** on the deck URL · `dist/index.js` lazy-imports the poller only when
   this query param is present, e.g. `…/starter.html?live`.
-- **Load the module directly** — `<script type="module" src="./dist/livereload.js">`
+- **Load the module directly** · `<script type="module" src="./dist/livereload.js">`
   (it auto-starts on import).
 
 Livereload is for authoring only; never ship it in a presented or bundled deck.
@@ -326,11 +326,11 @@ Livereload is for authoring only; never ship it in a presented or bundled deck.
 
 The theme defines three layers (`themes/rikiki.css`):
 
-1. **Palette** (`--rik-palette-*`) — raw colors, **private**; never consume
+1. **Palette** (`--rik-palette-*`) · raw colors, **private**; never consume
    directly.
-2. **Semantic** (`--rik-<role>--<modifier>`) — the **public** API; this is what
+2. **Semantic** (`--rik-<role>--<modifier>`) · the **public** API; this is what
    decks and components reference.
-3. **Component** (`--deck-<tag>-*`) — per-component knobs that default to
+3. **Component** (`--deck-<tag>-*`) · per-component knobs that default to
    semantic tokens; override on a host to retheme one instance.
 
 Override semantic tokens at `:root` to retheme the whole deck, or set component

@@ -1,0 +1,101 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import CodeBlock from '../../components/CodeBlock.astro';
+
+const configCode = `// decks/my-talk/deck.config.js
+export default {
+  title: 'My talk',
+  theme: '../../tokens.css',       // href, relative to the OUTPUT file
+  bundle: '../../dist/index.js',   // rikiki bundle, relative to the OUTPUT file
+  transition: 'slide',             // optional · sets transition on deck-root
+  slides: [
+    'parts/cover.html',
+    'parts/intro.md',
+    'parts/closing.html',
+  ],
+};`;
+
+const partialHtml = `<!-- decks/my-talk/parts/cover.html -->
+<deck-cover brand="my-talk" speaker="You">
+  <h1>Hello</h1>
+  <p class="sub">One slide per idea, one file per slide.</p>
+</deck-cover>`;
+
+const partialMd = `<!-- decks/my-talk/parts/intro.md -->
+## Why split a deck
+
+- one fragment per file
+- reorder by editing the list
+- markdown files become slides on their own`;
+
+const runCmd = `# from the rikiki checkout
+node build/vite-deck.mjs decks/my-talk/deck.config.js
+
+# or the npm script
+npm run deck decks/my-talk/deck.config.js
+
+# writes decks/my-talk/my-talk.html · a normal rikiki deck`;
+---
+
+<Docs
+  title="Multi-file decks"
+  eyebrow="Guides"
+  description="Split a long talk across small files and stitch them into one deck at build time. Reuse fragments between decks. Zero runtime weight added."
+>
+
+<h2 id="why">Why</h2>
+<p>
+  A single <code>index.html</code> is fine until a talk gets long. Past a
+  point you want one slide per file, you want to reorder without scrolling
+  through a wall of markup, and you want to reuse the same intro across two
+  decks. That's what the assembler is for. It runs at build time and emits a
+  plain rikiki deck. Nothing extra ships to the browser.
+</p>
+
+<h2 id="config">The manifest</h2>
+<p>
+  A deck is a <code>deck.config.js</code> (or <code>.json</code>): the theme,
+  the bundle, an optional transition, and the ordered list of parts.
+</p>
+<CodeBlock label="decks/my-talk/deck.config.js" lang="js" code={configCode} />
+<p>
+  <code>theme</code> and <code>bundle</code> are hrefs written into the output
+  file, so they're relative to where the assembled deck lands, not to the
+  config.
+</p>
+
+<h2 id="partials">The parts</h2>
+<p>
+  Two kinds of fragment, picked by extension:
+</p>
+<ul>
+  <li><strong><code>.html</code></strong> · one or more <code>deck-*</code> elements, inlined as-is.</li>
+  <li><strong><code>.md</code></strong> · wrapped into a <code>deck-feature</code> with a <code>deck-md</code> inside, so a plain markdown file is a slide on its own.</li>
+</ul>
+<CodeBlock label="parts/cover.html" lang="html" code={partialHtml} />
+<CodeBlock label="parts/intro.md" code={partialMd} />
+
+<h2 id="build">Build it</h2>
+<p>
+  Point the assembler at the config. It concatenates the parts inside one
+  <code>deck-root</code> and writes the deck next to the config.
+</p>
+<CodeBlock label="assemble" code={runCmd} />
+<p>
+  The output is a normal rikiki deck. Open it in a browser, serve it from any
+  static host, present it. Reorder the <code>slides</code> array, run the
+  command again, and you've got the new order.
+</p>
+
+<h2 id="bundle">Bundling an assembled deck</h2>
+<p>
+  Want a single self-contained file? <code>bundle.mjs</code> takes an
+  assembled deck the same as any other, on one condition: the deck has to
+  reference rikiki with the <code>rikiki/...</code> path style that the
+  bundler rewrites (the way the <code>examples/</code> decks do). A deck that
+  points at rikiki with bare <code>../../</code> relatives serves fine on its
+  own but won't bundle. Set <code>theme</code> and <code>bundle</code> in the
+  config accordingly when single-file export is the goal.
+</p>
+
+</Docs>
