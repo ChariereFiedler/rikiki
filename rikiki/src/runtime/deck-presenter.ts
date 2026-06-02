@@ -24,7 +24,7 @@ import type { DeckRoot } from './deck-root.js';
 const CHANNEL = 'rik-presenter';
 
 // Absolute URL of the full rikiki bundle. dist/ is flat, so deck-presenter.js
-// sits next to index.js — this resolves correctly whether served locally or
+// sits next to index.js · this resolves correctly whether served locally or
 // from a CDN. Computed locally (not imported from deck-root) so esbuild does
 // not inline deck-root's customElement definition into this lazy module,
 // which would double-define <deck-root> at runtime.
