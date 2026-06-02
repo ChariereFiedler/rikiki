@@ -47,10 +47,9 @@ function escapeHtml(s) {
 function renderPartial(absPath) {
   const body = readFileSync(absPath, 'utf8');
   if (extname(absPath) === '.md') {
-    // Wrap markdown into a slide. <deck-md> deindents + parses at runtime,
-    // so we keep the raw markdown but escape HTML-special chars defensively
-    // only for the rare `<` that is not intended as markup. Markdown authors
-    // expect raw text, so we inline verbatim inside the element.
+    // Wrap markdown into a slide. <deck-md> deindents + parses the raw markdown
+    // at runtime, so the body is inlined verbatim (markdown authors expect raw
+    // text · no build-time escaping).
     return '<deck-feature>\n<deck-md>\n' + body.trimEnd() + '\n</deck-md>\n</deck-feature>';
   }
   return body.trimEnd();
