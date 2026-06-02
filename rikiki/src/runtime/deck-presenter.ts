@@ -19,9 +19,16 @@
 // Press P · presenter window opens on the second screen.
 // ════════════════════════════════════════════════════════════════
 
-import { RIKIKI_BUNDLE_URL, type DeckRoot } from './deck-root.js';
+import type { DeckRoot } from './deck-root.js';
 
 const CHANNEL = 'rik-presenter';
+
+// Absolute URL of the full rikiki bundle. dist/ is flat, so deck-presenter.js
+// sits next to index.js — this resolves correctly whether served locally or
+// from a CDN. Computed locally (not imported from deck-root) so esbuild does
+// not inline deck-root's customElement definition into this lazy module,
+// which would double-define <deck-root> at runtime.
+const RIKIKI_BUNDLE_URL = new URL('./index.js', import.meta.url).href;
 
 interface PresenterState {
   current: number;
