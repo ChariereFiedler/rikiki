@@ -80,3 +80,33 @@ if (patched === bundleSrc) {
   const occurrences = (bundleSrc.match(/cdn\.jsdelivr\.net\/npm\/marked/g) || []).length;
   console.log(`post-build · rewrote ${occurrences} marked-URL reference(s) to ${MARKED_LOCAL_PATH}`);
 }
+
+// ── Same treatment for `mermaid` · deck-mermaid injects a <script src="…cdn…">
+// at render time, which the platform CSP (`script-src 'self' …`) blocks, so
+// any <deck-mermaid> on the page (the landing has several previews) logs
+// "mermaid failed to load" and renders nothing. Vendor it under our own
+// origin and rewrite the URL · a same-origin <script src> is allowed by
+// `script-src 'self'`. ~3 MB, only fetched when a diagram actually renders.
+const MERMAID_URL = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+const MERMAID_LOCAL_FILE = resolve(VENDOR_DIR, 'mermaid.min.js');
+const MERMAID_LOCAL_PATH = '/rikiki/dist/vendor/mermaid.min.js';
+
+console.log(`post-build · downloading mermaid from ${MERMAID_URL}`);
+const mres = await fetch(MERMAID_URL, { redirect: 'follow' });
+if (!mres.ok) {
+  console.error(`post-build · mermaid download failed · HTTP ${mres.status}`);
+  process.exit(1);
+}
+const mermaidBody = await mres.text();
+writeFileSync(MERMAID_LOCAL_FILE, mermaidBody);
+console.log(`post-build · saved mermaid · ${fmt(Buffer.byteLength(mermaidBody))} → ${MERMAID_LOCAL_PATH}`);
+
+const afterMarked = readFileSync(indexJs, 'utf8');
+const mPatched = afterMarked.replaceAll(MERMAID_URL, MERMAID_LOCAL_PATH);
+if (mPatched === afterMarked) {
+  console.warn(`post-build · WARNING · mermaid URL not found in bundle, diagrams may break`);
+} else {
+  writeFileSync(indexJs, mPatched);
+  const mOcc = (afterMarked.match(/cdn\.jsdelivr\.net\/npm\/mermaid/g) || []).length;
+  console.log(`post-build · rewrote ${mOcc} mermaid-URL reference(s) to ${MERMAID_LOCAL_PATH}`);
+}
