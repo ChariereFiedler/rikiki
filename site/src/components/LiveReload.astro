@@ -310,7 +310,10 @@ const defaultSrc = `<deck-cover brand="rikiki · live" speaker="You">
     pointer-events: none;
     color: var(--rik-text-inverse--muted);
     z-index: 1;
+    /* scrolls in sync with the textarea · its scrollbar would double up, hide it */
+    scrollbar-width: none;
   }
+  .lr-hl::-webkit-scrollbar { width: 0; height: 0; }
   .lr-src {
     z-index: 2;
     background: transparent;
@@ -318,6 +321,22 @@ const defaultSrc = `<deck-cover brand="rikiki · live" speaker="You">
     caret-color: var(--rik-accent);
     resize: none;
     outline: none;
+    /* thin dark scrollbar to match the editor surface (Firefox) */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(232, 228, 240, 0.22) transparent;
+  }
+  /* thin dark scrollbar (WebKit/Chromium) */
+  .lr-src::-webkit-scrollbar { width: 10px; }
+  .lr-src::-webkit-scrollbar-track { background: transparent; }
+  .lr-src::-webkit-scrollbar-thumb {
+    background: rgba(232, 228, 240, 0.18);
+    border-radius: 8px;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+  }
+  .lr-src::-webkit-scrollbar-thumb:hover {
+    background: rgba(232, 228, 240, 0.32);
+    background-clip: padding-box;
   }
   .lr-src::selection { background: rgba(240, 112, 32, 0.35); }
   /* highlight token colors (on the dark editor surface) */
