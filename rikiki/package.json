@@ -33,7 +33,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "node build.mjs && tsc --emitDeclarationOnly",
+    "build": "node build.mjs && node build-standalone.mjs && tsc --emitDeclarationOnly",
     "watch": "node build.mjs --watch",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
