@@ -65,7 +65,7 @@ const { src = '/embed/index.html', initialSlide = 1, autoplay = 4500 } = Astro.p
     const sendKey = (name: string) => {
       // Buttons declare a logical key in data-key (e.g. "Space"). Rikiki's
       // deck-root matches KeyboardEvent.key, where the spacebar is " ", not
-      // "Space" — translate so the synthetic event matches a real key press.
+      // "Space" · translate so the synthetic event matches a real key press.
       const key = name === 'Space' ? ' ' : name;
       try {
         frame.contentWindow?.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
