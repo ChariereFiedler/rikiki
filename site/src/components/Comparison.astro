@@ -12,7 +12,7 @@ const headers = ['Rikiki', 'Slidev', 'reveal.js', 'Marp', 'Spectacle'];
 const rows: Row[] = [
   { label: 'Source format',       values: ['HTML',         'Markdown + Vue',  'HTML + JS',     'Markdown',      'JSX'] },
   { label: 'Build step',          values: ['no',           'yes (Vite)',      'optional',      'yes (CLI)',     'yes (webpack)'] },
-  { label: 'Runtime bundle (gz)', values: ['~12 KB',       '~600 KB',         '~80 KB',        '~50 KB',        '~250 KB'] },
+  { label: 'Runtime bundle (gz)', values: ['~14 KB',       '~600 KB',         '~80 KB',        '~50 KB',        '~250 KB'] },
   { label: 'Per-deck deps',       values: ['1 CSS + 1 JS', 'package.json',    'reveal.js dir', 'marp-cli',      'package.json'] },
   { label: 'Works in 5 years',    values: ['yes',          'depends on Vue',  'yes',           'depends on CLI','depends on JSX'] },
 ];
@@ -40,11 +40,11 @@ function glyphFor(label: string, value: string): string | null {
     <p class="eyebrow"><span class="num">08</span> Comparison</p>
     <h2>Where Rikiki sits</h2>
     <p class="lede">
-      <strong>Read this fairly:</strong> Slidev, reveal.js, Marp and
-      Spectacle are all excellent. Rikiki is for the specific case where
-      you want to open a folder five years from now and still give the
-      talk · or, lately, embed a touch-friendly carousel on your landing
-      page. That single constraint explains every column below.
+      <strong>Read this fairly.</strong> Slidev, reveal.js, Marp and
+      Spectacle are all good. Rikiki is for one case. You want to open a
+      folder five years from now and still give the talk. Or drop a
+      touch-friendly carousel on a landing page. That one constraint
+      explains every column below.
     </p>
 
     <div class="table-wrap">

@@ -1,32 +1,32 @@
 ---
 const items = [
   {
-    q: 'Why "Lit Web Components" and not React / Vue / Svelte?',
-    a: 'Lit compiles to standard Web Components, which the browser understands natively. The runtime is ~6 KB gz (vs ~50 KB for React + ReactDOM) and it does not need a build step on the consumer side. A deck stays a folder · open in 2031, it still runs.',
+    q: 'Why Lit Web Components and not React, Vue or Svelte?',
+    a: 'Lit compiles to standard Web Components, which the browser runs natively. The runtime is ~14 KB gz, against ~50 KB for React plus ReactDOM, and it needs no build step on your side. A deck stays a folder. Open it in 2031, it still runs.',
   },
   {
     q: 'Do I need to know Lit to write a deck?',
-    a: 'No. You write HTML tags. Lit is what we used internally to build the components. The consumer surface is plain HTML and CSS custom properties · no decorators, no template literals, no class extending.',
+    a: 'No. You write HTML tags. Lit is what built the components under the hood. What you touch is plain HTML and CSS custom properties. No decorators, no template literals, no extending classes.',
   },
   {
     q: 'Can I print my deck to PDF?',
-    a: 'Yes, via the browser. Chromium with print-backgrounds enabled gives the cleanest result. There is no dedicated CLI · slides are pure HTML, so the browser print pipeline does the job.',
+    a: 'Yes, from the browser. Chromium with print-backgrounds on gives the cleanest result. There is no separate CLI. Slides are plain HTML, so the browser print pipeline handles it.',
   },
   {
     q: 'Is there a presenter mode with notes?',
-    a: 'Yes. Wrap notes in <code>&lt;deck-notes&gt;</code> inside any slide, then press P during the talk · a popup window opens with current + next slide, the notes, a timer, and slide counter. Sync is BroadcastChannel-based; no network call.',
+    a: 'Yes. Wrap notes in <code>&lt;deck-notes&gt;</code> inside any slide, then press P during the talk. A popup opens with the current and next slide, the notes, a timer and a slide counter. Sync runs over BroadcastChannel. No network call.',
   },
   {
     q: 'How do I theme a deck for my brand?',
-    a: 'Copy <code>themes/rikiki.css</code>, change the values, link it instead of the default. ~140 CSS custom properties, organised in two layers (palette / semantic). For a single instance, override the <code>--deck-*-*</code> tokens inline on the element.',
+    a: 'Copy <code>themes/rikiki.css</code>, change the values, link it instead of the default. ~140 CSS custom properties, in two layers (palette, then semantic). For a one-off, override the <code>--deck-*-*</code> tokens inline on the element.',
   },
   {
-    q: 'What happens if I want a fancy animation that is not in the box?',
-    a: 'You can drop a <code>&lt;script&gt;</code> inside any slide and run whatever JS you want · the slide is just an HTML host. For most needs, the four built-in transitions (slide / fade / zoom / flip) are enough; for one-off effects, GSAP and friends are a script tag away.',
+    q: 'What if I want an animation that is not in the box?',
+    a: 'Drop a <code>&lt;script&gt;</code> inside any slide and run whatever JS you like. The slide is just an HTML host. Most of the time the four built-in transitions (slide, fade, zoom, flip) cover it. For one-off effects, GSAP and friends are a script tag away.',
   },
   {
-    q: 'Why do you also pitch carousels?',
-    a: 'Because <code>autoplay loop swipe</code> on <code>&lt;deck-root&gt;</code> turns the same engine into a touch-friendly carousel. Same components, same theming, same 12 KB bundle. The dual-use is a side-effect of building on web standards.',
+    q: 'Why also pitch carousels?',
+    a: 'Because <code>autoplay loop swipe</code> on <code>&lt;deck-root&gt;</code> turns the same engine into a touch-friendly carousel. Same components, same theming, same ~14 KB bundle. The dual use falls out of building on web standards.',
   },
 ];
 ---

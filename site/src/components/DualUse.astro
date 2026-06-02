@@ -9,9 +9,9 @@
     <p class="eyebrow"><span class="num">02</span> Two products, one folder</p>
     <h2>Add three attributes. The deck becomes a carousel.</h2>
     <p class="lede">
-      Same components. Same theming. Same 12 KB bundle. The dual-use isn't
-      a marketing accident · it's a side-effect of building the deck engine
-      on Web Components and CSS custom properties.
+      Same components. Same theming. Same ~14 KB bundle. This wasn't
+      planned. It falls out of building the engine on Web Components and CSS
+      custom properties, so you get it for free.
     </p>
 
     <div class="diff-wrap">
@@ -28,9 +28,9 @@
 <span class="line"><span class="tok-pun">&lt;/</span><span class="tok-tag">deck-root</span><span class="tok-pun">&gt;</span></span>
       </pre>
       <p class="diff-caption">
-        <strong>Three attributes.</strong> The whole change. Same markup as
-        any other deck · the engine just stops asking the human and starts
-        auto-advancing with touch swipe.
+        <strong>Three attributes.</strong> That's the whole change. Same markup as
+        any other deck. The engine stops waiting on you and starts
+        auto-advancing, with touch swipe.
       </p>
     </div>
 
@@ -38,7 +38,7 @@
       <article class="case">
         <header>
           <h3>As a slide deck</h3>
-          <p class="case-line">Drop the three attributes. Keep 2D nav, presenter window, speaker notes, step-reveal.</p>
+          <p class="case-line">Leave the three off. Keep 2D nav, the presenter window, speaker notes, step-reveal.</p>
         </header>
         <ul class="tags">
           <li><kbd>P</kbd> presenter</li>
@@ -50,7 +50,7 @@
       <article class="case">
         <header>
           <h3>As a carousel</h3>
-          <p class="case-line">Keep the three. Get touch swipe, autoplay pause on hover, end-wraps to start.</p>
+          <p class="case-line">Add the three. Get touch swipe, autoplay that pauses on hover, an end that wraps to the start.</p>
         </header>
         <ul class="tags">
           <li>60 px swipe</li>
