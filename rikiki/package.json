@@ -37,7 +37,9 @@
     "watch": "node build.mjs --watch",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
-    "bundle": "node bundle.mjs"
+    "bundle": "node bundle.mjs",
+    "deck": "node build/vite-deck.mjs",
+    "deck:example": "node build/vite-deck.mjs decks/example/deck.config.js"
   },
   "devDependencies": {
     "esbuild": "^0.24.0",
