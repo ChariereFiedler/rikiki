@@ -1,13 +1,24 @@
 // ════════════════════════════════════════════════════════════════
 // Minimal livereload · polls Last-Modified on deck files
-// Enable by adding ?live to the URL, or by loading this module directly.
+// Enable either way:
+//   · add ?live to the deck URL (index.js lazy-imports this module), or
+//   · load this module directly: <script type="module" src="…/dist/livereload.js">
+// It auto-starts on import (the IIFE at the bottom) and reloads the page when
+// any watched file changes, keeping the current slide via the hash.
 // ════════════════════════════════════════════════════════════════
 
 // Paths are resolved relative to this module · works no matter where the deck is served.
 const here = (rel: string): string => new URL(rel, import.meta.url).href;
 
+// Watch the deck's actual theme stylesheet(s) wherever they live · the old
+// hardcoded here('./tokens.css') assumed the theme sat next to this module in
+// dist/, which 404s (the theme lives at the package root, not in dist/).
+const themeHrefs = Array.from(
+  document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')
+).map((l) => l.href);
+
 const FILES = [
-  here('./tokens.css'),
+  ...themeHrefs,
   here('./index.js'),
   here('./deck-root.js'),
   here('./deck-cover.js'),

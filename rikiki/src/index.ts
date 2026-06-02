@@ -47,3 +47,9 @@ import './atoms/deck-code.js';
 
 // Mermaid optionnel (chargé via CDN si <deck-mermaid> est présent)
 // Voir starter.html pour l'init mermaid.
+
+// Livereload · opt-in via ?live · le poller n'est chargé que sur demande.
+// (Sinon, charger directement dist/livereload.js l'active aussi.)
+if (new URLSearchParams(location.search).has('live')) {
+  import('./livereload.js');
+}
