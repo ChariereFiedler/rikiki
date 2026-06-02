@@ -9,15 +9,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
-/**
- * Absolute URL of the full rikiki bundle (`index.js`), derived from this
- * module's own URL. The built `dist/` is flat, so `deck-root.js` and
- * `index.js` are siblings — this resolves correctly whether the deck is
- * served locally or from a CDN. Consumed by the presenter window to load
- * rikiki inside its slide-mirror iframes.
- */
-export const RIKIKI_BUNDLE_URL = new URL('./index.js', import.meta.url).href;
-
 type Slide = HTMLElement & {
   applyStep?: (step: number) => void;
   render?: () => unknown;
