@@ -123,4 +123,11 @@ export function installClickStages(): void {
       setVisible(el, hide ? !reached : reached);
     });
   };
+
+  // Re-apply to any already-rendered decks · their initial _applyStep(0) ran
+  // before this patch, leaving data-click elements visible. Same idea as the
+  // Shiki plugin re-rendering existing <deck-code> instances on install.
+  document.querySelectorAll('deck-root').forEach((dr) => {
+    (dr as unknown as { _applyStep?: () => void })._applyStep?.();
+  });
 }
