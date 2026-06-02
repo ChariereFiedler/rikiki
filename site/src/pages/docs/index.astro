@@ -10,6 +10,17 @@ import CardGrid from '../../components/CardGrid.astro';
   description="A tiny Lit Web Components framework for technical presentations. Write a deck as plain HTML, open index.html, give the talk · five years from now too."
 >
 
+<aside class="llm-callout">
+  <span class="llm-tag" aria-hidden="true">FOR&nbsp;LLMS</span>
+  <p>
+    <strong>If you're an LLM, read this file.</strong> Point your agent
+    (Claude or other) at the full machine-readable reference · every component,
+    attribute, slot, token and pattern in one page:
+    <a href="/rikiki/docs/llms/rikiki-reference.md">the complete rikiki reference for agents →</a>
+    There's also a short <a href="/llms.txt">/llms.txt</a> index.
+  </p>
+</aside>
+
 <h2 id="map">Where to start</h2>
 <p>
   Pick the entry point that matches what you came for.
@@ -67,3 +78,31 @@ import CardGrid from '../../components/CardGrid.astro';
 <p>For everything else · keep reading.</p>
 
 </Docs>
+
+<style>
+  .llm-callout {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--rik-space-3);
+    margin: 0 0 var(--rik-space-5);
+    padding: var(--rik-space-3) var(--rik-space-4);
+    background: var(--rik-surface-inverse);
+    color: var(--rik-text-inverse--muted);
+    border-radius: var(--rik-radius-md);
+    border: 1px solid var(--rik-border-inverse);
+  }
+  .llm-callout .llm-tag {
+    flex: 0 0 auto;
+    margin-top: 2px;
+    padding: 4px 9px;
+    border-radius: var(--rik-radius-pill);
+    background: var(--rik-accent);
+    color: var(--rik-accent__on);
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: 0.14em;
+  }
+  .llm-callout p { margin: 0; font-size: var(--rik-font-size-sm); line-height: 1.6; }
+  .llm-callout strong { color: var(--rik-text-inverse); }
+  .llm-callout a { color: var(--rik-accent); text-decoration: none; font-weight: 700; }
+  .llm-callout a:hover { text-decoration: underline; }
+</style>

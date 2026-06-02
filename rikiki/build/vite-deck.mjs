@@ -44,13 +44,30 @@ function escapeHtml(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+/** Split a markdown file into slides on lines that are exactly `---`
+ *  (reveal.js convention). One file, many slides. A blank file or a stray
+ *  separator just collapses away. */
+function splitMarkdownSlides(body) {
+  const chunks = [];
+  let cur = [];
+  for (const line of body.split(/\r?\n/)) {
+    if (/^[ \t]*---[ \t]*$/.test(line)) { chunks.push(cur.join('\n')); cur = []; }
+    else cur.push(line);
+  }
+  chunks.push(cur.join('\n'));
+  return chunks.map((c) => c.trim()).filter((c) => c.length > 0);
+}
+
 function renderPartial(absPath) {
   const body = readFileSync(absPath, 'utf8');
   if (extname(absPath) === '.md') {
-    // Wrap markdown into a slide. <deck-md> deindents + parses the raw markdown
-    // at runtime, so the body is inlined verbatim (markdown authors expect raw
-    // text · no build-time escaping).
-    return '<deck-feature>\n<deck-md>\n' + body.trimEnd() + '\n</deck-md>\n</deck-feature>';
+    // reveal.js-style: one markdown file can hold many slides, separated by a
+    // line containing only `---`. Each chunk becomes its own deck-feature.
+    // <deck-md> deindents + parses the raw markdown at runtime, so the body is
+    // inlined verbatim (no build-time escaping). Use `***` for an in-slide rule.
+    return splitMarkdownSlides(body)
+      .map((s) => '<deck-feature>\n<deck-md>\n' + s + '\n</deck-md>\n</deck-feature>')
+      .join('\n\n');
   }
   return body.trimEnd();
 }

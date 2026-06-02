@@ -1,9 +1,12 @@
 # Rikiki
 
-> Rikiki is a tiny (~12 KB gzip) Lit Web Components framework for technical
+> Rikiki is a tiny (~14 KB gzip) Lit Web Components framework for technical
 > presentations and product carousels. A deck is a folder · write plain HTML,
 > open `index.html` in a browser. No build step, no `node_modules` to
 > resurrect five years from now.
+
+Full machine-readable reference (every component, attribute, slot, token and
+pattern, in one file): /rikiki/docs/llms/rikiki-reference.md
 
 The framework is opinionated:
 - Web standards only (Custom Elements, Shadow DOM, ES Modules, CSS Custom Properties).

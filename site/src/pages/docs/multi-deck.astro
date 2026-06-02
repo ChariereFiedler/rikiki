@@ -21,12 +21,17 @@ const partialHtml = `<!-- decks/my-talk/parts/cover.html -->
   <p class="sub">One slide per idea, one file per slide.</p>
 </deck-cover>`;
 
-const partialMd = `<!-- decks/my-talk/parts/intro.md -->
-## Why split a deck
+const partialMd = `<!-- decks/my-talk/parts/intro.md · one file, many slides -->
+## First slide
 
-- one fragment per file
-- reorder by editing the list
-- markdown files become slides on their own`;
+Plain markdown. One idea here.
+
+---
+
+## Second slide
+
+A line with just \`---\` starts a new slide, reveal.js style.
+Use \`***\` if you want a rule inside a slide.`;
 
 const runCmd = `# from the rikiki checkout
 node build/vite-deck.mjs decks/my-talk/deck.config.js
@@ -70,7 +75,7 @@ npm run deck decks/my-talk/deck.config.js
 </p>
 <ul>
   <li><strong><code>.html</code></strong> · one or more <code>deck-*</code> elements, inlined as-is.</li>
-  <li><strong><code>.md</code></strong> · wrapped into a <code>deck-feature</code> with a <code>deck-md</code> inside, so a plain markdown file is a slide on its own.</li>
+  <li><strong><code>.md</code></strong> · one file, one or many slides. A line that is just <code>---</code> splits the file into separate slides, reveal.js style. Each chunk becomes a <code>deck-feature</code> with a <code>deck-md</code> inside. Use <code>***</code> for a rule inside a slide.</li>
 </ul>
 <CodeBlock label="parts/cover.html" lang="html" code={partialHtml} />
 <CodeBlock label="parts/intro.md" code={partialMd} />
