@@ -18,7 +18,7 @@
 // slide so plain Markdown files become slides with zero ceremony.
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, statSync } from 'node:fs';
-import { resolve, dirname, join, relative, extname } from 'node:path';
+import { resolve, dirname, relative, extname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const args = process.argv.slice(2);
