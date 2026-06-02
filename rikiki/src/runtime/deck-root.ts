@@ -283,7 +283,15 @@ export class DeckRoot extends LitElement {
 
   private _writeHash(): void {
     const h = `#${this.current + 1}` + (this.step > 0 ? `.${this.step}` : '');
-    if (location.hash !== h) history.replaceState(null, '', h);
+    if (location.hash === h) return;
+    try {
+      history.replaceState(null, '', h);
+    } catch {
+      // srcdoc / sandboxed iframes have an opaque origin · replaceState to a
+      // real URL throws SecurityError. The slide already updated visually, so
+      // the deck still navigates · deep-linking is just unavailable when the
+      // deck is embedded this way (preview thumbnails on the rikiki site).
+    }
   }
 
   private _onKey = (e: KeyboardEvent): void => {
