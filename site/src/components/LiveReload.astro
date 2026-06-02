@@ -195,7 +195,7 @@ const defaultSrc = `<deck-cover brand="rikiki · live" speaker="You">
 
     // Navigate the preview deck · forward arrow keys into the iframe window
     // (same-origin) where deck-root's keyboard handler picks them up.
-    root.querySelectorAll<HTMLButtonElement>('.lr-nav button').forEach((btn) => {
+    root?.querySelectorAll<HTMLButtonElement>('.lr-nav button').forEach((btn) => {
       btn.addEventListener('click', () => {
         const cw = frame.contentWindow;
         if (cw && btn.dataset.k) {
