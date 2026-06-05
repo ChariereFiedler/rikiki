@@ -75,6 +75,14 @@ export class DeckMermaid extends LitElement {
   @property({ type: Boolean, reflect: true }) rendered = false;
   @state() private _svg = '';
   private _source = '';
+  private _renderPromise: Promise<void> | null = null;
+
+  /** Rendered SVG markup · '' until the async render completes. Lets the
+   *  overview build static thumbnails without reaching into this shadow root. */
+  get renderedSvg(): string { return this._svg; }
+
+  /** Resolves when the current render attempt settles (success or error). */
+  get whenRendered(): Promise<void> { return this._renderPromise ?? Promise.resolve(); }
 
   override connectedCallback() {
     super.connectedCallback();
@@ -87,7 +95,7 @@ export class DeckMermaid extends LitElement {
     if (indent < Infinity) this._source = lines.map((l: string) => l.slice(indent)).join('\n');
     // Keep light-DOM textContent intact so cloneNode(true) preserves the source
     // for overview thumbnails (the shadow template has no <slot>).
-    this._render();
+    this._renderPromise = this._render();
   }
 
   private async _render(): Promise<void> {
