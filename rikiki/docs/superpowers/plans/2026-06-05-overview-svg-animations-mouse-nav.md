@@ -342,7 +342,7 @@ git commit -m "test(rikiki): overview svg fixture deck"
 **Files:**
 - Modify: `src/plugins/click-stages.ts`
 
-- [ ] **Step 1: Replace the prepare/anim helpers**
+- [x] **Step 1: Replace the prepare/anim helpers**
 
 In `src/plugins/click-stages.ts`, replace `prepare()`, `animOffset()` and `setVisible()` (lines ~68-94) with:
 
@@ -448,12 +448,12 @@ Also update the plugin's header comment to document the new attributes:
 //   data-anim-ease="out|spring|in-out|cubic-bezier(…)" (default out)
 ```
 
-- [ ] **Step 2: Typecheck + build**
+- [x] **Step 2: Typecheck + build**
 
 Run: `npx tsc --noEmit && node build.mjs`
 Expected: no errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/plugins/click-stages.ts dist
@@ -465,7 +465,7 @@ git commit -m "feat(rikiki): click-stages per-element timing + slide-down/right,
 **Files:**
 - Modify: `src/plugins/click-stages.ts`
 
-- [ ] **Step 1: Replace the stage model**
+- [x] **Step 1: Replace the stage model**
 
 Replace `clickStepCount()` and `assignSteps()` (and their comments) with:
 
@@ -561,7 +561,7 @@ function collectEntries(slide: HTMLElement): StageEntry[] {
 }
 ```
 
-- [ ] **Step 2: Replace the `_applyStep` patch with the timer-aware version**
+- [x] **Step 2: Replace the `_applyStep` patch with the timer-aware version**
 
 Replace the `proto._applyStep` override inside `installClickStages()` with:
 
@@ -614,12 +614,12 @@ Replace the `proto._applyStep` override inside `installClickStages()` with:
 (`prevStep < step` is false when `prevStep === -1` only for `step === 0`; the
 `autoChain` clause covers that slide-activation case for `data-click-auto`.)
 
-- [ ] **Step 3: Typecheck + build**
+- [x] **Step 3: Typecheck + build**
 
 Run: `npx tsc --noEmit && node build.mjs`
 Expected: no errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/plugins/click-stages.ts dist
@@ -632,7 +632,7 @@ git commit -m "feat(rikiki): click-stages auto stages, group stagger, data-click
 - Modify: `src/plugins/click-stages.ts`
 - Modify: `src/runtime/deck-transition.ts`
 
-- [ ] **Step 1: Extend the DeckRootProto interface**
+- [x] **Step 1: Extend the DeckRootProto interface**
 
 In `src/plugins/click-stages.ts`, add `_goTo` to the interface:
 
@@ -652,7 +652,7 @@ type DocWithVT = Document & {
 };
 ```
 
-- [ ] **Step 2: Add the morph helpers (module level)**
+- [x] **Step 2: Add the morph helpers (module level)**
 
 ```ts
 const MORPH_ATTR = 'data-morph';
@@ -692,7 +692,7 @@ function nameVisibleMorphs(root: HTMLElement, targets?: Map<HTMLElement, boolean
 }
 ```
 
-- [ ] **Step 3: Wrap intra-slide step changes**
+- [x] **Step 3: Wrap intra-slide step changes**
 
 In the patched `_applyStep` from Task 5, wrap the `collectEntries(slide).forEach(…)` block: extract it into a local `const run = () => { … }`, then:
 
@@ -718,7 +718,7 @@ In the patched `_applyStep` from Task 5, wrap the `collectEntries(slide).forEach
     }
 ```
 
-- [ ] **Step 4: Patch `_goTo` for inter-slide morph**
+- [x] **Step 4: Patch `_goTo` for inter-slide morph**
 
 Still inside `installClickStages()`, after the `_applyStep` patch:
 
@@ -748,7 +748,7 @@ Still inside `installClickStages()`, after the `_applyStep` patch:
 
 Known limitation (documented in the spec): `_back()` re-applies the step after `_goTo`, so a backward morph may capture an intermediate state — acceptable.
 
-- [ ] **Step 5: deck-transition skip guard**
+- [x] **Step 5: deck-transition skip guard**
 
 In `src/runtime/deck-transition.ts`, first line of `onChange`:
 
@@ -767,12 +767,12 @@ Also update the click-stages header comment:
 //   fallback). Morph targets must live in light DOM.
 ```
 
-- [ ] **Step 6: Typecheck + build**
+- [x] **Step 6: Typecheck + build**
 
 Run: `npx tsc --noEmit && node build.mjs`
 Expected: no errors. If `startViewTransition` typing conflicts with the TS lib version, keep only the local `DocWithVT` cast (do not add lib entries to tsconfig).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/plugins/click-stages.ts src/runtime/deck-transition.ts dist
@@ -784,7 +784,7 @@ git commit -m "feat(rikiki): data-morph magic-move via View Transitions, intra-s
 **Files:**
 - Create: `decks/tests/stages.html`
 
-- [ ] **Step 1: Create the fixture**
+- [x] **Step 1: Create the fixture**
 
 ```html
 <!DOCTYPE html>
@@ -846,7 +846,7 @@ git commit -m "feat(rikiki): data-morph magic-move via View Transitions, intra-s
 
 Note: on the intra-slide morph slide, the small title is always visible and the big one appears at step 2 — `nameVisibleMorphs` picks whichever is visible, so the small→big swap morphs. Adjust during verification if the duplicate-visible case (both shown between steps) skips the transition: if so, add `data-click-hide="2"` on the small title (hiding it the same step the big one appears).
 
-- [ ] **Step 2: Verify in the browser**
+- [x] **Step 2: Verify in the browser**
 
 Navigate to `http://localhost:8765/decks/tests/stages.html` with Playwright MCP:
 1. Slide 1: four advances reveal in order — spring slide-up (slow), blur-in after a beat, flip-up, then the path **draws itself** left to right. Step dots show 4 steps.
@@ -856,7 +856,7 @@ Navigate to `http://localhost:8765/decks/tests/stages.html` with Playwright MCP:
 5. Advancing to slide 5: the title morphs across slides AND the classic `slide` transition is skipped for that navigation (no double animation). Navigating between other slides still uses the `slide` transition.
 6. `browser_console_messages`: no errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add decks/tests/stages.html
