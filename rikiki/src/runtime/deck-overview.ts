@@ -218,6 +218,18 @@ const STYLES = `
     pointer-events: none;
   }
   :host([overview]) .ov-thumb > * { display: flex !important; }
+  :host([overview]) .ov-mermaid-snap {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--rik-code__bg);
+    border: 1px solid var(--rik-code__border);
+    border-radius: var(--rik-radius-md);
+    padding: var(--rik-space-4);
+    overflow: hidden; min-width: 0;
+  }
+  :host([overview]) .ov-mermaid-snap svg {
+    width: 100% !important; height: auto !important;
+    max-width: 100% !important; max-height: 60vh;
+  }
   :host([overview]) .ov-cell-label {
     position: absolute; bottom: 6px; right: 8px;
     font: 700 0.70rem/1 var(--rik-font-mono);
@@ -261,6 +273,111 @@ function sectionTitleOf(chap: Chapter): string {
 /** Extract a short, searchable text for a single slide · used by the filter. */
 function slideSearchText(slide: Slide): string {
   return (slide.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 400).toLowerCase();
+}
+
+interface MermaidLike extends HTMLElement {
+  renderedSvg?: string;
+  whenRendered?: Promise<void>;
+}
+
+/** Attributes whose value may carry url(#id) references. */
+const URL_REF_ATTRS = [
+  'fill', 'stroke', 'clip-path', 'mask', 'filter',
+  'marker-start', 'marker-mid', 'marker-end', 'style',
+];
+
+/** Suffix every [id] inside root and rewrite url(#…) / href="#…" references
+ *  so multiple clones can coexist in one shadow tree without collisions. */
+function namespaceIds(root: HTMLElement, suffix: string): void {
+  const renames = new Map<string, string>();
+  root.querySelectorAll('[id]').forEach((el) => {
+    renames.set(el.id, el.id + suffix);
+    el.id = el.id + suffix;
+  });
+  if (renames.size === 0) return;
+  const rewriteUrls = (value: string): string =>
+    value.replace(/url\(['"]?#([^'")]+)['"]?\)/g, (m, id: string) =>
+      renames.has(id) ? `url(#${renames.get(id)})` : m);
+  root.querySelectorAll('*').forEach((el) => {
+    for (const attr of URL_REF_ATTRS) {
+      const v = el.getAttribute(attr);
+      if (v && v.includes('url(')) el.setAttribute(attr, rewriteUrls(v));
+    }
+    for (const attr of ['href', 'xlink:href']) {
+      const v = el.getAttribute(attr);
+      if (v && v.startsWith('#') && renames.has(v.slice(1))) {
+        el.setAttribute(attr, '#' + renames.get(v.slice(1)));
+      }
+    }
+  });
+}
+
+/** Freeze light-DOM SVG dimensions from the live slide so SVGs without
+ *  intrinsic size don't fall back to 300×150 in the thumbnail. Runs BEFORE
+ *  mermaid replacement so live/clone <svg> lists stay index-aligned. */
+function freezeSvgSizes(live: Slide, clone: HTMLElement): void {
+  const liveSvgs = live.querySelectorAll('svg');
+  clone.querySelectorAll('svg').forEach((svg, i) => {
+    const rect = liveSvgs[i]?.getBoundingClientRect();
+    if (rect && rect.width > 0) {
+      svg.setAttribute('width', String(Math.round(rect.width)));
+      svg.setAttribute('height', String(Math.round(rect.height)));
+      svg.style.maxWidth = '100%';
+    } else if (svg.hasAttribute('viewBox') && !svg.hasAttribute('width')) {
+      // Never-measured slide · derive a size from the viewBox aspect.
+      const vb = (svg.getAttribute('viewBox') ?? '').split(/[\s,]+/).map(Number);
+      if (vb.length === 4 && vb[2]! > 0) {
+        svg.setAttribute('width', String(vb[2]));
+        svg.setAttribute('height', String(vb[3]));
+        svg.style.maxWidth = '100%';
+        svg.style.height = 'auto';
+      }
+    }
+  });
+}
+
+/** Replace each cloned <deck-mermaid> (empty Lit state) with a static <div>
+ *  containing the SVG serialized from the live component's shadow root. */
+function snapshotMermaids(live: Slide, clone: HTMLElement): void {
+  const liveM = live.querySelectorAll<MermaidLike>('deck-mermaid');
+  clone.querySelectorAll('deck-mermaid').forEach((c, i) => {
+    const src = liveM[i];
+    const snap = document.createElement('div');
+    snap.className = 'ov-mermaid-snap';
+    snap.innerHTML = src?.renderedSvg ?? '';
+    const rect = src?.getBoundingClientRect();
+    if (rect && rect.width > 0) {
+      snap.style.width = rect.width + 'px';
+      snap.style.height = rect.height + 'px';
+    }
+    c.replaceWith(snap);
+  });
+}
+
+/** Thumbnail-safe clone of a slide · static mermaid, namespaced IDs,
+ *  frozen SVG dimensions. */
+function snapshotSlide(slide: Slide, idx: number): HTMLElement {
+  const clone = slide.cloneNode(true) as HTMLElement;
+  clone.setAttribute('active', '');
+  freezeSvgSizes(slide, clone);
+  snapshotMermaids(slide, clone);
+  namespaceIds(clone, `-ov${idx}`);
+  return clone;
+}
+
+/** Build a cell's thumbnail · awaits in-flight mermaid renders first so the
+ *  snapshot serializes real SVG even for never-visited slides. */
+async function buildThumb(cell: HTMLElement, src: Slide): Promise<void> {
+  const pending = Array.from(src.querySelectorAll<MermaidLike>('deck-mermaid'))
+    .map((m) => m.whenRendered)
+    .filter((p): p is Promise<void> => !!p);
+  if (pending.length) await Promise.all(pending).catch(() => undefined);
+  const thumb = document.createElement('div');
+  thumb.className = 'ov-thumb';
+  thumb.appendChild(snapshotSlide(src, Number(cell.dataset['idx'])));
+  cell.insertBefore(thumb, cell.firstChild);
+  cell.dataset['loaded'] = '1';
+  delete cell.dataset['building'];
 }
 
 export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => void {
@@ -355,17 +472,12 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
       for (const e of entries) {
         if (!e.isIntersecting) continue;
         const cell = e.target as HTMLElement;
-        if (cell.dataset['loaded']) continue;
+        if (cell.dataset['loaded'] || cell.dataset['building']) continue;
         const src = lazyLoad.get(cell);
         if (!src) continue;
-        const thumb = document.createElement('div');
-        thumb.className = 'ov-thumb';
-        const clone = src.cloneNode(true) as HTMLElement;
-        clone.setAttribute('active', '');
-        thumb.appendChild(clone);
-        cell.insertBefore(thumb, cell.firstChild);
-        cell.dataset['loaded'] = '1';
+        cell.dataset['building'] = '1';
         lazyObserver.unobserve(cell);
+        void buildThumb(cell, src);
       }
     },
     { root: null, rootMargin: '300px 0px', threshold: 0 }
