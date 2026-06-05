@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>overview × svg fixture</title>
+  <link rel="stylesheet" href="../../themes/rikiki.css">
+  <script type="module" src="../../dist/index.js"></script>
+</head>
+<body>
+  <deck-root>
+    <deck-cover><h1>Overview SVG fixture</h1></deck-cover>
+
+    <deck-feature>
+      <h1>Inline SVG · gradient + marker</h1>
+      <svg viewBox="0 0 400 120" width="400" height="120">
+        <defs>
+          <linearGradient id="grad"><stop offset="0" stop-color="#e0531f"/><stop offset="1" stop-color="#2a2520"/></linearGradient>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#e0531f"/>
+          </marker>
+        </defs>
+        <rect x="10" y="10" width="180" height="100" fill="url(#grad)" rx="8"/>
+        <line x1="200" y1="60" x2="380" y2="60" stroke="#e0531f" stroke-width="3" marker-end="url(#arrow)"/>
+      </svg>
+    </deck-feature>
+
+    <deck-feature>
+      <h1>Mermaid · visited</h1>
+      <deck-mermaid>
+        graph LR
+        a[Edit] --> b[Save] --> c[Reload]
+      </deck-mermaid>
+    </deck-feature>
+
+    <deck-feature><h1>Filler 1</h1></deck-feature>
+    <deck-feature><h1>Filler 2</h1></deck-feature>
+
+    <deck-feature>
+      <h1>Mermaid · never visited</h1>
+      <deck-mermaid>
+        graph TD
+        x[Open] --> y{Rendered?}
+        y -->|yes| z[Snapshot]
+      </deck-mermaid>
+    </deck-feature>
+  </deck-root>
+</body>
+</html>
