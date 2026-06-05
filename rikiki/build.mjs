@@ -97,10 +97,15 @@ function minifyTemplates(enabled) {
           m = m.replace(/\/\*[\s\S]*?\*\//g, '');
           // Collapse runs of whitespace · keep newlines as single spaces
           m = m.replace(/\s+/g, ' ');
-          // Tighten around CSS punctuation
-          m = m.replace(/\s*([{}:;,])\s*/g, '$1');
-          // Drop the final ; before }
-          m = m.replace(/;}/g, '}');
+          if (tag === 'css') {
+            // Tighten around CSS punctuation · CSS only. In html templates
+            // this would eat the space after a }-closing binding and glue it
+            // to the next attribute (`?disabled=${x}@click=${y}`), which
+            // corrupts Lit's attribute parsing.
+            m = m.replace(/\s*([{}:;,])\s*/g, '$1');
+            // Drop the final ; before }
+            m = m.replace(/;}/g, '}');
+          }
           return tag + '`' + m.trim() + '`';
         });
         return { contents: src, loader: 'ts' };

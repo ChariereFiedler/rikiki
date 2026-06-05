@@ -28,8 +28,12 @@ function minifyTemplates() {
           let m = body;
           m = m.replace(/\/\*[\s\S]*?\*\//g, '');
           m = m.replace(/\s+/g, ' ');
-          m = m.replace(/\s*([{}:;,])\s*/g, '$1');
-          m = m.replace(/;}/g, '}');
+          if (tag === 'css') {
+            // CSS only · in html templates this glues `${x}` bindings to the
+            // next attribute and corrupts Lit's parsing (cf. build.mjs).
+            m = m.replace(/\s*([{}:;,])\s*/g, '$1');
+            m = m.replace(/;}/g, '}');
+          }
           return tag + '`' + m.trim() + '`';
         });
         return { contents: src, loader: 'ts' };
