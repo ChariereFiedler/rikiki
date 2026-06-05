@@ -26,8 +26,9 @@
 //   <div data-click-children>    · each direct child = one sequential click
 //
 //   <h1 data-morph="title">…</h1> · paired across steps or consecutive
-//   slides → FLIP morph via the View Transitions API (graceful no-op
-//   fallback). Morph targets must live in light DOM.
+//   slides → magic move via the View Transitions API, with a WAAPI FLIP
+//   fallback on browsers without it (Firefox). Targets must live in
+//   light DOM.
 //
 // The plugin patches deck-root so its step counter (the dots at the
 // bottom) accounts for [data-click] elements, and so stepping toggles
@@ -171,6 +172,48 @@ function nameVisibleMorphs(root: HTMLElement, targets?: Map<HTMLElement, boolean
       if (take) named = true;
       el.style.viewTransitionName = take ? `rk-morph-${cssKey(key)}` : 'none';
     });
+  });
+}
+
+/** First element of a morph group considered visible · predicate from the
+ *  entries model when provided, else inline opacity. */
+function visibleMorphIn(els: HTMLElement[], targets?: Map<HTMLElement, boolean>): HTMLElement | undefined {
+  return els.find((el) => targets?.get(el) ?? el.style.opacity !== '0');
+}
+
+function visibleMorphRects(root: HTMLElement): Map<string, DOMRect> {
+  const rects = new Map<string, DOMRect>();
+  morphGroups(root).forEach((els, key) => {
+    const el = visibleMorphIn(els);
+    if (el) rects.set(key, el.getBoundingClientRect());
+  });
+  return rects;
+}
+
+const FLIP_MS = 360;
+const FLIP_EASE = 'cubic-bezier(0.22, 1, 0.3, 1)';
+
+/** WAAPI fallback when View Transitions are unavailable (Firefox) · glide
+ *  each incoming morph element from the outgoing element's box to its own. */
+function flipMorphs(root: HTMLElement, fromRects: Map<string, DOMRect>, targets?: Map<HTMLElement, boolean>): void {
+  morphGroups(root).forEach((els, key) => {
+    const from = fromRects.get(key);
+    const el = visibleMorphIn(els, targets);
+    if (!from || !el) return;
+    const to = el.getBoundingClientRect();
+    if (!to.width || !to.height || !from.width || !from.height) return;
+    const dx = from.left - to.left;
+    const dy = from.top - to.top;
+    const sx = from.width / to.width;
+    const sy = from.height / to.height;
+    if (!dx && !dy && sx === 1 && sy === 1) return;
+    el.animate(
+      [
+        { transformOrigin: 'top left', transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})` },
+        { transformOrigin: 'top left', transform: 'none' },
+      ],
+      { duration: FLIP_MS, easing: FLIP_EASE }
+    );
   });
 }
 
@@ -330,17 +373,25 @@ export function installClickStages(): void {
       });
 
     // Intra-slide morph · wrap the step change in a view transition when the
-    // slide pairs data-morph elements across steps.
+    // slide pairs data-morph elements across steps · WAAPI FLIP fallback when
+    // View Transitions are unavailable (Firefox).
     const svt = (document as DocWithVT).startViewTransition?.bind(document);
     const stepChanged = prevStep !== -1 && prevStep !== this.step;
-    if (svt && stepChanged && !vtActive && !reducedMotion() && slide.querySelector(`[${MORPH_ATTR}]`)) {
+    const morphing = stepChanged && !vtActive && !reducedMotion() && slide.querySelector(`[${MORPH_ATTR}]`) !== null;
+    if (morphing) {
       const targets = new Map(
         entries.map(({ el, step, hide }) => [el, hide ? this.step < step : this.step >= step])
       );
-      nameVisibleMorphs(slide);          // old state, before capture
-      vtActive = true;
-      svt(() => { run(); nameVisibleMorphs(slide, targets); })
-        .finished.finally(() => { vtActive = false; });
+      if (svt) {
+        nameVisibleMorphs(slide);          // old state, before capture
+        vtActive = true;
+        svt(() => { run(); nameVisibleMorphs(slide, targets); })
+          .finished.finally(() => { vtActive = false; });
+      } else {
+        const fromRects = visibleMorphRects(slide);
+        run();
+        flipMorphs(slide, fromRects, targets);
+      }
     } else {
       run();
     }
@@ -353,18 +404,29 @@ export function installClickStages(): void {
     const to = slides[Math.max(0, Math.min(slides.length - 1, idx))];
     const svt = (document as DocWithVT).startViewTransition?.bind(document);
     const keys = from && to && from !== to ? matchedMorphKeys(from, to) : [];
-    if (keys.length === 0 || !svt || vtActive || reducedMotion()) {
+    if (keys.length === 0 || vtActive || reducedMotion()) {
       origGoTo.call(this, idx);
+      return;
+    }
+    const host = this as unknown as { __rkMorphActive?: boolean };
+    if (!svt) {
+      // FLIP fallback (no View Transitions · Firefox) · measure the outgoing
+      // boxes, navigate, then glide the incoming elements into place.
+      const fromRects = visibleMorphRects(from!);
+      host.__rkMorphActive = true;   // deck-transition skips this navigation
+      origGoTo.call(this, idx);
+      flipMorphs(to!, fromRects);
+      window.setTimeout(() => { host.__rkMorphActive = false; }, FLIP_MS + 40);
       return;
     }
     nameVisibleMorphs(from!);   // outgoing side, before capture
     vtActive = true;
     // deck-transition skips its classic animation for this navigation.
-    (this as unknown as { __rkMorphActive?: boolean }).__rkMorphActive = true;
+    host.__rkMorphActive = true;
     svt(() => { origGoTo.call(this, idx); nameVisibleMorphs(to!); })
       .finished.finally(() => {
         vtActive = false;
-        (this as unknown as { __rkMorphActive?: boolean }).__rkMorphActive = false;
+        host.__rkMorphActive = false;
       });
   };
 
