@@ -132,6 +132,19 @@ Parser: `marked` 12 from CDN. Supports GFM (tables, task lists), code blocks, in
 | `O` | Toggle overview |
 | `?` / `H` | Show keyboard help |
 
+### Mouse
+
+On by default since 0.3.0: click to advance (Shift+click to go back), scroll
+wheel, discreet chevrons bottom-right, and mouse back/forward buttons. Links,
+buttons and inputs never trigger navigation; add `data-no-advance` to opt any
+element out.
+
+```html
+<deck-root>                          <!-- everything on (default) -->
+<deck-root mouse-nav="none">         <!-- keyboard-only, pre-0.3 behavior -->
+<deck-root mouse-nav="wheel arrows"> <!-- pick from: click wheel arrows aux -->
+```
+
 ## Themes
 
 Picking a theme is one `<link>` change:

@@ -30,7 +30,18 @@ attributes, or tokens — use only what the reference lists.
    `deck-code[step-groups]`; for per-element reveals install the click-stages
    plugin (`import { installClickStages } from './dist/click-stages.js';
    installClickStages();`) and annotate elements with `data-click`,
-   `data-click="N"`, `data-click-hide`, and `data-anim="fade|slide-up|slide-left|scale"`.
+   `data-click="N"`, `data-click-hide`, and
+   `data-anim="fade|slide-up|slide-down|slide-left|slide-right|scale|blur|flip-up|draw"`.
+   Fine-tune with `data-anim-duration` / `data-anim-delay` (ms) and
+   `data-anim-ease="out|spring|in-out|cubic-bezier(…)"`. One-click
+   choreographies: `data-click-auto="800"` (chains after the previous stage,
+   no click), `data-click-stagger="80"` (container children cascade on one
+   click), `data-click-children` (one click per child). Magic move:
+   `data-morph="key"` pairs an element across steps or consecutive slides
+   (explicit steps for same-click swaps: `data-click-hide="1"` +
+   `data-click="1"`). Mouse navigation is on by default (click/wheel/
+   chevrons/buttons 4-5) · disable with `mouse-nav="none"` or pick a subset
+   like `mouse-nav="wheel arrows"` on `<deck-root>`.
 5. **Speaker notes** — add `<deck-notes>` inside a slide; press `P` to present.
 6. **Livereload (authoring)** — add `?live` to the deck URL (e.g.
    `…/deck.html?live`) so `index.js` lazy-loads the poller and auto-reloads on

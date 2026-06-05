@@ -15,6 +15,12 @@ export declare class DeckMermaid extends LitElement {
     rendered: boolean;
     private _svg;
     private _source;
+    private _renderPromise;
+    /** Rendered SVG markup · '' until the async render completes. Lets the
+     *  overview build static thumbnails without reaching into this shadow root. */
+    get renderedSvg(): string;
+    /** Resolves when the current render attempt settles (success or error). */
+    get whenRendered(): Promise<void>;
     connectedCallback(): void;
     private _render;
     render(): import("lit-html").TemplateResult<1>;
