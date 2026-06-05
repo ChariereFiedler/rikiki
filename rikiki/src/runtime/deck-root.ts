@@ -81,6 +81,28 @@ export class DeckRoot extends LitElement {
     }
     #kb-hint .sep { opacity: 0.4; }
 
+    #nav-arrows {
+      position: fixed; bottom: 2.4rem; right: 1.5rem;
+      display: flex; gap: 4px;
+      z-index: 100;
+      opacity: var(--deck-root-nav-opacity, 0.35);
+      transition: opacity 0.2s ease;
+    }
+    #nav-arrows:hover { opacity: 1; }
+    .nav-btn {
+      appearance: none; cursor: pointer;
+      width: 30px; height: 30px;
+      display: grid; place-items: center;
+      font: 700 1rem/1 var(--rik-font-mono);
+      color: var(--deck-root-nav-color, var(--rik-text-default));
+      background: var(--deck-root-nav-bg, var(--rik-surface-raised));
+      border: 1px solid var(--rik-border-default);
+      border-radius: 6px;
+      padding: 0;
+    }
+    .nav-btn:hover:not(:disabled) { border-color: var(--rik-accent); }
+    .nav-btn:disabled { opacity: 0.3; cursor: default; }
+
     /* Black / white overlay · raised over everything, dismissed by any key
        (handled in _onKey) or a click. */
     #blank {
@@ -113,6 +135,9 @@ export class DeckRoot extends LitElement {
   /** Enable pointer-driven horizontal swipe for navigation (touch + mouse).
    *  Translates a swipe ≥ 60 px into an advance / back navigation. */
   @property({ type: Boolean, reflect: true }) swipe = false;
+  /** Mouse navigation · enabled by default. Set to "none" to disable, or to a
+   *  space-separated subset of "click wheel arrows aux" to pick mechanisms. */
+  @property({ type: String, reflect: true, attribute: 'mouse-nav' }) mouseNav: string | null = null;
 
   // Flat list of all <deck-*> children (excluding deck-root itself)
   private slides: Slide[] = [];
@@ -129,6 +154,12 @@ export class DeckRoot extends LitElement {
   private _swipeStartX = 0;
   private _swipeStartY = 0;
   private _swipePointerId: number | null = null;
+  // Mouse-nav click guard · pointerdown coords to tell clicks from drags
+  private _navDownX = 0;
+  private _navDownY = 0;
+  // Wheel navigation · deltaY accumulation + lockout against trackpad inertia
+  private _wheelAccum = 0;
+  private _wheelLockUntil = 0;
 
   override firstUpdated(): void {
     this.slides = Array.from(this.querySelectorAll<Slide>(':scope > *')).filter((el) =>
@@ -144,6 +175,11 @@ export class DeckRoot extends LitElement {
     this.requestUpdate();
     window.addEventListener('keydown', this._onKey);
     window.addEventListener('hashchange', this._onHash);
+    this.addEventListener('pointerdown', this._onNavPointerDown);
+    this.addEventListener('click', this._onClickNav);
+    this.addEventListener('wheel', this._onWheel, { passive: false });
+    window.addEventListener('mouseup', this._onAuxUp);
+    window.addEventListener('auxclick', this._onAuxClick);
     if (this.autoplay > 0) this._startAutoplay();
     if (this.swipe) {
       this.addEventListener('pointerdown', this._onPointerDown);
@@ -162,6 +198,11 @@ export class DeckRoot extends LitElement {
     super.disconnectedCallback();
     window.removeEventListener('keydown', this._onKey);
     window.removeEventListener('hashchange', this._onHash);
+    this.removeEventListener('pointerdown', this._onNavPointerDown);
+    this.removeEventListener('click', this._onClickNav);
+    this.removeEventListener('wheel', this._onWheel);
+    window.removeEventListener('mouseup', this._onAuxUp);
+    window.removeEventListener('auxclick', this._onAuxClick);
     this._stopAutoplay();
     this.removeEventListener('pointerdown',  this._onPointerDown);
     this.removeEventListener('pointerup',    this._onPointerUp);
@@ -213,6 +254,60 @@ export class DeckRoot extends LitElement {
     if (this.autoplay > 0 && !this._autoplayPaused) this._startAutoplay();
   };
 
+  /* ── Mouse navigation ─────────────────────────────────────────── */
+  private _onNavPointerDown = (e: PointerEvent): void => {
+    this._navDownX = e.clientX;
+    this._navDownY = e.clientY;
+  };
+
+  /** Click anywhere → advance (Shift+click → back) · PowerPoint-style.
+   *  Skips interactive targets, our own chrome, text selections and drags. */
+  private _onClickNav = (e: MouseEvent): void => {
+    if (!this._mouseEnabled('click')) return;
+    if (this.overview || this.blank) return;
+    if (this.shadowRoot?.querySelector('#kb-overlay.open')) return;
+    if (Math.hypot(e.clientX - this._navDownX, e.clientY - this._navDownY) > 5) return;
+    const sel = window.getSelection();
+    if (sel && !sel.isCollapsed) return;
+    const interactive = e.composedPath().some((n) => {
+      if (!(n instanceof HTMLElement)) return false;
+      if (n.matches?.('a, button, input, textarea, select, [contenteditable], [data-no-advance]')) return true;
+      return n.id === 'blank' || n.id === 'kb-overlay' || n.id === 'overview-grid'
+          || n.id === 'nav-arrows' || n.id === 'kb-hint';
+    });
+    if (interactive) return;
+    if (this.autoplay > 0 && !this._autoplayPaused) this._startAutoplay();
+    if (e.shiftKey) this._back(); else this._advance();
+  };
+
+  private _onWheel = (e: WheelEvent): void => {
+    if (!this._mouseEnabled('wheel') || this.overview || this.blank) return;
+    e.preventDefault();
+    const now = performance.now();
+    if (now < this._wheelLockUntil) return;
+    this._wheelAccum += e.deltaY;
+    if (Math.abs(this._wheelAccum) < 50) return;
+    const forward = this._wheelAccum > 0;
+    this._wheelAccum = 0;
+    this._wheelLockUntil = now + 400;
+    if (this.autoplay > 0 && !this._autoplayPaused) this._startAutoplay();
+    if (forward) this._advance(); else this._back();
+  };
+
+  /** Mouse back/forward buttons (3/4) · act on mouseup, suppress the
+   *  browser's history navigation best-effort on auxclick. */
+  private _onAuxUp = (e: MouseEvent): void => {
+    if (!this._mouseEnabled('aux')) return;
+    if (e.button !== 3 && e.button !== 4) return;
+    e.preventDefault();
+    if (e.button === 3) this._back(); else this._advance();
+  };
+
+  private _onAuxClick = (e: MouseEvent): void => {
+    if (!this._mouseEnabled('aux')) return;
+    if (e.button === 3 || e.button === 4) e.preventDefault();
+  };
+
   /** Group slides into chapters bounded by <deck-section> markers. */
   private _buildChapters(): void {
     this.chapters = [];
@@ -231,6 +326,13 @@ export class DeckRoot extends LitElement {
   /** True when at least one chapter has multiple slides and there are 2+ chapters. */
   private _has2DNav(): boolean {
     return this.chapters.some((c) => c.slides.length > 1) && this.chapters.length > 1;
+  }
+
+  private _mouseEnabled(kind: 'click' | 'wheel' | 'arrows' | 'aux'): boolean {
+    const v = (this.mouseNav ?? 'all').trim();
+    if (v === 'none') return false;
+    if (v === '' || v === 'all') return true;
+    return v.split(/\s+/).includes(kind);
   }
 
   /** Flat index → {chapter, intra-chapter index}. */
@@ -526,6 +628,36 @@ export class DeckRoot extends LitElement {
     void this._renderOverviewIfActive();
   }
 
+  private _navArrows(): unknown {
+    if (!this._mouseEnabled('arrows') || this.overview) return '';
+    const total = this.slides.length;
+    if (total === 0) return '';
+    const atStart = this.current === 0 && this.step === 0;
+    const atEnd = this.current >= total - 1 && this.step >= this._maxSteps();
+    if (this._has2DNav()) {
+      const { c, i } = this._coords(this.current);
+      const chap = this.chapters[c];
+      return html`
+        <div id="nav-arrows">
+          <button class="nav-btn" title="Previous chapter" ?disabled=${!this.loop && this.current === 0}
+            @click=${() => (c > 0 ? this._goToCoords(c - 1, 0) : this._back())}>&lsaquo;</button>
+          <button class="nav-btn" title="Up" ?disabled=${i === 0}
+            @click=${() => this._goToCoords(c, i - 1)}>&uarr;</button>
+          <button class="nav-btn" title="Down" ?disabled=${!chap || i + 1 >= chap.slides.length}
+            @click=${() => this._goToCoords(c, i + 1)}>&darr;</button>
+          <button class="nav-btn" title="Next chapter" ?disabled=${!this.loop && atEnd}
+            @click=${() => (c + 1 < this.chapters.length ? this._goToCoords(c + 1, 0) : this._advance())}>&rsaquo;</button>
+        </div>`;
+    }
+    return html`
+      <div id="nav-arrows">
+        <button class="nav-btn" title="Previous" ?disabled=${!this.loop && atStart}
+          @click=${() => this._back()}>&lsaquo;</button>
+        <button class="nav-btn" title="Next" ?disabled=${!this.loop && atEnd}
+          @click=${() => this._advance()}>&rsaquo;</button>
+      </div>`;
+  }
+
   override render(): unknown {
     return html`
       <div id="progress"></div>
@@ -541,6 +673,7 @@ export class DeckRoot extends LitElement {
         <span>·</span>
         <kbd>?</kbd>
       </div>
+      ${this._navArrows()}
       <slot></slot>
       ${this.blank ? html`<div id="blank" data-tone="${this.blank}" @click=${() => { this.blank = null; }}></div>` : ''}
     `;
