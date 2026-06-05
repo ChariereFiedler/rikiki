@@ -129,7 +129,10 @@ two consecutive slides. On change, the plugin assigns
 navigation in `document.startViewTransition()`: the element glides/resizes
 from position A to position B.
 
-- **Fallback**: no View Transitions support → current behavior, nothing breaks.
+- **Fallback**: no View Transitions support (e.g. Firefox ESR 140) → WAAPI
+  FLIP fallback: the incoming element glides from the outgoing element's
+  measured box via `el.animate()` (universal support). Same visual intent,
+  no View Transitions required.
 - **deck-transition interaction**: when morph keys match between two slides,
   the view transition takes over and the classic transition is skipped for
   that navigation (no double animation).
