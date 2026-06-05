@@ -97,6 +97,23 @@ least one chapter has multiple slides**. Chapters are bounded by `<deck-section>
 markers. In 2D mode: `←`/`→` move between chapters, `↑`/`↓` move within a chapter
 (both fall back to linear motion at the edges).
 
+**Mouse navigation** is on by default (since 0.3.0): left click advances
+(Shift+click goes back), the scroll wheel navigates with a trackpad-friendly
+debounce, discreet chevrons sit bottom-right (2D-aware), and mouse
+back/forward buttons map to back/advance. Interactive elements (`a`,
+`button`, inputs, `[contenteditable]`) never trigger navigation; add
+`data-no-advance` to opt any element out. Configure with the `mouse-nav`
+attribute on `<deck-root>`:
+
+| Value | Meaning |
+|-------|---------|
+| *(absent)* | Everything on · the default |
+| `mouse-nav="none"` | Keyboard-only deck (pre-0.3 behavior) |
+| `mouse-nav="wheel arrows"` | Granular subset of `click`, `wheel`, `arrows`, `aux` |
+
+Chevron styling tokens: `--deck-root-nav-color`, `--deck-root-nav-bg`,
+`--deck-root-nav-opacity`.
+
 **Hash format** (deep-linking):
 
 | Form | Meaning |
@@ -210,23 +227,40 @@ Then annotate any element inside a slide:
 |-----------|--------|
 | `data-click` | Hidden initially; appears at the next click (bare attributes get sequential steps in document order) |
 | `data-click="N"` | Appears at explicit step N |
-| `data-click-hide` | Visible initially; hidden once its click step is reached |
-| `data-anim="…"` | Reveal animation: `fade` (default), `slide-up`, `slide-left`, `scale` |
+| `data-click-hide` | Visible initially; hidden once its click step is reached (`data-click-hide="N"` for an explicit step) |
+| `data-anim="…"` | Reveal animation: `fade` (default), `slide-up`, `slide-down`, `slide-left`, `slide-right`, `scale`, `blur`, `flip-up`, `draw` (traces stroked SVG paths) |
+| `data-anim-duration="600"` | Per-element duration in ms (default 320) |
+| `data-anim-delay="120"` | Per-element delay in ms (default 0) |
+| `data-anim-ease="…"` | `out` (default), `spring`, `in-out`, or any raw `cubic-bezier(…)` |
+| `data-click-auto="800"` | **No click consumed** · reveals 800 ms after the previous stage (or slide activation). Consecutive autos chain — one click can drive a whole choreography |
+| `data-click-stagger="80"` | On a container · **one** click reveals its children in a cascade, 80 ms apart |
+| `data-click-children` | On a container · each direct child becomes its own sequential click, inheriting the container's `data-anim*` |
+| `data-morph="key"` | Pair two elements (across steps of one slide, or across consecutive slides) · the element glides/resizes from A to B like Keynote's Magic Move. Uses the View Transitions API, with a WAAPI FLIP fallback on browsers without it (Firefox). Targets must be light-DOM elements |
 
 Example:
 
 ```html
 <deck-feature eyebrow="Demo">
   <h1 slot="title">Click stages</h1>
-  <p data-click data-anim="slide-up">First reveal</p>
-  <p data-click data-anim="slide-left">Second reveal</p>
-  <p data-click="3" data-anim="scale">Third (explicit step)</p>
+  <p data-click data-anim="slide-up" data-anim-duration="600" data-anim-ease="spring">First reveal</p>
+  <p data-click-auto="500">Follows the first reveal automatically after 500 ms</p>
+  <ul data-click-stagger="80" data-anim="slide-up">
+    <li>wave 1</li><li>wave 2</li><li>wave 3</li>
+  </ul>
+  <p data-click="3" data-anim="scale">Explicit step</p>
 </deck-feature>
 ```
 
+Morph pairs that swap on the same click need explicit steps
+(`data-click-hide="1"` on the outgoing element, `data-click="1"` on the
+incoming one) — bare attributes would put them on two sequential clicks.
+
 The plugin patches `deck-root` so its step counter accounts for `[data-click]`
-elements, and stepping toggles their visibility. It respects
-`prefers-reduced-motion`.
+elements, and stepping toggles their visibility. Going back cancels pending
+auto/stagger timers. Deep links and back-navigation settle instantly (no
+replayed delays). It respects `prefers-reduced-motion`. When a `data-morph`
+navigation runs, the deck-wide `transition="…"` animation is skipped for that
+navigation so the two don't fight.
 
 ---
 

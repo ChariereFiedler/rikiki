@@ -21,6 +21,9 @@ export declare class DeckRoot extends LitElement {
     /** Enable pointer-driven horizontal swipe for navigation (touch + mouse).
      *  Translates a swipe ≥ 60 px into an advance / back navigation. */
     swipe: boolean;
+    /** Mouse navigation · enabled by default. Set to "none" to disable, or to a
+     *  space-separated subset of "click wheel arrows aux" to pick mechanisms. */
+    mouseNav: string | null;
     private slides;
     private chapters;
     private _overviewTeardown;
@@ -30,6 +33,10 @@ export declare class DeckRoot extends LitElement {
     private _swipeStartX;
     private _swipeStartY;
     private _swipePointerId;
+    private _navDownX;
+    private _navDownY;
+    private _wheelAccum;
+    private _wheelLockUntil;
     firstUpdated(): void;
     disconnectedCallback(): void;
     private _startAutoplay;
@@ -39,10 +46,20 @@ export declare class DeckRoot extends LitElement {
     private _onHoverLeave;
     private _onPointerDown;
     private _onPointerUp;
+    private _onNavPointerDown;
+    /** Click anywhere → advance (Shift+click → back) · PowerPoint-style.
+     *  Skips interactive targets, our own chrome, text selections and drags. */
+    private _onClickNav;
+    private _onWheel;
+    /** Mouse back/forward buttons (3/4) · act on mouseup, suppress the
+     *  browser's history navigation best-effort on auxclick. */
+    private _onAuxUp;
+    private _onAuxClick;
     /** Group slides into chapters bounded by <deck-section> markers. */
     private _buildChapters;
     /** True when at least one chapter has multiple slides and there are 2+ chapters. */
     private _has2DNav;
+    private _mouseEnabled;
     /** Flat index → {chapter, intra-chapter index}. */
     private _coords;
     private _flatFromCoords;
@@ -66,6 +83,7 @@ export declare class DeckRoot extends LitElement {
     private _applyStep;
     private _updateUI;
     updated(): void;
+    private _navArrows;
     render(): unknown;
 }
 declare global {
