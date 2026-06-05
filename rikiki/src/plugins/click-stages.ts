@@ -20,6 +20,11 @@
 //   data-anim-delay="120"    · ms (default 0)
 //   data-anim-ease="out|spring|in-out|cubic-bezier(…)" (default out)
 //
+//   <p data-click-auto="800">  · no click consumed, fires 800ms after the
+//                                previous stage (autos chain in order)
+//   <ul data-click-stagger="80"> · one click, children cascade 80ms apart
+//   <div data-click-children>    · each direct child = one sequential click
+//
 // The plugin patches deck-root so its step counter (the dots at the
 // bottom) accounts for [data-click] elements, and so stepping toggles
 // their visibility. Respects prefers-reduced-motion.
@@ -36,36 +41,91 @@ interface DeckRootProto {
 
 const REVEAL_ATTR = 'data-click';
 const HIDE_ATTR = 'data-click-hide';
+const AUTO_ATTR = 'data-click-auto';
+const STAGGER_ATTR = 'data-click-stagger';
+const CHILDREN_ATTR = 'data-click-children';
 
-/** Highest explicit step referenced by [data-click]/[data-click-hide] in a slide,
- *  plus an implicit +1 per bare (value-less) attribute, mirroring Slidev's
- *  auto-incrementing click counter. Returns the number of extra steps the slide
- *  needs beyond what deck-root already counts. */
+interface StageEntry {
+  el: HTMLElement;
+  /** Click step this element belongs to · 0 = revealed on slide activation. */
+  step: number;
+  hide: boolean;
+  /** ms after the step is reached before the state flips (auto chain / stagger). */
+  delay: number;
+}
+
+const EXPANDED = new WeakSet<HTMLElement>();
+
+/** Materialize data-click-children sugar · each direct child becomes a bare
+ *  data-click, inheriting the container's data-anim* unless it overrides. */
+function expandClickChildren(slide: HTMLElement): void {
+  slide.querySelectorAll<HTMLElement>(`[${CHILDREN_ATTR}]`).forEach((box) => {
+    if (EXPANDED.has(box)) return;
+    EXPANDED.add(box);
+    Array.from(box.children).forEach((child) => {
+      const c = child as HTMLElement;
+      if (!c.hasAttribute(REVEAL_ATTR)) c.setAttribute(REVEAL_ATTR, '');
+      for (const a of ['data-anim', 'data-anim-duration', 'data-anim-delay', 'data-anim-ease']) {
+        const v = box.getAttribute(a);
+        if (v && !c.hasAttribute(a)) c.setAttribute(a, v);
+      }
+    });
+  });
+}
+
+/** Extra steps the slide needs beyond what deck-root counts. Explicit numbers
+ *  set a floor; each bare data-click / data-click-hide / stagger container
+ *  auto-increments; data-click-auto consumes no click. */
 function clickStepCount(slide: HTMLElement): number {
+  expandClickChildren(slide);
   let auto = 0;
   let maxExplicit = 0;
-  const els = slide.querySelectorAll<HTMLElement>(`[${REVEAL_ATTR}], [${HIDE_ATTR}]`);
-  els.forEach((el) => {
-    const raw = el.getAttribute(REVEAL_ATTR) ?? el.getAttribute(HIDE_ATTR) ?? '';
-    const n = parseInt(raw, 10);
-    if (Number.isFinite(n) && n > 0) maxExplicit = Math.max(maxExplicit, n);
-    else auto += 1;
-  });
+  slide
+    .querySelectorAll<HTMLElement>(`[${REVEAL_ATTR}], [${HIDE_ATTR}], [${STAGGER_ATTR}]`)
+    .forEach((el) => {
+      if (el.hasAttribute(STAGGER_ATTR)) { auto += 1; return; }
+      const raw = el.getAttribute(REVEAL_ATTR) ?? el.getAttribute(HIDE_ATTR) ?? '';
+      const n = parseInt(raw, 10);
+      if (Number.isFinite(n) && n > 0) maxExplicit = Math.max(maxExplicit, n);
+      else auto += 1;
+    });
   return Math.max(maxExplicit, auto);
 }
 
-/** Resolve the click step each annotated element belongs to. Bare attributes
- *  get sequential steps in document order; explicit numbers are honored. */
-function assignSteps(slide: HTMLElement): Array<{ el: HTMLElement; step: number; hide: boolean }> {
-  let cursor = 0;
-  const out: Array<{ el: HTMLElement; step: number; hide: boolean }> = [];
-  slide.querySelectorAll<HTMLElement>(`[${REVEAL_ATTR}], [${HIDE_ATTR}]`).forEach((el) => {
-    const hide = el.hasAttribute(HIDE_ATTR);
-    const raw = el.getAttribute(hide ? HIDE_ATTR : REVEAL_ATTR) ?? '';
-    const explicit = parseInt(raw, 10);
-    const step = Number.isFinite(explicit) && explicit > 0 ? explicit : ++cursor;
-    out.push({ el, step, hide });
-  });
+/** Walk annotated elements in document order and resolve each one's stage. */
+function collectEntries(slide: HTMLElement): StageEntry[] {
+  expandClickChildren(slide);
+  const out: StageEntry[] = [];
+  let cursor = 0;     // last assigned click step
+  let autoAccum = 0;  // chained data-click-auto delays since that step
+  slide
+    .querySelectorAll<HTMLElement>(`[${REVEAL_ATTR}], [${HIDE_ATTR}], [${AUTO_ATTR}], [${STAGGER_ATTR}]`)
+    .forEach((el) => {
+      if (el.hasAttribute(STAGGER_ATTR)) {
+        // Container consumes one click · children cascade in.
+        const gap = parseInt(el.getAttribute(STAGGER_ATTR) ?? '', 10) || 80;
+        const step = ++cursor;
+        autoAccum = 0;
+        Array.from(el.children).forEach((child, i) => {
+          out.push({ el: child as HTMLElement, step, hide: false, delay: i * gap });
+        });
+        return;
+      }
+      if (el.hasAttribute(AUTO_ATTR)) {
+        // No click consumed · fires after the previous stage (or slide
+        // activation when cursor is still 0). Consecutive autos chain.
+        autoAccum += parseInt(el.getAttribute(AUTO_ATTR) ?? '', 10) || 0;
+        out.push({ el, step: cursor, hide: false, delay: autoAccum });
+        return;
+      }
+      const hide = el.hasAttribute(HIDE_ATTR);
+      const raw = el.getAttribute(hide ? HIDE_ATTR : REVEAL_ATTR) ?? '';
+      const explicit = parseInt(raw, 10);
+      const isExplicit = Number.isFinite(explicit) && explicit > 0;
+      const step = isExplicit ? explicit : ++cursor;
+      if (!isExplicit) autoAccum = 0;
+      out.push({ el, step, hide, delay: 0 });
+    });
   return out;
 }
 
@@ -177,16 +237,49 @@ export function installClickStages(): void {
     return Math.max(base, clicks);
   };
 
+  const TIMERS = new WeakMap<HTMLElement, number>();
+  function cancelTimer(el: HTMLElement): void {
+    const t = TIMERS.get(el);
+    if (t !== undefined) { window.clearTimeout(t); TIMERS.delete(el); }
+  }
+  function scheduleVisible(el: HTMLElement, visible: boolean, delay: number): void {
+    cancelTimer(el);
+    TIMERS.set(el, window.setTimeout(() => {
+      TIMERS.delete(el);
+      setVisible(el, visible);
+    }, delay));
+  }
+
+  // Previous (slide, step) per host · lets us tell "just reached this step"
+  // (play delays) apart from "jumped past it" (settle immediately).
+  const LAST = new WeakMap<object, { slide: number; step: number }>();
+
   const origApply = proto._applyStep;
   proto._applyStep = function (this: DeckRootProto): void {
     origApply.call(this);
     const slide = this.slides?.[this.current];
     if (!slide) return;
-    assignSteps(slide).forEach(({ el, step, hide }) => {
+    const last = LAST.get(this);
+    const prevStep = last && last.slide === this.current ? last.step : -1;
+    LAST.set(this, { slide: this.current, step: this.step });
+
+    collectEntries(slide).forEach(({ el, step, hide, delay }) => {
       prepare(el, hide);
+      cancelTimer(el);
       // reveal: visible once we've reached its step. hide: hidden once reached.
       const reached = this.step >= step;
-      setVisible(el, hide ? !reached : reached);
+      const target = hide ? !reached : reached;
+      // Delays only play when we land exactly on the step coming from before
+      // it (or on slide activation for step-0 autos) · deep links and back
+      // navigation settle instantly.
+      const justReached = reached && this.step === step && prevStep < step;
+      const onActivation = reached && step === 0 && prevStep === -1;
+      if (delay > 0 && (justReached || onActivation)) {
+        setVisible(el, hide);               // hold the pre-state…
+        scheduleVisible(el, target, delay); // …then flip after the delay
+      } else {
+        setVisible(el, target);
+      }
     });
   };
 
