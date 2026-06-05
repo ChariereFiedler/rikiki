@@ -14,7 +14,11 @@
 //   <p data-click-hide>visible first, hidden on the next click</p>
 //   <p data-click data-anim="slide-up">reveal sliding up</p>
 //
-//   data-anim · fade (default) | slide-up | slide-left | scale
+//   data-anim · fade (default) | slide-up | slide-down | slide-left |
+//               slide-right | scale | blur | flip-up | draw (SVG strokes)
+//   data-anim-duration="600" · ms (default 320)
+//   data-anim-delay="120"    · ms (default 0)
+//   data-anim-ease="out|spring|in-out|cubic-bezier(…)" (default out)
 //
 // The plugin patches deck-root so its step counter (the dots at the
 // bottom) accounts for [data-click] elements, and so stepping toggles
@@ -67,29 +71,91 @@ function assignSteps(slide: HTMLElement): Array<{ el: HTMLElement; step: number;
 
 const PREP = new WeakSet<HTMLElement>();
 
+const EASES: Record<string, string> = {
+  out: 'cubic-bezier(0.22, 1, 0.36, 1)',
+  spring: 'cubic-bezier(0.5, 1.8, 0.3, 1)',
+  'in-out': 'cubic-bezier(0.45, 0, 0.55, 1)',
+};
+
+function reducedMotion(): boolean {
+  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+}
+
+/** data-anim-duration / data-anim-delay (ms) + data-anim-ease (preset or raw
+ *  cubic-bezier). Reduced motion collapses to a near-instant transition. */
+function timingOf(el: HTMLElement): { dur: number; delay: number; ease: string } {
+  if (reducedMotion()) return { dur: 1, delay: 0, ease: 'linear' };
+  const dur = parseInt(el.getAttribute('data-anim-duration') ?? '', 10) || 320;
+  const delay = parseInt(el.getAttribute('data-anim-delay') ?? '', 10) || 0;
+  const easeRaw = el.getAttribute('data-anim-ease') ?? 'out';
+  return { dur, delay, ease: EASES[easeRaw] ?? easeRaw };
+}
+
+const DRAW_SHAPES = 'path, line, polyline, polygon, circle, ellipse, rect';
+
+/** Stroked SVG shapes targeted by data-anim="draw" · the element itself or
+ *  every shape underneath it. */
+function drawTargets(el: HTMLElement): SVGGeometryElement[] {
+  if (el instanceof SVGGeometryElement) return [el];
+  return Array.from(el.querySelectorAll<SVGGeometryElement>(DRAW_SHAPES));
+}
+
+function prepareDraw(el: HTMLElement, transition: string): void {
+  drawTargets(el).forEach((s) => {
+    const len = s.getTotalLength?.() ?? 0;
+    if (!len) return;
+    s.style.strokeDasharray = String(len);
+    s.style.transition = transition;
+  });
+}
+
+function applyDraw(el: HTMLElement, visible: boolean): void {
+  drawTargets(el).forEach((s) => {
+    const len = s.getTotalLength?.() ?? 0;
+    if (!len) return;
+    s.style.strokeDashoffset = visible ? '0' : String(len);
+  });
+  el.style.pointerEvents = visible ? '' : 'none';
+}
+
 /** Set the initial hidden/visible state + transition on each annotated element. */
 function prepare(el: HTMLElement, hide: boolean): void {
   if (PREP.has(el)) return;
   PREP.add(el);
-  const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  el.style.transition = reduce ? 'opacity 0.01s linear' : 'opacity 0.32s ease, transform 0.32s cubic-bezier(0.22,1,0.36,1)';
-  el.style.willChange = 'opacity, transform';
+  const { dur, delay, ease } = timingOf(el);
+  const anim = el.getAttribute('data-anim');
+  const props =
+    anim === 'blur' ? ['opacity', 'transform', 'filter'] :
+    anim === 'draw' ? ['stroke-dashoffset'] :
+    ['opacity', 'transform'];
+  const transition = props.map((p) => `${p} ${dur}ms ${ease} ${delay}ms`).join(', ');
+  if (anim === 'draw') {
+    prepareDraw(el, transition);
+  } else {
+    el.style.transition = transition;
+    el.style.willChange = props.join(', ');
+  }
   // hide-on-click elements start visible; reveal elements start hidden.
   setVisible(el, hide);
 }
 
 function animOffset(el: HTMLElement): string {
   switch (el.getAttribute('data-anim')) {
-    case 'slide-up':   return 'translateY(16px)';
-    case 'slide-left': return 'translateX(16px)';
-    case 'scale':      return 'scale(0.92)';
-    default:           return 'none'; // fade
+    case 'slide-up':    return 'translateY(16px)';
+    case 'slide-down':  return 'translateY(-16px)';
+    case 'slide-left':  return 'translateX(16px)';
+    case 'slide-right': return 'translateX(-16px)';
+    case 'scale':       return 'scale(0.92)';
+    case 'flip-up':     return 'perspective(600px) rotateX(35deg)';
+    default:            return 'none'; // fade · blur
   }
 }
 
 function setVisible(el: HTMLElement, visible: boolean): void {
+  if (el.getAttribute('data-anim') === 'draw') { applyDraw(el, visible); return; }
   el.style.opacity = visible ? '1' : '0';
   el.style.transform = visible ? 'none' : animOffset(el);
+  if (el.getAttribute('data-anim') === 'blur') el.style.filter = visible ? 'none' : 'blur(12px)';
   el.style.pointerEvents = visible ? '' : 'none';
 }
 
