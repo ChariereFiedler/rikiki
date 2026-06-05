@@ -93,6 +93,9 @@ const MARKUP = `
       <div class="kb-group-label">View</div>
       <div class="kb-row"><span class="desc">Toggle overview</span><span class="keys"><kbd>O</kbd></span></div>
       <div class="kb-row"><span class="desc">Show this help</span><span class="keys"><kbd>?</kbd><kbd>H</kbd></span></div>
+      <div class="kb-group-label">Mouse</div>
+      <div class="kb-row"><span class="desc">Next / Previous</span><span class="keys"><kbd>Click</kbd><kbd>Shift+Click</kbd></span></div>
+      <div class="kb-row"><span class="desc">Navigate</span><span class="keys"><kbd>Wheel</kbd><kbd>Back/Fwd buttons</kbd></span></div>
     </div>
   </div>
 `;
