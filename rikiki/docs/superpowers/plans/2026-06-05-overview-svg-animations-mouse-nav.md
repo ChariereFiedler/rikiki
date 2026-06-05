@@ -872,7 +872,7 @@ git commit -m "test(rikiki): click-stages v2 fixture · timing, auto chain, stag
 **Files:**
 - Modify: `src/runtime/deck-root.ts`
 
-- [ ] **Step 1: Add the property and the helper**
+- [x] **Step 1: Add the property and the helper**
 
 In `src/runtime/deck-root.ts`, after the `swipe` property (line ~115):
 
@@ -893,7 +893,7 @@ After `_has2DNav()`:
   }
 ```
 
-- [ ] **Step 2: Add the click handler**
+- [x] **Step 2: Add the click handler**
 
 With the other private fields:
 
@@ -932,7 +932,7 @@ New handlers (next to `_onPointerDown`):
   };
 ```
 
-- [ ] **Step 3: Wire listeners**
+- [x] **Step 3: Wire listeners**
 
 In `firstUpdated()`, after the keyboard/hash listeners:
 
@@ -950,12 +950,12 @@ In `disconnectedCallback()`:
 
 (`_onNavPointerDown` is independent of the swipe pointerdown listener — both can coexist.)
 
-- [ ] **Step 4: Typecheck + build + quick check**
+- [x] **Step 4: Typecheck + build + quick check**
 
 Run: `npx tsc --noEmit && node build.mjs`
 With Playwright on `http://localhost:8765/starter.html`: click the middle of the slide → next slide; Shift+click → previous; click a link/within `#kb-hint` → no navigation. Set `mouse-nav="none"` via `browser_evaluate` (`document.querySelector('deck-root').setAttribute('mouse-nav','none')`) → clicks do nothing.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/runtime/deck-root.ts dist
@@ -967,7 +967,7 @@ git commit -m "feat(rikiki): mouse-nav attribute + click-to-advance (default on,
 **Files:**
 - Modify: `src/runtime/deck-root.ts`
 
-- [ ] **Step 1: Add the handlers**
+- [x] **Step 1: Add the handlers**
 
 ```ts
   // Wheel navigation · deltaY accumulation + lockout against trackpad inertia
@@ -1003,7 +1003,7 @@ git commit -m "feat(rikiki): mouse-nav attribute + click-to-advance (default on,
   };
 ```
 
-- [ ] **Step 2: Wire listeners**
+- [x] **Step 2: Wire listeners**
 
 In `firstUpdated()`:
 
@@ -1021,12 +1021,12 @@ In `disconnectedCallback()`:
     window.removeEventListener('auxclick', this._onAuxClick);
 ```
 
-- [ ] **Step 3: Typecheck + build + quick check**
+- [x] **Step 3: Typecheck + build + quick check**
 
 Run: `npx tsc --noEmit && node build.mjs`
 Playwright on `starter.html`: `browser_run_code_unsafe` dispatching a `wheel` event with `deltaY: 60` advances exactly one slide; a second event within 400ms is ignored. With overview open (`o`), wheel scrolls the grid instead of navigating.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/runtime/deck-root.ts dist
@@ -1038,7 +1038,7 @@ git commit -m "feat(rikiki): wheel + mouse buttons 4/5 navigation with trackpad 
 **Files:**
 - Modify: `src/runtime/deck-root.ts`
 
-- [ ] **Step 1: Add the CSS** (inside `static override styles`, after the `#kb-hint` rules)
+- [x] **Step 1: Add the CSS** (inside `static override styles`, after the `#kb-hint` rules)
 
 ```css
     #nav-arrows {
@@ -1064,7 +1064,7 @@ git commit -m "feat(rikiki): wheel + mouse buttons 4/5 navigation with trackpad 
     .nav-btn:disabled { opacity: 0.3; cursor: default; }
 ```
 
-- [ ] **Step 2: Add the template helper** (next to `render()`)
+- [x] **Step 2: Add the template helper** (next to `render()`)
 
 ```ts
   private _navArrows(): unknown {
@@ -1098,18 +1098,18 @@ git commit -m "feat(rikiki): wheel + mouse buttons 4/5 navigation with trackpad 
   }
 ```
 
-- [ ] **Step 3: Render it** — in `render()`, after the `#kb-hint` div:
+- [x] **Step 3: Render it** — in `render()`, after the `#kb-hint` div:
 
 ```ts
       ${this._navArrows()}
 ```
 
-- [ ] **Step 4: Typecheck + build + quick check**
+- [x] **Step 4: Typecheck + build + quick check**
 
 Run: `npx tsc --noEmit && node build.mjs`
 Playwright on `starter.html`: chevrons visible bottom-right, faint, full opacity on hover; `‹` disabled on slide 1; clicking `›` advances (and does NOT also trigger click-to-advance — the `#nav-arrows` guard from Task 8); chevrons absent in overview mode and with `mouse-nav="none"`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/runtime/deck-root.ts dist
@@ -1121,7 +1121,7 @@ git commit -m "feat(rikiki): on-screen chevron navigation, 2D-aware, themable"
 **Files:**
 - Modify: `src/runtime/deck-help.ts`
 
-- [ ] **Step 1: Add the rows** — in `MARKUP`, before the closing `.kb-card` div (after the View group):
+- [x] **Step 1: Add the rows** — in `MARKUP`, before the closing `.kb-card` div (after the View group):
 
 ```html
       <div class="kb-group-label">Mouse</div>
@@ -1129,7 +1129,7 @@ git commit -m "feat(rikiki): on-screen chevron navigation, 2D-aware, themable"
       <div class="kb-row"><span class="desc">Navigate</span><span class="keys"><kbd>Wheel</kbd><kbd>Back/Fwd buttons</kbd></span></div>
 ```
 
-- [ ] **Step 2: Typecheck + build + commit**
+- [x] **Step 2: Typecheck + build + commit**
 
 ```bash
 npx tsc --noEmit && node build.mjs
@@ -1142,7 +1142,7 @@ git commit -m "feat(rikiki): document mouse navigation in the help overlay"
 **Files:**
 - Create: `decks/tests/mouse-nav.html`
 
-- [ ] **Step 1: Create the fixture**
+- [x] **Step 1: Create the fixture**
 
 ```html
 <!DOCTYPE html>
@@ -1165,7 +1165,7 @@ git commit -m "feat(rikiki): document mouse navigation in the help overlay"
 </html>
 ```
 
-- [ ] **Step 2: Full mouse verification with Playwright**
+- [x] **Step 2: Full mouse verification with Playwright**
 
 On `http://localhost:8765/decks/tests/mouse-nav.html`:
 1. Click center → slide 2. Shift+click → slide 1.
@@ -1175,7 +1175,7 @@ On `http://localhost:8765/decks/tests/mouse-nav.html`:
 5. `document.querySelector('deck-root').setAttribute('mouse-nav', 'wheel')` → clicks dead, chevrons gone, wheel still works. `mouse-nav="none"` → everything dead, keyboard still works.
 6. Console free of errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add decks/tests/mouse-nav.html
@@ -1187,9 +1187,9 @@ git commit -m "test(rikiki): mouse navigation fixture deck"
 **Files:**
 - Modify: `README.md`, `docs/llms/rikiki-reference.md`, `.claude/skills/rikiki-deck/SKILL.md`, `package.json`
 
-- [ ] **Step 1: package.json** — `"version": "0.2.0"` → `"version": "0.3.0"`.
+- [x] **Step 1: package.json** — `"version": "0.2.0"` → `"version": "0.3.0"`.
 
-- [ ] **Step 2: Document in the three files**
+- [x] **Step 2: Document in the three files**
 
 Read each file first and integrate where the existing structure dictates (keyboard/navigation section, plugins section, attribute tables). Content to convey — adapt wording to each file's voice:
 
@@ -1229,12 +1229,12 @@ light-DOM elements only).
 
 *Breaking-ish change note (README + reference):* clicks navigate by default starting v0.3.0; add `mouse-nav="none"` to restore the previous behavior.
 
-- [ ] **Step 3: Full rebuild including standalone**
+- [x] **Step 3: Full rebuild including standalone**
 
 Run: `npm run build` (build.mjs + build-standalone.mjs + declarations)
 Expected: clean. Then re-run the three fixture verifications quickly (overview-svg, stages, mouse-nav) plus `prefers-reduced-motion` emulation on `stages.html` (Playwright `browser_evaluate` with `matchMedia` emulation or CDP): reveals become instant, morph skipped, auto chain still advances.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add README.md docs/llms/rikiki-reference.md .claude/skills/rikiki-deck/SKILL.md package.json dist
