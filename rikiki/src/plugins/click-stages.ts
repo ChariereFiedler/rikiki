@@ -25,6 +25,10 @@
 //   <ul data-click-stagger="80"> · one click, children cascade 80ms apart
 //   <div data-click-children>    · each direct child = one sequential click
 //
+//   <h1 data-morph="title">…</h1> · paired across steps or consecutive
+//   slides → FLIP morph via the View Transitions API (graceful no-op
+//   fallback). Morph targets must live in light DOM.
+//
 // The plugin patches deck-root so its step counter (the dots at the
 // bottom) accounts for [data-click] elements, and so stepping toggles
 // their visibility. Respects prefers-reduced-motion.
@@ -33,11 +37,16 @@
 interface DeckRootProto {
   _maxSteps(): number;
   _applyStep(): void;
+  _goTo(idx: number): void;
   current: number;
   step: number;
   // slides is private on the class; typed loosely here for the patch.
   slides?: HTMLElement[];
 }
+
+type DocWithVT = Document & {
+  startViewTransition?: (cb: () => void) => { finished: Promise<void> };
+};
 
 const REVEAL_ATTR = 'data-click';
 const HIDE_ATTR = 'data-click-hide';
@@ -127,6 +136,42 @@ function collectEntries(slide: HTMLElement): StageEntry[] {
       out.push({ el, step, hide, delay: 0 });
     });
   return out;
+}
+
+const MORPH_ATTR = 'data-morph';
+/** True while one of our view transitions is running · prevents nesting. */
+let vtActive = false;
+
+function morphGroups(root: HTMLElement): Map<string, HTMLElement[]> {
+  const map = new Map<string, HTMLElement[]>();
+  root.querySelectorAll<HTMLElement>(`[${MORPH_ATTR}]`).forEach((el) => {
+    const key = el.getAttribute(MORPH_ATTR);
+    if (!key) return;
+    map.set(key, [...(map.get(key) ?? []), el]);
+  });
+  return map;
+}
+
+function matchedMorphKeys(a: HTMLElement, b: HTMLElement): string[] {
+  const kb = morphGroups(b);
+  return Array.from(morphGroups(a).keys()).filter((k) => kb.has(k));
+}
+
+const cssKey = (key: string): string => key.replace(/[^a-zA-Z0-9_-]/g, '_');
+
+/** Give the visible element of each morph key a view-transition-name and
+ *  'none' to the rest · duplicate names abort a view transition. Visibility
+ *  comes from the entries model when provided, else from inline opacity. */
+function nameVisibleMorphs(root: HTMLElement, targets?: Map<HTMLElement, boolean>): void {
+  morphGroups(root).forEach((els, key) => {
+    let named = false;
+    els.forEach((el) => {
+      const visible = targets?.get(el) ?? el.style.opacity !== '0';
+      const take = visible && !named;
+      if (take) named = true;
+      el.style.viewTransitionName = take ? `rk-morph-${cssKey(key)}` : 'none';
+    });
+  });
 }
 
 const PREP = new WeakSet<HTMLElement>();
@@ -263,24 +308,64 @@ export function installClickStages(): void {
     const prevStep = last && last.slide === this.current ? last.step : -1;
     LAST.set(this, { slide: this.current, step: this.step });
 
-    collectEntries(slide).forEach(({ el, step, hide, delay }) => {
-      prepare(el, hide);
-      cancelTimer(el);
-      // reveal: visible once we've reached its step. hide: hidden once reached.
-      const reached = this.step >= step;
-      const target = hide ? !reached : reached;
-      // Delays only play when we land exactly on the step coming from before
-      // it (or on slide activation for step-0 autos) · deep links and back
-      // navigation settle instantly.
-      const justReached = reached && this.step === step && prevStep < step;
-      const onActivation = reached && step === 0 && prevStep === -1;
-      if (delay > 0 && (justReached || onActivation)) {
-        setVisible(el, hide);               // hold the pre-state…
-        scheduleVisible(el, target, delay); // …then flip after the delay
-      } else {
-        setVisible(el, target);
-      }
-    });
+    const entries = collectEntries(slide);
+    const run = () =>
+      entries.forEach(({ el, step, hide, delay }) => {
+        prepare(el, hide);
+        cancelTimer(el);
+        // reveal: visible once we've reached its step. hide: hidden once reached.
+        const reached = this.step >= step;
+        const target = hide ? !reached : reached;
+        // Delays only play when we land exactly on the step coming from before
+        // it (or on slide activation for step-0 autos) · deep links and back
+        // navigation settle instantly.
+        const justReached = reached && this.step === step && prevStep < step;
+        const onActivation = reached && step === 0 && prevStep === -1;
+        if (delay > 0 && (justReached || onActivation)) {
+          setVisible(el, hide);               // hold the pre-state…
+          scheduleVisible(el, target, delay); // …then flip after the delay
+        } else {
+          setVisible(el, target);
+        }
+      });
+
+    // Intra-slide morph · wrap the step change in a view transition when the
+    // slide pairs data-morph elements across steps.
+    const svt = (document as DocWithVT).startViewTransition?.bind(document);
+    const stepChanged = prevStep !== -1 && prevStep !== this.step;
+    if (svt && stepChanged && !vtActive && !reducedMotion() && slide.querySelector(`[${MORPH_ATTR}]`)) {
+      const targets = new Map(
+        entries.map(({ el, step, hide }) => [el, hide ? this.step < step : this.step >= step])
+      );
+      nameVisibleMorphs(slide);          // old state, before capture
+      vtActive = true;
+      svt(() => { run(); nameVisibleMorphs(slide, targets); })
+        .finished.finally(() => { vtActive = false; });
+    } else {
+      run();
+    }
+  };
+
+  const origGoTo = proto._goTo;
+  proto._goTo = function (this: DeckRootProto, idx: number): void {
+    const slides = this.slides ?? [];
+    const from = slides[this.current];
+    const to = slides[Math.max(0, Math.min(slides.length - 1, idx))];
+    const svt = (document as DocWithVT).startViewTransition?.bind(document);
+    const keys = from && to && from !== to ? matchedMorphKeys(from, to) : [];
+    if (keys.length === 0 || !svt || vtActive || reducedMotion()) {
+      origGoTo.call(this, idx);
+      return;
+    }
+    nameVisibleMorphs(from!);   // outgoing side, before capture
+    vtActive = true;
+    // deck-transition skips its classic animation for this navigation.
+    (this as unknown as { __rkMorphActive?: boolean }).__rkMorphActive = true;
+    svt(() => { origGoTo.call(this, idx); nameVisibleMorphs(to!); })
+      .finished.finally(() => {
+        vtActive = false;
+        (this as unknown as { __rkMorphActive?: boolean }).__rkMorphActive = false;
+      });
   };
 
   // Re-apply to any already-rendered decks · their initial _applyStep(0) ran

@@ -114,6 +114,8 @@ export function installTransitions(host: DeckRoot): () => void {
   }
 
   const onChange = (e: Event) => {
+    // A morph view-transition owns this navigation · don't double-animate.
+    if ((host as unknown as { __rkMorphActive?: boolean }).__rkMorphActive) return;
     const ev = e as CustomEvent<{ current: HTMLElement | null; previous: HTMLElement | null }>;
     const next = ev.detail.current;
     const prev = ev.detail.previous;
