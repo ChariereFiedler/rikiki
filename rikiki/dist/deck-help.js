@@ -1,4 +1,4 @@
-var t="data-deck-help",o=`
+var t="data-deck-help",d=`
   #kb-overlay {
     position: fixed; inset: 0;
     background: rgba(10,10,10,0.7);
@@ -61,7 +61,7 @@ var t="data-deck-help",o=`
     box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset;
   }
   .kb-row .desc { color: var(--rik-text-default--muted); }
-`,d=`
+`,n=`
   <div id="kb-overlay">
     <div class="kb-card">
       <div class="kb-card-header">
@@ -77,6 +77,9 @@ var t="data-deck-help",o=`
       <div class="kb-group-label">View</div>
       <div class="kb-row"><span class="desc">Toggle overview</span><span class="keys"><kbd>O</kbd></span></div>
       <div class="kb-row"><span class="desc">Show this help</span><span class="keys"><kbd>?</kbd><kbd>H</kbd></span></div>
+      <div class="kb-group-label">Mouse</div>
+      <div class="kb-row"><span class="desc">Next / Previous</span><span class="keys"><kbd>Click</kbd><kbd>Shift+Click</kbd></span></div>
+      <div class="kb-row"><span class="desc">Navigate</span><span class="keys"><kbd>Wheel</kbd><kbd>Back/Fwd buttons</kbd></span></div>
     </div>
   </div>
-`;function n(e){let a=e.querySelector("#kb-overlay");if(a)return a;if(!e.querySelector(`style[${t}]`)){let s=document.createElement("style");s.setAttribute(t,"1"),s.textContent=o,e.appendChild(s)}let r=document.createElement("div");return r.innerHTML=d,a=r.firstElementChild,e.appendChild(a),a.addEventListener("click",()=>i(e.host)),a.querySelector(".kb-card")?.addEventListener("click",s=>s.stopPropagation()),a}function c(e){if(!e.shadowRoot)return;n(e.shadowRoot).classList.toggle("open")}function i(e){e.shadowRoot?.querySelector("#kb-overlay")?.classList.remove("open")}export{i as closeHelp,c as toggleHelp};
+`;function o(e){let s=e.querySelector("#kb-overlay");if(s)return s;if(!e.querySelector(`style[${t}]`)){let a=document.createElement("style");a.setAttribute(t,"1"),a.textContent=d,e.appendChild(a)}let r=document.createElement("div");return r.innerHTML=n,s=r.firstElementChild,e.appendChild(s),s.addEventListener("click",()=>i(e.host)),s.querySelector(".kb-card")?.addEventListener("click",a=>a.stopPropagation()),s}function c(e){if(!e.shadowRoot)return;o(e.shadowRoot).classList.toggle("open")}function i(e){e.shadowRoot?.querySelector("#kb-overlay")?.classList.remove("open")}export{i as closeHelp,c as toggleHelp};
