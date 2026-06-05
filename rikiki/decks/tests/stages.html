@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>click-stages v2 fixture</title>
+  <link rel="stylesheet" href="../../themes/rikiki.css">
+  <script type="module" src="../../dist/index.js"></script>
+  <script type="module">
+    import { installClickStages } from '../../dist/click-stages.js';
+    installClickStages();
+  </script>
+</head>
+<body>
+  <deck-root transition="slide">
+    <deck-feature>
+      <h1>Timing + presets</h1>
+      <p data-click data-anim="slide-up" data-anim-duration="600" data-anim-ease="spring">slow spring slide-up</p>
+      <p data-click data-anim="blur" data-anim-delay="200">delayed blur-in</p>
+      <p data-click data-anim="flip-up">flip-up</p>
+      <svg viewBox="0 0 300 80" width="300" height="80" data-click data-anim="draw">
+        <path d="M10 60 C 80 10, 160 10, 290 60" stroke="#e0531f" stroke-width="3" fill="none"/>
+      </svg>
+    </deck-feature>
+
+    <deck-feature>
+      <h1>Auto chain · one click</h1>
+      <p data-click>click once…</p>
+      <p data-click-auto="500">…this follows at +500ms…</p>
+      <p data-click-auto="500">…and this at +1s, no extra click</p>
+    </deck-feature>
+
+    <deck-feature>
+      <h1>Stagger</h1>
+      <ul data-click-stagger="120" data-anim="slide-up">
+        <li>wave 1</li><li>wave 2</li><li>wave 3</li><li>wave 4</li>
+      </ul>
+      <div data-click-children data-anim="scale">
+        <span>then</span> <span>one</span> <span>per</span> <span>click</span>
+      </div>
+    </deck-feature>
+
+    <deck-feature>
+      <h1 data-morph="title" data-click-hide="1" style="font-size:1.2rem">Morph me</h1>
+      <p>intra-slide morph: next click grows the title</p>
+      <h1 data-morph="title" data-click="1" style="font-size:3rem; color:#e0531f">Morph me</h1>
+    </deck-feature>
+
+    <deck-feature>
+      <h1 data-morph="title" style="font-size:1rem; opacity:0.6">Morph me</h1>
+      <p>inter-slide morph: the title glided here from the previous slide</p>
+    </deck-feature>
+  </deck-root>
+</body>
+</html>
