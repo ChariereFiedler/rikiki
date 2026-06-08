@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · 2D nav opt-in</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+</head>
+<body>
+<!-- nav="2d" opts in · remove it and the same deck navigates linearly. -->
+<deck-root nav="2d" transition="slide">
+
+  <deck-cover brand="rikiki · 2D nav" speaker="nav=&quot;2d&quot;" duration="opt-in" audience="← → chapters · ↑ ↓ within">
+    <h1>2D navigation</h1>
+    <p class="sub">← → move between chapters · ↑ ↓ within one · remove nav="2d" for linear</p>
+  </deck-cover>
+
+  <deck-section num="A"><h1>Chapter A</h1></deck-section>
+  <deck-feature eyebrow="A · slide 1"><h1 slot="title">A1 · press ↓ for A2, → for chapter B</h1></deck-feature>
+  <deck-feature eyebrow="A · slide 2"><h1 slot="title">A2 · ↑ back to A1, → to chapter B</h1></deck-feature>
+
+  <deck-section num="B"><h1>Chapter B</h1></deck-section>
+  <deck-feature eyebrow="B · slide 1"><h1 slot="title">B1 · ← back to chapter A, ↓ for B2</h1></deck-feature>
+  <deck-feature eyebrow="B · slide 2"><h1 slot="title">B2 · last slide of B</h1></deck-feature>
+
+</deck-root>
+</body>
+</html>

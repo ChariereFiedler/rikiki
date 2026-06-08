@@ -6,12 +6,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-08
+
 ### Added
+- Mouse navigation: click / Shift-click, scroll wheel (yields to scrollable
+  content, navigates at the edge), bottom-right chevrons, and mouse back/forward
+  buttons. Configurable via the `mouse-nav` attribute (`none`, or a subset of
+  `click wheel arrows aux`).
+- Click-stages plugin reveals (`installClickStages()`): `data-click`,
+  `data-click="N"`, `data-click-hide`, `data-click-auto`, `data-click-stagger`,
+  `data-click-children`, per-element `data-anim*`, and `data-morph` Magic Move
+  (View Transitions, with a WAAPI FLIP fallback on Firefox).
+- Overview grid (`O`): viewport-faithful thumbnails, type-to-filter search, and
+  click-to-jump. Mermaid diagrams render in their thumbnails.
 - Clickable bottom-left key-hint chips (`← → O P ?`): each chip now triggers its
   action (back / advance / overview / presenter / help), not just hints the key.
 
 ### Fixed
-- **Overview thumbnails — mermaid/SVG rendered unstyled.** Cloned slide SVGs get
+- **Overview thumbnails · mermaid/SVG rendered unstyled.** Cloned slide SVGs get
   their ids namespaced per-thumbnail to avoid collisions, but the `<style>`
   selectors weren't rewritten, so mermaid's id-scoped rules (`#mmd-N …`) stopped
   matching and the diagram fell back to black. `namespaceIds` now rewrites `#id`
@@ -43,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **2D navigation is now opt-in** via `nav="2d"` on `<deck-root>` (it was
   auto-enabled whenever a deck had 2+ sections). Without it, arrows stay linear,
   so adding a `<deck-section>` no longer silently remaps `←`/`→` to chapter
-  jumps. `<v-clicks>` wrapper elements remain unsupported — rikiki drives reveals
+  jumps. `<v-clicks>` wrapper elements remain unsupported · rikiki drives reveals
   with the `data-click` attribute.
 - The CSS-in-JS template minifier is extracted to a shared `minify-templates.mjs`
   imported by both `build.mjs` and `build-standalone.mjs`.
