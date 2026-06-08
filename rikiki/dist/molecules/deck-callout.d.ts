@@ -10,4 +10,3 @@ declare global {
         'deck-callout': DeckCallout;
     }
 }
-//# sourceMappingURL=deck-callout.d.ts.map

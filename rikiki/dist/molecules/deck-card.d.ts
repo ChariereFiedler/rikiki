@@ -12,4 +12,3 @@ declare global {
         'deck-card': DeckCard;
     }
 }
-//# sourceMappingURL=deck-card.d.ts.map

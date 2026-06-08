@@ -9,4 +9,3 @@ declare global {
         'deck-feature': DeckFeature;
     }
 }
-//# sourceMappingURL=deck-feature.d.ts.map

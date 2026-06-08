@@ -16,4 +16,3 @@ declare global {
         'deck-split': DeckSplit;
     }
 }
-//# sourceMappingURL=deck-split.d.ts.map

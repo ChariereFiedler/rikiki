@@ -15,4 +15,3 @@ declare global {
         'deck-grid': DeckGrid;
     }
 }
-//# sourceMappingURL=deck-grid.d.ts.map

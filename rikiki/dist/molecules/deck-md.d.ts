@@ -11,4 +11,3 @@ declare global {
         'deck-md': DeckMd;
     }
 }
-//# sourceMappingURL=deck-md.d.ts.map

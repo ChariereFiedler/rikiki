@@ -15,4 +15,3 @@ declare global {
         'deck-step': DeckStep;
     }
 }
-//# sourceMappingURL=deck-step-list.d.ts.map

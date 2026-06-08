@@ -20,4 +20,3 @@ declare global {
         'deck-cover': DeckCover;
     }
 }
-//# sourceMappingURL=deck-cover.d.ts.map

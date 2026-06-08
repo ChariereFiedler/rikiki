@@ -14,4 +14,3 @@ declare global {
         'deck-photo': DeckPhoto;
     }
 }
-//# sourceMappingURL=deck-photo.d.ts.map

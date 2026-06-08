@@ -104,4 +104,3 @@ declare global {
         'deck-root': DeckRoot;
     }
 }
-//# sourceMappingURL=deck-root.d.ts.map

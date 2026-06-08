@@ -9,4 +9,3 @@ declare global {
         'deck-section': DeckSection;
     }
 }
-//# sourceMappingURL=deck-section.d.ts.map

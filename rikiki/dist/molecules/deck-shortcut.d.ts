@@ -27,4 +27,3 @@ declare global {
         'deck-shortcut-list': DeckShortcutList;
     }
 }
-//# sourceMappingURL=deck-shortcut.d.ts.map
