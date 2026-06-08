@@ -232,6 +232,12 @@ export class DeckRoot extends LitElement {
   private _onHoverEnter = (): void => { this._autoplayPaused = true; this._stopAutoplay(); };
   private _onHoverLeave = (): void => { this._autoplayPaused = false; if (this.autoplay > 0) this._startAutoplay(); };
 
+  /** Any explicit user navigation resets the autoplay countdown so the press
+   *  isn't immediately followed by an auto-advance. */
+  private _restartAutoplay(): void {
+    if (this.autoplay > 0 && !this._autoplayPaused) this._startAutoplay();
+  }
+
   /* ── Swipe ────────────────────────────────────────────────────── */
   private _onPointerDown = (e: PointerEvent): void => {
     if (!this.swipe || e.pointerType === 'mouse' && e.button !== 0) return;
@@ -251,7 +257,7 @@ export class DeckRoot extends LitElement {
     if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 2) return;
     this._stopAutoplay();
     if (dx < 0) this._advance(); else this._back();
-    if (this.autoplay > 0 && !this._autoplayPaused) this._startAutoplay();
+    this._restartAutoplay();
   };
 
   /* ── Mouse navigation ─────────────────────────────────────────── */
@@ -276,12 +282,28 @@ export class DeckRoot extends LitElement {
           || n.id === 'nav-arrows' || n.id === 'kb-hint';
     });
     if (interactive) return;
-    if (this.autoplay > 0 && !this._autoplayPaused) this._startAutoplay();
+    this._restartAutoplay();
     if (e.shiftKey) this._back(); else this._advance();
   };
 
+  /** Wheel over a scrollable descendant (overflowing code block, …) must stay
+   *  a native scroll · only wheel on the deck shell itself navigates. */
+  private _wheelTargetScrolls(e: WheelEvent): boolean {
+    for (const n of e.composedPath()) {
+      if (n === this) return false;
+      if (!(n instanceof HTMLElement)) continue;
+      const canY = n.scrollHeight > n.clientHeight;
+      const canX = n.scrollWidth > n.clientWidth;
+      if (!canY && !canX) continue;
+      const cs = getComputedStyle(n);
+      if ((canY && /auto|scroll/.test(cs.overflowY)) || (canX && /auto|scroll/.test(cs.overflowX))) return true;
+    }
+    return false;
+  }
+
   private _onWheel = (e: WheelEvent): void => {
     if (!this._mouseEnabled('wheel') || this.overview || this.blank) return;
+    if (this._wheelTargetScrolls(e)) return;
     e.preventDefault();
     const now = performance.now();
     if (now < this._wheelLockUntil) return;
@@ -290,7 +312,7 @@ export class DeckRoot extends LitElement {
     const forward = this._wheelAccum > 0;
     this._wheelAccum = 0;
     this._wheelLockUntil = now + 400;
-    if (this.autoplay > 0 && !this._autoplayPaused) this._startAutoplay();
+    this._restartAutoplay();
     if (forward) this._advance(); else this._back();
   };
 
@@ -300,6 +322,7 @@ export class DeckRoot extends LitElement {
     if (!this._mouseEnabled('aux')) return;
     if (e.button !== 3 && e.button !== 4) return;
     e.preventDefault();
+    this._restartAutoplay();
     if (e.button === 3) this._back(); else this._advance();
   };
 
@@ -399,11 +422,8 @@ export class DeckRoot extends LitElement {
   private _onKey = (e: KeyboardEvent): void => {
     if (e.target && (e.target as HTMLElement).matches?.('input,textarea,[contenteditable]')) return;
 
-    // Any user keyboard input resets the autoplay countdown so an explicit
-    // press doesn't immediately get followed by an auto-advance.
-    if (this.autoplay > 0 && !this._autoplayPaused) {
-      this._startAutoplay();
-    }
+    // Any user keyboard input resets the autoplay countdown.
+    this._restartAutoplay();
 
     // Overview mode swallows most keys · only O / Esc / Enter exit it.
     if (this.overview) {

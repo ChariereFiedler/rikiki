@@ -233,7 +233,7 @@ Then annotate any element inside a slide:
 | `data-anim-delay="120"` | Per-element delay in ms (default 0) |
 | `data-anim-ease="…"` | `out` (default), `spring`, `in-out`, or any raw `cubic-bezier(…)` |
 | `data-click-auto="800"` | **No click consumed** · reveals 800 ms after the previous stage (or slide activation). Consecutive autos chain — one click can drive a whole choreography |
-| `data-click-stagger="80"` | On a container · **one** click reveals its children in a cascade, 80 ms apart |
+| `data-click-stagger="80"` | On a container · **one** click flips its children in a cascade, 80 ms apart (`"0"` = simultaneous). A child with `data-click-hide` hides at that step instead of revealing |
 | `data-click-children` | On a container · each direct child becomes its own sequential click, inheriting the container's `data-anim*` |
 | `data-morph="key"` | Pair two elements (across steps of one slide, or across consecutive slides) · the element glides/resizes from A to B like Keynote's Magic Move. Uses the View Transitions API, with a WAAPI FLIP fallback on browsers without it (Firefox). Targets must be light-DOM elements |
 
@@ -260,7 +260,10 @@ elements, and stepping toggles their visibility. Going back cancels pending
 auto/stagger timers. Deep links and back-navigation settle instantly (no
 replayed delays). It respects `prefers-reduced-motion`. When a `data-morph`
 navigation runs, the deck-wide `transition="…"` animation is skipped for that
-navigation so the two don't fight.
+navigation so the two don't fight, and pending auto/stagger reveals start
+once the morph settles instead of firing mid-transition. On auto/stagger
+elements, `data-anim-delay` is folded into the timer (delays add up once,
+they don't apply twice).
 
 ---
 

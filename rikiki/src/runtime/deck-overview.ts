@@ -310,6 +310,21 @@ function namespaceIds(root: HTMLElement, suffix: string): void {
       }
     }
   });
+  // Rewrite #id selectors inside <style> blocks · mermaid scopes every rule
+  // by the root svg id (`#mmd-2 .node {…}`), which stops matching once that id
+  // is suffixed, leaving the diagram unstyled (black). The trailing lookahead
+  // keeps `#mmd-2` from corrupting a longer id like `#mmd-2_flowchart`.
+  const styles = root.querySelectorAll('style');
+  if (styles.length) {
+    const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    styles.forEach((styleEl) => {
+      let css = styleEl.textContent ?? '';
+      renames.forEach((newId, oldId) => {
+        css = css.replace(new RegExp('#' + escapeRe(oldId) + '(?![\\w-])', 'g'), '#' + newId);
+      });
+      styleEl.textContent = css;
+    });
+  }
 }
 
 /** Freeze light-DOM SVG dimensions from the live slide so SVGs without
@@ -477,7 +492,13 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
         if (!src) continue;
         cell.dataset['building'] = '1';
         lazyObserver.unobserve(cell);
-        void buildThumb(cell, src);
+        buildThumb(cell, src).catch((err) => {
+          // Release the cell on failure · the next scroll-into-view retries
+          // instead of leaving the thumbnail permanently blank.
+          console.warn('[rikiki/overview] thumbnail build failed', err);
+          delete cell.dataset['building'];
+          lazyObserver.observe(cell);
+        });
       }
     },
     { root: null, rootMargin: '300px 0px', threshold: 0 }
