@@ -141,6 +141,11 @@ export class DeckRoot extends LitElement {
    *  space-separated subset of "click wheel arrows aux" to pick mechanisms. */
   @property({ type: String, reflect: true, attribute: 'mouse-nav' }) mouseNav: string | null = null;
 
+  /** Navigation model · `nav="2d"` opts into chapter/slide grid navigation
+   *  (←→ between chapters, ↑↓ within). Default is linear: arrows always move to
+   *  the next/previous slide regardless of `<deck-section>` structure. */
+  @property({ type: String, reflect: true }) nav: string | null = null;
+
   // Flat list of all <deck-*> children (excluding deck-root itself)
   private slides: Slide[] = [];
   // 2D index · chapters are bounded by <deck-section> elements
@@ -360,9 +365,14 @@ export class DeckRoot extends LitElement {
     });
   }
 
-  /** True when at least one chapter has multiple slides and there are 2+ chapters. */
+  /** 2D navigation is opt-in via `nav="2d"` · it also needs the structure to
+   *  make sense (2+ chapters, at least one with multiple slides). Without the
+   *  opt-in, arrows stay linear so a sectioned deck doesn't surprise the author
+   *  by remapping ← / → to chapter jumps. */
   private _has2DNav(): boolean {
-    return this.chapters.some((c) => c.slides.length > 1) && this.chapters.length > 1;
+    return this.nav === '2d'
+      && this.chapters.length > 1
+      && this.chapters.some((c) => c.slides.length > 1);
   }
 
   private _mouseEnabled(kind: 'click' | 'wheel' | 'arrows' | 'aux'): boolean {
