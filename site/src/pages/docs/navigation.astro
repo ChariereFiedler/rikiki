@@ -5,15 +5,41 @@ import Docs from '../../layouts/Docs.astro';
 <Docs
   title="Navigation"
   eyebrow="Concepts"
-  description="Two axes, one safe key. The 2D model only kicks in when you actually have sections."
+  description="Linear by default, with an opt-in 2D grid. The mouse navigates too, and yields to scrollable content."
 >
 
-<h2 id="two-axes">Two axes</h2>
+<h2 id="linear">Linear by default</h2>
 <p>
-  When your deck contains at least two chapters (a chapter is opened by a
-  <code>&lt;deck-section&gt;</code>) and at least one of them has more than one
-  slide, Rikiki switches to a <strong>2D navigation</strong> mirroring
-  reveal.js:
+  Out of the box navigation is <strong>linear</strong>: the arrow keys move to
+  the next / previous slide (or reveal step), wherever you are. Adding a
+  <code>&lt;deck-section&gt;</code> does not change that on its own.
+</p>
+
+<table class="keys">
+  <thead><tr><th>Key</th><th>Action</th></tr></thead>
+  <tbody>
+    <tr><td><kbd>→</kbd> <kbd>←</kbd></td><td>Next / previous slide (or reveal step)</td></tr>
+    <tr><td><kbd>Space</kbd> <kbd>PgDn</kbd></td><td>Advance · <kbd>PgUp</kbd> back</td></tr>
+    <tr><td><kbd>Home</kbd> <kbd>End</kbd></td><td>First / last slide</td></tr>
+    <tr><td><kbd>O</kbd> · <kbd>P</kbd> · <kbd>?</kbd></td><td>Overview · presenter · help</td></tr>
+  </tbody>
+</table>
+
+<p>
+  The mouse navigates too (since 0.3.0): click to advance, Shift+click to go
+  back, the scroll wheel, the bottom-right chevrons, and the mouse back/forward
+  buttons. The wheel <strong>yields to scrollable content</strong> (a tall code
+  block, a zoomable SVG): it scrolls that element and only advances the deck
+  once it reaches the scroll edge. Scope or disable it with the
+  <code>mouse-nav</code> attribute.
+</p>
+
+<h2 id="two-axes">2D navigation (opt-in)</h2>
+<p>
+  Add <code>nav="2d"</code> to <code>&lt;deck-root&gt;</code> (with two or more
+  <code>&lt;deck-section&gt;</code> chapters) to opt into a reveal.js-style grid
+  where the axes split apart. Without it, arrows stay linear, so adding a
+  section never silently remaps <kbd>←</kbd> / <kbd>→</kbd>.
 </p>
 
 <table class="keys">
@@ -21,16 +47,8 @@ import Docs from '../../layouts/Docs.astro';
   <tbody>
     <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Previous / next chapter</td><td>Linear step at deck edges</td></tr>
     <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Walk slides inside a chapter</td><td>Crosses into next chapter linearly</td></tr>
-    <tr><td><kbd>Space</kbd> <kbd>PgDn</kbd></td><td>Linear next · always advances</td><td>·</td></tr>
-    <tr><td><kbd>PgUp</kbd></td><td>Linear previous</td><td>·</td></tr>
-    <tr><td><kbd>Home</kbd> <kbd>End</kbd></td><td>First / last slide</td><td>·</td></tr>
   </tbody>
 </table>
-
-<p>
-  When you don't have <code>&lt;deck-section&gt;</code> markers, all arrow
-  keys act linearly (the 2D model is hidden).
-</p>
 
 <h2 id="overview">Overview mode</h2>
 <p>
@@ -53,17 +71,20 @@ import Docs from '../../layouts/Docs.astro';
 
 <h2 id="hash">URL hash</h2>
 <p>
-  The canonical URL is <code>#N</code> · slide N (1-indexed, flat). You can
-  share <code>#5</code> and the deck opens on slide 5. Inputs of the form
-  <code>#chapter.slide</code> (e.g. <code>#2.3</code>) are also accepted but
-  rewritten to the flat form so the share link stays simple.
+  The canonical URL is <code>#N</code> · slide N (1-indexed, flat). Share
+  <code>#5</code> and the deck opens on slide 5; <code>#5.2</code> opens it at
+  step 2. With <code>nav="2d"</code>, <code>#chapter.slide</code> coordinates are
+  also accepted. Out-of-range links are <strong>clamped</strong> to the nearest
+  valid slide and step (never reset to slide 1), so a bookmarked link survives
+  while you edit the deck.
 </p>
 
 <h2 id="kb-hint">The bottom-left hint</h2>
 <p>
-  Rikiki shows a small keyboard cheatsheet in the bottom-left corner: it
-  always lists <kbd>←</kbd> <kbd>→</kbd>, <kbd>O</kbd>, <kbd>?</kbd> · and
-  adds <kbd>↑</kbd> <kbd>↓</kbd> automatically when 2D nav is active.
+  Rikiki shows a small keyboard cheatsheet in the bottom-left corner: it always
+  lists <kbd>←</kbd> <kbd>→</kbd>, <kbd>O</kbd>, <kbd>P</kbd>, <kbd>?</kbd> · and
+  adds <kbd>↑</kbd> <kbd>↓</kbd> when <code>nav="2d"</code> is active. The chips
+  are <strong>clickable</strong> shortcuts for the matching action.
 </p>
 
 <style>

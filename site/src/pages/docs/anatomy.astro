@@ -61,11 +61,12 @@ const minimal = `<deck-root>
 
 <CodeBlock label="The minimal deck" lang="html" code={minimal} />
 
-<h2 id="sections">Sections enable 2D navigation</h2>
+<h2 id="sections">Sections &amp; 2D navigation</h2>
 <p>
   A <code>&lt;deck-section&gt;</code> isn't just a divider · it marks a chapter
-  boundary. If you have at least two chapters and one of them has multiple
-  slides, the deck switches to <strong>2D navigation</strong>:
+  boundary. By default arrows stay <strong>linear</strong>; add
+  <code>nav="2d"</code> to <code>&lt;deck-root&gt;</code> (with two or more
+  chapters, one holding multiple slides) to opt into a <strong>2D grid</strong>:
 </p>
 
 <ul>
@@ -75,8 +76,9 @@ const minimal = `<deck-root>
 </ul>
 
 <p>
-  Without sections, all arrow keys do the same thing · linear next/prev.
-  See <a href="/docs/navigation">Navigation</a> for the full key map.
+  Without <code>nav="2d"</code>, all arrow keys do the same thing · linear
+  next/prev, whatever your section layout. See
+  <a href="/docs/navigation">Navigation</a> for the full key map.
 </p>
 
 <h2 id="rendering">How a slide renders</h2>

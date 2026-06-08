@@ -74,10 +74,11 @@ const fullDeckEx = `<!doctype html>
 
 <h2 id="section">2 · Section</h2>
 <p>
-  Use this every time you want a chapter break. It also tells the framework
-  where the 2D navigation columns are · <kbd>←</kbd>/<kbd>→</kbd> jumps from one
+  Use this every time you want a chapter break. With <code>nav="2d"</code> on
+  <code>&lt;deck-root&gt;</code> it also tells the framework where the 2D
+  navigation columns are · <kbd>←</kbd>/<kbd>→</kbd> jumps from one
   <code>&lt;deck-section&gt;</code> to the next, <kbd>↑</kbd>/<kbd>↓</kbd> walks
-  the slides inside.
+  the slides inside. Without it, arrows stay linear.
 </p>
 <CodeBlock label="section" lang="html" code={sectionEx} />
 
