@@ -103,20 +103,10 @@ function expandClickChildren(slide: HTMLElement): void {
  *  set a floor; each bare data-click / data-click-hide / stagger container
  *  auto-increments; data-click-auto consumes no click. */
 function clickStepCount(slide: HTMLElement): number {
-  expandClickChildren(slide);
-  let auto = 0;
-  let maxExplicit = 0;
-  slide
-    .querySelectorAll<HTMLElement>(`[${REVEAL_ATTR}], [${HIDE_ATTR}], [${STAGGER_ATTR}]`)
-    .forEach((el) => {
-      if (el.hasAttribute(STAGGER_ATTR)) { auto += 1; return; }
-      if (isStaggerChild(el)) return;
-      const raw = el.getAttribute(REVEAL_ATTR) ?? el.getAttribute(HIDE_ATTR) ?? '';
-      const n = parseInt(raw, 10);
-      if (Number.isFinite(n) && n > 0) maxExplicit = Math.max(maxExplicit, n);
-      else auto += 1;
-    });
-  return Math.max(maxExplicit, auto);
+  // Derive the count from the very entries _applyStep walks · a separate
+  // counting model could disagree and leave a stage unreachable (count too low)
+  // or add a dead dot (count too high).
+  return collectEntries(slide).reduce((max, e) => Math.max(max, e.step), 0);
 }
 
 /** Walk annotated elements in document order and resolve each one's stage. */
@@ -155,7 +145,10 @@ function collectEntries(slide: HTMLElement): StageEntry[] {
       const explicit = parseInt(raw, 10);
       const isExplicit = Number.isFinite(explicit) && explicit > 0;
       const step = isExplicit ? explicit : ++cursor;
-      if (!isExplicit) autoAccum = 0;
+      // An explicit step floors the running cursor so a later bare element lands
+      // *after* it in document order (instead of restarting from a low cursor).
+      if (isExplicit) cursor = Math.max(cursor, explicit);
+      else autoAccum = 0;
       out.push({ el, step, hide, delay: 0 });
     });
   return out;
@@ -177,12 +170,17 @@ function morphGroups(root: HTMLElement): MorphGroups {
   return map;
 }
 
-/** Computed visibility · honors CSS classes, stylesheet rules and hidden
- *  ancestors, not just the inline opacity this plugin writes. */
+/** Intended visibility · honors CSS classes, stylesheet rules and hidden
+ *  ancestors, not just the inline opacity this plugin writes. When the plugin
+ *  has set an inline opacity it is the synchronous *target* state · trust it
+ *  over the mid-transition computed value (which interpolates and would briefly
+ *  read a fading-out element as still visible). Fall back to computed opacity
+ *  for elements whose visibility comes from CSS rather than inline style. */
 function isShown(el: HTMLElement): boolean {
   const cs = getComputedStyle(el);
-  return cs.display !== 'none' && cs.visibility !== 'hidden' && cs.opacity !== '0'
-    && el.getClientRects().length > 0;
+  if (cs.display === 'none' || cs.visibility === 'hidden') return false;
+  const opacity = el.style.opacity !== '' ? el.style.opacity : cs.opacity;
+  return opacity !== '0' && el.getClientRects().length > 0;
 }
 
 function matchedMorphKeys(a: HTMLElement, b: HTMLElement): string[] {

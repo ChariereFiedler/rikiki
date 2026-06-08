@@ -32,8 +32,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `data-morph` view transition; morph visibility is judged from computed style so
   CSS-class visibility counts; a synchronous `startViewTransition` throw no longer
   strands the animation/morph state.
+- click-stages step counting is unified on the entry walk, so the step count can
+  no longer disagree with the reveals (no unreachable stage / dead step), and an
+  explicit `data-click="N"` floors the running cursor so a later bare element
+  lands after it in document order. Morph visibility prefers the inline target
+  opacity over the mid-transition computed value, so a fading element isn't
+  briefly mistaken for the visible one.
 
 ### Changed
+- **2D navigation is now opt-in** via `nav="2d"` on `<deck-root>` (it was
+  auto-enabled whenever a deck had 2+ sections). Without it, arrows stay linear,
+  so adding a `<deck-section>` no longer silently remaps `←`/`→` to chapter
+  jumps. `<v-clicks>` wrapper elements remain unsupported — rikiki drives reveals
+  with the `data-click` attribute.
 - The CSS-in-JS template minifier is extracted to a shared `minify-templates.mjs`
   imported by both `build.mjs` and `build-standalone.mjs`.
 

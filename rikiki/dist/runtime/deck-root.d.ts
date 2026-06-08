@@ -24,6 +24,10 @@ export declare class DeckRoot extends LitElement {
     /** Mouse navigation · enabled by default. Set to "none" to disable, or to a
      *  space-separated subset of "click wheel arrows aux" to pick mechanisms. */
     mouseNav: string | null;
+    /** Navigation model · `nav="2d"` opts into chapter/slide grid navigation
+     *  (←→ between chapters, ↑↓ within). Default is linear: arrows always move to
+     *  the next/previous slide regardless of `<deck-section>` structure. */
+    nav: string | null;
     private slides;
     private chapters;
     private _overviewTeardown;
@@ -63,7 +67,10 @@ export declare class DeckRoot extends LitElement {
     private _onAuxClick;
     /** Group slides into chapters bounded by <deck-section> markers. */
     private _buildChapters;
-    /** True when at least one chapter has multiple slides and there are 2+ chapters. */
+    /** 2D navigation is opt-in via `nav="2d"` · it also needs the structure to
+     *  make sense (2+ chapters, at least one with multiple slides). Without the
+     *  opt-in, arrows stay linear so a sectioned deck doesn't surprise the author
+     *  by remapping ← / → to chapter jumps. */
     private _has2DNav;
     private _mouseEnabled;
     /** Flat index → {chapter, intra-chapter index}. */

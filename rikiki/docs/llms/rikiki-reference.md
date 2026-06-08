@@ -92,10 +92,12 @@ relative to your deck file.)
 | `B` / `.` | Blank screen black (any key restores) |
 | `W` / `,` | Blank screen white (any key restores) |
 
-**2D navigation** activates automatically when the deck has **2+ chapters and at
-least one chapter has multiple slides**. Chapters are bounded by `<deck-section>`
-markers. In 2D mode: `←`/`→` move between chapters, `↑`/`↓` move within a chapter
-(both fall back to linear motion at the edges).
+**2D navigation** is **opt-in** via `nav="2d"` on `<deck-root>` (it also needs
+2+ chapters, bounded by `<deck-section>` markers, with at least one multi-slide
+chapter). In 2D mode: `←`/`→` move between chapters, `↑`/`↓` move within a
+chapter (both fall back to linear motion at the edges). Without `nav="2d"` the
+deck stays **linear**: arrows always move to the next/previous slide, so adding
+sections never silently remaps `←`/`→` to chapter jumps.
 
 **Mouse navigation** is on by default (since 0.3.0): left click advances
 (Shift+click goes back), the scroll wheel navigates with a trackpad-friendly
@@ -219,8 +221,10 @@ The step dots at the bottom of the deck reflect the active slide's step count.
 
 ### Click-stages plugin (per-element reveals)
 
-`src/plugins/click-stages.ts` adds Slidev-style `v-click`-style reveals. It is
-**opt-in** · not part of the core bundle. Install it after rikiki loads:
+`src/plugins/click-stages.ts` adds Slidev-style `v-click` reveals. rikiki drives
+them with **attributes** (`data-click` on any element) — it does **not** support
+Slidev's `<v-click>` / `<v-clicks>` wrapper elements. It is **opt-in** · not part
+of the core bundle. Install it after rikiki loads:
 
 ```html
 <script type="module" src="./dist/index.js"></script>
