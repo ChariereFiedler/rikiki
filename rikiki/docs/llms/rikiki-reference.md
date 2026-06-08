@@ -100,9 +100,13 @@ markers. In 2D mode: `←`/`→` move between chapters, `↑`/`↓` move within 
 **Mouse navigation** is on by default (since 0.3.0): left click advances
 (Shift+click goes back), the scroll wheel navigates with a trackpad-friendly
 debounce, discreet chevrons sit bottom-right (2D-aware), and mouse
-back/forward buttons map to back/advance. Interactive elements (`a`,
-`button`, inputs, `[contenteditable]`) never trigger navigation; add
-`data-no-advance` to opt any element out. Configure with the `mouse-nav`
+back/forward buttons map to back/advance. The wheel yields to scrollable
+content: a wheel over an overflowing descendant (a tall `deck-code` block, a
+zoomable inline `<svg>`, …) scrolls it natively and only advances the deck once
+that element reaches its scroll edge. The bottom-left key-hint chips
+(`← → O P ?`) are also clickable shortcuts for the matching action. Interactive
+elements (`a`, `button`, inputs, `[contenteditable]`) never trigger navigation;
+add `data-no-advance` to opt any element out. Configure with the `mouse-nav`
 attribute on `<deck-root>`:
 
 | Value | Meaning |
@@ -125,6 +129,11 @@ Chevron styling tokens: `--deck-root-nav-color`, `--deck-root-nav-bg`,
 
 The 2D forms only apply when 2D navigation is active; otherwise `#a.b` is read as
 `slide.step`.
+
+Out-of-range deep links are **clamped to the nearest valid position**, not reset
+to the first slide: a slide/chapter index past the end lands on the last one, and
+a step past a slide's range settles on its last step. This keeps a bookmarked
+`#4.3` usable while you iterate (e.g. after deleting a bullet that had a click).
 
 ---
 

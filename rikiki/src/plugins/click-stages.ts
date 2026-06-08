@@ -445,8 +445,17 @@ export function installClickStages(): void {
         nameVisibleMorphs(groups);          // old state, before capture
         vtActive = true;
         deferFlips();
-        svt(() => { run(); nameVisibleMorphs(groups, targets); })
-          .finished.finally(() => { vtActive = false; releaseFlips(); });
+        try {
+          svt(() => { run(); nameVisibleMorphs(groups, targets); })
+            .finished.finally(() => { vtActive = false; releaseFlips(); });
+        } catch {
+          // startViewTransition can throw synchronously (e.g. another transition
+          // is mid-flight) · apply the step plainly and never strand vtActive
+          // or the deferred-flip queue.
+          vtActive = false;
+          run();
+          releaseFlips();
+        }
       } else {
         const fromRects = visibleMorphRects(groups);
         run();
@@ -484,12 +493,21 @@ export function installClickStages(): void {
     // deck-transition skips its classic animation for this navigation.
     host.__rkMorphActive = true;
     deferFlips();
-    svt(() => { origGoTo.call(this, idx); nameVisibleMorphs(morphGroups(to!)); })
-      .finished.finally(() => {
-        vtActive = false;
-        host.__rkMorphActive = false;
-        releaseFlips();
-      });
+    try {
+      svt(() => { origGoTo.call(this, idx); nameVisibleMorphs(morphGroups(to!)); })
+        .finished.finally(() => {
+          vtActive = false;
+          host.__rkMorphActive = false;
+          releaseFlips();
+        });
+    } catch {
+      // svt threw synchronously · fall back to a plain navigation and clear the
+      // morph/flip guards so they aren't stranded.
+      vtActive = false;
+      host.__rkMorphActive = false;
+      origGoTo.call(this, idx);
+      releaseFlips();
+    }
   };
 
   // Re-apply to any already-rendered decks · their initial _applyStep(0) ran
