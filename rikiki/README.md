@@ -8,7 +8,7 @@ A tiny **Lit Web Components** framework for technical presentations. Drop a fold
 cp starter.html my-deck.html
 ```
 
-Edit `my-deck.html`. Each slide is a custom element. Markdown is available anywhere via `<deck-md>`. Navigate with `←` / `→` for sections, `↑` / `↓` within a section, `Space` for linear, `O` for overview.
+Edit `my-deck.html`. Each slide is a custom element. Markdown is available anywhere via `<deck-md>`. Navigate with `←` / `→` (or click, or the scroll wheel), `O` for the overview grid. Decks are linear by default; add `nav="2d"` on `<deck-root>` for chapter/slide grid navigation.
 
 ## Layout
 
@@ -122,20 +122,28 @@ Parser: `marked` 12 from CDN. Supports GFM (tables, task lists), code blocks, in
 
 ## Navigation
 
-| Key | Effect |
+By default navigation is **linear**: arrows move to the next / previous slide.
+Add `nav="2d"` on `<deck-root>` (with `<deck-section>` chapters) to opt into grid
+navigation, where `←` / `→` move between chapters and `↑` / `↓` within one.
+
+| Key | Effect (linear default) |
 |---|---|
-| `→` / `←` | Next / previous section (chapter) · falls back to linear at deck edges |
-| `↓` / `↑` | Next / previous slide within the current section |
-| `Space` / `PageDown` | Linear next (any axis) |
-| `PageUp` | Linear back |
+| `→` / `←` | Next / previous slide (or step) |
+| `Space` / `PageDown` | Advance · `PageUp` back |
 | `Home` / `End` | First / last slide |
-| `O` | Toggle overview |
+| `O` | Toggle overview grid (type to filter) |
+| `P` | Presenter / speaker-notes window |
 | `?` / `H` | Show keyboard help |
+
+The bottom-left hint chips (`← → O P ?`) are clickable shortcuts for the same
+actions.
 
 ### Mouse
 
 On by default since 0.3.0: click to advance (Shift+click to go back), scroll
-wheel, discreet chevrons bottom-right, and mouse back/forward buttons. Links,
+wheel, discreet chevrons bottom-right, and mouse back/forward buttons. The wheel
+yields to scrollable content (a tall `deck-code`, a zoomable `<svg>`): it scrolls
+that element and only advances the deck once it reaches its scroll edge. Links,
 buttons and inputs never trigger navigation; add `data-no-advance` to opt any
 element out.
 
@@ -190,8 +198,16 @@ npm run typecheck  # tsc --noEmit
 
 `dist/` is versioned · consumers don't run a build.
 
+## Reveals & animations
+
+Per-element click-through builds are an opt-in plugin (`installClickStages()` from
+`dist/click-stages.js`): annotate elements with `data-click`, `data-click-hide`,
+`data-click-auto`, `data-click-stagger`, and `data-morph` (Keynote-style Magic
+Move via View Transitions). Slide transitions are driven by `transition="…"` on
+`<deck-root>`. See `docs/llms/rikiki-reference.md` §7 for the full attribute set,
+and `decks/tests/demo.html` for a runnable feature tour.
+
 ## Known limits
 
 - **Step reveal on code blocks** uses `step-groups` on `<deck-code>` but is not exposed elsewhere yet.
-- **No transitions** between slides · plain `display: none` toggle. Extend via opacity transition if needed.
-- **Syntax highlighting** is ~10 keywords of JS/TS, no AST. Hook a real highlighter (Prism, Shiki) if you need more.
+- **Syntax highlighting** is ~10 keywords of JS/TS, no AST. Hook a real highlighter (Prism, Shiki) if you need more, via `installShiki()`.

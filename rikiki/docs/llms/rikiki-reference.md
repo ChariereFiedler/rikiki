@@ -222,7 +222,7 @@ The step dots at the bottom of the deck reflect the active slide's step count.
 ### Click-stages plugin (per-element reveals)
 
 `src/plugins/click-stages.ts` adds Slidev-style `v-click` reveals. rikiki drives
-them with **attributes** (`data-click` on any element) — it does **not** support
+them with **attributes** (`data-click` on any element) · it does **not** support
 Slidev's `<v-click>` / `<v-clicks>` wrapper elements. It is **opt-in** · not part
 of the core bundle. Install it after rikiki loads:
 
@@ -245,7 +245,7 @@ Then annotate any element inside a slide:
 | `data-anim-duration="600"` | Per-element duration in ms (default 320) |
 | `data-anim-delay="120"` | Per-element delay in ms (default 0) |
 | `data-anim-ease="…"` | `out` (default), `spring`, `in-out`, or any raw `cubic-bezier(…)` |
-| `data-click-auto="800"` | **No click consumed** · reveals 800 ms after the previous stage (or slide activation). Consecutive autos chain — one click can drive a whole choreography |
+| `data-click-auto="800"` | **No click consumed** · reveals 800 ms after the previous stage (or slide activation). Consecutive autos chain · one click can drive a whole choreography |
 | `data-click-stagger="80"` | On a container · **one** click flips its children in a cascade, 80 ms apart (`"0"` = simultaneous). A child with `data-click-hide` hides at that step instead of revealing |
 | `data-click-children` | On a container · each direct child becomes its own sequential click, inheriting the container's `data-anim*` |
 | `data-morph="key"` | Pair two elements (across steps of one slide, or across consecutive slides) · the element glides/resizes from A to B like Keynote's Magic Move. Uses the View Transitions API, with a WAAPI FLIP fallback on browsers without it (Firefox). Targets must be light-DOM elements |
@@ -266,7 +266,7 @@ Example:
 
 Morph pairs that swap on the same click need explicit steps
 (`data-click-hide="1"` on the outgoing element, `data-click="1"` on the
-incoming one) — bare attributes would put them on two sequential clicks.
+incoming one) · bare attributes would put them on two sequential clicks.
 
 The plugin patches `deck-root` so its step counter accounts for `[data-click]`
 elements, and stepping toggles their visibility. Going back cancels pending

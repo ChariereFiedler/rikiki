@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · test harness</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module">
+  import { installClickStages } from '../../dist/click-stages.js';
+  installClickStages();
+</script>
+</head>
+<body>
+<deck-root transition="slide">
+
+  <deck-cover brand="rikiki · test harness" speaker="0.3.0" duration="one slide per fix" audience="click / press to verify">
+    <h1>Test the <span class="accent">0.3.0</span> fixes</h1>
+    <p class="sub">each slide carries the thing to try · chips ← → O P ? bottom-left are clickable</p>
+  </deck-cover>
+
+  <deck-section num="01"><h1>Click<br>stages</h1></deck-section>
+
+  <deck-feature eyebrow="Reveals">
+    <h1 slot="title">In document order</h1>
+    <deck-stack gap="3">
+      <p data-click data-anim="slide-up">First line…</p>
+      <p data-click data-anim="slide-up">…second…</p>
+      <p data-click data-anim="blur">…third (blur preset).</p>
+    </deck-stack>
+    <deck-callout type="info"><strong>Try:</strong> click (or press →) 3× · each line reveals in order; the 3 step-dots fill up.</deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Stagger edge cases">
+    <h1 slot="title">gap 0 + hide-in-stagger</h1>
+    <ul data-click-stagger="0" data-anim="slide-up">
+      <li>flips together (gap 0)</li>
+      <li data-click-hide>visible first · hides on the same click</li>
+      <li>flips together (gap 0)</li>
+    </ul>
+    <deck-callout type="info"><strong>Try:</strong> one click · the two outer lines appear together while the middle one disappears, all on the same step.</deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="One click, many moves">
+    <h1 slot="title">Auto-chain &amp; cascade</h1>
+    <deck-stack gap="3">
+      <p data-click>Click once…</p>
+      <p data-click-auto="450">…this follows automatically (+450 ms)…</p>
+      <ul data-click-stagger="90" data-anim="slide-left">
+        <li>then a 90 ms staggered cascade</li>
+        <li>still one single click</li>
+      </ul>
+    </deck-stack>
+    <deck-callout type="info"><strong>Try:</strong> a single click drives the whole choreography.</deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Magic Move">
+    <h1 slot="title" data-morph="m" data-click-hide="1" style="font-size:1.4rem">A modest title…</h1>
+    <p class="lead">The next click morphs it · Keynote-style (View Transitions, FLIP fallback on Firefox).</p>
+    <h1 data-morph="m" data-click="1" style="font-size:3.2rem;color:var(--rik-accent)">…that grows with intent</h1>
+    <deck-callout type="info"><strong>Try:</strong> one click · the small title glides/grows into the big one.</deck-callout>
+  </deck-feature>
+
+  <deck-section num="02"><h1>Navigation<br>fixes</h1></deck-section>
+
+  <deck-feature eyebrow="Wheel ↔ scroll">
+    <h1 slot="title">Wheel yields to scrollable content</h1>
+    <deck-code lang="ts">
+      // Scroll THIS block with the wheel · it scrolls natively.
+      // At the top/bottom edge, the wheel advances the deck instead.
+      export function fib(n: number): number {
+        let a = 0, b = 1;
+        for (let i = 0; i < n; i++) { const t = a + b; a = b; b = t; }
+        return a;
+      }
+      export const range = (n: number) => Array.from({ length: n }, (_, i) => i);
+      export const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
+      export const clamp = (x: number, lo: number, hi: number) =>
+        Math.max(lo, Math.min(hi, x));
+      export const debounce = (fn: Function, ms: number) => {
+        let t: number; return (...a: unknown[]) => {
+          clearTimeout(t); t = setTimeout(() => fn(...a), ms);
+        };
+      };
+      export const groupBy = (xs: any[], key: (x: any) => string) =>
+        xs.reduce((m, x) => ((m[key(x)] ??= []).push(x), m), {} as Record<string, any[]>);
+      export const unique = (xs: any[]) => [...new Set(xs)];
+      export const zip = (a: any[], b: any[]) => a.map((x, i) => [x, b[i]]);
+      export const last = (xs: any[]) => xs[xs.length - 1];
+      export const chunk = (xs: any[], n: number) =>
+        range(Math.ceil(xs.length / n)).map((i) => xs.slice(i * n, i * n + n));
+      // …keep scrolling · the deck only advances once you hit the edge.
+    </deck-code>
+    <deck-callout type="info"><strong>Try:</strong> wheel over the code (it scrolls); keep going past the bottom · the deck advances. Old behavior trapped the wheel.</deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Overview · SVG fix">
+    <h1 slot="title">Mermaid stays styled in the grid</h1>
+    <deck-mermaid>
+      graph LR
+      a[Author] --> b[Reveal] --> c[Morph] --> d[Ship]
+    </deck-mermaid>
+    <deck-callout type="info"><strong>Try:</strong> press <strong>O</strong> · this diagram's thumbnail renders styled (it used to be a black box). <strong>Esc</strong> / <strong>O</strong> closes.</deck-callout>
+  </deck-feature>
+
+  <deck-feature eyebrow="Interactive checklist">
+    <h1 slot="title">Things to poke</h1>
+    <deck-md>
+      - **Hint chips** (bottom-left `← → O P ?`) · click them; each runs its action.
+      - **Deep-link clamp** · put `#3.99` in the URL bar → clamps to slide 3's last step (was: jumped to slide 1).
+      - **Mouse buttons** · back / forward (buttons 4-5) navigate.
+      - **Overview** · `O`, then type to filter, click a thumbnail.
+      - **Presenter** · `P` opens the speaker window.
+      - **2D nav opt-in** · open `demo-2d.html`: arrows are linear here, 2D only with `nav="2d"`.
+    </deck-md>
+  </deck-feature>
+
+  <deck-takeaway kicker="rikiki 0.3.0">
+    <p class="display">tiny, yours, fast</p>
+    <p class="caption on-dark">plain HTML · Web Components · no build to author</p>
+  </deck-takeaway>
+
+</deck-root>
+</body>
+</html>
