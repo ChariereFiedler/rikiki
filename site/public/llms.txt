@@ -40,17 +40,17 @@ The framework is opinionated:
 
 ## Docs
 
-- [Overview](https://rikiki.example/docs/): the doc landing
-- [Cheatsheet · your first deck in 5 components](https://rikiki.example/docs/cheatsheet): cover · section · hero · split · hook
-- [Install · Quickstart](https://rikiki.example/docs/getting-started): CDN · npm · git clone
-- [Lit, Shadow DOM, override patterns](https://rikiki.example/docs/lit-and-shadow-dom): the only 3 ways to retheme
-- [Anatomy of a slide](https://rikiki.example/docs/anatomy): layouts / slots / atoms
-- [Component library](https://rikiki.example/docs/components): every `<deck-*>` element, attrs, slots, tokens, live preview
-- [Navigation & overview](https://rikiki.example/docs/navigation): 2D nav, key bindings, overview mode
-- [Theming · design tokens](https://rikiki.example/docs/theming): two layers, BEM naming, write a third theme
-- [Recipes](https://rikiki.example/docs/recipes): common slide patterns
-- [Plugins](https://rikiki.example/docs/plugins): transitions, presenter, Shiki, notes
-- [`<deck-root>` API](https://rikiki.example/docs/api): properties, key bindings, carousel mode
+- [Overview](https://rikiki.tordu-jardin.fr/docs/): the doc landing
+- [Cheatsheet · your first deck in 5 components](https://rikiki.tordu-jardin.fr/docs/cheatsheet): cover · section · hero · split · hook
+- [Install · Quickstart](https://rikiki.tordu-jardin.fr/docs/getting-started): CDN · npm · git clone
+- [Lit, Shadow DOM, override patterns](https://rikiki.tordu-jardin.fr/docs/lit-and-shadow-dom): the only 3 ways to retheme
+- [Anatomy of a slide](https://rikiki.tordu-jardin.fr/docs/anatomy): layouts / slots / atoms
+- [Component library](https://rikiki.tordu-jardin.fr/docs/components): every `<deck-*>` element, attrs, slots, tokens, live preview
+- [Navigation & overview](https://rikiki.tordu-jardin.fr/docs/navigation): 2D nav, key bindings, overview mode
+- [Theming · design tokens](https://rikiki.tordu-jardin.fr/docs/theming): two layers, BEM naming, write a third theme
+- [Recipes](https://rikiki.tordu-jardin.fr/docs/recipes): common slide patterns
+- [Plugins](https://rikiki.tordu-jardin.fr/docs/plugins): transitions, presenter, Shiki, notes
+- [`<deck-root>` API](https://rikiki.tordu-jardin.fr/docs/api): properties, key bindings, carousel mode
 
 ## Reference · core component
 
@@ -82,14 +82,14 @@ Built-in key bindings:
 
 ## Reference · components
 
-Rikiki ships 6 layouts and 18 atoms. All are custom elements with shadow DOM,
+Rikiki ships 7 layouts and 18 atoms. All are custom elements with shadow DOM,
 opinionated defaults, and `--deck-<tag>-*` CSS custom properties for retheming.
 
-Layouts: `<deck-cover>` · `<deck-section>` · `<deck-feature>` · `<deck-split>` · `<deck-feature-cards>` · `<deck-takeaway>`
+Layouts: `<deck-cover>` · `<deck-section>` · `<deck-feature>` · `<deck-split>` · `<deck-feature-cards>` · `<deck-photo>` · `<deck-takeaway>`
 
 Atoms: `<deck-code>` · `<deck-md>` · `<deck-callout>` · `<deck-card>` · `<deck-mermaid>` · `<deck-stat>` · `<deck-badge>` · `<deck-metric>` · `<deck-tier-list>` · `<deck-step-list>` · `<deck-kicker>` · `<deck-stack>` · `<deck-grid>` · `<deck-punch>` · `<deck-shortcut>` · `<deck-kbd>` · `<deck-notes>` · `<deck-shortcut-list>`
 
-See the [component library page](https://rikiki.example/docs/components) for
+See the [component library page](https://rikiki.tordu-jardin.fr/docs/components) for
 each element's attributes, slots, customization tokens, and a live preview.
 
 ## Reference · plugins (opt-in, lazy)
@@ -113,7 +113,7 @@ Two layers · `--rik-*` prefix, BEM (`__element`, `--modifier`).
 
 Override one component instance with `--deck-<tag>-*` tokens inline. Override
 the whole deck by setting `--rik-*` on `:root` in a stylesheet loaded after
-the theme link. See the [theming page](https://rikiki.example/docs/theming) for
+the theme link. See the [theming page](https://rikiki.tordu-jardin.fr/docs/theming) for
 the full token list.
 
 ## Source

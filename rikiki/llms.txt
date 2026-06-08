@@ -1,0 +1,48 @@
+# Rikiki
+
+> Rikiki is a tiny (~12 KB gzip) Lit Web Components framework for technical
+> presentations and product carousels. A deck is plain HTML: load a theme
+> stylesheet, then the component bundle, then write a `<deck-root>` wrapping
+> `deck-*` slide elements. No build step to author or run a deck.
+
+The framework is opinionated:
+
+- Web standards only (Custom Elements, Shadow DOM, ES Modules, CSS Custom Properties).
+- Zero-build for deck authors. Consumers never touch a bundler.
+- Three-layer design tokens (`--rik-palette-*` private, `--rik-*` semantic, `--deck-<tag>-*` per-component).
+- Plugins are opt-in and lazy-loaded (transitions, presenter window, Shiki, click-stages).
+- The same `<deck-root>` engine drives slides AND swipe-able carousels via `autoplay` / `loop` / `swipe`.
+
+## Reference
+
+- [Full LLM reference](docs/llms/rikiki-reference.md): the single source of truth · every tag, attribute, slot, design token, plugin, and recipe in one file. Read this first.
+- [README](README.md): human overview, common patterns, build/theming notes.
+- [starter.html](starter.html): the minimal copy-paste deck skeleton.
+
+## Components
+
+Authoring tags fall into four buckets (see the reference for the exhaustive attribute/slot tables):
+
+- **Layouts (slide-level, direct children of `<deck-root>`)**: `<deck-cover>` · `<deck-section>` · `<deck-feature>` · `<deck-split>` · `<deck-feature-cards>` · `<deck-photo>` · `<deck-takeaway>`
+- **Molecules (composed containers)**: `<deck-callout>` · `<deck-card>` · `<deck-md>` · `<deck-mermaid>` · `<deck-stat>` · `<deck-metric-list>` / `<deck-metric>` · `<deck-tier-list>` / `<deck-tier>` / `<deck-tier-arrow>` · `<deck-step-list>` / `<deck-step>` · `<deck-shortcut-list>` / `<deck-shortcut>` / `<deck-kbd>` · `<deck-stack>` · `<deck-grid>`
+- **Atoms (primitives)**: `<deck-badge>` · `<deck-kicker>` · `<deck-punch>` · `<deck-code>`
+- **Runtime (authoring touchpoints)**: `<deck-root>` (navigation host) · `<deck-notes>` (speaker notes, read by the presenter window)
+
+## Plugins (opt-in, lazy)
+
+- **Transitions**: `transition="slide|slide-up|slide-down|slide-right|fade|zoom|flip"` on `<deck-root>` (per-slide `data-transition`).
+- **Presenter window**: press `P` · mirrors current + next slide, timer, and `<deck-notes>`.
+- **Shiki highlighting**: `import { installShiki } from './dist/shiki.js'` then `await installShiki({ theme, langs })`.
+- **Click-stages**: `import { installClickStages } from './dist/click-stages.js'` then `installClickStages()` · per-element `data-click` / `data-anim` / `data-morph` reveals.
+- **Livereload (authoring only)**: append `?live` to the deck URL.
+
+## Build & assembly
+
+- [Multi-deck assembler](docs/llms/rikiki-reference.md): split a talk into `parts/*.html` / `*.md`, list them in `deck.config.js`, run `npm run deck <config>`.
+- [Example multi-file deck](decks/example/deck.config.js): a runnable assembly config.
+- [Single-file bundler](bundle.mjs): `node bundle.mjs <deck>.html` inlines theme + bundle + Lit into one self-contained HTML file.
+
+## Optional
+
+- [Themes](themes/rikiki.css): the default theme and its token layers (`themes/siliceum.css` is an alternative).
+- [Project homepage](https://rikiki.tordu-jardin.fr): rendered docs site (also serves `/llms.txt`).
