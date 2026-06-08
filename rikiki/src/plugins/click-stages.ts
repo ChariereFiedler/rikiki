@@ -62,6 +62,22 @@ interface StageEntry {
   hide: boolean;
   /** ms after the step is reached before the state flips (auto chain / stagger). */
   delay: number;
+  /** True when the flip is sequenced by a JS timer (auto chain / stagger) ·
+   *  the timer already includes data-anim-delay, so the CSS transition skips
+   *  its delay to avoid applying it twice. */
+  scheduled?: boolean;
+}
+
+/** Direct children of a stagger container are sequenced by the container ·
+ *  the main walk must skip them or a data-click-hide child runs twice. */
+function isStaggerChild(el: HTMLElement): boolean {
+  return !el.hasAttribute(STAGGER_ATTR) && (el.parentElement?.hasAttribute(STAGGER_ATTR) ?? false);
+}
+
+/** data-anim-delay in ms · 0 under reduced motion (same rule as timingOf). */
+function animDelayOf(el: HTMLElement): number {
+  if (reducedMotion()) return 0;
+  return parseInt(el.getAttribute('data-anim-delay') ?? '', 10) || 0;
 }
 
 const EXPANDED = new WeakSet<HTMLElement>();
@@ -94,6 +110,7 @@ function clickStepCount(slide: HTMLElement): number {
     .querySelectorAll<HTMLElement>(`[${REVEAL_ATTR}], [${HIDE_ATTR}], [${STAGGER_ATTR}]`)
     .forEach((el) => {
       if (el.hasAttribute(STAGGER_ATTR)) { auto += 1; return; }
+      if (isStaggerChild(el)) return;
       const raw = el.getAttribute(REVEAL_ATTR) ?? el.getAttribute(HIDE_ATTR) ?? '';
       const n = parseInt(raw, 10);
       if (Number.isFinite(n) && n > 0) maxExplicit = Math.max(maxExplicit, n);
@@ -112,20 +129,25 @@ function collectEntries(slide: HTMLElement): StageEntry[] {
     .querySelectorAll<HTMLElement>(`[${REVEAL_ATTR}], [${HIDE_ATTR}], [${AUTO_ATTR}], [${STAGGER_ATTR}]`)
     .forEach((el) => {
       if (el.hasAttribute(STAGGER_ATTR)) {
-        // Container consumes one click · children cascade in.
-        const gap = parseInt(el.getAttribute(STAGGER_ATTR) ?? '', 10) || 80;
+        // Container consumes one click · children cascade in. "0" is a valid
+        // gap (simultaneous flip on one step) · only a missing/garbled value
+        // falls back to the 80 ms default.
+        const gapRaw = parseInt(el.getAttribute(STAGGER_ATTR) ?? '', 10);
+        const gap = Number.isFinite(gapRaw) ? Math.max(0, gapRaw) : 80;
         const step = ++cursor;
         autoAccum = 0;
         Array.from(el.children).forEach((child, i) => {
-          out.push({ el: child as HTMLElement, step, hide: false, delay: i * gap });
+          const c = child as HTMLElement;
+          out.push({ el: c, step, hide: c.hasAttribute(HIDE_ATTR), delay: i * gap + animDelayOf(c), scheduled: true });
         });
         return;
       }
+      if (isStaggerChild(el)) return;
       if (el.hasAttribute(AUTO_ATTR)) {
         // No click consumed · fires after the previous stage (or slide
         // activation when cursor is still 0). Consecutive autos chain.
         autoAccum += parseInt(el.getAttribute(AUTO_ATTR) ?? '', 10) || 0;
-        out.push({ el, step: cursor, hide: false, delay: autoAccum });
+        out.push({ el, step: cursor, hide: false, delay: autoAccum + animDelayOf(el), scheduled: true });
         return;
       }
       const hide = el.hasAttribute(HIDE_ATTR);
@@ -143,14 +165,24 @@ const MORPH_ATTR = 'data-morph';
 /** True while one of our view transitions is running · prevents nesting. */
 let vtActive = false;
 
-function morphGroups(root: HTMLElement): Map<string, HTMLElement[]> {
-  const map = new Map<string, HTMLElement[]>();
+type MorphGroups = Map<string, HTMLElement[]>;
+
+function morphGroups(root: HTMLElement): MorphGroups {
+  const map: MorphGroups = new Map();
   root.querySelectorAll<HTMLElement>(`[${MORPH_ATTR}]`).forEach((el) => {
     const key = el.getAttribute(MORPH_ATTR);
     if (!key) return;
     map.set(key, [...(map.get(key) ?? []), el]);
   });
   return map;
+}
+
+/** Computed visibility · honors CSS classes, stylesheet rules and hidden
+ *  ancestors, not just the inline opacity this plugin writes. */
+function isShown(el: HTMLElement): boolean {
+  const cs = getComputedStyle(el);
+  return cs.display !== 'none' && cs.visibility !== 'hidden' && cs.opacity !== '0'
+    && el.getClientRects().length > 0;
 }
 
 function matchedMorphKeys(a: HTMLElement, b: HTMLElement): string[] {
@@ -162,12 +194,12 @@ const cssKey = (key: string): string => key.replace(/[^a-zA-Z0-9_-]/g, '_');
 
 /** Give the visible element of each morph key a view-transition-name and
  *  'none' to the rest · duplicate names abort a view transition. Visibility
- *  comes from the entries model when provided, else from inline opacity. */
-function nameVisibleMorphs(root: HTMLElement, targets?: Map<HTMLElement, boolean>): void {
-  morphGroups(root).forEach((els, key) => {
+ *  comes from the entries model when provided, else from computed style. */
+function nameVisibleMorphs(groups: MorphGroups, targets?: Map<HTMLElement, boolean>): void {
+  groups.forEach((els, key) => {
     let named = false;
     els.forEach((el) => {
-      const visible = targets?.get(el) ?? el.style.opacity !== '0';
+      const visible = targets?.get(el) ?? isShown(el);
       const take = visible && !named;
       if (take) named = true;
       el.style.viewTransitionName = take ? `rk-morph-${cssKey(key)}` : 'none';
@@ -176,14 +208,14 @@ function nameVisibleMorphs(root: HTMLElement, targets?: Map<HTMLElement, boolean
 }
 
 /** First element of a morph group considered visible · predicate from the
- *  entries model when provided, else inline opacity. */
+ *  entries model when provided, else computed style. */
 function visibleMorphIn(els: HTMLElement[], targets?: Map<HTMLElement, boolean>): HTMLElement | undefined {
-  return els.find((el) => targets?.get(el) ?? el.style.opacity !== '0');
+  return els.find((el) => targets?.get(el) ?? isShown(el));
 }
 
-function visibleMorphRects(root: HTMLElement): Map<string, DOMRect> {
+function visibleMorphRects(groups: MorphGroups): Map<string, DOMRect> {
   const rects = new Map<string, DOMRect>();
-  morphGroups(root).forEach((els, key) => {
+  groups.forEach((els, key) => {
     const el = visibleMorphIn(els);
     if (el) rects.set(key, el.getBoundingClientRect());
   });
@@ -195,8 +227,8 @@ const FLIP_EASE = 'cubic-bezier(0.22, 1, 0.3, 1)';
 
 /** WAAPI fallback when View Transitions are unavailable (Firefox) · glide
  *  each incoming morph element from the outgoing element's box to its own. */
-function flipMorphs(root: HTMLElement, fromRects: Map<string, DOMRect>, targets?: Map<HTMLElement, boolean>): void {
-  morphGroups(root).forEach((els, key) => {
+function flipMorphs(groups: MorphGroups, fromRects: Map<string, DOMRect>, targets?: Map<HTMLElement, boolean>): void {
+  groups.forEach((els, key) => {
     const from = fromRects.get(key);
     const el = visibleMorphIn(els, targets);
     if (!from || !el) return;
@@ -267,16 +299,19 @@ function applyDraw(el: HTMLElement, visible: boolean): void {
 }
 
 /** Set the initial hidden/visible state + transition on each annotated element. */
-function prepare(el: HTMLElement, hide: boolean): void {
+function prepare(el: HTMLElement, hide: boolean, scheduled = false): void {
   if (PREP.has(el)) return;
   PREP.add(el);
   const { dur, delay, ease } = timingOf(el);
+  // Scheduled entries (auto chain / stagger) fold data-anim-delay into their
+  // JS timer · a CSS delay on top would apply it twice.
+  const cssDelay = scheduled ? 0 : delay;
   const anim = el.getAttribute('data-anim');
   const props =
     anim === 'blur' ? ['opacity', 'transform', 'filter'] :
     anim === 'draw' ? ['stroke-dashoffset'] :
     ['opacity', 'transform'];
-  const transition = props.map((p) => `${p} ${dur}ms ${ease} ${delay}ms`).join(', ');
+  const transition = props.map((p) => `${p} ${dur}ms ${ease} ${cssDelay}ms`).join(', ');
   if (anim === 'draw') {
     prepareDraw(el, transition);
   } else {
@@ -338,6 +373,28 @@ export function installClickStages(): void {
     }, delay));
   }
 
+  // Delayed flips started inside a view-transition callback would fire mid
+  // animation and flicker behind the captured snapshot · queue them while a
+  // transition runs and start their timers once it settles.
+  let deferredFlips: Array<{ el: HTMLElement; target: boolean; delay: number }> | null = null;
+  function queueOrScheduleVisible(el: HTMLElement, target: boolean, delay: number): void {
+    if (deferredFlips) deferredFlips.push({ el, target, delay });
+    else scheduleVisible(el, target, delay);
+  }
+  function deferFlips(): void { deferredFlips = []; }
+  function releaseFlips(): void {
+    const queued = deferredFlips ?? [];
+    deferredFlips = null;
+    queued.forEach(({ el, target, delay }) => scheduleVisible(el, target, delay));
+  }
+  /** The latest _applyStep owns each element · drop stale timers AND stale
+   *  queued flips so a fast extra step during a transition can't resurrect
+   *  an outdated target state. */
+  function cancelFlip(el: HTMLElement): void {
+    cancelTimer(el);
+    if (deferredFlips) deferredFlips = deferredFlips.filter((f) => f.el !== el);
+  }
+
   // Previous (slide, step) per host · lets us tell "just reached this step"
   // (play delays) apart from "jumped past it" (settle immediately).
   const LAST = new WeakMap<object, { slide: number; step: number }>();
@@ -353,9 +410,9 @@ export function installClickStages(): void {
 
     const entries = collectEntries(slide);
     const run = () =>
-      entries.forEach(({ el, step, hide, delay }) => {
-        prepare(el, hide);
-        cancelTimer(el);
+      entries.forEach(({ el, step, hide, delay, scheduled }) => {
+        prepare(el, hide, scheduled);
+        cancelFlip(el);
         // reveal: visible once we've reached its step. hide: hidden once reached.
         const reached = this.step >= step;
         const target = hide ? !reached : reached;
@@ -365,8 +422,8 @@ export function installClickStages(): void {
         const justReached = reached && this.step === step && prevStep < step;
         const onActivation = reached && step === 0 && prevStep === -1;
         if (delay > 0 && (justReached || onActivation)) {
-          setVisible(el, hide);               // hold the pre-state…
-          scheduleVisible(el, target, delay); // …then flip after the delay
+          setVisible(el, hide);                      // hold the pre-state…
+          queueOrScheduleVisible(el, target, delay); // …then flip after the delay
         } else {
           setVisible(el, target);
         }
@@ -374,23 +431,26 @@ export function installClickStages(): void {
 
     // Intra-slide morph · wrap the step change in a view transition when the
     // slide pairs data-morph elements across steps · WAAPI FLIP fallback when
-    // View Transitions are unavailable (Firefox).
+    // View Transitions are unavailable (Firefox). One morphGroups() scan per
+    // step change · the element tree doesn't change between name/measure/flip,
+    // only inline styles do.
     const svt = (document as DocWithVT).startViewTransition?.bind(document);
     const stepChanged = prevStep !== -1 && prevStep !== this.step;
-    const morphing = stepChanged && !vtActive && !reducedMotion() && slide.querySelector(`[${MORPH_ATTR}]`) !== null;
-    if (morphing) {
+    const groups = stepChanged && !vtActive && !reducedMotion() ? morphGroups(slide) : null;
+    if (groups && groups.size > 0) {
       const targets = new Map(
         entries.map(({ el, step, hide }) => [el, hide ? this.step < step : this.step >= step])
       );
       if (svt) {
-        nameVisibleMorphs(slide);          // old state, before capture
+        nameVisibleMorphs(groups);          // old state, before capture
         vtActive = true;
-        svt(() => { run(); nameVisibleMorphs(slide, targets); })
-          .finished.finally(() => { vtActive = false; });
+        deferFlips();
+        svt(() => { run(); nameVisibleMorphs(groups, targets); })
+          .finished.finally(() => { vtActive = false; releaseFlips(); });
       } else {
-        const fromRects = visibleMorphRects(slide);
+        const fromRects = visibleMorphRects(groups);
         run();
-        flipMorphs(slide, fromRects, targets);
+        flipMorphs(groups, fromRects, targets);
       }
     } else {
       run();
@@ -412,21 +472,23 @@ export function installClickStages(): void {
     if (!svt) {
       // FLIP fallback (no View Transitions · Firefox) · measure the outgoing
       // boxes, navigate, then glide the incoming elements into place.
-      const fromRects = visibleMorphRects(from!);
+      const fromRects = visibleMorphRects(morphGroups(from!));
       host.__rkMorphActive = true;   // deck-transition skips this navigation
       origGoTo.call(this, idx);
-      flipMorphs(to!, fromRects);
+      flipMorphs(morphGroups(to!), fromRects);
       window.setTimeout(() => { host.__rkMorphActive = false; }, FLIP_MS + 40);
       return;
     }
-    nameVisibleMorphs(from!);   // outgoing side, before capture
+    nameVisibleMorphs(morphGroups(from!));   // outgoing side, before capture
     vtActive = true;
     // deck-transition skips its classic animation for this navigation.
     host.__rkMorphActive = true;
-    svt(() => { origGoTo.call(this, idx); nameVisibleMorphs(to!); })
+    deferFlips();
+    svt(() => { origGoTo.call(this, idx); nameVisibleMorphs(morphGroups(to!)); })
       .finished.finally(() => {
         vtActive = false;
         host.__rkMorphActive = false;
+        releaseFlips();
       });
   };
 

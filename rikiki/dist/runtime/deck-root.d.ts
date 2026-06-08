@@ -44,12 +44,18 @@ export declare class DeckRoot extends LitElement {
     private _autoTick;
     private _onHoverEnter;
     private _onHoverLeave;
+    /** Any explicit user navigation resets the autoplay countdown so the press
+     *  isn't immediately followed by an auto-advance. */
+    private _restartAutoplay;
     private _onPointerDown;
     private _onPointerUp;
     private _onNavPointerDown;
     /** Click anywhere → advance (Shift+click → back) · PowerPoint-style.
      *  Skips interactive targets, our own chrome, text selections and drags. */
     private _onClickNav;
+    /** Wheel over a scrollable descendant (overflowing code block, …) must stay
+     *  a native scroll · only wheel on the deck shell itself navigates. */
+    private _wheelTargetScrolls;
     private _onWheel;
     /** Mouse back/forward buttons (3/4) · act on mouseup, suppress the
      *  browser's history navigation best-effort on auxclick. */

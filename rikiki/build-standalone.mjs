@@ -12,35 +12,11 @@ import { build } from 'esbuild';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { minifyTemplates } from './minify-templates.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SRC = resolve(__dirname, 'src');
 const OUT = resolve(__dirname, 'dist');
-
-// Same CSS-in-JS minifier as the main build · strips template-literal whitespace.
-function minifyTemplates() {
-  return {
-    name: 'minify-templates',
-    setup(b) {
-      b.onLoad({ filter: /\.ts$/ }, (args) => {
-        let src = readFileSync(args.path, 'utf8');
-        src = src.replace(/(css|html)`([\s\S]*?)`/g, (_, tag, body) => {
-          let m = body;
-          m = m.replace(/\/\*[\s\S]*?\*\//g, '');
-          m = m.replace(/\s+/g, ' ');
-          if (tag === 'css') {
-            // CSS only · in html templates this glues `${x}` bindings to the
-            // next attribute and corrupts Lit's parsing (cf. build.mjs).
-            m = m.replace(/\s*([{}:;,])\s*/g, '$1');
-            m = m.replace(/;}/g, '}');
-          }
-          return tag + '`' + m.trim() + '`';
-        });
-        return { contents: src, loader: 'ts' };
-      });
-    },
-  };
-}
 
 const outFile = resolve(OUT, 'standalone.js');
 
