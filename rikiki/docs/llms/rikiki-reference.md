@@ -120,6 +120,35 @@ attribute on `<deck-root>`:
 Chevron styling tokens: `--deck-root-nav-color`, `--deck-root-nav-bg`,
 `--deck-root-nav-opacity`.
 
+**`<deck-root>` attributes** (all optional):
+
+| Attribute | Values | Effect |
+|-----------|--------|--------|
+| `nav` | `2d` | Opt into 2D (chapter/slide) navigation · see above |
+| `mouse-nav` | *(absent)* / `none` / subset of `click wheel arrows aux` | Mouse navigation config · see above |
+| `transition` | `slide` (default-ish) / `slide-up` / `slide-down` / `slide-right` / `fade` / `zoom` / `flip` | Deck-wide slide transition (see table below) |
+| `autoplay` | integer ms (e.g. `8000`) | Auto-advance every N ms; pauses on hover, resets on any manual nav. `0`/absent = off |
+| `loop` | *(boolean)* | With `autoplay`, wraps from the last slide back to the first |
+| `swipe` | *(boolean)* | Pointer-driven horizontal swipe (touch + mouse): a swipe ≥ 60 px advances / goes back |
+
+**Transition values** (deck-wide via `transition="…"` on `<deck-root>`, or
+per-slide via `data-transition="…"` on a slide host). When unset, the effective
+default is `fade`:
+
+| Value | Effect |
+|-------|--------|
+| `slide` | Horizontal slide, direction-aware (back navigation slides the other way) |
+| `slide-up` | Vertical slide from the bottom |
+| `slide-down` | Vertical slide from the top |
+| `slide-right` | Horizontal slide from the left |
+| `fade` | Cross-fade with a slight scale (the effective default) |
+| `zoom` | Scale-in / scale-out |
+| `flip` | 3D flip on the Y axis |
+
+A per-slide `data-transition` overrides the deck-wide `transition` for that one
+navigation. (A `data-morph` reveal temporarily suppresses the transition so the
+two don't fight · see §7.)
+
 **Hash format** (deep-linking):
 
 | Form | Meaning |
@@ -145,12 +174,12 @@ Direct children of `<deck-root>`. Each is one slide.
 
 | Tag | Purpose | Key attributes | Slots |
 |-----|---------|----------------|-------|
-| `deck-cover` | Opening slide, dark, with brand + meta | `brand` (split on " · "), `brand-src` (logo URL), `speaker`, `duration`, `audience` | default `<h1>`, `.sub`/`p[slot=sub]` |
+| `deck-cover` | Opening slide, dark, with brand + meta | `brand` (split on " · "), `brand-src` (logo URL), `speaker`, `company`, `duration`, `audience`, `runtime`; per-row label overrides `speaker-label`, `company-label`, `duration-label`, `audience-label`, `runtime-label` | default `<h1>`, `.sub`/`p[slot=sub]` |
 | `deck-section` | Chapter divider (also a chapter boundary for 2D nav) | `num` | default `<h1>` (may use `<em>`) |
 | `deck-feature` | Headline + lead + one focal block | `eyebrow` | `title` (`<h1>`), `lead`, default (focal block, e.g. `deck-code`) |
-| `deck-split` | Two or three columns side by side | `eyebrow`, `cols` (`1-1`/`1-2`/`2-1`/`3`), `gap` (1..6), `col-gap` (1..6) | `title`; `left`/`right` (2-col) or `a`/`b`/`c` (3-col) |
+| `deck-split` | Two or three columns side by side | `eyebrow`, `cols` (`1-1`/`1-2`/`2-1`/`3`), `gap` (1..6 or raw CSS length), `col-gap` (1..6 or raw CSS length) | `title`, `lead`; `left`/`right` (2-col) or `a`/`b`/`c` (3-col) |
 | `deck-feature-cards` | Hero focal block + two detail cards under it | `eyebrow` | `title`, `lead`, default (hero block), `left`, `right` |
-| `deck-photo` | Full-bleed image slide, content on overlay | `src` (required), `position`, `darken` (0..1), `align` (top/center/bottom), `text-align` (left/center/right) | default `<h1>`, `.sub` |
+| `deck-photo` | Full-bleed image slide, content on overlay | `src` (required), `position` (CSS `object-position`, default `center`), `darken` (0..1 overlay alpha, default `0.35`), `align` (top/center/bottom, default center), `text-align` (left/center/right, default left) | default slot: any content; style slotted children with `.sub`/`.kicker` classes (these are **CSS classes**, not named slots) |
 | `deck-takeaway` | Centered punchline, dark | `kicker` | default (e.g. `p.display`, `p.caption`, a `deck-callout`) |
 
 ---
@@ -165,16 +194,16 @@ Direct children of `<deck-root>`. Each is one slide.
 | `deck-mermaid` | Render a Mermaid diagram (loads Mermaid from CDN) | `compact` | default = Mermaid source |
 | `deck-stat` | Big-number visual | `num`, `tone` (`yellow`/`orange`/`green`/`red`/`purple`/`lime`/`cyan`) | `claim` (`<h3>`), default = body line |
 | `deck-metric-list` | Wraps `deck-metric` rows | · | `deck-metric` children |
-| `deck-metric` | One metric row | `severity` (`bad`/`warn`/`ok`/`info`), `value` | default = label |
+| `deck-metric` | One metric row | `severity` (`bad`/`warn`/`ok`/`info`), `value`, `mono` (render the value in the mono font) | default = label |
 | `deck-tier-list` | Tier ladder | · | `deck-tier`, `deck-tier-arrow` children |
-| `deck-tier` | One tier row | `name`, `desc`, `speed`, `severity` (`muted`/`warn`/`ok`/`hot`), `hot` | · |
+| `deck-tier` | One tier row | `name`, `speed`, `severity` (`muted`/`warn`/`ok`/`hot`), `hot` | default = description text |
 | `deck-tier-arrow` | Separator note between tiers | · | default = text |
 | `deck-step-list` | Numbered step ladder | · | `deck-step` children |
 | `deck-step` | One step row | `n`, `note` | default = label |
-| `deck-shortcut-list` | Two-column shortcut grid | `gap` (1..6) | `deck-shortcut` children |
-| `deck-shortcut` | One keyboard-shortcut row | `keys` (space-separated), `label`, `note` | default = note |
-| `deck-kbd` | Inline key chip | · | default = key text |
-| `deck-stack` | Flex stack helper | `gap` (1..6), `direction` (`row`/`column`), `align` (`start`/`center`/`end`/`stretch`), `justify` (`start`/`center`/`end`/`between`/`around`) | children |
+| `deck-shortcut-list` | Shortcut grid | `cols` (column count, e.g. `1`), `col-gap` (1..6) | `deck-shortcut` children |
+| `deck-shortcut` | One keyboard-shortcut row | `keys` (space-separated), `label`, `note`, `tone` (`accent`/`ok`) | default = note |
+| `deck-kbd` | Inline key chip | `tone` (`accent`/`ok`) | default = key text |
+| `deck-stack` | Flex stack helper | `gap` (1..6), `direction` (`row`/`column`), `align` (`start`/`center`/`end`/`stretch`), `justify` (`start`/`center`/`end`/`between`/`around`), `fill` (grow to fill the cross axis) | children |
 | `deck-grid` | CSS grid helper | `cols` (1..12 or template), `rows`, `gap` (1..6 or CSS), `align`, `justify`, `fill` | children |
 
 ---
@@ -185,7 +214,7 @@ Direct children of `<deck-root>`. Each is one slide.
 |-----|---------|----------------|-------|
 | `deck-badge` | Small status badge | `type` (`bad`/`ok`/`info`/`warn`/`neutral`) | default = text |
 | `deck-kicker` | Uppercase eyebrow label | `on-dark` | default = text |
-| `deck-punch` | Short punchy line | `tone` (`default`/`warn`/`danger`/`ok`/`info`/`muted`/`accent`), `size` (`lead`/`big`/`mega`/`stat`/`display`), `weight` (`700`/`800`/`900`), `align` (`left`/`center`/`right`) | default = text |
+| `deck-punch` | Short punchy line | `tone` (`warn`/`danger`/`ok`/`info`/`muted`/`accent`; inherits text color if absent), `size` (`lead`/`big`/`mega`/`stat`/`display`), `weight` (`700`/`800`/`900`), `align` (`left`/`center`/`right`) | default = text |
 | `deck-code` | Syntax-highlighted code | `lang`, `hero`, `nested`, `step-groups` | default = code text |
 
 ### deck-code details
@@ -197,9 +226,43 @@ Direct children of `<deck-root>`. Each is one slide.
 - `step-groups` · a JSON array attribute that turns the snippet into a stepped
   reveal; the number of groups becomes the slide's step count (see §7).
 
-Highlighting is done client-side with a built-in highlighter (no build step). An
-opt-in Shiki plugin (`installShiki()` from `dist/shiki.js`) can upgrade
-highlighting if desired.
+Highlighting is done client-side with a built-in regex highlighter (no build
+step). An opt-in **Shiki plugin** can upgrade every `deck-code` block to
+Shiki's grammars/themes.
+
+### Shiki plugin (optional, opt-in)
+
+`src/plugins/shiki.ts` (`dist/shiki.js`) re-renders all `<deck-code>` blocks
+through [Shiki](https://shiki.style), loaded from a CDN on first use. Install it
+after the rikiki bundle:
+
+```html
+<script type="module" src="./dist/index.js"></script>
+<script type="module">
+  import { installShiki } from './dist/shiki.js';
+  await installShiki({ theme: 'one-dark-pro', langs: ['ts', 'tsx', 'html', 'css'] });
+</script>
+```
+
+API:
+
+```ts
+async function installShiki(opts?: {
+  theme?: string;    // any Shiki theme name (https://shiki.style/themes) · default 'one-dark-pro'
+  langs?: string[];  // grammars to preload · default ['ts', 'js', 'html', 'css', 'json']
+  cdn?: string;      // CDN base to load Shiki from · default 'https://esm.sh/'
+}): Promise<void>
+```
+
+- Any Shiki theme/language works (not just the built-in highlighter's set); set
+  `langs` to whatever your deck uses.
+- Shiki's inline token colors are stripped so the deck's `--rik-code__syntax-*`
+  tokens still theme the output.
+- A language not loaded falls back silently to the built-in regex highlighter
+  (no error).
+- **Trade-off:** pulls ~300 KB of Shiki + requested grammars from the CDN. That
+  is why it is opt-in · the core bundle stays ~12 KB gzip. Use `cdn` to point at
+  a self-hosted mirror.
 
 ---
 
@@ -342,7 +405,7 @@ The default output file is named from `title` and written next to the config.
 
 ### Bundling caveat for assembled decks
 
-> The single-file export step (`bundle.mjs`, §11) only rewrites paths that use
+> The single-file export step (`bundle.mjs`, §12) only rewrites paths that use
 > the `rikiki/…` convention · specifically references matching
 > `rikiki/(dist|themes|tokens.css)` (as the decks under `examples/` do). It does
 > **not** resolve plain relative paths like `../../dist/index.js`.
@@ -403,6 +466,18 @@ for the full list):
 | Motion | `--rik-motion-fast`, `--rik-motion-base`, `--rik-motion-slow`, `--rik-motion__ease-out` |
 | Code surface | `--rik-code__bg`, `--rik-code__text`, `--rik-code__syntax-keyword`, … |
 
+**Deck chrome** · `<deck-root>` exposes component tokens to restyle its own
+overlay UI (set them on `deck-root` or at `:root`):
+
+| Token | Controls |
+|-------|----------|
+| `--deck-root-bg` | Deck background |
+| `--deck-root-progress-color`, `--deck-root-progress-height` | Progress bar |
+| `--deck-root-counter-color` | Slide counter text |
+| `--deck-root-dot-bg`, `--deck-root-dot-active-bg` | Step dots (idle / active) |
+| `--deck-root-kb-hint-color` | Bottom-left key-hint chips |
+| `--deck-root-nav-color`, `--deck-root-nav-bg`, `--deck-root-nav-opacity` | Mouse-nav chevrons |
+
 The theme zeroes motion durations under `prefers-reduced-motion: reduce`.
 
 Light-DOM helper classes the theme ships (use on slotted children):
@@ -430,7 +505,202 @@ path convention (see the §9 caveat about decks that use plain relative paths).
 
 ---
 
-## 13 · Authoring rules for LLMs
+## 13 · Recipes / cookbook
+
+Copy-paste patterns. Every tag/attribute used here is defined above · combine
+them freely. Assume the deck head loads the theme then `dist/index.js` (§2).
+
+### Markdown + code feature slide
+
+```html
+<deck-feature eyebrow="Module">
+  <h1 slot="title">Side effects</h1>
+  <p slot="lead" class="lead">A module can <span class="accent">act</span> on import.</p>
+  <deck-code lang="ts" hero>
+    import './polyfill';  // executed at import time
+  </deck-code>
+</deck-feature>
+```
+
+### Side-by-side comparison (two columns)
+
+```html
+<deck-split eyebrow="ESM">
+  <h1 slot="title">Static vs dynamic</h1>
+  <deck-card slot="left" color="yellow">
+    <h3>Static</h3>
+    <deck-md>Resolved at startup. **Tree-shakable.**</deck-md>
+  </deck-card>
+  <deck-card slot="right" color="green">
+    <h3>Dynamic</h3>
+    <deck-md>Loaded on demand. *Asynchronous.*</deck-md>
+  </deck-card>
+</deck-split>
+```
+
+### Three columns
+
+```html
+<deck-split eyebrow="Actions" cols="3">
+  <h1 slot="title">Three levers</h1>
+  <deck-card slot="a" color="yellow"><h3>① Cache</h3><deck-md>…</deck-md></deck-card>
+  <deck-card slot="b" color="orange"><h3>② Batch</h3><deck-md>…</deck-md></deck-card>
+  <deck-card slot="c" color="green"><h3>③ Defer</h3><deck-md>…</deck-md></deck-card>
+</deck-split>
+```
+
+### Hero block + two detail cards
+
+```html
+<deck-feature-cards eyebrow="Pipeline">
+  <h1 slot="title">How it flows</h1>
+  <deck-mermaid>graph LR; A-->B-->C</deck-mermaid>
+  <deck-card slot="left" color="yellow"><h3>Ingest</h3><deck-md>…</deck-md></deck-card>
+  <deck-card slot="right" color="green"><h3>Serve</h3><deck-md>…</deck-md></deck-card>
+</deck-feature-cards>
+```
+
+### Big-number stat
+
+```html
+<deck-feature eyebrow="Impact">
+  <h1 slot="title">The result</h1>
+  <deck-stat num="92%" tone="green">
+    <h3 slot="claim">faster cold start</h3>
+    after the lazy-import refactor
+  </deck-stat>
+</deck-feature>
+```
+
+### Metric list
+
+```html
+<deck-metric-list>
+  <deck-metric severity="bad" value="2.4 s">p95 latency (before)</deck-metric>
+  <deck-metric severity="ok"  value="0.3 s" mono>p95 latency (after)</deck-metric>
+</deck-metric-list>
+```
+
+### Callout
+
+```html
+<deck-callout type="warn">
+  <deck-md>Don't ship `?live` in a presented deck.</deck-md>
+</deck-callout>
+```
+
+### Tier ladder
+
+```html
+<deck-tier-list>
+  <deck-tier name="LLInt" speed="×1" severity="muted">Bytecode interpreter</deck-tier>
+  <deck-tier-arrow>warms up after ~6 calls</deck-tier-arrow>
+  <deck-tier name="DFG" speed="×8" severity="ok">Optimizing JIT</deck-tier>
+  <deck-tier name="FTL" speed="×100" severity="hot" hot>Top-tier JIT</deck-tier>
+</deck-tier-list>
+```
+
+### Keyboard-shortcut grid
+
+```html
+<deck-shortcut-list cols="1" col-gap="4">
+  <deck-shortcut keys="⌘ K" label="Command palette" tone="accent"></deck-shortcut>
+  <deck-shortcut keys="⌘ ⇧ P" label="Run task"></deck-shortcut>
+</deck-shortcut-list>
+```
+
+### Stepped code reveal (no plugin)
+
+```html
+<deck-feature eyebrow="Build-up">
+  <h1 slot="title">One line at a time</h1>
+  <deck-code lang="ts" hero step-groups='[[1],[2,3],[4]]'>
+    const a = load();
+    const b = transform(a);
+    const c = render(b);
+    export default c;
+  </deck-code>
+</deck-feature>
+```
+
+The `step-groups` array sets the slide's step count automatically (3 steps here).
+
+### Stepped blocks (no plugin)
+
+```html
+<deck-feature steps="2" eyebrow="Reveal">
+  <h1 slot="title">Two beats</h1>
+  <p>Always visible.</p>
+  <p data-step-block>Appears on step 1.</p>
+  <p data-step-block>Appears on step 2.</p>
+</deck-feature>
+```
+
+### Per-element click reveals (click-stages plugin)
+
+```html
+<!-- once, after dist/index.js -->
+<script type="module">
+  import { installClickStages } from './dist/click-stages.js';
+  installClickStages();
+</script>
+
+<deck-feature eyebrow="Build">
+  <h1 slot="title">Click through</h1>
+  <p data-click data-anim="slide-up">First.</p>
+  <p data-click-auto="500">Follows automatically after 500 ms.</p>
+  <ul data-click-stagger="80" data-anim="slide-up">
+    <li>wave 1</li><li>wave 2</li><li>wave 3</li>
+  </ul>
+</deck-feature>
+```
+
+### Magic Move (morph across slides)
+
+```html
+<deck-feature><h1 slot="title">Before</h1>
+  <deck-code lang="ts" data-morph="snippet">const x = 1;</deck-code>
+</deck-feature>
+<deck-feature><h1 slot="title">After</h1>
+  <deck-code lang="ts" data-morph="snippet">const x = compute();</deck-code>
+</deck-feature>
+```
+
+The matching `data-morph="snippet"` glides/resizes the element from the first
+slide to the second.
+
+### Speaker notes
+
+```html
+<deck-feature>
+  <h1 slot="title">My slide</h1>
+  <deck-notes>
+    - Mention the migration story
+    - Pause on the Java joke
+  </deck-notes>
+</deck-feature>
+```
+
+### Full-bleed photo with caption
+
+```html
+<deck-photo src="./hero.jpg" position="center" darken="0.5" align="bottom">
+  <h1>Scale</h1>
+  <p class="sub">3 M req/s at peak</p>
+</deck-photo>
+```
+
+### Retheme one slide locally
+
+```html
+<deck-stat num="∞" style="--rik-accent: #ff0066;">
+  <h3 slot="claim">possibilities</h3>
+</deck-stat>
+```
+
+---
+
+## 14 · Authoring rules for LLMs
 
 - **Never nest `<deck-root>`.** One per document.
 - **Load theme CSS before `dist/index.js`.**
