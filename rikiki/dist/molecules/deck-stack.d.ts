@@ -16,4 +16,3 @@ declare global {
         'deck-stack': DeckStack;
     }
 }
-//# sourceMappingURL=deck-stack.d.ts.map

@@ -19,4 +19,3 @@ declare global {
         'deck-code': DeckCode;
     }
 }
-//# sourceMappingURL=deck-code.d.ts.map

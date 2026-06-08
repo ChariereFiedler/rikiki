@@ -12,4 +12,3 @@ declare global {
         'deck-stat': DeckStat;
     }
 }
-//# sourceMappingURL=deck-stat.d.ts.map

@@ -9,4 +9,3 @@ declare global {
         'deck-takeaway': DeckTakeaway;
     }
 }
-//# sourceMappingURL=deck-takeaway.d.ts.map

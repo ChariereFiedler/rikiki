@@ -10,4 +10,3 @@ declare global {
         'deck-badge': DeckBadge;
     }
 }
-//# sourceMappingURL=deck-badge.d.ts.map

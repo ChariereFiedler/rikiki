@@ -1,1 +1,0 @@
-{"version":3,"file":"shiki.d.ts","sourceRoot":"","sources":["../../src/plugins/shiki.ts"],"names":[],"mappings":"AAiBA,UAAU,WAAW;IACnB,8EAA8E;IAC9E,KAAK,CAAC,EAAE,MAAM,CAAC;IACf,0EAA0E;IAC1E,KAAK,CAAC,EAAE,MAAM,EAAE,CAAC;IACjB,iEAAiE;IACjE,GAAG,CAAC,EAAE,MAAM,CAAC;CACd;AA2BD,wBAAsB,YAAY,CAAC,IAAI,GAAE,WAAgB,GAAG,OAAO,CAAC,IAAI,CAAC,CA0CxE"}

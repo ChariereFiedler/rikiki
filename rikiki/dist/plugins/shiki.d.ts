@@ -8,4 +8,3 @@ interface InstallOpts {
 }
 export declare function installShiki(opts?: InstallOpts): Promise<void>;
 export {};
-//# sourceMappingURL=shiki.d.ts.map

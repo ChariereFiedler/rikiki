@@ -23,4 +23,3 @@ declare global {
         'deck-tier-arrow': DeckTierArrow;
     }
 }
-//# sourceMappingURL=deck-tier-list.d.ts.map

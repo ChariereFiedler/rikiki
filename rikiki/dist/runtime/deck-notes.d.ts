@@ -10,4 +10,3 @@ declare global {
         'deck-notes': DeckNotes;
     }
 }
-//# sourceMappingURL=deck-notes.d.ts.map

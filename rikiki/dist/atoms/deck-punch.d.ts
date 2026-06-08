@@ -15,4 +15,3 @@ declare global {
         'deck-punch': DeckPunch;
     }
 }
-//# sourceMappingURL=deck-punch.d.ts.map

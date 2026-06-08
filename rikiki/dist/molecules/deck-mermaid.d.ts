@@ -31,4 +31,3 @@ declare global {
     }
 }
 export {};
-//# sourceMappingURL=deck-mermaid.d.ts.map

@@ -17,4 +17,3 @@ declare global {
         'deck-metric': DeckMetric;
     }
 }
-//# sourceMappingURL=deck-metric.d.ts.map

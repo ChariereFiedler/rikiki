@@ -13,4 +13,3 @@ export interface OverviewOptions {
 }
 export declare function mountOverview(host: HTMLElement, opts: OverviewOptions): () => void;
 export {};
-//# sourceMappingURL=deck-overview.d.ts.map

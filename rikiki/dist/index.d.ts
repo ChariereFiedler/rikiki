@@ -26,4 +26,3 @@ import './atoms/deck-badge.js';
 import './atoms/deck-kicker.js';
 import './atoms/deck-punch.js';
 import './atoms/deck-code.js';
-//# sourceMappingURL=index.d.ts.map
