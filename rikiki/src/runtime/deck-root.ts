@@ -78,7 +78,9 @@ export class DeckRoot extends LitElement {
       color: var(--rik-text-default);
       font: inherit;
       min-width: 16px; text-align: center;
+      cursor: pointer;
     }
+    #kb-hint kbd:hover { border-color: var(--rik-accent); }
     #kb-hint .sep { opacity: 0.4; }
 
     #nav-arrows {
@@ -289,14 +291,26 @@ export class DeckRoot extends LitElement {
   /** Wheel over a scrollable descendant (overflowing code block, …) must stay
    *  a native scroll · only wheel on the deck shell itself navigates. */
   private _wheelTargetScrolls(e: WheelEvent): boolean {
+    const down = e.deltaY > 0;
+    const right = e.deltaX > 0;
     for (const n of e.composedPath()) {
       if (n === this) return false;
-      if (!(n instanceof HTMLElement)) continue;
+      // Element, not HTMLElement · an overflowing inline <svg> (a zoomable
+      // diagram) is an SVGElement and must scroll natively too.
+      if (!(n instanceof Element)) continue;
       const canY = n.scrollHeight > n.clientHeight;
       const canX = n.scrollWidth > n.clientWidth;
       if (!canY && !canX) continue;
       const cs = getComputedStyle(n);
-      if ((canY && /auto|scroll/.test(cs.overflowY)) || (canX && /auto|scroll/.test(cs.overflowX))) return true;
+      // Only treat it as a native scroll while the wheel can still move it in
+      // that direction · at the scroll boundary, let the deck navigate instead
+      // of trapping the user inside an already-bottomed-out block.
+      if (canY && /auto|scroll/.test(cs.overflowY)) {
+        if (down ? n.scrollTop + n.clientHeight < n.scrollHeight - 1 : n.scrollTop > 0) return true;
+      }
+      if (canX && /auto|scroll/.test(cs.overflowX)) {
+        if (right ? n.scrollLeft + n.clientWidth < n.scrollWidth - 1 : n.scrollLeft > 0) return true;
+      }
     }
     return false;
   }
@@ -369,7 +383,10 @@ export class DeckRoot extends LitElement {
   }
 
   private _flatFromCoords(c: number, i: number): number {
-    const chap = this.chapters[c];
+    // Clamp an out-of-range chapter to the last one rather than snapping back
+    // to slide 0 · a deep link to a coordinate that no longer exists (e.g. a
+    // chapter removed while iterating) should land on the nearest valid slide.
+    const chap = this.chapters[Math.max(0, Math.min(this.chapters.length - 1, c))];
     if (!chap) return 0;
     return chap.startIdx + Math.max(0, Math.min(chap.slides.length - 1, i));
   }
@@ -398,7 +415,12 @@ export class DeckRoot extends LitElement {
 
     if (target === this.current && stepTarget === this.step && !initial) return;
     this.current = Math.max(0, Math.min(this.slides.length - 1, target));
-    this.step = Math.max(0, stepTarget);
+    // Clamp the step to the slide's range · a deep link to a click that no
+    // longer exists (e.g. a bullet removed while iterating) settles on the last
+    // available step instead of over-stepping. Skip the upper clamp when the
+    // count is still 0 (plugins may not have computed it yet on cold load).
+    const maxStep = this._maxSteps();
+    this.step = maxStep > 0 ? Math.max(0, Math.min(maxStep, stepTarget)) : Math.max(0, stepTarget);
     if (!initial) {
       this._applyActive();
       this._applyStep();
@@ -684,14 +706,18 @@ export class DeckRoot extends LitElement {
       <div id="counter"></div>
       <div id="step-dots"></div>
       <div id="kb-hint">
-        <kbd>←</kbd><kbd>→</kbd>
-        ${this._has2DNav() ? html`<kbd>↑</kbd><kbd>↓</kbd>` : ''}
+        <kbd title="Previous" @click=${() => this._back()}>←</kbd
+        ><kbd title="Next" @click=${() => this._advance()}>→</kbd>
+        ${this._has2DNav()
+          ? html`<kbd title="Previous" @click=${() => this._back()}>↑</kbd
+            ><kbd title="Next" @click=${() => this._advance()}>↓</kbd>`
+          : ''}
         <span>·</span>
-        <kbd>O</kbd>
+        <kbd title="Overview" @click=${() => { this.overview = !this.overview; }}>O</kbd>
         <span>·</span>
-        <kbd>P</kbd>
+        <kbd title="Presenter" @click=${() => void this._togglePresenter()}>P</kbd>
         <span>·</span>
-        <kbd>?</kbd>
+        <kbd title="Help" @click=${() => void this._toggleHelp()}>?</kbd>
       </div>
       ${this._navArrows()}
       <slot></slot>

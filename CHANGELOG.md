@@ -6,6 +6,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Clickable bottom-left key-hint chips (`← → O P ?`): each chip now triggers its
+  action (back / advance / overview / presenter / help), not just hints the key.
+
+### Fixed
+- **Overview thumbnails — mermaid/SVG rendered unstyled.** Cloned slide SVGs get
+  their ids namespaced per-thumbnail to avoid collisions, but the `<style>`
+  selectors weren't rewritten, so mermaid's id-scoped rules (`#mmd-N …`) stopped
+  matching and the diagram fell back to black. `namespaceIds` now rewrites `#id`
+  selectors inside `<style>` blocks too. A thumbnail build that fails retries on
+  the next scroll-into-view, capped so a deterministic failure can't re-warn
+  forever.
+- **Deep links clamp to the nearest valid position** instead of resetting to the
+  first slide: an out-of-range slide/chapter index lands on the last one, and a
+  step past a slide's range settles on its last step (keeps a bookmarked
+  `#4.3` usable while iterating).
+- **Wheel navigation yields to scrollable descendants**, including inline `<svg>`
+  (the check was limited to `HTMLElement`), and navigates once the element
+  reaches its scroll edge instead of trapping the wheel inside it.
+- **click-stages edge cases:** `data-click-stagger="0"` flips children
+  simultaneously (was falling back to 80 ms); stagger children honor
+  `data-click-hide` and `data-anim-delay`; `data-anim-delay` is no longer applied
+  twice on auto/stagger entries; delayed reveals no longer flicker during a
+  `data-morph` view transition; morph visibility is judged from computed style so
+  CSS-class visibility counts; a synchronous `startViewTransition` throw no longer
+  strands the animation/morph state.
+
+### Changed
+- The CSS-in-JS template minifier is extracted to a shared `minify-templates.mjs`
+  imported by both `build.mjs` and `build-standalone.mjs`.
+
 ## [0.2.0] - 2026-06-02
 
 ### Added

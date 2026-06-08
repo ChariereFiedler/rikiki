@@ -494,10 +494,14 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
         lazyObserver.unobserve(cell);
         buildThumb(cell, src).catch((err) => {
           // Release the cell on failure · the next scroll-into-view retries
-          // instead of leaving the thumbnail permanently blank.
+          // instead of leaving the thumbnail permanently blank. Cap the retries
+          // so a slide that deterministically fails to snapshot doesn't re-throw
+          // (and re-warn) on every scroll.
+          const tries = Number(cell.dataset['tries'] ?? '0') + 1;
+          cell.dataset['tries'] = String(tries);
           console.warn('[rikiki/overview] thumbnail build failed', err);
           delete cell.dataset['building'];
-          lazyObserver.observe(cell);
+          if (tries < 3) lazyObserver.observe(cell);
         });
       }
     },
