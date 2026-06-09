@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-06-09
+
+### Fixed
+- **Presenter mode showed the wrong, un-styled slides in single-file bundled
+  decks.** The presenter mirrors each slide in an iframe that reloads the rikiki
+  bundle via `new URL('./index.js', import.meta.url)`. In a bundled deck that
+  resolves to a `data:` URI; loaded as `<script src="data:…">` the module's own
+  `import.meta.url` is that data: URL, where a top-level
+  `new URL(relative, import.meta.url)` throws and aborts custom-element
+  registration, so the iframes rendered raw, un-upgraded markup. The presenter
+  now inlines the bundle as a module when the URL is a `data:` URI; file-served
+  decks keep loading it via `<script src>` unchanged.
+
 ## [0.3.0] - 2026-06-08
 
 ### Added

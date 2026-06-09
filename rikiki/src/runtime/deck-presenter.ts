@@ -197,11 +197,30 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${initial.themeHref}">` : ''
     const themeHref  = ${JSON.stringify(initial.themeHref)};
     const bundleHref = ${JSON.stringify(initial.bundleHref)};
     const themeLink  = themeHref ? '<link rel="stylesheet" href="' + themeHref + '">' : '';
+    // Bootstrap rikiki inside the iframe. For a file-served deck bundleHref is a
+    // real URL · load it with <script src>. For a single-file bundled deck the
+    // bundle is inlined, so import.meta.url (and thus bundleHref) is a data: URL.
+    // Loaded as <script src="data:..."> the module's own import.meta.url is that
+    // data: URL, where a top-level new URL(relative, import.meta.url) throws and
+    // aborts component registration · the iframe then shows raw, un-upgraded
+    // markup. Inline the same code instead so the module base is the iframe
+    // document URL (escaping any script end-tag in the bundle so it can't
+    // close this block early · note this very comment must avoid the literal).
+    let bundleTag;
+    if (bundleHref.slice(0, 5) === 'data:') {
+      const b64 = bundleHref.indexOf(';base64,');
+      const code = b64 >= 0
+        ? atob(bundleHref.slice(b64 + 8))
+        : decodeURIComponent(bundleHref.slice(bundleHref.indexOf(',') + 1));
+      bundleTag = '<script type="module">' + code.replace(/<\\/script/gi, '<\\\\/script') + '<' + '/script>';
+    } else {
+      bundleTag = '<script type="module" src="' + bundleHref + '"><' + '/script>';
+    }
     // Mark the cloned slide [active] so its real component CSS applies
     // (:host([active]){display:flex}) instead of forcing display via !important.
     const activeSlide = slideHtml.replace(/^(\\s*<deck-[a-z-]+)/i, '$1 active');
     return '<!doctype html><html><head><meta charset="UTF-8">' + themeLink +
-      '<script type="module" src="' + bundleHref + '"><' + '/script>' +
+      bundleTag +
       '<style>html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#0f1422}' +
       'deck-root{position:absolute;inset:0}</style>' +
       '</head><body><deck-root>' + activeSlide + '</deck-root></body></html>';
