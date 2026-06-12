@@ -22,8 +22,8 @@ function highlight(src: string, lang: string): string {
   // Non-numeric placeholder ids (so the \d+ pass cannot collide with them)
   const placeholders: string[] = [];
   const stash = (cls: string, text: string): string => {
-    const id = 'P' + placeholders.length + 'E';
-    placeholders.push('<span class="' + cls + '">' + text + '</span>');
+    const id = `P${placeholders.length}E`;
+    placeholders.push(`<span class="${cls}">${text}</span>`);
     return id;
   };
 

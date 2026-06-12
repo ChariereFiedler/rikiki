@@ -6,8 +6,9 @@
 // the first time the user activates them · they aren't in this bundle.
 // ════════════════════════════════════════════════════════════════
 
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { isOpaqueColor } from './color.js';
 
 type Slide = HTMLElement & {
   applyStep?: (step: number) => void;
@@ -138,13 +139,9 @@ export class DeckRoot extends LitElement {
    *  keys). Pressing any key dismisses it · same convention as PowerPoint. */
   @state() blank: 'black' | 'white' | null = null;
   @property({ type: Boolean, reflect: true }) overview = false;
-  /** Fixed-viewport mode · the deck renders into a fixed-aspect canvas that is
-   *  letterboxed to fit any screen, so layouts never reflow between displays.
-   *  Opt-in · the default stays fluid (100vw × 100vh). */
-  @property({ type: Boolean, reflect: true }) fixed = false;
-  /** Logical canvas size for fixed mode · defaults to 1920 × 1080 (16:9).
-   *  Only the ratio and the rem baseline depend on these · the canvas is then
-   *  scaled by CSS to fill the window. */
+  /** Logical canvas size · defaults to 1920 × 1080 (16:9). Only the ratio and
+   *  the rem baseline depend on these · the canvas is then scaled uniformly to
+   *  fill the window (see _applyScale). */
   @property({ type: Number }) width = 1920;
   @property({ type: Number }) height = 1080;
   /** Hide the bottom-left keyboard-hint chip (the ←/→ · O · P · ? row). */
@@ -197,9 +194,7 @@ export class DeckRoot extends LitElement {
   private _wheelLockUntil = 0;
 
   override firstUpdated(): void {
-    this._applyCanvasVars();
-    this._applyScale();
-    window.addEventListener('resize', this._applyScale);
+    this._installRuntime();
     this._scopeSlideStyles();
     this.slides = Array.from(this.querySelectorAll<Slide>(':scope > *')).filter(
       (el) =>
@@ -213,6 +208,16 @@ export class DeckRoot extends LitElement {
     // Chapters are known only after firstUpdated; re-render so the kb hint
     // can show ↑↓ when 2D navigation applies.
     this.requestUpdate();
+  }
+
+  /** Canvas vars, scale and every listener the deck needs while connected.
+   *  Mirror of the disconnectedCallback teardown · runs from firstUpdated on
+   *  the initial connect, and again from connectedCallback on a re-attach
+   *  (firstUpdated only ever runs once per element). */
+  private _installRuntime(): void {
+    this._applyCanvasVars();
+    this._applyScale();
+    window.addEventListener('resize', this._applyScale);
     window.addEventListener('keydown', this._onKey);
     window.addEventListener('hashchange', this._onHash);
     this.addEventListener('pointerdown', this._onNavPointerDown);
@@ -271,21 +276,18 @@ export class DeckRoot extends LitElement {
    *  surface, which stays seamless too. */
   private _applyLetterbox(slide: Slide | null): void {
     const bg = slide ? getComputedStyle(slide).backgroundColor : '';
-    const opaque = bg && bg !== 'transparent' && !/,\s*0\s*\)$/.test(bg);
-    if (opaque) this.style.setProperty('--deck-letterbox-bg', bg);
+    if (bg && isOpaqueColor(bg)) this.style.setProperty('--deck-letterbox-bg', bg);
     else this.style.removeProperty('--deck-letterbox-bg');
   }
-
-  /** Injected once per document · true after the global baseline is in place. */
-  private static _globalsInjected = false;
 
   /** The scaling baseline is a framework concern, not a theme one: inject it
    *  globally so any theme (or none) gets it. The rem unit tracks the logical
    *  canvas height — the #stage transform does the responsive scaling — and the
-   *  page never scrolls (so the letterbox is the only thing outside a slide). */
+   *  page never scrolls (so the letterbox is the only thing outside a slide).
+   *  Guarded by the element id (not a static) so separately-bundled copies of
+   *  this class on one page share the same once-per-document semantics. */
   private static _injectGlobals(): void {
-    if (DeckRoot._globalsInjected || typeof document === 'undefined') return;
-    DeckRoot._globalsInjected = true;
+    if (typeof document === 'undefined' || document.getElementById('rik-deck-globals')) return;
     const style = document.createElement('style');
     style.id = 'rik-deck-globals';
     style.textContent =
@@ -296,12 +298,20 @@ export class DeckRoot extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
     DeckRoot._injectGlobals();
+    // firstUpdated installs the runtime on the initial connect only · restore
+    // it when the element is re-attached after a disconnect teardown.
+    if (this.hasUpdated) this._installRuntime();
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     document.documentElement.style.removeProperty('--deck-canvas-w');
     document.documentElement.style.removeProperty('--deck-canvas-h');
+    // Last deck gone (this element is already detached here) · give the host
+    // page its scroll and rem sizing back.
+    if (!document.querySelector('deck-root')) {
+      document.getElementById('rik-deck-globals')?.remove();
+    }
     window.removeEventListener('resize', this._applyScale);
     window.removeEventListener('keydown', this._onKey);
     window.removeEventListener('hashchange', this._onHash);
@@ -560,7 +570,7 @@ export class DeckRoot extends LitElement {
   }
 
   private _writeHash(): void {
-    const h = `#${this.current + 1}` + (this.step > 0 ? `.${this.step}` : '');
+    const h = `#${this.current + 1}${this.step > 0 ? `.${this.step}` : ''}`;
     if (location.hash === h) return;
     try {
       history.replaceState(null, '', h);
@@ -839,7 +849,7 @@ export class DeckRoot extends LitElement {
     const progress = this.renderRoot.querySelector<HTMLDivElement>('#progress');
     const counter = this.renderRoot.querySelector<HTMLDivElement>('#counter');
     const dots = this.renderRoot.querySelector<HTMLDivElement>('#step-dots');
-    if (progress) progress.style.width = (n / total) * 100 + '%';
+    if (progress) progress.style.width = `${(n / total) * 100}%`;
     if (counter) counter.textContent = `${n} / ${total}`;
     const max = this._maxSteps();
     if (dots) {
@@ -853,7 +863,14 @@ export class DeckRoot extends LitElement {
     }
   }
 
-  override updated(): void {
+  override updated(changed: PropertyValues<this>): void {
+    // A canvas resize after first render must republish the vars and rescale ·
+    // firstUpdated only covers the initial values. (Both calls are idempotent,
+    // so the overlap on the very first update cycle is harmless.)
+    if (changed.has('width') || changed.has('height')) {
+      this._applyCanvasVars();
+      this._applyScale();
+    }
     this._updateUI();
     void this._renderOverviewIfActive();
   }

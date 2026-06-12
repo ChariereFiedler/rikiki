@@ -210,17 +210,17 @@ const STYLES = `
     from { background-position: 100% 0; }
     to   { background-position: -100% 0; }
   }
+  /* The thumb mirrors the letterboxed stage, so make it a size container too ·
+     the cloned slide's cqw/cqh then resolve exactly as they do live instead of
+     falling back to the (larger) window. */
   :host([overview]) .ov-thumb {
     position: absolute; top: 0; left: 0;
     width: var(--ov-thumb-w, 1920px); height: var(--ov-thumb-h, 1080px);
     transform: scale(var(--overview-scale, 0.2));
     transform-origin: top left;
     pointer-events: none;
+    container-type: size;
   }
-  /* Fixed-viewport decks: the thumb mirrors the letterboxed stage, so make it a
-     size container too · the cloned slide's cqw/cqh then resolve exactly as they
-     do live instead of falling back to the (larger) window. */
-  :host([overview]) #overview-grid[data-fixed] .ov-thumb { container-type: size; }
   :host([overview]) .ov-thumb > * { display: flex !important; }
   :host([overview]) .ov-mermaid-snap {
     display: flex; align-items: center; justify-content: center;
@@ -315,12 +315,12 @@ function namespaceIds(root: HTMLElement, suffix: string): void {
   root.querySelectorAll('*').forEach((el) => {
     for (const attr of URL_REF_ATTRS) {
       const v = el.getAttribute(attr);
-      if (v && v.includes('url(')) el.setAttribute(attr, rewriteUrls(v));
+      if (v?.includes('url(')) el.setAttribute(attr, rewriteUrls(v));
     }
     for (const attr of ['href', 'xlink:href']) {
       const v = el.getAttribute(attr);
-      if (v && v.startsWith('#') && renames.has(v.slice(1))) {
-        el.setAttribute(attr, '#' + renames.get(v.slice(1)));
+      if (v?.startsWith('#') && renames.has(v.slice(1))) {
+        el.setAttribute(attr, `#${renames.get(v.slice(1))}`);
       }
     }
   });
@@ -334,7 +334,7 @@ function namespaceIds(root: HTMLElement, suffix: string): void {
     styles.forEach((styleEl) => {
       let css = styleEl.textContent ?? '';
       renames.forEach((newId, oldId) => {
-        css = css.replace(new RegExp('#' + escapeRe(oldId) + '(?![\\w-])', 'g'), '#' + newId);
+        css = css.replace(new RegExp(`#${escapeRe(oldId)}(?![\\w-])`, 'g'), `#${newId}`);
       });
       styleEl.textContent = css;
     });
@@ -376,8 +376,8 @@ function snapshotMermaids(live: Slide, clone: HTMLElement): void {
     snap.innerHTML = src?.renderedSvg ?? '';
     const rect = src?.getBoundingClientRect();
     if (rect && rect.width > 0) {
-      snap.style.width = rect.width + 'px';
-      snap.style.height = rect.height + 'px';
+      snap.style.width = `${rect.width}px`;
+      snap.style.height = `${rect.height}px`;
     }
     c.replaceWith(snap);
   });
@@ -453,18 +453,15 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
 
   // Adaptive thumb min-width for the auto-fill grid. More slides → smaller.
   const cellMin = total > 300 ? 140 : total > 150 ? 160 : total > 60 ? 180 : 220;
-  grid.style.setProperty('--ov-cell-min', cellMin + 'px');
+  grid.style.setProperty('--ov-cell-min', `${cellMin}px`);
 
   // Each thumb is a 1:1 clone of a slide laid out at the deck's own dimensions,
-  // then scaled down to the cell. In fixed-viewport mode the slide lives inside
-  // the letterboxed stage, so measure that box (and the CSS makes the thumb a
-  // size container) to keep clones layout-identical · otherwise use the live
-  // window, which is exactly what fluid slides fill.
-  const fixed = host.hasAttribute('fixed');
-  const stage = fixed ? shadow.querySelector<HTMLElement>('#stage') : null;
+  // then scaled down to the cell. Slides live inside the letterboxed logical
+  // canvas (#stage), so measure that box (and the CSS makes the thumb a size
+  // container) to keep clones layout-identical to the live slides.
+  const stage = shadow.querySelector<HTMLElement>('#stage');
   const thumbW = stage?.clientWidth || window.innerWidth;
   const thumbH = stage?.clientHeight || window.innerHeight;
-  if (fixed) grid.dataset['fixed'] = '1';
   grid.style.setProperty('--ov-thumb-w', `${thumbW}px`);
   grid.style.setProperty('--ov-thumb-h', `${thumbH}px`);
 
@@ -500,7 +497,7 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
 
   // ── Body · sidebar (optional) + main scrollable column ──────────────
   const body = document.createElement('div');
-  body.className = 'ov-body' + (useSidebar ? '' : ' compact');
+  body.className = `ov-body${useSidebar ? '' : ' compact'}`;
   grid.appendChild(body);
 
   // Sidebar · chapter list (only when there are many chapters)
@@ -511,7 +508,7 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
   }
 
   const main = document.createElement('div');
-  main.className = 'ov-main' + (useSidebar ? '' : ' ov-path');
+  main.className = `ov-main${useSidebar ? '' : ' ov-path'}`;
   body.appendChild(main);
 
   // Build chapters · either as a vertical stack (sidebar mode) or as

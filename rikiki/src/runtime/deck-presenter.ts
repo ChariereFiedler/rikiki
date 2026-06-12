@@ -240,14 +240,14 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${initial.themeHref}">` : ''
     // Mark the cloned slide [active] so its real component CSS applies
     // (:host([active]){display:flex}) instead of forcing display via !important.
     const activeSlide = slideHtml.replace(/^(\\s*<deck-[a-z-]+)/i, '$1 active');
-    // Render the preview in fixed-viewport mode so the slide keeps its 16:9
-    // proportions (letterboxed) regardless of the pane's shape, and drop the
-    // hint / nav-arrow chrome · a clean, correctly-shaped thumbnail.
+    // The deck always letterboxes into its logical canvas, so the slide keeps
+    // its 16:9 proportions regardless of the pane's shape · just drop the
+    // hint / nav-arrow chrome for a clean, correctly-shaped thumbnail.
     return '<!doctype html><html><head><meta charset="UTF-8">' + themeLink + themeStyle +
       bundleTag +
       '<style>html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#0f1422}' +
       'deck-root{position:absolute;inset:0}</style>' +
-      '</head><body><deck-root fixed no-hint no-arrows>' + activeSlide + '</deck-root></body></html>';
+      '</head><body><deck-root no-hint no-arrows>' + activeSlide + '</deck-root></body></html>';
   }
 
   channel.onmessage = (e) => {
@@ -322,7 +322,7 @@ export function installPresenter(host: DeckRoot): void {
 
   // Tidy up if the popup is closed externally
   const watch = setInterval(() => {
-    if (popup && popup.closed) {
+    if (popup?.closed) {
       clearInterval(watch);
       installed?.delete(host);
       popup = null;

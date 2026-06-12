@@ -1,0 +1,1 @@
+function e(a){if(!a||a==="transparent")return!1;let s=a.match(/^(?:rgb|hsl)a?\(([^)]*)\)$/i);if(s){let t=s[1].split(",");return t.length<4||parseFloat(t[3])>=1}let n=a.match(/\/\s*([\d.]+%?)\s*\)$/);if(n){let t=n[1];return(t.endsWith("%")?parseFloat(t)/100:parseFloat(t))>=1}return!0}export{e as isOpaqueColor};

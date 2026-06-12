@@ -69,7 +69,7 @@ function showToast(text: string, color: string = '#0a0a0a'): void {
 
 async function check(url: string): Promise<boolean> {
   try {
-    const r = await fetch(url + '?_lr=' + Date.now(), { method: 'HEAD', cache: 'no-store' });
+    const r = await fetch(`${url}?_lr=${Date.now()}`, { method: 'HEAD', cache: 'no-store' });
     const tag =
       r.headers.get('last-modified') ?? r.headers.get('etag') ?? r.headers.get('content-length');
     if (!tag) return false;

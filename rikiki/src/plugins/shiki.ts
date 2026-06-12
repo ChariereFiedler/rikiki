@@ -72,7 +72,7 @@ export async function installShiki(opts: InstallOpts = {}): Promise<void> {
   // that goes through Shiki. We do this on the prototype so every existing
   // and future instance picks it up.
   const ctor = customElements.get('deck-code') as
-    | (typeof HTMLElement & { prototype: any })
+    | (typeof HTMLElement & { prototype: HTMLElement & { _highlight: () => void } })
     | undefined;
   if (!ctor) {
     console.warn('[rikiki/shiki] <deck-code> is not defined yet · import rikiki first');
