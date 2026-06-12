@@ -129,6 +129,7 @@ Chevron styling tokens: `--deck-root-nav-color`, `--deck-root-nav-bg`,
 | `nav` | `2d` | Opt into 2D (chapter/slide) navigation · see above |
 | `mouse-nav` | *(absent)* / `none` / subset of `click wheel arrows aux` | Mouse navigation config · see above |
 | `transition` | `slide` (default-ish) / `slide-up` / `slide-down` / `slide-right` / `fade` / `zoom` / `flip` | Deck-wide slide transition (see table below) |
+| `fluid` | *(boolean)* | Fluid rendering: the deck fills its box and reflows like a web page — no logical canvas, no zoom-to-fit scale, no letterbox. Default: zoom-to-fit |
 | `autoplay` | integer ms (e.g. `8000`) | Auto-advance every N ms; pauses on hover, resets on any manual nav. `0`/absent = off |
 | `loop` | *(boolean)* | With `autoplay`, wraps from the last slide back to the first |
 | `swipe` | *(boolean)* | Pointer-driven horizontal swipe (touch + mouse): a swipe ≥ 60 px advances / goes back |

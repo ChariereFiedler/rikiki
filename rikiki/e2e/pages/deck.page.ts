@@ -74,6 +74,16 @@ export function createDeckPage(page: Page) {
       await page.keyboard.press('o');
     },
 
+    /** The shadow #stage box in viewport pixels (includes the zoom transform). */
+    async stageBox() {
+      return page.evaluate(() => {
+        const stage = document.querySelector('deck-root')?.shadowRoot?.querySelector('#stage');
+        if (!stage) throw new Error('no #stage');
+        const b = stage.getBoundingClientRect();
+        return { w: b.width, h: b.height };
+      });
+    },
+
     /** Click the center of the stage · default mouse-nav advances. */
     async clickCenter() {
       const box = await root.boundingBox();

@@ -1,18 +1,10 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { createDeckPage } from './pages/deck.page';
 
 // The deck renders into a fixed 1920×1080 logical canvas scaled uniformly to fit
 // the viewport (deck-root #stage transform). So the slide layout is identical at
 // any window size · only the scale changes, and the canvas keeps its aspect
 // (letterboxed when the screen aspect differs). These lock that behaviour.
-
-const stageBox = (page: Page) =>
-  page.evaluate(() => {
-    const stage = document.querySelector('deck-root')?.shadowRoot?.querySelector('#stage');
-    if (!stage) throw new Error('no #stage');
-    const b = stage.getBoundingClientRect();
-    return { w: b.width, h: b.height };
-  });
 
 const TOUR = '/examples/rikiki-tour/';
 
@@ -25,7 +17,7 @@ test('slide layout is identical at any viewport width (uniform zoom-to-fit)', as
   // scale this is the constant unscaled ratio; reflow would change it.
   const titleFraction = async () => {
     const t = await title.boundingBox();
-    const s = await stageBox(page);
+    const s = await deck.stageBox();
     if (!t) throw new Error('no title box');
     return t.width / s.w;
   };
@@ -55,7 +47,7 @@ test('the canvas keeps its 16:9 aspect (letterboxed, never stretched)', async ({
   const deck = createDeckPage(page);
   await page.setViewportSize({ width: 700, height: 1100 });
   await deck.goto(TOUR);
-  const s = await stageBox(page);
+  const s = await deck.stageBox();
   expect(s.w / s.h, 'stage stays 16:9').toBeCloseTo(1920 / 1080, 1);
 });
 
