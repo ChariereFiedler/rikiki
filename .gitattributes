@@ -1,0 +1,10 @@
+# Normalize line endings · LF in the repo, regardless of contributor OS.
+* text=auto eol=lf
+
+# Generated / vendored artifacts · collapse in diffs and exclude from the
+# repository language statistics. rikiki/dist is committed on purpose (the
+# zero-build promise) but it is build output, not hand-written source.
+rikiki/dist/**          linguist-generated
+rikiki/fonts/**         binary
+examples/sample/**      linguist-generated
+examples/stress/**      linguist-generated

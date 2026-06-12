@@ -1,5 +1,9 @@
 # Rikiki
 
+[![npm](https://img.shields.io/npm/v/rikiki-deck)](https://www.npmjs.com/package/rikiki-deck)
+[![license](https://img.shields.io/npm/l/rikiki-deck)](./LICENSE)
+![zero-build](https://img.shields.io/badge/build-zero-brightgreen)
+
 A tiny **Lit Web Components** framework for technical presentations. Drop a folder anywhere, open `index.html`, give the talk. No build step on the consumer side · the framework itself is built from TypeScript, but the output is plain ES modules you import directly.
 
 This documentation tracks rikiki v0.4.0.

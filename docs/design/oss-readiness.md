@@ -36,12 +36,15 @@ Analysis date: 2026-06-12.
 
 ## Lot 3 · OSS hygiene files (P1)
 
-- [ ] `CODE_OF_CONDUCT.md` (Contributor Covenant).
-- [ ] `SECURITY.md` (disclosure policy + contact).
-- [ ] `.gitattributes` — `rikiki/dist/** linguist-generated`, normalized EOL.
-- [ ] Issue / MR (or PR) templates + `CODEOWNERS`. *(host-dependent — see Lot 4)*
-- [ ] README badges (version, license, CI status).
-- [ ] `AUTHORS` or a credits section.
+- [x] `CODE_OF_CONDUCT.md` — Contributor Covenant 2.1 by reference (short form).
+- [x] `SECURITY.md` — disclosure policy + private contact.
+- [x] `.gitattributes` — `rikiki/dist/** linguist-generated`, EOL normalized,
+      bundled examples marked generated.
+- [x] GitLab templates: `.gitlab/issue_templates/{Bug,Feature}.md` +
+      `.gitlab/merge_request_templates/Default.md`. *(CODEOWNERS: optional,
+      single maintainer — skipped.)*
+- [x] README badges (npm version, license, zero-build) on the published README.
+- [x] `AUTHORS` file.
 
 ## Lot 4 · Publication (P1)
 
