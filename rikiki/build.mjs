@@ -51,19 +51,20 @@ for (const p of entryPoints) {
   seen.set(base, p);
 }
 
-// Rewrite bare module specs ('lit', 'marked') to their jsdelivr CDN URLs at build time.
-// Consumers get plain ES modules that resolve in any browser without an import map.
-const CDN_ALIASES = {
-  lit:                 'https://cdn.jsdelivr.net/npm/lit@3/+esm',
-  'lit/decorators.js': 'https://cdn.jsdelivr.net/npm/lit@3/decorators.js/+esm',
-  marked:              'https://cdn.jsdelivr.net/npm/marked@12/+esm',
+// Rewrite bare module specs ('lit', 'marked') to their vendored siblings in
+// dist/vendor/ (built by build-vendor.mjs). All components share the one local
+// lit.js / marked.js · no CDN, no import map, works fully offline.
+const VENDOR_ALIASES = {
+  lit:                 './vendor/lit.js',
+  'lit/decorators.js': './vendor/lit.js',
+  marked:              './vendor/marked.js',
 };
 
 const cdnRewrite = {
-  name: 'cdn-rewrite',
+  name: 'vendor-rewrite',
   setup(b) {
     b.onResolve({ filter: /^(lit|lit\/.*|marked)$/ }, (args) => {
-      const target = CDN_ALIASES[args.path];
+      const target = VENDOR_ALIASES[args.path];
       if (!target) return null;
       return { path: target, external: true };
     });

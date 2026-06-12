@@ -8,11 +8,12 @@
 //   </script>
 //
 // After install, all <deck-code> instances re-render through Shiki,
-// loaded from CDN at first use. The default regex highlighter remains
-// the fallback when the language isn't loaded.
+// loaded from the vendored dist/vendor/shiki.js at first use (offline · no
+// CDN). The default regex highlighter remains the fallback when the language
+// isn't loaded.
 //
-// Trade-off: pulls ~300 KB of Shiki + the requested grammars / themes
-// from esm.sh. That's why this is opt-in · the core stays ~12 KB gzip.
+// Trade-off: the vendored Shiki bundle is large (every grammar + theme, JS
+// engine, no wasm). That's why this is opt-in and lazy · the core stays small.
 // ════════════════════════════════════════════════════════════════
 
 interface InstallOpts {
@@ -20,8 +21,6 @@ interface InstallOpts {
   theme?: string;
   /** Languages to preload · default ['ts', 'js', 'html', 'css', 'json']. */
   langs?: string[];
-  /** Override the esm.sh CDN base if you mirror Shiki yourself. */
-  cdn?: string;
 }
 
 interface ShikiHighlighter {
@@ -34,7 +33,15 @@ let theme = 'one-dark-pro';
 
 async function loadHighlighter(opts: Required<InstallOpts>): Promise<ShikiHighlighter> {
   if (highlighter) return highlighter;
-  const { createHighlighter } = await import(/* @vite-ignore */ `${opts.cdn}shiki@1.24.0`);
+  // Prefer a pre-injected highlighter factory · single-file bundles (rikiki
+  // init/bundle --with-shiki) inline the vendored Shiki and expose it as
+  // globalThis.__rikikiShiki so there's no module URL to fetch. Otherwise load
+  // the vendored bundle (JS regex engine, no wasm) next to this module.
+  const injected = (globalThis as unknown as {
+    __rikikiShiki?: (o: unknown) => Promise<ShikiHighlighter>;
+  }).__rikikiShiki;
+  const createHighlighter = injected
+    ?? (await import(/* @vite-ignore */ new URL('./vendor/shiki.js', import.meta.url).href)).createHighlighter;
   highlighter = await createHighlighter({
     themes: [opts.theme],
     langs: opts.langs,
@@ -53,7 +60,6 @@ export async function installShiki(opts: InstallOpts = {}): Promise<void> {
   const resolved: Required<InstallOpts> = {
     theme: opts.theme ?? 'one-dark-pro',
     langs: opts.langs ?? ['ts', 'js', 'html', 'css', 'json'],
-    cdn: opts.cdn ?? 'https://esm.sh/',
   };
   theme = resolved.theme;
   const hl = await loadHighlighter(resolved);
