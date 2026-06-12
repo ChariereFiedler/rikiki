@@ -51,7 +51,8 @@
     "test": "vitest run",
     "lint": "biome check src scripts",
     "format": "biome format --write src scripts",
-    "bump": "node scripts/bump-version.mjs"
+    "bump": "node scripts/bump-version.mjs",
+    "prepublishOnly": "npm run build && npm test"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.16",
