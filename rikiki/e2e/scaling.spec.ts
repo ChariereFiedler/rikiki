@@ -75,6 +75,52 @@ test('letterbox bands match the active slide background', async ({ page }) => {
   expect(host, 'the bands take the cover background').toBe(slideBg);
 });
 
+test('letterbox bands match a black slide background (zero blue channel)', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await page.setViewportSize({ width: 540, height: 1240 }); // tall · big bands
+  await deck.goto(TOUR);
+
+  // Force the active slide to black — `rgb(0, 0, 0)` ends in ", 0)", the
+  // serialization an alpha-based check must not confuse with transparency.
+  await page.evaluate(() => {
+    const slide = document.querySelector<HTMLElement>('deck-root > [active]');
+    if (slide) slide.style.background = 'rgb(0, 0, 0)';
+  });
+  // End/Home re-run the active-slide bookkeeping (and its letterbox update).
+  await page.keyboard.press('End');
+  await page.keyboard.press('Home');
+
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          () => getComputedStyle(document.querySelector('deck-root') as Element).backgroundColor,
+        ),
+      { message: 'the bands take the black slide background' },
+    )
+    .toBe('rgb(0, 0, 0)');
+});
+
+test('overview thumbnails measure the logical canvas, not the window', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await page.setViewportSize({ width: 700, height: 1100 }); // non-16:9 on purpose
+  await deck.goto(TOUR);
+  await deck.toggleOverview();
+
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const grid = document
+            .querySelector('deck-root')
+            ?.shadowRoot?.querySelector<HTMLElement>('#overview-grid');
+          return grid?.style.getPropertyValue('--ov-thumb-w') ?? '';
+        }),
+      { message: 'thumbs clone slides at the canvas size' },
+    )
+    .toBe('1920px');
+});
+
 test('no horizontal overflow of the cover title on a small viewport', async ({ page }) => {
   const deck = createDeckPage(page);
   await page.setViewportSize({ width: 400, height: 800 });

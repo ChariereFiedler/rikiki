@@ -34,7 +34,7 @@ function walkTs(dir) {
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) out.push(...walkTs(full));
-    else if (entry.endsWith('.ts')) out.push(full);
+    else if (entry.endsWith('.ts') && !entry.endsWith('.test.ts')) out.push(full);
   }
   return out;
 }

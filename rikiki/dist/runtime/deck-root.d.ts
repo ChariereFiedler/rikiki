@@ -1,4 +1,4 @@
-import { LitElement } from 'lit';
+import { LitElement, type PropertyValues } from 'lit';
 export declare class DeckRoot extends LitElement {
     static styles: import("lit").CSSResult;
     current: number;
@@ -7,13 +7,9 @@ export declare class DeckRoot extends LitElement {
      *  keys). Pressing any key dismisses it · same convention as PowerPoint. */
     blank: 'black' | 'white' | null;
     overview: boolean;
-    /** Fixed-viewport mode · the deck renders into a fixed-aspect canvas that is
-     *  letterboxed to fit any screen, so layouts never reflow between displays.
-     *  Opt-in · the default stays fluid (100vw × 100vh). */
-    fixed: boolean;
-    /** Logical canvas size for fixed mode · defaults to 1920 × 1080 (16:9).
-     *  Only the ratio and the rem baseline depend on these · the canvas is then
-     *  scaled by CSS to fill the window. */
+    /** Logical canvas size · defaults to 1920 × 1080 (16:9). Only the ratio and
+     *  the rem baseline depend on these · the canvas is then scaled uniformly to
+     *  fill the window (see _applyScale). */
     width: number;
     height: number;
     /** Hide the bottom-left keyboard-hint chip (the ←/→ · O · P · ? row). */
@@ -55,6 +51,11 @@ export declare class DeckRoot extends LitElement {
     private _wheelAccum;
     private _wheelLockUntil;
     firstUpdated(): void;
+    /** Canvas vars, scale and every listener the deck needs while connected.
+     *  Mirror of the disconnectedCallback teardown · runs from firstUpdated on
+     *  the initial connect, and again from connectedCallback on a re-attach
+     *  (firstUpdated only ever runs once per element). */
+    private _installRuntime;
     /** Confine author `<style scoped>` blocks to their own slide. A light-DOM
      *  <style> is a global stylesheet by default, so a per-slide tweak would
      *  bleed across the whole deck. Wrapping its body in a native @scope rule
@@ -75,12 +76,12 @@ export declare class DeckRoot extends LitElement {
      *  surface · removing the override lets the bands fall back to that same
      *  surface, which stays seamless too. */
     private _applyLetterbox;
-    /** Injected once per document · true after the global baseline is in place. */
-    private static _globalsInjected;
     /** The scaling baseline is a framework concern, not a theme one: inject it
      *  globally so any theme (or none) gets it. The rem unit tracks the logical
      *  canvas height — the #stage transform does the responsive scaling — and the
-     *  page never scrolls (so the letterbox is the only thing outside a slide). */
+     *  page never scrolls (so the letterbox is the only thing outside a slide).
+     *  Guarded by the element id (not a static) so separately-bundled copies of
+     *  this class on one page share the same once-per-document semantics. */
     private static _injectGlobals;
     connectedCallback(): void;
     disconnectedCallback(): void;
@@ -136,7 +137,7 @@ export declare class DeckRoot extends LitElement {
     private _applyActive;
     private _applyStep;
     private _updateUI;
-    updated(): void;
+    updated(changed: PropertyValues<this>): void;
     private _navArrows;
     render(): unknown;
 }

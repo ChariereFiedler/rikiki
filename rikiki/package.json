@@ -40,7 +40,7 @@
     "docs/llms"
   ],
   "scripts": {
-    "build": "node build-vendor.mjs && node build.mjs && node build-standalone.mjs && tsc --emitDeclarationOnly",
+    "build": "node build-vendor.mjs && node build.mjs && node build-standalone.mjs && tsc --emitDeclarationOnly -p tsconfig.build.json",
     "vendor": "node build-vendor.mjs",
     "watch": "node build.mjs --watch",
     "typecheck": "tsc --noEmit",

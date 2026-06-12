@@ -143,14 +143,14 @@ ${e.themeHref?`<link rel="stylesheet" href="${e.themeHref}">`:""}
     // Mark the cloned slide [active] so its real component CSS applies
     // (:host([active]){display:flex}) instead of forcing display via !important.
     const activeSlide = slideHtml.replace(/^(\\s*<deck-[a-z-]+)/i, '$1 active');
-    // Render the preview in fixed-viewport mode so the slide keeps its 16:9
-    // proportions (letterboxed) regardless of the pane's shape, and drop the
-    // hint / nav-arrow chrome \xB7 a clean, correctly-shaped thumbnail.
+    // The deck always letterboxes into its logical canvas, so the slide keeps
+    // its 16:9 proportions regardless of the pane's shape \xB7 just drop the
+    // hint / nav-arrow chrome for a clean, correctly-shaped thumbnail.
     return '<!doctype html><html><head><meta charset="UTF-8">' + themeLink + themeStyle +
       bundleTag +
       '<style>html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#0f1422}' +
       'deck-root{position:absolute;inset:0}</style>' +
-      '</head><body><deck-root fixed no-hint no-arrows>' + activeSlide + '</deck-root></body></html>';
+      '</head><body><deck-root no-hint no-arrows>' + activeSlide + '</deck-root></body></html>';
   }
 
   channel.onmessage = (e) => {
@@ -177,4 +177,4 @@ ${e.themeHref?`<link rel="stylesheet" href="${e.themeHref}">`:""}
   channel.postMessage({ type: 'hello' });
 <\/script>
 </body>
-</html>`;function x(e){if(o=o??new WeakSet,o.has(e)){t?.close(),t=null;return}o.add(e),l=new BroadcastChannel(c),e.addEventListener("slide-change",()=>d(e)),l.addEventListener("message",a=>{let n=a.data;n?.type==="key"&&n.key&&window.dispatchEvent(new KeyboardEvent("keydown",{key:n.key,shiftKey:!!n.shift,bubbles:!0})),n?.type==="hello"&&d(e)});let r=p(e);if(t=window.open("","rikiki-presenter","width=1280,height=800,popup=yes"),!t){console.warn("[rikiki/presenter] popup was blocked \xB7 allow popups for this site"),o.delete(e);return}t.document.open(),t.document.write(y(r)),t.document.close();let s=setInterval(()=>{t&&t.closed&&(clearInterval(s),o?.delete(e),t=null)},1e3)}export{x as installPresenter};
+</html>`;function x(e){if(o=o??new WeakSet,o.has(e)){t?.close(),t=null;return}o.add(e),l=new BroadcastChannel(c),e.addEventListener("slide-change",()=>d(e)),l.addEventListener("message",a=>{let n=a.data;n?.type==="key"&&n.key&&window.dispatchEvent(new KeyboardEvent("keydown",{key:n.key,shiftKey:!!n.shift,bubbles:!0})),n?.type==="hello"&&d(e)});let r=p(e);if(t=window.open("","rikiki-presenter","width=1280,height=800,popup=yes"),!t){console.warn("[rikiki/presenter] popup was blocked \xB7 allow popups for this site"),o.delete(e);return}t.document.open(),t.document.write(y(r)),t.document.close();let s=setInterval(()=>{t?.closed&&(clearInterval(s),o?.delete(e),t=null)},1e3)}export{x as installPresenter};

@@ -105,7 +105,9 @@ const EXIT_CLASSES = [
 ];
 
 export function installTransitions(host: DeckRoot): () => void {
-  if ((host as any).__rkTransitions) return (host as any).__rkTransitions;
+  // The teardown is stashed on the host so a second install stays idempotent.
+  const stash = host as DeckRoot & { __rkTransitions?: () => void };
+  if (stash.__rkTransitions) return stash.__rkTransitions;
   const root = host.shadowRoot;
   if (!root) return () => {};
 
@@ -182,8 +184,8 @@ export function installTransitions(host: DeckRoot): () => void {
   const teardown = () => {
     host.removeEventListener('slide-change', onChange as EventListener);
     style.remove();
-    delete (host as any).__rkTransitions;
+    delete stash.__rkTransitions;
   };
-  (host as any).__rkTransitions = teardown;
+  stash.__rkTransitions = teardown;
   return teardown;
 }
