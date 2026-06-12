@@ -267,8 +267,15 @@ export class DeckRoot extends LitElement {
    *  `html:has(deck-root)` rem-baseline rule and the shadow `#stage` (via
    *  custom-property inheritance) size against the same numbers. */
   private _applyCanvasVars(): void {
-    if (this.fluid) return;
     const root = document.documentElement;
+    // Fluid mode has no logical canvas · clear the vars a prior non-fluid
+    // render published (symmetric with the _applyScale / _applyLetterbox
+    // guards) so toggling into fluid leaves no stale global state.
+    if (this.fluid) {
+      root.style.removeProperty('--deck-canvas-w');
+      root.style.removeProperty('--deck-canvas-h');
+      return;
+    }
     root.style.setProperty('--deck-canvas-w', String(this.width));
     root.style.setProperty('--deck-canvas-h', String(this.height));
   }
