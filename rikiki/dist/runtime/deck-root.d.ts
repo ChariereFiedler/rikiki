@@ -62,9 +62,27 @@ export declare class DeckRoot extends LitElement {
      *  with no selector rewriting · plain CSS inside keeps working unchanged. */
     private _scopeSlideStyles;
     /** Publish the logical canvas size on the document root so both the
-     *  `html:has(deck-root[fixed])` font-size rule and the shadow `#stage`
-     *  (via custom-property inheritance) size against the same numbers. */
+     *  `html:has(deck-root)` rem-baseline rule and the shadow `#stage` (via
+     *  custom-property inheritance) size against the same numbers. */
     private _applyCanvasVars;
+    /** Uniform zoom-to-fit · scale the fixed logical canvas to the largest size
+     *  that still fits the viewport, so the slide layout is identical at any
+     *  window size (letterboxed when the aspect differs). Recomputed on resize. */
+    private _applyScale;
+    /** Make the letterbox bands match the active slide's background, so a scaled
+     *  deck blends seamlessly into the bands instead of sitting on a contrasting
+     *  frame. A slide with no background of its own (transparent) shows the page
+     *  surface · removing the override lets the bands fall back to that same
+     *  surface, which stays seamless too. */
+    private _applyLetterbox;
+    /** Injected once per document · true after the global baseline is in place. */
+    private static _globalsInjected;
+    /** The scaling baseline is a framework concern, not a theme one: inject it
+     *  globally so any theme (or none) gets it. The rem unit tracks the logical
+     *  canvas height — the #stage transform does the responsive scaling — and the
+     *  page never scrolls (so the letterbox is the only thing outside a slide). */
+    private static _injectGlobals;
+    connectedCallback(): void;
     disconnectedCallback(): void;
     private _startAutoplay;
     private _stopAutoplay;
