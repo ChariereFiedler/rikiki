@@ -34,7 +34,7 @@ const TONES: Record<DeckStatTone, string> = {
 export class DeckStat extends LitElement {
   /* Customization tokens:
        --deck-stat-color (also drives the left border + number color)
-       --deck-stat-num-size · default clamp(3.5rem, 7vw, 6rem)
+       --deck-stat-num-size · default clamp(3.5rem, 7cqw, 6rem)
        --deck-stat-num-weight · default 900
        --deck-stat-claim-color · default --rik-text-default
        --deck-stat-body-color · default --rik-text-default--faint
@@ -51,7 +51,7 @@ export class DeckStat extends LitElement {
     }
     .num {
       font-family: var(--rik-font-display, var(--rik-font-sans));
-      font-size: var(--deck-stat-num-size, clamp(3.5rem, 7vw, 6rem));
+      font-size: var(--deck-stat-num-size, clamp(3.5rem, 7cqw, 6rem));
       font-weight: var(--deck-stat-num-weight, 900);
       line-height: 0.9;
       color: var(--_c, var(--deck-stat-color, var(--rik-accent)));

@@ -39,7 +39,9 @@ export class DeckCover extends LitElement {
       align-self: flex-start;
     }
     .brand-tile {
-      width: 64px; height: 64px;
+      /* rem (not px) so the logo scales with the canvas in fixed mode · 2.5rem
+         ≈ 64px at the baseline root font (2.35% of a 1080 canvas). */
+      width: 2.5rem; height: 2.5rem;
       display: inline-flex; align-items: center; justify-content: center;
     }
     .brand-tile img { width: 100%; height: 100%; display: block; }
@@ -57,7 +59,7 @@ export class DeckCover extends LitElement {
       border-left: 1px solid var(--deck-cover-border, var(--rik-border-inverse));
     }
     ::slotted(h1) {
-      font-size: clamp(3.6rem, 9vw, 8.5rem); font-weight: 900;
+      font-size: clamp(3.6rem, 9cqw, 8.5rem); font-weight: 900;
       color: var(--deck-cover-text, var(--rik-text-inverse));
       line-height: 1.02; letter-spacing: -0.035em;
       margin-bottom: var(--rik-space-4);

@@ -34,7 +34,7 @@ const SIZES: Record<DeckPunchSize, string> = {
   big:     'var(--rik-font-size-big)',
   mega:    'var(--rik-font-size-mega)',
   stat:    'var(--rik-font-size-stat)',
-  display: 'clamp(2.6rem, 6vw, 5rem)',
+  display: 'clamp(2.6rem, 6cqw, 5rem)',
 };
 
 @customElement('deck-punch')

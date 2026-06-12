@@ -25,11 +25,11 @@ export class DeckTakeaway extends LitElement {
     .body {
       display: flex; flex-direction: column; align-items: center;
       gap: var(--deck-takeaway-gap, var(--rik-space-4));
-      max-width: 75vw;
+      max-width: 75cqw;
     }
     ::slotted(.display) {
       font-family: var(--rik-font-display, var(--rik-font-sans));
-      font-size: clamp(3rem, 7vw, 5.5rem);
+      font-size: clamp(3rem, 7cqw, 5.5rem);
       font-weight: 900;
       color: var(--deck-takeaway-display-color, var(--rik-accent));
       letter-spacing: -0.03em; line-height: 1.05;

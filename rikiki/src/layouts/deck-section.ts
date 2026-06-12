@@ -29,7 +29,7 @@ export class DeckSection extends LitElement {
       font-family: var(--rik-font-mono);
     }
     .sec-num::before, .sec-num::after {
-      content: ''; width: 32px; height: 1px;
+      content: ''; width: 1.25rem; height: 1px;
       background: var(--deck-section-rule-color, var(--rik-border-inverse));
     }
     ::slotted(h1) {
