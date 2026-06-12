@@ -1,5 +1,7 @@
 # Rikiki · LLM reference
 
+This reference documents rikiki v0.4.0.
+
 Exhaustive, self-consistent reference for authoring valid **rikiki** decks. Every
 tag, attribute, slot, and token below was derived from the source in this repo
 (`src/index.ts` is the canonical component list; `themes/rikiki.css` is the

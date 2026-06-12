@@ -1,6 +1,6 @@
 {
   "name": "rikiki-deck",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "A tiny Lit Web Components framework for technical presentations · zero-build for consumers, TypeScript for contributors.",
   "homepage": "https://rikiki.tordu-jardin.fr",
   "repository": {
@@ -34,7 +34,9 @@
     "tokens.css",
     "themes",
     "fonts",
-    "README.md"
+    "README.md",
+    "llms.txt",
+    "docs/llms"
   ],
   "scripts": {
     "build": "node build-vendor.mjs && node build.mjs && node build-standalone.mjs && tsc --emitDeclarationOnly",
@@ -44,7 +46,9 @@
     "clean": "rm -rf dist",
     "bundle": "node bundle.mjs",
     "deck": "node build/vite-deck.mjs",
-    "deck:example": "node build/vite-deck.mjs decks/example/deck.config.js"
+    "deck:example": "node build/vite-deck.mjs decks/example/deck.config.js",
+    "test": "vitest run",
+    "bump": "node scripts/bump-version.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.24.0",
@@ -52,7 +56,8 @@
     "marked": "^12.0.2",
     "mermaid": "^10.9.6",
     "shiki": "^1.24.0",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
   },
   "peerDependencies": {
     "lit": "^3.3.3"
