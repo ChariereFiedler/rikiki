@@ -12,7 +12,9 @@ export default defineConfig({
   reporter: process.env.CI ? [['list'], ['json', { outputFile: 'e2e-report.json' }]] : 'list',
   use: {
     baseURL: `http://localhost:${PORT}`,
-    trace: 'on-first-retry',
+    // retries stay at 0, so a retry-gated trace would never fire · keep the
+    // trace of every failure instead (collected as a CI artifact).
+    trace: 'retain-on-failure',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {

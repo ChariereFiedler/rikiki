@@ -27,5 +27,6 @@ for (const deckPath of DECKS) {
     await expect(deck.activeSlide, 'exactly one slide is active on load').toHaveCount(1);
 
     expect(deck.consoleErrors.filter(isJsError), 'no JavaScript errors on load').toEqual([]);
+    expect(deck.failedRequests, 'every local deck asset loads').toEqual([]);
   });
 }
