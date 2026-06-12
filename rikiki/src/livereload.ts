@@ -14,11 +14,15 @@ const here = (rel: string): string => new URL(rel, import.meta.url).href;
 // hardcoded here('./tokens.css') assumed the theme sat next to this module in
 // dist/, which 404s (the theme lives at the package root, not in dist/).
 const sameOrigin = (href: string): boolean => {
-  try { return new URL(href, location.href).origin === location.origin; } catch { return false; }
+  try {
+    return new URL(href, location.href).origin === location.origin;
+  } catch {
+    return false;
+  }
 };
-const themeHrefs = Array.from(
-  document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')
-).map((l) => l.href).filter(sameOrigin);  // skip cross-origin (CDN fonts) · HEAD would CORS-error every poll
+const themeHrefs = Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]'))
+  .map((l) => l.href)
+  .filter(sameOrigin); // skip cross-origin (CDN fonts) · HEAD would CORS-error every poll
 
 const FILES = [
   ...themeHrefs,
@@ -39,12 +43,14 @@ const FILES = [
   here('./deck-stack.js'),
   here('./deck-grid.js'),
   here('./deck-punch.js'),
-  location.pathname,            // the HTML itself
+  location.pathname, // the HTML itself
 ];
 
 const state = new Map<string, string>();
 
-interface Toast extends HTMLDivElement { _t?: ReturnType<typeof setTimeout>; }
+interface Toast extends HTMLDivElement {
+  _t?: ReturnType<typeof setTimeout>;
+}
 let toast: Toast | undefined;
 
 function showToast(text: string, color: string = '#0a0a0a'): void {
@@ -56,13 +62,16 @@ function showToast(text: string, color: string = '#0a0a0a'): void {
   toast.textContent = text;
   toast.style.opacity = '1';
   if (toast._t) clearTimeout(toast._t);
-  toast._t = setTimeout(() => { if (toast) toast.style.opacity = '0'; }, 1500);
+  toast._t = setTimeout(() => {
+    if (toast) toast.style.opacity = '0';
+  }, 1500);
 }
 
 async function check(url: string): Promise<boolean> {
   try {
     const r = await fetch(url + '?_lr=' + Date.now(), { method: 'HEAD', cache: 'no-store' });
-    const tag = r.headers.get('last-modified') ?? r.headers.get('etag') ?? r.headers.get('content-length');
+    const tag =
+      r.headers.get('last-modified') ?? r.headers.get('etag') ?? r.headers.get('content-length');
     if (!tag) return false;
     const prev = state.get(url);
     state.set(url, tag);

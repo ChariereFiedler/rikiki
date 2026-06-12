@@ -57,7 +57,7 @@ let installed: WeakSet<DeckRoot> | null = null;
 
 function readState(host: DeckRoot): PresenterState {
   const slides = Array.from(host.children).filter((el) =>
-    el.tagName.toLowerCase().startsWith('deck-')
+    el.tagName.toLowerCase().startsWith('deck-'),
   ) as HTMLElement[];
   const current = slides.findIndex((s) => s.hasAttribute('active'));
   const slide = slides[current] ?? null;
@@ -66,17 +66,18 @@ function readState(host: DeckRoot): PresenterState {
   const notes = (notesEl?.textContent ?? '').trim();
   // Find the active theme link · falls back to a sensible CDN default
   const themeLink = document.querySelector<HTMLLinkElement>(
-    'link[rel="stylesheet"][href*="rikiki"], link[rel="stylesheet"][href*="tokens"], link[rel="stylesheet"][href*="theme"]'
+    'link[rel="stylesheet"][href*="rikiki"], link[rel="stylesheet"][href*="tokens"], link[rel="stylesheet"][href*="theme"]',
   );
   const themeHref = themeLink?.href ?? '';
   // Self-contained single-file decks have the theme inlined as <style> and the
   // framework as a tagged inline module · capture both so the preview iframes
   // get the same look and the same <deck-*> definitions, with no external fetch.
   const inlineStyles = Array.from(document.querySelectorAll('style'))
-    .map((s) => s.textContent ?? '').join('\n');
-  const bundleInline = document.querySelector<HTMLScriptElement>(
-    'script[type="module"][data-rikiki-bundle]'
-  )?.textContent ?? '';
+    .map((s) => s.textContent ?? '')
+    .join('\n');
+  const bundleInline =
+    document.querySelector<HTMLScriptElement>('script[type="module"][data-rikiki-bundle]')
+      ?.textContent ?? '';
   return {
     current: current + 1,
     total: slides.length,
@@ -294,11 +295,13 @@ export function installPresenter(host: DeckRoot): void {
   channel.addEventListener('message', (e: MessageEvent) => {
     const data = e.data as { type: string; key?: string; shift?: boolean };
     if (data?.type === 'key' && data.key) {
-      window.dispatchEvent(new KeyboardEvent('keydown', {
-        key: data.key,
-        shiftKey: !!data.shift,
-        bubbles: true,
-      }));
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: data.key,
+          shiftKey: !!data.shift,
+          bubbles: true,
+        }),
+      );
     }
     if (data?.type === 'hello') {
       // Popup just appeared · send a fresh state snapshot

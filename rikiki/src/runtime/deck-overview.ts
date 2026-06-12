@@ -267,11 +267,13 @@ function sectionTitleOf(chap: Chapter): string {
   const first = chap.slides[0];
   const h1 = first?.querySelector('h1');
   if (!h1) return `Slide ${chap.startIdx + 1}`;
-  return Array.from(h1.childNodes)
-    .map((n) => (n.nodeName === 'BR' ? ' ' : n.textContent ?? ''))
-    .join('')
-    .replace(/\s+/g, ' ')
-    .trim() || `Slide ${chap.startIdx + 1}`;
+  return (
+    Array.from(h1.childNodes)
+      .map((n) => (n.nodeName === 'BR' ? ' ' : (n.textContent ?? '')))
+      .join('')
+      .replace(/\s+/g, ' ')
+      .trim() || `Slide ${chap.startIdx + 1}`
+  );
 }
 
 /** Extract a short, searchable text for a single slide · used by the filter. */
@@ -286,8 +288,15 @@ interface MermaidLike extends HTMLElement {
 
 /** Attributes whose value may carry url(#id) references. */
 const URL_REF_ATTRS = [
-  'fill', 'stroke', 'clip-path', 'mask', 'filter',
-  'marker-start', 'marker-mid', 'marker-end', 'style',
+  'fill',
+  'stroke',
+  'clip-path',
+  'mask',
+  'filter',
+  'marker-start',
+  'marker-mid',
+  'marker-end',
+  'style',
 ];
 
 /** Suffix every [id] inside root and rewrite url(#…) / href="#…" references
@@ -301,7 +310,8 @@ function namespaceIds(root: HTMLElement, suffix: string): void {
   if (renames.size === 0) return;
   const rewriteUrls = (value: string): string =>
     value.replace(/url\(['"]?#([^'")]+)['"]?\)/g, (m, id: string) =>
-      renames.has(id) ? `url(#${renames.get(id)})` : m);
+      renames.has(id) ? `url(#${renames.get(id)})` : m,
+    );
   root.querySelectorAll('*').forEach((el) => {
     for (const attr of URL_REF_ATTRS) {
       const v = el.getAttribute(attr);
@@ -381,15 +391,18 @@ function snapshotMermaids(live: Slide, clone: HTMLElement): void {
 function revealClickStages(clone: HTMLElement): void {
   clone
     .querySelectorAll<HTMLElement>(
-      '[data-click], [data-click-auto], [data-click-children], [data-click-stagger] > *'
+      '[data-click], [data-click-auto], [data-click-children], [data-click-stagger] > *',
     )
     .forEach((el) => {
       el.style.opacity = '';
       el.style.transform = '';
       el.style.filter = '';
       el.style.pointerEvents = '';
-      el.querySelectorAll<SVGElement>('path, line, polyline, polygon, circle, ellipse, rect')
-        .forEach((s) => { (s as SVGElement & { style: CSSStyleDeclaration }).style.strokeDashoffset = ''; });
+      el.querySelectorAll<SVGElement>(
+        'path, line, polyline, polygon, circle, ellipse, rect',
+      ).forEach((s) => {
+        (s as SVGElement & { style: CSSStyleDeclaration }).style.strokeDashoffset = '';
+      });
     });
 }
 
@@ -439,10 +452,7 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
   const useSidebar = total > 60;
 
   // Adaptive thumb min-width for the auto-fill grid. More slides → smaller.
-  const cellMin =
-    total > 300 ? 140 :
-    total > 150 ? 160 :
-    total > 60  ? 180 : 220;
+  const cellMin = total > 300 ? 140 : total > 150 ? 160 : total > 60 ? 180 : 220;
   grid.style.setProperty('--ov-cell-min', cellMin + 'px');
 
   // Each thumb is a 1:1 clone of a slide laid out at the deck's own dimensions,
@@ -537,7 +547,7 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
         });
       }
     },
-    { root: null, rootMargin: '300px 0px', threshold: 0 }
+    { root: null, rootMargin: '300px 0px', threshold: 0 },
   );
 
   opts.chapters.forEach((chap, ci) => {
@@ -602,8 +612,7 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
       item.type = 'button';
       item.className = 'ov-aside-item';
       const isCurrent =
-        opts.currentIdx >= chap.startIdx &&
-        opts.currentIdx < chap.startIdx + chap.slides.length;
+        opts.currentIdx >= chap.startIdx && opts.currentIdx < chap.startIdx + chap.slides.length;
       if (isCurrent) item.dataset['active'] = '1';
 
       const numEl = document.createElement('span');
@@ -647,9 +656,11 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
           }
         }
       },
-      { root: main, rootMargin: '0px 0px -70% 0px', threshold: 0 }
+      { root: main, rootMargin: '0px 0px -70% 0px', threshold: 0 },
     );
-    chapterEls.forEach((c) => io!.observe(c));
+    chapterEls.forEach((c) => {
+      io!.observe(c);
+    });
   }
 
   // ── Search · filter cells live as the user types ────────────────────
@@ -657,7 +668,9 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
   search.addEventListener('input', () => {
     const q = search.value.trim().toLowerCase();
     if (!q) {
-      allCells.forEach((c) => delete c.dataset['filteredOut']);
+      allCells.forEach((c) => {
+        delete c.dataset['filteredOut'];
+      });
       return;
     }
     allCells.forEach((c) => {

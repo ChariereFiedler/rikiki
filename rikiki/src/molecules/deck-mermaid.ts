@@ -13,7 +13,9 @@ interface MermaidLib {
   render(id: string, source: string): Promise<{ svg: string }>;
 }
 declare global {
-  interface Window { mermaid?: MermaidLib; }
+  interface Window {
+    mermaid?: MermaidLib;
+  }
 }
 
 let mermaidReady = false;
@@ -34,12 +36,12 @@ async function ensureMermaid(): Promise<void> {
     startOnLoad: false,
     theme: 'dark',
     themeVariables: {
-      background:  '#0f0f10',
-      mainBkg:     '#2a2a2a',
-      nodeBorder:  '#555',
-      lineColor:   '#777',
-      textColor:   '#e5e5e5',
-      fontSize:    '13px',
+      background: '#0f0f10',
+      mainBkg: '#2a2a2a',
+      nodeBorder: '#555',
+      lineColor: '#777',
+      textColor: '#e5e5e5',
+      fontSize: '13px',
       edgeLabelBackground: '#111',
     },
     flowchart: { curve: 'basis', htmlLabels: true, padding: 12 },
@@ -81,10 +83,14 @@ export class DeckMermaid extends LitElement {
 
   /** Rendered SVG markup · '' until the async render completes. Lets the
    *  overview build static thumbnails without reaching into this shadow root. */
-  get renderedSvg(): string { return this._svg; }
+  get renderedSvg(): string {
+    return this._svg;
+  }
 
   /** Resolves when the current render attempt settles (success or error). */
-  get whenRendered(): Promise<void> { return this._renderPromise ?? Promise.resolve(); }
+  get whenRendered(): Promise<void> {
+    return this._renderPromise ?? Promise.resolve();
+  }
 
   override connectedCallback() {
     super.connectedCallback();

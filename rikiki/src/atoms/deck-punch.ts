@@ -21,19 +21,19 @@ export type DeckPunchTone = 'warn' | 'danger' | 'ok' | 'info' | 'muted' | 'accen
 export type DeckPunchSize = 'lead' | 'big' | 'mega' | 'stat' | 'display';
 
 const TONES: Record<DeckPunchTone, string> = {
-  warn:   'var(--rik-status-warn)',
+  warn: 'var(--rik-status-warn)',
   danger: 'var(--rik-status-danger)',
-  ok:     'var(--rik-status-success)',
-  info:   'var(--rik-accent)',
-  muted:  'var(--rik-text-default--faint)',
+  ok: 'var(--rik-status-success)',
+  info: 'var(--rik-accent)',
+  muted: 'var(--rik-text-default--faint)',
   accent: 'var(--rik-accent)',
 };
 
 const SIZES: Record<DeckPunchSize, string> = {
-  lead:    'var(--rik-font-size-lead)',
-  big:     'var(--rik-font-size-big)',
-  mega:    'var(--rik-font-size-mega)',
-  stat:    'var(--rik-font-size-stat)',
+  lead: 'var(--rik-font-size-lead)',
+  big: 'var(--rik-font-size-big)',
+  mega: 'var(--rik-font-size-mega)',
+  stat: 'var(--rik-font-size-stat)',
   display: 'clamp(2.6rem, 6cqw, 5rem)',
 };
 

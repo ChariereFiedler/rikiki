@@ -15,7 +15,9 @@ export class DeckMetricList extends LitElement {
   static override styles = css`
     :host { display: flex; flex-direction: column; gap: var(--rik-space-2); }
   `;
-  override render() { return html`<slot></slot>`; }
+  override render() {
+    return html`<slot></slot>`;
+  }
 }
 
 @customElement('deck-metric')

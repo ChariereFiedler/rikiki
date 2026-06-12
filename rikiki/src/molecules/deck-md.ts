@@ -73,7 +73,8 @@ export class DeckMd extends LitElement {
     const indent = lines
       .filter((l: string) => l.trim().length > 0)
       .reduce((min: number, l: string) => Math.min(min, l.match(/^ */)?.[0].length ?? 0), Infinity);
-    const cleaned = indent === Infinity ? raw : lines.map((l: string) => l.slice(indent)).join('\n');
+    const cleaned =
+      indent === Infinity ? raw : lines.map((l: string) => l.slice(indent)).join('\n');
     this._html = marked.parse(cleaned.trim()) as string;
     // Clear the original slot · we render via shadow DOM.
     this.textContent = '';

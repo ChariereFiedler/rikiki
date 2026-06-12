@@ -46,9 +46,7 @@ const edit = (file, fn) => {
 };
 
 // 1. package.json — the source of truth.
-edit(PACKAGE_JSON, (t) =>
-  t.replace(/("version":\s*")\d+\.\d+\.\d+(")/, `$1${next}$2`),
-);
+edit(PACKAGE_JSON, (t) => t.replace(/("version":\s*")\d+\.\d+\.\d+(")/, `$1${next}$2`));
 
 // 2. + 5. every EXACT surface (package-lock, demo deck anchors, doc stamps):
 // rewrite each captured version to the new one, in place.
@@ -59,9 +57,7 @@ for (const file of touched) {
     let out = t;
     for (const { file: f, find } of EXACT) {
       if (f !== file) continue;
-      out = out.replace(new RegExp(find.source, 'g'), (full, v) =>
-        full.replace(v, next),
-      );
+      out = out.replace(new RegExp(find.source, 'g'), (full, v) => full.replace(v, next));
     }
     return out;
   });

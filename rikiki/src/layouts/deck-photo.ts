@@ -29,7 +29,9 @@ export class DeckPhoto extends LitElement {
        --deck-photo-text-muted (default --rik-text-inverse--muted)
        --deck-photo-content-max-width (default 28ch)
        --deck-photo-padding-x / -padding-y */
-  static override styles = [slideShell, css`
+  static override styles = [
+    slideShell,
+    css`
     :host {
       padding: 0;
       color: var(--deck-photo-text-color, var(--rik-text-inverse));
@@ -97,7 +99,8 @@ export class DeckPhoto extends LitElement {
       color: var(--deck-photo-text-muted, var(--rik-text-inverse--muted));
       margin: 0;
     }
-  `];
+  `,
+  ];
 
   @property({ type: String }) src?: string;
   @property({ type: String }) position?: string;
@@ -112,7 +115,12 @@ export class DeckPhoto extends LitElement {
     this.style.setProperty('--_align', a);
     if (this.textAlign) {
       this.style.setProperty('--_text-align', this.textAlign);
-      const items = this.textAlign === 'center' ? 'center' : this.textAlign === 'right' ? 'flex-end' : 'flex-start';
+      const items =
+        this.textAlign === 'center'
+          ? 'center'
+          : this.textAlign === 'right'
+            ? 'flex-end'
+            : 'flex-start';
       this.style.setProperty('--_text-align-items', items);
     }
   }
