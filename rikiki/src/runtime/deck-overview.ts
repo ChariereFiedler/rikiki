@@ -373,11 +373,32 @@ function snapshotMermaids(live: Slide, clone: HTMLElement): void {
   });
 }
 
+/** Reveal click-staged content so the thumbnail shows the slide's *final*
+ *  state, not click step 0 · a slide whose payload hides behind data-click
+ *  (the punchline) would otherwise render blank in the overview. The clone
+ *  carries the live slide's inline opacity/transform from click-stages · clear
+ *  it on reveal-type elements (no-op when click-stages isn't installed). */
+function revealClickStages(clone: HTMLElement): void {
+  clone
+    .querySelectorAll<HTMLElement>(
+      '[data-click], [data-click-auto], [data-click-children], [data-click-stagger] > *'
+    )
+    .forEach((el) => {
+      el.style.opacity = '';
+      el.style.transform = '';
+      el.style.filter = '';
+      el.style.pointerEvents = '';
+      el.querySelectorAll<SVGElement>('path, line, polyline, polygon, circle, ellipse, rect')
+        .forEach((s) => { (s as SVGElement & { style: CSSStyleDeclaration }).style.strokeDashoffset = ''; });
+    });
+}
+
 /** Thumbnail-safe clone of a slide · static mermaid, namespaced IDs,
- *  frozen SVG dimensions. */
+ *  frozen SVG dimensions, click-staged content revealed. */
 function snapshotSlide(slide: Slide, idx: number): HTMLElement {
   const clone = slide.cloneNode(true) as HTMLElement;
   clone.setAttribute('active', '');
+  revealClickStages(clone);
   freezeSvgSizes(slide, clone);
   snapshotMermaids(slide, clone);
   namespaceIds(clone, `-ov${idx}`);
