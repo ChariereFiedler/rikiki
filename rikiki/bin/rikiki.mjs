@@ -5,14 +5,16 @@
 //   rikiki init --standalone [name.html] [--title "…"] [--theme rikiki|siliceum]
 //                            [--with-mermaid] [--with-shiki] [--no-fonts]
 //   rikiki bundle <deck.html> [out.html|-] [--no-fonts]
+//   rikiki skills [--dir <path>] [--force]
 //
 // `init --standalone` generates a self-contained, share-anywhere deck with no
 // external links. `bundle` folds an existing deck into the same single file.
-// Both use the rolldown-powered inliner in lib/inline.mjs.
+// Both use the rolldown-powered inliner in lib/inline.mjs. `skills` installs the
+// bundled Claude Code skills into a project so the agent auto-discovers them.
 // ════════════════════════════════════════════════════════════════
 
 import { parseArgs } from 'node:util';
-import { readFileSync, writeFileSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, statSync, cpSync, mkdirSync } from 'node:fs';
 import { resolve, dirname, basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { inlineDeck } from './lib/inline.mjs';
@@ -24,6 +26,7 @@ const HELP = `rikiki · self-contained slide decks
 
   rikiki init --standalone [name.html] [options]   generate a new single-file deck
   rikiki bundle <deck.html> [out.html|-] [options]  fold an existing deck into one file
+  rikiki skills [--dir <path>] [--force]            install the Claude Code skills into a project
 
 Options:
   --title "…"          deck title (init)
@@ -138,10 +141,40 @@ async function cmdBundle(argv) {
   if (outputPath !== '-') warnExternal(inlined);
 }
 
+// Consumer-facing skills shipped in the npm tarball. `rikiki-component` and
+// `bump-version` stay repo-only (they need the TS sources / release scripts a
+// package consumer doesn't have).
+const DISTRIBUTED_SKILLS = ['rikiki-deck', 'rikiki-theme', 'rikiki-debug'];
+
+function cmdSkills(argv) {
+  const { values } = parseArgs({
+    args: argv,
+    options: { dir: { type: 'string' }, force: { type: 'boolean', default: false } },
+  });
+  const targetRoot = resolve(process.cwd(), values.dir || '.claude/skills');
+  let copied = 0;
+  for (const name of DISTRIBUTED_SKILLS) {
+    const src = join(PKG_ROOT, '.claude', 'skills', name);
+    if (!existsSync(src)) continue; // not in this install (e.g. running from a trimmed tarball)
+    const dest = join(targetRoot, name);
+    if (existsSync(dest) && !values.force) {
+      console.error(`rikiki skills · ${name} already exists · use --force to overwrite`);
+      continue;
+    }
+    mkdirSync(dirname(dest), { recursive: true });
+    cpSync(src, dest, { recursive: true });
+    console.error(`rikiki skills · installed ${name} → ${join(values.dir || '.claude/skills', name)}`);
+    copied++;
+  }
+  if (copied) console.error(`rikiki skills · ${copied} skill(s) installed · restart Claude Code to pick them up`);
+  else console.error('rikiki skills · nothing installed');
+}
+
 const [cmd, ...rest] = process.argv.slice(2);
 try {
   if (cmd === 'init') await cmdInit(rest);
   else if (cmd === 'bundle') await cmdBundle(rest);
+  else if (cmd === 'skills') cmdSkills(rest);
   else if (!cmd || cmd === '-h' || cmd === '--help' || cmd === 'help') { console.log(HELP); }
   else { console.error('rikiki · unknown command: ' + cmd + '\n\n' + HELP); process.exit(1); }
 } catch (e) {

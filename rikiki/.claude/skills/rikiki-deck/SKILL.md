@@ -62,6 +62,11 @@ and every step. Confirm slides are styled and reveals fire in order.
 ## Rules
 
 - Never nest `<deck-root>`.
+- **Asset paths are relative to your deck file** — adjust the theme `<link>`,
+  the `dist/index.js` script, and any `click-stages.js` import together. Next to
+  `starter.html` it's `./tokens.css` / `./dist/…`; a deck under `examples/<name>/`
+  uses `../../rikiki/tokens.css` / `../../rikiki/dist/…`; an npm consumer points
+  at their `node_modules/rikiki-deck/…` (or an import map).
 - Load theme CSS before `dist/index.js`.
 - Use semantic `--rik-*` tokens for any color/spacing override, at `:root` (or
   component `--deck-*-…` tokens on one host). Do not hardcode colors.
