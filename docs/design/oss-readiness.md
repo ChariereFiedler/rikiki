@@ -29,10 +29,10 @@ Analysis date: 2026-06-12.
       (`rikiki/biome.json`, `npm run lint` / `format`). Adopted + applied.
 - [x] CI `package-check` job for `rikiki/`: `typecheck` + `lint` + `test`, in
       the cheap `check` stage. Today the suite runs in CI, not just locally.
-- [ ] *(deferred)* Automated render smoke test (Playwright over
-      `decks/tests/*.html`) wired into CI. Needs a browser image on the
-      tordu-jardin runner — scoped as its own follow-up, not bundled into the
-      cheap check stage.
+- [x] Playwright render net (`e2e/`): smoke over every fixture deck + a
+      navigation contract spec + a scaling regression spec. Page object,
+      state-based waits, console-error capture (granit-golem discipline). Wired
+      into CI as the `e2e` job (official Playwright image).
 
 ## Lot 3 · OSS hygiene files (P1)
 
@@ -66,7 +66,8 @@ Analysis date: 2026-06-12.
 - [ ] Decide the `dist/` strategy: keep committed (document the "zero-build"
       promise loudly) **or** build in release CI. At minimum the `.gitattributes`
       generated-marker above so diffs/language-stats collapse it.
-- [ ] Component unit/render test coverage (currently only `version.test.mjs`).
+- [x] Render coverage via the Playwright net (smoke + navigation + scaling).
+      Pure-logic unit tests will land WITH the deck-root split (test-first).
 - [ ] Tidy internal process artifacts: `rikiki/docs/superpowers/` and
       `.claude/skills/` — keep for transparency but file under `docs/design/`.
 
