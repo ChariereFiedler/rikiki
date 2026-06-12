@@ -5,19 +5,22 @@ Thank you for considering a contribution. This document is short on purpose.
 ## Setup
 
 ```bash
-git clone <repo>
-cd rikiki
+git clone https://gitlab.com/tordu-jardin/rikiki.git
+cd rikiki/rikiki      # the npm package lives one level down
 npm install
-npm run build      # esbuild + tsc --emitDeclarationOnly
+npm run build         # esbuild + tsc --emitDeclarationOnly
+npm test              # release-consistency suite (vitest)
 ```
 
 Run the dev server from the repo root:
 
 ```bash
+cd ..                 # back to the repo root
 python3 -m http.server 7799
 ```
 
-Then open <http://localhost:7799/examples/web-components-in-5min/>.
+Then open <http://localhost:7799/examples/rikiki-tour/> or
+<http://localhost:7799/rikiki/starter.html>.
 
 ## Project layout
 
@@ -42,10 +45,14 @@ Then open <http://localhost:7799/examples/web-components-in-5min/>.
 
 ## Adding a component
 
-1. Create `rikiki/src/deck-<name>.ts` extending `LitElement`.
-2. Import shared styles from `./shared-styles.js` if it is a slide layout.
-3. Define the element at the bottom: `customElements.define('deck-<name>', Deck<Name>);`.
-4. Register it in `rikiki/src/index.ts`.
+Sources are organised by design-system bucket: `atoms/`, `molecules/`,
+`layouts/`, `runtime/`, `plugins/`.
+
+1. Create `rikiki/src/<bucket>/deck-<name>.ts` extending `LitElement` (pick the
+   bucket: a slide is a `layout`, an inline element an `atom`/`molecule`).
+2. Import shared styles from `../shared-styles.js` if it is a slide layout.
+3. Register the element with the decorator: `@customElement('deck-<name>')`.
+4. Export and register it in `rikiki/src/index.ts`.
 5. Rebuild: `npm run build`. The `dist/` change ships with the PR.
 
 ## Pull requests
