@@ -39,10 +39,16 @@ interface PresenterState {
   nextHtml: string | null;
   // Notes extracted from <deck-notes> inside the active slide
   notes: string;
-  // Tokens.css URL so the popup looks like the deck
+  // Tokens.css URL so the popup looks like the deck (served decks)
   themeHref: string;
+  // Inlined theme CSS · for self-contained single-file decks where the theme
+  // is a <style> block, not a <link> (empty for served decks).
+  inlineStyles: string;
   // Absolute URL of the rikiki bundle so iframes can upgrade <deck-*> elements
   bundleHref: string;
+  // The inlined framework bundle code · for single-file decks where there's no
+  // external index.js to <script src> (empty for served decks).
+  bundleInline: string;
 }
 
 let popup: Window | null = null;
@@ -63,6 +69,14 @@ function readState(host: DeckRoot): PresenterState {
     'link[rel="stylesheet"][href*="rikiki"], link[rel="stylesheet"][href*="tokens"], link[rel="stylesheet"][href*="theme"]'
   );
   const themeHref = themeLink?.href ?? '';
+  // Self-contained single-file decks have the theme inlined as <style> and the
+  // framework as a tagged inline module · capture both so the preview iframes
+  // get the same look and the same <deck-*> definitions, with no external fetch.
+  const inlineStyles = Array.from(document.querySelectorAll('style'))
+    .map((s) => s.textContent ?? '').join('\n');
+  const bundleInline = document.querySelector<HTMLScriptElement>(
+    'script[type="module"][data-rikiki-bundle]'
+  )?.textContent ?? '';
   return {
     current: current + 1,
     total: slides.length,
@@ -70,7 +84,9 @@ function readState(host: DeckRoot): PresenterState {
     nextHtml: next?.outerHTML ?? null,
     notes,
     themeHref,
+    inlineStyles,
     bundleHref: RIKIKI_BUNDLE_URL,
+    bundleInline,
   };
 }
 
@@ -194,36 +210,43 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${initial.themeHref}">` : ''
   resetBtn.onclick = () => { startedAt = Date.now(); elapsed = 0; running = true; toggleBtn.textContent = 'Pause'; };
 
   function wrapFrame(slideHtml) {
-    const themeHref  = ${JSON.stringify(initial.themeHref)};
-    const bundleHref = ${JSON.stringify(initial.bundleHref)};
+    const themeHref    = ${JSON.stringify(initial.themeHref)};
+    const inlineStyles = ${JSON.stringify(initial.inlineStyles)};
+    const bundleHref   = ${JSON.stringify(initial.bundleHref)};
+    const bundleInline = ${JSON.stringify(initial.bundleInline)};
     const themeLink  = themeHref ? '<link rel="stylesheet" href="' + themeHref + '">' : '';
-    // Bootstrap rikiki inside the iframe. For a file-served deck bundleHref is a
-    // real URL · load it with <script src>. For a single-file bundled deck the
-    // bundle is inlined, so import.meta.url (and thus bundleHref) is a data: URL.
-    // Loaded as <script src="data:..."> the module's own import.meta.url is that
-    // data: URL, where a top-level new URL(relative, import.meta.url) throws and
-    // aborts component registration · the iframe then shows raw, un-upgraded
-    // markup. Inline the same code instead so the module base is the iframe
-    // document URL (escaping any script end-tag in the bundle so it can't
-    // close this block early · note this very comment must avoid the literal).
+    const themeStyle = inlineStyles ? '<style>' + inlineStyles + '</style>' : '';
+    // Bootstrap rikiki inside the iframe so its <deck-*> elements upgrade.
+    //  · single-file deck → the framework is inlined and tagged · re-inline it
+    //    so the module base is the iframe document URL (a <script src="data:">
+    //    or a non-existent ./index.js would break new URL(rel, import.meta.url)
+    //    and abort registration). Escape any script end-tag so it can't close
+    //    this block early (this comment must avoid the literal too).
+    //  · served deck → load the real bundle URL with <script src>.
     let bundleTag;
-    if (bundleHref.slice(0, 5) === 'data:') {
+    const esc = (c) => c.replace(/<\\/script/gi, '<\\\\/script');
+    if (bundleInline) {
+      bundleTag = '<script type="module">' + esc(bundleInline) + '<' + '/script>';
+    } else if (bundleHref.slice(0, 5) === 'data:') {
       const b64 = bundleHref.indexOf(';base64,');
       const code = b64 >= 0
         ? atob(bundleHref.slice(b64 + 8))
         : decodeURIComponent(bundleHref.slice(bundleHref.indexOf(',') + 1));
-      bundleTag = '<script type="module">' + code.replace(/<\\/script/gi, '<\\\\/script') + '<' + '/script>';
+      bundleTag = '<script type="module">' + esc(code) + '<' + '/script>';
     } else {
       bundleTag = '<script type="module" src="' + bundleHref + '"><' + '/script>';
     }
     // Mark the cloned slide [active] so its real component CSS applies
     // (:host([active]){display:flex}) instead of forcing display via !important.
     const activeSlide = slideHtml.replace(/^(\\s*<deck-[a-z-]+)/i, '$1 active');
-    return '<!doctype html><html><head><meta charset="UTF-8">' + themeLink +
+    // Render the preview in fixed-viewport mode so the slide keeps its 16:9
+    // proportions (letterboxed) regardless of the pane's shape, and drop the
+    // hint / nav-arrow chrome · a clean, correctly-shaped thumbnail.
+    return '<!doctype html><html><head><meta charset="UTF-8">' + themeLink + themeStyle +
       bundleTag +
       '<style>html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#0f1422}' +
       'deck-root{position:absolute;inset:0}</style>' +
-      '</head><body><deck-root>' + activeSlide + '</deck-root></body></html>';
+      '</head><body><deck-root fixed no-hint no-arrows>' + activeSlide + '</deck-root></body></html>';
   }
 
   channel.onmessage = (e) => {
