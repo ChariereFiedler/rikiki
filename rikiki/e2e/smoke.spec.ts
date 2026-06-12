@@ -11,6 +11,8 @@ const DECKS = [
   '/rikiki/decks/tests/stages.html',
   '/rikiki/decks/tests/mouse-nav.html',
   '/rikiki/decks/tests/overview-svg.html',
+  '/rikiki/decks/tests/embedded.html',
+  '/rikiki/decks/tests/fluid.html',
   '/examples/rikiki-tour/index.html',
 ];
 

@@ -42,24 +42,16 @@ test('a fluid deck reflows with the viewport (no canvas, no letterbox)', async (
   const deck = createDeckPage(page);
   await deck.goto('/rikiki/decks/tests/fluid.html');
 
-  const stageBox = () =>
-    page.evaluate(() => {
-      const stage = document.querySelector('deck-root')?.shadowRoot?.querySelector('#stage');
-      if (!stage) throw new Error('no #stage');
-      const b = stage.getBoundingClientRect();
-      return { w: b.width, h: b.height };
-    });
-
   // The stage fills the viewport exactly · no 16:9 letterbox.
   await page.setViewportSize({ width: 700, height: 1100 });
-  const tall = await stageBox();
+  const tall = await deck.stageBox();
   expect(tall.w, 'stage fills the viewport width').toBeCloseTo(700, 0);
   expect(tall.h, 'stage fills the viewport height').toBeCloseTo(1100, 0);
 
   // Reflow, not zoom: the stage box CHANGES shape between viewports — the
   // inverse of the zoom-to-fit invariant locked in scaling.spec.ts.
   await page.setViewportSize({ width: 1600, height: 900 });
-  const wide = await stageBox();
+  const wide = await deck.stageBox();
   expect(wide.w / wide.h, 'aspect follows the window').not.toBeCloseTo(tall.w / tall.h, 1);
   expect(deck.consoleErrors).toEqual([]);
 });
@@ -69,16 +61,8 @@ test('toggling fluid off at runtime restores the zoom-to-fit canvas', async ({ p
   await page.setViewportSize({ width: 700, height: 1100 });
   await deck.goto('/rikiki/decks/tests/fluid.html');
 
-  const stageBox = () =>
-    page.evaluate(() => {
-      const stage = document.querySelector('deck-root')?.shadowRoot?.querySelector('#stage');
-      if (!stage) throw new Error('no #stage');
-      const b = stage.getBoundingClientRect();
-      return { w: b.width, h: b.height };
-    });
-
   // Fluid: the stage fills the 700×1100 viewport.
-  const fluid = await stageBox();
+  const fluid = await deck.stageBox();
   expect(fluid.h, 'fluid fills the viewport height').toBeCloseTo(1100, 0);
 
   // Turn fluid off at runtime · the deck must return to the scaled 16:9 canvas.
@@ -90,11 +74,11 @@ test('toggling fluid off at runtime restores the zoom-to-fit canvas', async ({ p
   // raw 1920×1080. Polling the rendered width catches the missing rescale — the
   // 16:9 aspect alone holds even when --deck-scale is left unset.
   await expect
-    .poll(async () => (await stageBox()).w, {
+    .poll(async () => (await deck.stageBox()).w, {
       message: 'stage is scaled back to fit the viewport after fluid is turned off',
     })
     .toBeCloseTo(700, 0);
-  const restored = await stageBox();
+  const restored = await deck.stageBox();
   expect(restored.w / restored.h, 'stage returns to 16:9').toBeCloseTo(1920 / 1080, 1);
   expect(deck.consoleErrors).toEqual([]);
 });
