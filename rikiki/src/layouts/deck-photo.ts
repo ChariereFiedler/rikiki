@@ -65,7 +65,7 @@ export class DeckPhoto extends LitElement {
     .content > * { max-width: var(--deck-photo-content-max-width, 36ch); }
     ::slotted(h1) {
       font-family: var(--rik-font-display, var(--rik-font-sans));
-      font-size: clamp(2.5rem, 6vw, 5.5rem);
+      font-size: clamp(2.5rem, 6cqw, 5.5rem);
       font-weight: 900;
       letter-spacing: -0.035em;
       line-height: 1.02;
@@ -75,7 +75,7 @@ export class DeckPhoto extends LitElement {
     }
     ::slotted(h2) {
       font-family: var(--rik-font-display, var(--rik-font-sans));
-      font-size: clamp(1.6rem, 3vw, 2.6rem);
+      font-size: clamp(1.6rem, 3cqw, 2.6rem);
       font-weight: 800;
       letter-spacing: -0.025em;
       line-height: 1.1;

@@ -31,6 +31,29 @@ export class DeckRoot extends LitElement {
       position: relative;
       background: var(--deck-root-bg, var(--rik-surface-page));
     }
+    /* Fluid mode (default): the stage is full-bleed and slides fill it just as
+       they filled the host before. No containment, so any cqw/cqh used by
+       components falls back to the viewport · identical to the old vw/vh. */
+    #stage { position: absolute; inset: 0; }
+
+    /* Fixed-viewport mode (opt-in via the fixed attribute): the host becomes
+       a letterbox frame that centers a fixed-aspect stage. The stage is a size
+       container, so the slides' cqw/cqh resolve against the canvas (1920×1080
+       by default) instead of the window · no hazardous reflow across screens. */
+    :host([fixed]) {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: var(--deck-letterbox-bg, var(--deck-root-bg, var(--rik-surface-page)));
+    }
+    :host([fixed]) #stage {
+      position: relative;
+      inset: auto;
+      width: min(100vw, calc(100vh * var(--deck-canvas-w, 1920) / var(--deck-canvas-h, 1080)));
+      height: min(100vh, calc(100vw * var(--deck-canvas-h, 1080) / var(--deck-canvas-w, 1920)));
+      container-type: size;
+    }
     #progress {
       position: fixed; bottom: 0; left: 0;
       height: var(--deck-root-progress-height, 3px);
@@ -123,6 +146,19 @@ export class DeckRoot extends LitElement {
    *  keys). Pressing any key dismisses it · same convention as PowerPoint. */
   @state() blank: 'black' | 'white' | null = null;
   @property({ type: Boolean, reflect: true }) overview = false;
+  /** Fixed-viewport mode · the deck renders into a fixed-aspect canvas that is
+   *  letterboxed to fit any screen, so layouts never reflow between displays.
+   *  Opt-in · the default stays fluid (100vw × 100vh). */
+  @property({ type: Boolean, reflect: true }) fixed = false;
+  /** Logical canvas size for fixed mode · defaults to 1920 × 1080 (16:9).
+   *  Only the ratio and the rem baseline depend on these · the canvas is then
+   *  scaled by CSS to fill the window. */
+  @property({ type: Number }) width = 1920;
+  @property({ type: Number }) height = 1080;
+  /** Hide the bottom-left keyboard-hint chip (the ←/→ · O · P · ? row). */
+  @property({ type: Boolean, reflect: true, attribute: 'no-hint' }) noHint = false;
+  /** Hide the bottom-right on-screen previous/next navigation arrows. */
+  @property({ type: Boolean, reflect: true, attribute: 'no-arrows' }) noArrows = false;
   /** Optional slide transition · "slide" | "fade" | "zoom". When set, the
    *  deck-transition.js plugin is fetched on first navigation. Per-slide
    *  override available via `data-transition` on the slide host. */
@@ -169,6 +205,8 @@ export class DeckRoot extends LitElement {
   private _wheelLockUntil = 0;
 
   override firstUpdated(): void {
+    if (this.fixed) this._applyCanvasVars();
+    this._scopeSlideStyles();
     this.slides = Array.from(this.querySelectorAll<Slide>(':scope > *')).filter((el) =>
       el.tagName?.toLowerCase().startsWith('deck-') && el.tagName?.toLowerCase() !== 'deck-root'
     );
@@ -201,8 +239,34 @@ export class DeckRoot extends LitElement {
     }
   }
 
+  /** Confine author `<style scoped>` blocks to their own slide. A light-DOM
+   *  <style> is a global stylesheet by default, so a per-slide tweak would
+   *  bleed across the whole deck. Wrapping its body in a native @scope rule
+   *  (whose implicit root is the style's parent slide) limits it to that slide
+   *  with no selector rewriting · plain CSS inside keeps working unchanged. */
+  private _scopeSlideStyles(): void {
+    this.querySelectorAll<HTMLStyleElement>('style[scoped]').forEach((el) => {
+      if (el.dataset['rikScoped']) return;
+      el.dataset['rikScoped'] = '1';
+      el.textContent = `@scope {\n${el.textContent ?? ''}\n}`;
+    });
+  }
+
+  /** Publish the logical canvas size on the document root so both the
+   *  `html:has(deck-root[fixed])` font-size rule and the shadow `#stage`
+   *  (via custom-property inheritance) size against the same numbers. */
+  private _applyCanvasVars(): void {
+    const root = document.documentElement;
+    root.style.setProperty('--deck-canvas-w', String(this.width));
+    root.style.setProperty('--deck-canvas-h', String(this.height));
+  }
+
   override disconnectedCallback(): void {
     super.disconnectedCallback();
+    if (this.fixed) {
+      document.documentElement.style.removeProperty('--deck-canvas-w');
+      document.documentElement.style.removeProperty('--deck-canvas-h');
+    }
     window.removeEventListener('keydown', this._onKey);
     window.removeEventListener('hashchange', this._onHash);
     this.removeEventListener('pointerdown', this._onNavPointerDown);
@@ -681,7 +745,7 @@ export class DeckRoot extends LitElement {
   }
 
   private _navArrows(): unknown {
-    if (!this._mouseEnabled('arrows') || this.overview) return '';
+    if (this.noArrows || !this._mouseEnabled('arrows') || this.overview) return '';
     const total = this.slides.length;
     if (total === 0) return '';
     const atStart = this.current === 0 && this.step === 0;
@@ -715,6 +779,7 @@ export class DeckRoot extends LitElement {
       <div id="progress"></div>
       <div id="counter"></div>
       <div id="step-dots"></div>
+      ${this.noHint ? '' : html`
       <div id="kb-hint">
         <kbd title="Previous" @click=${() => this._back()}>←</kbd
         ><kbd title="Next" @click=${() => this._advance()}>→</kbd>
@@ -728,9 +793,9 @@ export class DeckRoot extends LitElement {
         <kbd title="Presenter" @click=${() => void this._togglePresenter()}>P</kbd>
         <span>·</span>
         <kbd title="Help" @click=${() => void this._toggleHelp()}>?</kbd>
-      </div>
+      </div>`}
       ${this._navArrows()}
-      <slot></slot>
+      <div id="stage"><slot></slot></div>
       ${this.blank ? html`<div id="blank" data-tone="${this.blank}" @click=${() => { this.blank = null; }}></div>` : ''}
     `;
   }

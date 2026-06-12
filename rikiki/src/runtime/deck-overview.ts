@@ -217,6 +217,10 @@ const STYLES = `
     transform-origin: top left;
     pointer-events: none;
   }
+  /* Fixed-viewport decks: the thumb mirrors the letterboxed stage, so make it a
+     size container too · the cloned slide's cqw/cqh then resolve exactly as they
+     do live instead of falling back to the (larger) window. */
+  :host([overview]) #overview-grid[data-fixed] .ov-thumb { container-type: size; }
   :host([overview]) .ov-thumb > * { display: flex !important; }
   :host([overview]) .ov-mermaid-snap {
     display: flex; align-items: center; justify-content: center;
@@ -228,7 +232,7 @@ const STYLES = `
   }
   :host([overview]) .ov-mermaid-snap svg {
     width: 100% !important; height: auto !important;
-    max-width: 100% !important; max-height: 60vh;
+    max-width: 100% !important; max-height: 60cqh;
   }
   :host([overview]) .ov-cell-label {
     position: absolute; bottom: 6px; right: 8px;
@@ -420,17 +424,24 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
     total > 60  ? 180 : 220;
   grid.style.setProperty('--ov-cell-min', cellMin + 'px');
 
-  // Use the live viewport's exact dimensions for each thumb · clones layout-identical to live.
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  grid.style.setProperty('--ov-thumb-w', `${vw}px`);
-  grid.style.setProperty('--ov-thumb-h', `${vh}px`);
+  // Each thumb is a 1:1 clone of a slide laid out at the deck's own dimensions,
+  // then scaled down to the cell. In fixed-viewport mode the slide lives inside
+  // the letterboxed stage, so measure that box (and the CSS makes the thumb a
+  // size container) to keep clones layout-identical · otherwise use the live
+  // window, which is exactly what fluid slides fill.
+  const fixed = host.hasAttribute('fixed');
+  const stage = fixed ? shadow.querySelector<HTMLElement>('#stage') : null;
+  const thumbW = stage?.clientWidth || window.innerWidth;
+  const thumbH = stage?.clientHeight || window.innerHeight;
+  if (fixed) grid.dataset['fixed'] = '1';
+  grid.style.setProperty('--ov-thumb-w', `${thumbW}px`);
+  grid.style.setProperty('--ov-thumb-h', `${thumbH}px`);
 
   // Compute the per-cell scale after the first paint · cellWidth depends on
   // the grid's auto-fill resolution, which we can only measure post-mount.
   requestAnimationFrame(() => {
     const cellW = grid!.querySelector<HTMLDivElement>('.ov-cell')?.clientWidth ?? cellMin;
-    grid!.style.setProperty('--overview-scale', String(cellW / vw));
+    grid!.style.setProperty('--overview-scale', String(cellW / thumbW));
   });
 
   // ── Top bar · search + count + close hint ──────────────────────────
