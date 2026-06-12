@@ -6,6 +6,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-06-12
+
+This release reworks the rendering model. Every deck now renders into a fixed
+logical canvas scaled uniformly to fit the viewport, with an opt-in fluid mode
+for decks that should reflow like a web page, and embedded decks no longer
+disturb the page that hosts them.
+
+### Added
+- **Opt-in fluid mode.** `<deck-root fluid>` makes a deck fill its box and
+  reflow like a web page · no logical canvas, no zoom-to-fit scale, no
+  letterbox. It can be toggled at runtime. The default stays zoom-to-fit.
+- **Playwright render net.** A browser-level test suite (smoke, navigation,
+  scaling, embedding) loads every fixture deck and asserts the engine upgrades,
+  slides render, navigation works and the host page is left intact.
+
+### Changed
+- **Uniform zoom-to-fit is now the default rendering mode.** Every deck renders
+  into a fixed logical canvas (1920×1080 by default, set via `width`/`height`)
+  scaled uniformly to fit, so a slide's layout is identical at any window size
+  and letterboxed when the screen aspect differs. Decks previously stretched
+  fluidly to the viewport; author fluid layouts now opt in with `fluid`.
+- **Embedded decks leave the host page alone.** The framework's global baseline
+  (scroll lock, rem sizing) is now scoped to full-page decks, so a `<deck-root>`
+  placed inside a larger document no longer hijacks the page's scroll or
+  typography.
+- **Zoom-to-fit measures the deck's own box.** Scaling is driven by a
+  `ResizeObserver` on the host instead of the window, so an embedded deck scales
+  to its container and re-fits on container resize.
+
+### Removed
+- **The `fixed` attribute.** Zoom-to-fit is now the only canvas mode, so `fixed`
+  no longer has any effect and has been removed. Decks that still carry it
+  render identically.
+
+### Fixed
+- **Letterbox bands now match slides whose background has a zero blue channel**
+  (black, red, yellow). The opacity check parsed the blue channel as the alpha,
+  so those slides wrongly fell back to the page surface for their bands.
+- **The deck no longer leaves marks on the host page.** Removing the last deck
+  from the DOM restores the page's scroll and rem baseline; changing
+  `width`/`height` after first render re-fits the canvas; a deck moved or
+  re-attached in the DOM keeps rescaling on resize.
+
 ## [0.4.0] - 2026-06-12
 
 ### Added

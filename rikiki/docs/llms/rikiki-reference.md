@@ -1,6 +1,6 @@
 # Rikiki · LLM reference
 
-This reference documents rikiki v0.4.0.
+This reference documents rikiki v0.5.0.
 
 Exhaustive, self-consistent reference for authoring valid **rikiki** decks. Every
 tag, attribute, slot, and token below was derived from the source in this repo
@@ -129,10 +129,19 @@ Chevron styling tokens: `--deck-root-nav-color`, `--deck-root-nav-bg`,
 | `nav` | `2d` | Opt into 2D (chapter/slide) navigation · see above |
 | `mouse-nav` | *(absent)* / `none` / subset of `click wheel arrows aux` | Mouse navigation config · see above |
 | `transition` | `slide` (default-ish) / `slide-up` / `slide-down` / `slide-right` / `fade` / `zoom` / `flip` | Deck-wide slide transition (see table below) |
-| `fluid` | *(boolean)* | Fluid rendering: the deck fills its box and reflows like a web page — no logical canvas, no zoom-to-fit scale, no letterbox. Default: zoom-to-fit |
+| `fluid` | *(boolean)* | Fluid rendering · the deck fills its box and reflows like a web page (no logical canvas, no zoom-to-fit scale, no letterbox). Default is zoom-to-fit · see Rendering & sizing below |
+| `width` / `height` | integers (default `1920` / `1080`) | Logical canvas size for zoom-to-fit · only the aspect ratio and the rem baseline depend on these. Ignored in `fluid` mode |
 | `autoplay` | integer ms (e.g. `8000`) | Auto-advance every N ms; pauses on hover, resets on any manual nav. `0`/absent = off |
 | `loop` | *(boolean)* | With `autoplay`, wraps from the last slide back to the first |
 | `swipe` | *(boolean)* | Pointer-driven horizontal swipe (touch + mouse): a swipe ≥ 60 px advances / goes back |
+
+**Rendering & sizing.** By default a deck renders into a fixed logical canvas
+(`width`×`height`, 1920×1080 by default) scaled uniformly to fit the host box,
+so a slide's layout is identical at any window size and the deck is letterboxed
+when the aspect differs. Set `fluid` to opt out: the deck then fills its box and
+reflows like a web page. Either mode is embed-safe · a `<deck-root>` placed
+inside a larger document scales to (or fills) its own container and never
+touches the host page's scroll or typography.
 
 **Transition values** (deck-wide via `transition="…"` on `<deck-root>`, or
 per-slide via `data-transition="…"` on a slide host). When unset, the effective

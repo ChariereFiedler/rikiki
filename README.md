@@ -2,7 +2,7 @@
 
 > A tiny Lit Web Components framework for technical presentations · zero-build for consumers, TypeScript for contributors.
 
-This documentation tracks rikiki v0.4.0.
+This documentation tracks rikiki v0.5.0.
 
 Open `index.html` in a browser and you get a deck. No dev server, no build step, no `dist/` to ship. Reopen the same folder in 2031 and it still runs · everything is Web standards (Custom Elements, Shadow DOM, ES Modules, CSS Custom Properties).
 
@@ -72,6 +72,15 @@ For chapter/slide **2D navigation**, opt in with `nav="2d"` on `<deck-root>`
 `↑` / `↓` within one.
 
 URL hash stays flat (`#3` = slide 3, `#3.2` = slide 3 step 2) for shareability.
+
+## Rendering
+
+By default a deck renders into a fixed logical canvas (1920×1080) scaled
+uniformly to fit, so every slide keeps an identical layout at any window size,
+letterboxed when the aspect differs. Add `fluid` on `<deck-root>` to opt out ·
+the deck then fills its box and reflows like a web page. Either way the deck is
+embed-safe · drop a `<deck-root>` inside a larger page and it scales to (or
+fills) its own container without touching the host page's scroll or typography.
 
 ## Contributing
 
