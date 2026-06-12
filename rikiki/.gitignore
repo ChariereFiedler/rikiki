@@ -1,4 +1,9 @@
 
+# Playwright e2e artifacts
+test-results/
+playwright-report/
+e2e-report.json
+
 # Playwright MCP scratch + assembled deck outputs (sources live in <deck>/parts/)
 .playwright-mcp/
 livereload-section.jpeg

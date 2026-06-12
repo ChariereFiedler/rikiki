@@ -49,6 +49,8 @@
     "deck": "node build/vite-deck.mjs",
     "deck:example": "node build/vite-deck.mjs decks/example/deck.config.js",
     "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:smoke": "playwright test --grep @smoke",
     "lint": "biome check src scripts",
     "format": "biome format --write src scripts",
     "bump": "node scripts/bump-version.mjs",
@@ -56,6 +58,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.16",
+    "@playwright/test": "^1.60.0",
     "esbuild": "^0.24.0",
     "lit": "^3.3.3",
     "marked": "^12.0.2",
