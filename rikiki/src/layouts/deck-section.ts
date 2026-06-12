@@ -14,7 +14,9 @@ export class DeckSection extends LitElement {
        --deck-section-rule-color  line on each side         (--rik-border-inverse)
        --deck-section-title-color (defaults to --rik-accent)
        --deck-section-em-color    italic inside h1          (--rik-text-inverse--muted) */
-  static override styles = [...slideBase, css`
+  static override styles = [
+    ...slideBase,
+    css`
     :host {
       background: var(--deck-section-bg, var(--rik-surface-inverse));
       color: var(--rik-text-inverse);
@@ -44,7 +46,8 @@ export class DeckSection extends LitElement {
       color: var(--deck-section-em-color, var(--rik-text-inverse--muted));
       font-style: normal; font-weight: 700;
     }
-  `];
+  `,
+  ];
 
   @property({ type: String }) num?: string;
 

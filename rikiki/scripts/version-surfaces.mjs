@@ -9,9 +9,9 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const here = dirname(fileURLToPath(import.meta.url));     // rikiki/scripts
-export const REPO_ROOT = resolve(here, '..', '..');        // git root
-const PKG_DIR = resolve(here, '..');                       // rikiki/
+const here = dirname(fileURLToPath(import.meta.url)); // rikiki/scripts
+export const REPO_ROOT = resolve(here, '..', '..'); // git root
+const PKG_DIR = resolve(here, '..'); // rikiki/
 
 const at = (...p) => resolve(REPO_ROOT, ...p);
 
@@ -32,7 +32,8 @@ export function parseSemver(v) {
 
 // returns >0 if a>b, <0 if a<b, 0 if equal
 export function compareSemver(a, b) {
-  const x = parseSemver(a), y = parseSemver(b);
+  const x = parseSemver(a),
+    y = parseSemver(b);
   for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] - y[i];
   return 0;
 }
@@ -111,10 +112,7 @@ export function versionsIn(text) {
 
 // CHANGELOG.md must carry "## [X.Y.Z] - <date>" for the given version.
 export function changelogEntry(text, version) {
-  const re = new RegExp(
-    `^## \\[${version.replace(/\./g, '\\.')}\\] - (\\d{4}-\\d{2}-\\d{2})`,
-    'm',
-  );
+  const re = new RegExp(`^## \\[${version.replace(/\./g, '\\.')}\\] - (\\d{4}-\\d{2}-\\d{2})`, 'm');
   const m = re.exec(text);
   return m ? { found: true, date: m[1] } : { found: false };
 }
@@ -123,8 +121,7 @@ export function changelogEntry(text, version) {
 export function releasedSectionsWithoutDate(text) {
   const bad = [];
   const re = /^## \[(\d+\.\d+\.\d+)\](.*)$/gm;
-  let m;
-  while ((m = re.exec(text))) {
+  for (const m of text.matchAll(re)) {
     if (!/ - \d{4}-\d{2}-\d{2}/.test(m[2])) bad.push(m[1]);
   }
   return bad;
@@ -132,8 +129,6 @@ export function releasedSectionsWithoutDate(text) {
 
 // The site changelog must carry an "<h2 ...>X.Y.Z · ...</h2>" section.
 export function siteMentionsVersion(text, version) {
-  const re = new RegExp(
-    `<h2[^>]*>\\s*${version.replace(/\./g, '\\.')}\\s*·`,
-  );
+  const re = new RegExp(`<h2[^>]*>\\s*${version.replace(/\./g, '\\.')}\\s*·`);
   return re.test(text);
 }

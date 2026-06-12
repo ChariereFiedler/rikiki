@@ -17,17 +17,16 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
-export type DeckStatTone =
-  | 'yellow' | 'orange' | 'green' | 'red' | 'purple' | 'lime' | 'cyan';
+export type DeckStatTone = 'yellow' | 'orange' | 'green' | 'red' | 'purple' | 'lime' | 'cyan';
 
 const TONES: Record<DeckStatTone, string> = {
   yellow: 'var(--rik-accent)',
   orange: 'var(--rik-status-warn)',
-  green:  'var(--rik-status-success)',
-  red:    'var(--rik-status-danger)',
+  green: 'var(--rik-status-success)',
+  red: 'var(--rik-status-danger)',
   purple: 'var(--rik-decor-orchid)',
-  lime:   'var(--rik-decor-lime)',
-  cyan:   'var(--rik-decor-canary)',
+  lime: 'var(--rik-decor-lime)',
+  cyan: 'var(--rik-decor-canary)',
 };
 
 @customElement('deck-stat')

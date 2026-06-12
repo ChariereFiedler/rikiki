@@ -17,16 +17,16 @@ import type { DeckRoot } from './deck-root.js';
 type Name = 'slide' | 'slide-up' | 'slide-down' | 'slide-right' | 'fade' | 'zoom' | 'flip';
 
 const TIMINGS: Record<Name, number> = {
-  slide:       560,
-  'slide-up':  520,
-  'slide-down':520,
-  'slide-right':560,
-  fade:        480,
-  zoom:        520,
-  flip:        560,
+  slide: 560,
+  'slide-up': 520,
+  'slide-down': 520,
+  'slide-right': 560,
+  fade: 480,
+  zoom: 520,
+  flip: 560,
 };
 
-const EASE_OUT    = 'var(--rik-motion__ease-out, cubic-bezier(0.16, 1, 0.3, 1))';
+const EASE_OUT = 'var(--rik-motion__ease-out, cubic-bezier(0.16, 1, 0.3, 1))';
 const EASE_SPRING = 'var(--rik-motion__ease-spring, cubic-bezier(0.5, 1.8, 0.3, 1))';
 
 /* Both enter and exit animations · the outgoing slide travels out of view
@@ -86,12 +86,22 @@ const SHEET = `
 `;
 
 const ENTER_CLASSES = [
-  'rk-enter-slide', 'rk-enter-slide-up', 'rk-enter-slide-down', 'rk-enter-slide-right',
-  'rk-enter-fade', 'rk-enter-zoom', 'rk-enter-flip',
+  'rk-enter-slide',
+  'rk-enter-slide-up',
+  'rk-enter-slide-down',
+  'rk-enter-slide-right',
+  'rk-enter-fade',
+  'rk-enter-zoom',
+  'rk-enter-flip',
 ];
 const EXIT_CLASSES = [
-  'rk-exit-slide', 'rk-exit-slide-up', 'rk-exit-slide-down', 'rk-exit-slide-right',
-  'rk-exit-fade', 'rk-exit-zoom', 'rk-exit-flip',
+  'rk-exit-slide',
+  'rk-exit-slide-up',
+  'rk-exit-slide-down',
+  'rk-exit-slide-right',
+  'rk-exit-fade',
+  'rk-exit-zoom',
+  'rk-exit-flip',
 ];
 
 export function installTransitions(host: DeckRoot): () => void {
@@ -129,7 +139,7 @@ export function installTransitions(host: DeckRoot): () => void {
     else if (name === 'slide-down' && dir > 0) name = 'slide-up';
 
     const enterCls = `rk-enter-${name}`;
-    const exitCls  = `rk-exit-${name}`;
+    const exitCls = `rk-exit-${name}`;
     const duration = TIMINGS[name] ?? 480;
 
     // ── Outgoing slide · keep it visible during exit, then hide it back ──

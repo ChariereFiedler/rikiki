@@ -14,10 +14,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
-export type DeckCodeLang =
-  | 'js' | 'ts' | 'json'
-  | 'html' | 'xml' | 'svg'
-  | 'css' | 'scss' | 'less';
+export type DeckCodeLang = 'js' | 'ts' | 'json' | 'html' | 'xml' | 'svg' | 'css' | 'scss' | 'less';
 
 function highlight(src: string, lang: string): string {
   // Escape HTML first so we can spit <span>s safely
@@ -31,7 +28,7 @@ function highlight(src: string, lang: string): string {
   };
 
   const isHtml = lang === 'html' || lang === 'xml' || lang === 'svg';
-  const isCss  = lang === 'css'  || lang === 'scss' || lang === 'less';
+  const isCss = lang === 'css' || lang === 'scss' || lang === 'less';
 
   if (isHtml) {
     // 1 · HTML comments  <!-- ... -->
@@ -41,8 +38,10 @@ function highlight(src: string, lang: string): string {
     // 3 · Strings inside attributes (both ' and ")
     s = s.replace(/("[^"]*"|'[^']*')/g, (m: string) => stash('str', m));
     // 4 · Tag names · word right after &lt; or &lt;/
-    s = s.replace(/(&lt;\/?)([a-zA-Z][a-zA-Z0-9:-]*)/g,
-      (_: string, lt: string, tag: string) => lt + stash('kw', tag));
+    s = s.replace(
+      /(&lt;\/?)([a-zA-Z][a-zA-Z0-9:-]*)/g,
+      (_: string, lt: string, tag: string) => lt + stash('kw', tag),
+    );
     // 5 · Attribute names · token right before =
     s = s.replace(/\b([a-zA-Z][a-zA-Z0-9-]*)(?==)/g, (m: string) => stash('prop', m));
   } else if (isCss) {
@@ -50,14 +49,18 @@ function highlight(src: string, lang: string): string {
     s = s.replace(/("[^"]*"|'[^']*')/g, (m: string) => stash('str', m));
     s = s.replace(/([a-zA-Z-]+)(?=\s*:)/g, (m: string) => stash('prop', m));
     s = s.replace(/(#[0-9a-fA-F]{3,8})\b/g, (m: string) => stash('num', m));
-    s = s.replace(/\b(\d+(?:\.\d+)?)(px|rem|em|%|vh|vw|vmin|vmax|s|ms|deg)?/g,
-      (_: string, n: string, u: string | undefined) => stash('num', n + (u ?? '')));
+    s = s.replace(
+      /\b(\d+(?:\.\d+)?)(px|rem|em|%|vh|vw|vmin|vmax|s|ms|deg)?/g,
+      (_: string, n: string, u: string | undefined) => stash('num', n + (u ?? '')),
+    );
   } else {
     // js / ts / json (default)
     s = s.replace(/(\/\/[^\n]*)/g, (m: string) => stash('cmt', m));
     s = s.replace(/(['"`])((?:\\.|(?!\1)[^\\])*)\1/g, (m: string) => stash('str', m));
-    s = s.replace(/\b(const|let|var|function|return|if|else|for|while|class|extends|new|export|import|from|as|await|async|of|in|typeof|instanceof|true|false|null|undefined)\b/g,
-      (m: string) => stash('kw', m));
+    s = s.replace(
+      /\b(const|let|var|function|return|if|else|for|while|class|extends|new|export|import|from|as|await|async|of|in|typeof|instanceof|true|false|null|undefined)\b/g,
+      (m: string) => stash('kw', m),
+    );
     s = s.replace(/\b(\d+(?:\.\d+)?)\b/g, (m: string) => stash('num', m));
   }
 
@@ -124,7 +127,9 @@ export class DeckCode extends LitElement {
     this._highlight();
     try {
       this._groups = JSON.parse(this.getAttribute('step-groups') ?? 'null') as number[][] | null;
-    } catch { this._groups = null; }
+    } catch {
+      this._groups = null;
+    }
   }
 
   private _highlight(): void {
@@ -137,9 +142,16 @@ export class DeckCode extends LitElement {
       .reduce((min: number, l: string) => Math.min(min, l.match(/^ */)?.[0].length ?? 0), Infinity);
     const cleaned = indent === Infinity ? lines : lines.map((l: string) => l.slice(indent));
     // Wrap each line in a .line span (display:block) without a \n between · otherwise we double-newline
-    this._html = cleaned.map((line: string, i: number) =>
-      '<span class="line" data-line="' + (i + 1) + '">' + highlight(line || ' ', this.lang) + '</span>'
-    ).join('');
+    this._html = cleaned
+      .map(
+        (line: string, i: number) =>
+          '<span class="line" data-line="' +
+          (i + 1) +
+          '">' +
+          highlight(line || ' ', this.lang) +
+          '</span>',
+      )
+      .join('');
     // Keep light-DOM textContent intact so cloneNode(true) preserves the source
     // for overview thumbnails (the shadow template has no <slot>, so light DOM
     // children remain invisible).
@@ -151,7 +163,9 @@ export class DeckCode extends LitElement {
     const lines = this.shadowRoot?.querySelectorAll<HTMLElement>('.line');
     if (!lines) return;
     if (n === 0) {
-      lines.forEach((l) => l.classList.remove('dim', 'lit'));
+      lines.forEach((l) => {
+        l.classList.remove('dim', 'lit');
+      });
     } else {
       const active = this._groups[Math.min(n - 1, this._groups.length - 1)] ?? [];
       lines.forEach((l) => {

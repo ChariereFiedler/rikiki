@@ -37,11 +37,15 @@ async function loadHighlighter(opts: Required<InstallOpts>): Promise<ShikiHighli
   // init/bundle --with-shiki) inline the vendored Shiki and expose it as
   // globalThis.__rikikiShiki so there's no module URL to fetch. Otherwise load
   // the vendored bundle (JS regex engine, no wasm) next to this module.
-  const injected = (globalThis as unknown as {
-    __rikikiShiki?: (o: unknown) => Promise<ShikiHighlighter>;
-  }).__rikikiShiki;
-  const createHighlighter = injected
-    ?? (await import(/* @vite-ignore */ new URL('./vendor/shiki.js', import.meta.url).href)).createHighlighter;
+  const injected = (
+    globalThis as unknown as {
+      __rikikiShiki?: (o: unknown) => Promise<ShikiHighlighter>;
+    }
+  ).__rikikiShiki;
+  const createHighlighter =
+    injected ??
+    (await import(/* @vite-ignore */ new URL('./vendor/shiki.js', import.meta.url).href))
+      .createHighlighter;
   highlighter = await createHighlighter({
     themes: [opts.theme],
     langs: opts.langs,
@@ -67,7 +71,9 @@ export async function installShiki(opts: InstallOpts = {}): Promise<void> {
   // Patch DeckCode's render path: replace its internal _highlight() with one
   // that goes through Shiki. We do this on the prototype so every existing
   // and future instance picks it up.
-  const ctor = customElements.get('deck-code') as (typeof HTMLElement & { prototype: any }) | undefined;
+  const ctor = customElements.get('deck-code') as
+    | (typeof HTMLElement & { prototype: any })
+    | undefined;
   if (!ctor) {
     console.warn('[rikiki/shiki] <deck-code> is not defined yet · import rikiki first');
     return;
@@ -92,7 +98,10 @@ export async function installShiki(opts: InstallOpts = {}): Promise<void> {
   };
 
   // Re-render all existing <deck-code> instances now that the highlighter changed.
-  document.querySelectorAll<HTMLElement & { _highlight?: () => void; requestUpdate?: () => void }>('deck-code')
+  document
+    .querySelectorAll<HTMLElement & { _highlight?: () => void; requestUpdate?: () => void }>(
+      'deck-code',
+    )
     .forEach((el) => {
       el._highlight?.();
       el.requestUpdate?.();

@@ -17,7 +17,9 @@ export class DeckStepList extends LitElement {
       gap: var(--rik-space-2xs);
     }
   `;
-  override render() { return html`<slot></slot>`; }
+  override render() {
+    return html`<slot></slot>`;
+  }
 }
 
 @customElement('deck-step')

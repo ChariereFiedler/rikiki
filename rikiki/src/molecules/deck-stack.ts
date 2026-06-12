@@ -15,20 +15,20 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 export type DeckStackDirection = 'row' | 'column';
-export type DeckStackAlign     = 'start' | 'center' | 'end' | 'stretch';
-export type DeckStackJustify   = 'start' | 'center' | 'end' | 'between' | 'around';
+export type DeckStackAlign = 'start' | 'center' | 'end' | 'stretch';
+export type DeckStackJustify = 'start' | 'center' | 'end' | 'between' | 'around';
 
 const JUSTIFY: Record<DeckStackJustify, string> = {
-  start:   'flex-start',
-  center:  'center',
-  end:     'flex-end',
+  start: 'flex-start',
+  center: 'center',
+  end: 'flex-end',
   between: 'space-between',
-  around:  'space-around',
+  around: 'space-around',
 };
 const ALIGN: Record<DeckStackAlign, string> = {
-  start:   'flex-start',
-  center:  'center',
-  end:     'flex-end',
+  start: 'flex-start',
+  center: 'center',
+  end: 'flex-end',
   stretch: 'stretch',
 };
 
@@ -65,7 +65,7 @@ export class DeckStack extends LitElement {
       this.style.removeProperty('--_gap');
     }
     this.style.setProperty('--_dir', this.direction === 'row' ? 'row' : 'column');
-    if (this.align)   this.style.setProperty('--_align',   ALIGN[this.align]   ?? this.align);
+    if (this.align) this.style.setProperty('--_align', ALIGN[this.align] ?? this.align);
     if (this.justify) this.style.setProperty('--_justify', JUSTIFY[this.justify] ?? this.justify);
   }
 

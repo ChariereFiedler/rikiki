@@ -16,7 +16,10 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { slideBase } from '../shared-styles.js';
 
-interface MetaItem { l: string; v: string; }
+interface MetaItem {
+  l: string;
+  v: string;
+}
 
 @customElement('deck-cover')
 export class DeckCover extends LitElement {
@@ -27,7 +30,9 @@ export class DeckCover extends LitElement {
        --deck-cover-muted       very soft on-dark text    (--rik-text-inverse--faint)
        --deck-cover-faint       faintest on-dark text     (--rik-text-inverse--ghost)
        --deck-cover-border      meta separator border     (--rik-border-inverse) */
-  static override styles = [...slideBase, css`
+  static override styles = [
+    ...slideBase,
+    css`
     :host {
       background: var(--deck-cover-bg, var(--rik-surface-inverse));
       justify-content: center;
@@ -86,7 +91,8 @@ export class DeckCover extends LitElement {
       color: var(--deck-cover-text, var(--rik-text-inverse));
       font-size: var(--rik-font-size-body); font-weight: 600;
     }
-  `];
+  `,
+  ];
 
   @property({ type: String }) brand?: string;
   @property({ type: String, attribute: 'brand-src' }) brandSrc?: string;
@@ -96,41 +102,52 @@ export class DeckCover extends LitElement {
   @property({ type: String }) audience?: string;
   @property({ type: String }) runtime?: string;
   // Labels (default FR, override via attrs for i18n)
-  @property({ type: String, attribute: 'speaker-label'  }) speakerLabel?: string;
-  @property({ type: String, attribute: 'company-label'  }) companyLabel?: string;
+  @property({ type: String, attribute: 'speaker-label' }) speakerLabel?: string;
+  @property({ type: String, attribute: 'company-label' }) companyLabel?: string;
   @property({ type: String, attribute: 'duration-label' }) durationLabel?: string;
   @property({ type: String, attribute: 'audience-label' }) audienceLabel?: string;
-  @property({ type: String, attribute: 'runtime-label'  }) runtimeLabel?: string;
+  @property({ type: String, attribute: 'runtime-label' }) runtimeLabel?: string;
 
   override render() {
-    const parts = (this.brand ?? '').split('·').map((s: string) => s.trim()).filter(Boolean);
+    const parts = (this.brand ?? '')
+      .split('·')
+      .map((s: string) => s.trim())
+      .filter(Boolean);
     const brandName = parts[0] ?? '';
     const context = parts.slice(1).join(' · ');
     const items: MetaItem[] = [
-      this.speaker  && { l: this.speakerLabel  ?? 'Présenté par', v: this.speaker },
-      this.company  && { l: this.companyLabel  ?? 'Entreprise',   v: this.company },
-      this.duration && { l: this.durationLabel ?? 'Durée',        v: this.duration },
-      this.audience && { l: this.audienceLabel ?? 'Audience',     v: this.audience },
-      this.runtime  && { l: this.runtimeLabel  ?? 'Runtime',      v: this.runtime },
+      this.speaker && { l: this.speakerLabel ?? 'Présenté par', v: this.speaker },
+      this.company && { l: this.companyLabel ?? 'Entreprise', v: this.company },
+      this.duration && { l: this.durationLabel ?? 'Durée', v: this.duration },
+      this.audience && { l: this.audienceLabel ?? 'Audience', v: this.audience },
+      this.runtime && { l: this.runtimeLabel ?? 'Runtime', v: this.runtime },
     ].filter((x): x is MetaItem => !!x);
 
     const hasMark = !!this.brandSrc;
 
     return html`
       <div class="brand" part="brand">
-        ${hasMark
-          ? html`<span class="brand-tile"><img src="${this.brandSrc!}" alt="${brandName}"></span>`
-          : ''}
+        ${
+          hasMark
+            ? html`<span class="brand-tile"><img src="${this.brandSrc!}" alt="${brandName}"></span>`
+            : ''
+        }
         ${brandName ? html`<span class="brand-name">${brandName}</span>` : ''}
         ${context ? html`<span class="brand-context">${context}</span>` : ''}
       </div>
       <slot></slot>
-      ${items.length ? html`
+      ${
+        items.length
+          ? html`
         <div class="meta" part="meta">
-          ${items.map((i) => html`
+          ${items.map(
+            (i) => html`
             <div class="meta-item"><strong>${i.l}</strong><span>${i.v}</span></div>
-          `)}
-        </div>` : ''}
+          `,
+          )}
+        </div>`
+          : ''
+      }
     `;
   }
 }

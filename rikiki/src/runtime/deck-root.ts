@@ -207,8 +207,9 @@ export class DeckRoot extends LitElement {
   override firstUpdated(): void {
     if (this.fixed) this._applyCanvasVars();
     this._scopeSlideStyles();
-    this.slides = Array.from(this.querySelectorAll<Slide>(':scope > *')).filter((el) =>
-      el.tagName?.toLowerCase().startsWith('deck-') && el.tagName?.toLowerCase() !== 'deck-root'
+    this.slides = Array.from(this.querySelectorAll<Slide>(':scope > *')).filter(
+      (el) =>
+        el.tagName?.toLowerCase().startsWith('deck-') && el.tagName?.toLowerCase() !== 'deck-root',
     );
     this._buildChapters();
     this._readHash(true);
@@ -228,7 +229,7 @@ export class DeckRoot extends LitElement {
     if (this.autoplay > 0) this._startAutoplay();
     if (this.swipe) {
       this.addEventListener('pointerdown', this._onPointerDown);
-      this.addEventListener('pointerup',   this._onPointerUp);
+      this.addEventListener('pointerup', this._onPointerUp);
       this.addEventListener('pointercancel', this._onPointerUp);
       // Pause autoplay while user hovers · resume on leave
       this.addEventListener('mouseenter', this._onHoverEnter);
@@ -275,11 +276,11 @@ export class DeckRoot extends LitElement {
     window.removeEventListener('mouseup', this._onAuxUp);
     window.removeEventListener('auxclick', this._onAuxClick);
     this._stopAutoplay();
-    this.removeEventListener('pointerdown',  this._onPointerDown);
-    this.removeEventListener('pointerup',    this._onPointerUp);
+    this.removeEventListener('pointerdown', this._onPointerDown);
+    this.removeEventListener('pointerup', this._onPointerUp);
     this.removeEventListener('pointercancel', this._onPointerUp);
-    this.removeEventListener('mouseenter',   this._onHoverEnter);
-    this.removeEventListener('mouseleave',   this._onHoverLeave);
+    this.removeEventListener('mouseenter', this._onHoverEnter);
+    this.removeEventListener('mouseleave', this._onHoverLeave);
   }
 
   /* ── Autoplay ─────────────────────────────────────────────────── */
@@ -300,8 +301,14 @@ export class DeckRoot extends LitElement {
     if (atEnd && this.loop) this._goTo(0);
     else this._advance();
   }
-  private _onHoverEnter = (): void => { this._autoplayPaused = true; this._stopAutoplay(); };
-  private _onHoverLeave = (): void => { this._autoplayPaused = false; if (this.autoplay > 0) this._startAutoplay(); };
+  private _onHoverEnter = (): void => {
+    this._autoplayPaused = true;
+    this._stopAutoplay();
+  };
+  private _onHoverLeave = (): void => {
+    this._autoplayPaused = false;
+    if (this.autoplay > 0) this._startAutoplay();
+  };
 
   /** Any explicit user navigation resets the autoplay countdown so the press
    *  isn't immediately followed by an auto-advance. */
@@ -311,7 +318,7 @@ export class DeckRoot extends LitElement {
 
   /* ── Swipe ────────────────────────────────────────────────────── */
   private _onPointerDown = (e: PointerEvent): void => {
-    if (!this.swipe || e.pointerType === 'mouse' && e.button !== 0) return;
+    if (!this.swipe || (e.pointerType === 'mouse' && e.button !== 0)) return;
     // Ignore swipes that start inside an interactive child (links, inputs, kbd-hint, …)
     const target = e.target as HTMLElement | null;
     if (target?.closest('a, button, input, textarea, [contenteditable]')) return;
@@ -327,7 +334,8 @@ export class DeckRoot extends LitElement {
     // Require a horizontal swipe at least 60 px and ≥ 2× the vertical drift
     if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 2) return;
     this._stopAutoplay();
-    if (dx < 0) this._advance(); else this._back();
+    if (dx < 0) this._advance();
+    else this._back();
     this._restartAutoplay();
   };
 
@@ -348,13 +356,20 @@ export class DeckRoot extends LitElement {
     if (sel && !sel.isCollapsed) return;
     const interactive = e.composedPath().some((n) => {
       if (!(n instanceof HTMLElement)) return false;
-      if (n.matches?.('a, button, input, textarea, select, [contenteditable], [data-no-advance]')) return true;
-      return n.id === 'blank' || n.id === 'kb-overlay' || n.id === 'overview-grid'
-          || n.id === 'nav-arrows' || n.id === 'kb-hint';
+      if (n.matches?.('a, button, input, textarea, select, [contenteditable], [data-no-advance]'))
+        return true;
+      return (
+        n.id === 'blank' ||
+        n.id === 'kb-overlay' ||
+        n.id === 'overview-grid' ||
+        n.id === 'nav-arrows' ||
+        n.id === 'kb-hint'
+      );
     });
     if (interactive) return;
     this._restartAutoplay();
-    if (e.shiftKey) this._back(); else this._advance();
+    if (e.shiftKey) this._back();
+    else this._advance();
   };
 
   /** Wheel over a scrollable descendant (overflowing code block, …) must stay
@@ -378,7 +393,8 @@ export class DeckRoot extends LitElement {
         if (down ? n.scrollTop + n.clientHeight < n.scrollHeight - 1 : n.scrollTop > 0) return true;
       }
       if (canX && /auto|scroll/.test(cs.overflowX)) {
-        if (right ? n.scrollLeft + n.clientWidth < n.scrollWidth - 1 : n.scrollLeft > 0) return true;
+        if (right ? n.scrollLeft + n.clientWidth < n.scrollWidth - 1 : n.scrollLeft > 0)
+          return true;
       }
     }
     return false;
@@ -396,7 +412,8 @@ export class DeckRoot extends LitElement {
     this._wheelAccum = 0;
     this._wheelLockUntil = now + 400;
     this._restartAutoplay();
-    if (forward) this._advance(); else this._back();
+    if (forward) this._advance();
+    else this._back();
   };
 
   /** Mouse back/forward buttons (3/4) · act on mouseup, suppress the
@@ -406,7 +423,8 @@ export class DeckRoot extends LitElement {
     if (e.button !== 3 && e.button !== 4) return;
     e.preventDefault();
     this._restartAutoplay();
-    if (e.button === 3) this._back(); else this._advance();
+    if (e.button === 3) this._back();
+    else this._advance();
   };
 
   private _onAuxClick = (e: MouseEvent): void => {
@@ -434,9 +452,11 @@ export class DeckRoot extends LitElement {
    *  opt-in, arrows stay linear so a sectioned deck doesn't surprise the author
    *  by remapping ← / → to chapter jumps. */
   private _has2DNav(): boolean {
-    return this.nav === '2d'
-      && this.chapters.length > 1
-      && this.chapters.some((c) => c.slides.length > 1);
+    return (
+      this.nav === '2d' &&
+      this.chapters.length > 1 &&
+      this.chapters.some((c) => c.slides.length > 1)
+    );
   }
 
   private _mouseEnabled(kind: 'click' | 'wheel' | 'arrows' | 'aux'): boolean {
@@ -465,7 +485,9 @@ export class DeckRoot extends LitElement {
     return chap.startIdx + Math.max(0, Math.min(chap.slides.length - 1, i));
   }
 
-  private _onHash = (): void => { this._readHash(false); };
+  private _onHash = (): void => {
+    this._readHash(false);
+  };
 
   private _readHash(initial: boolean): void {
     const h = location.hash;
@@ -536,17 +558,53 @@ export class DeckRoot extends LitElement {
       this.blank = null;
       return;
     }
-    if (e.key === '.' || e.key === 'b' || e.key === 'B') { e.preventDefault(); this.blank = 'black'; return; }
-    if (e.key === ',' || e.key === 'w' || e.key === 'W') { e.preventDefault(); this.blank = 'white'; return; }
+    if (e.key === '.' || e.key === 'b' || e.key === 'B') {
+      e.preventDefault();
+      this.blank = 'black';
+      return;
+    }
+    if (e.key === ',' || e.key === 'w' || e.key === 'W') {
+      e.preventDefault();
+      this.blank = 'white';
+      return;
+    }
 
-    if (e.key === '?' || e.key === 'h' || e.key === 'H') { void this._toggleHelp(); return; }
-    if (e.key === 'Escape')                              { void this._closeHelp(); return; }
-    if (e.key === 'o' || e.key === 'O')                  { e.preventDefault(); this.overview = true; return; }
-    if (e.key === 'p' || e.key === 'P')                  { e.preventDefault(); void this._togglePresenter(); return; }
-    if (e.key === 'Home')                                { this._goTo(0); return; }
-    if (e.key === 'End')                                 { this._goTo(this.slides.length - 1); return; }
-    if (e.key === ' ' || e.key === 'PageDown')           { e.preventDefault(); this._advance(); return; }
-    if (e.key === 'PageUp')                              { e.preventDefault(); this._back(); return; }
+    if (e.key === '?' || e.key === 'h' || e.key === 'H') {
+      void this._toggleHelp();
+      return;
+    }
+    if (e.key === 'Escape') {
+      void this._closeHelp();
+      return;
+    }
+    if (e.key === 'o' || e.key === 'O') {
+      e.preventDefault();
+      this.overview = true;
+      return;
+    }
+    if (e.key === 'p' || e.key === 'P') {
+      e.preventDefault();
+      void this._togglePresenter();
+      return;
+    }
+    if (e.key === 'Home') {
+      this._goTo(0);
+      return;
+    }
+    if (e.key === 'End') {
+      this._goTo(this.slides.length - 1);
+      return;
+    }
+    if (e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault();
+      this._advance();
+      return;
+    }
+    if (e.key === 'PageUp') {
+      e.preventDefault();
+      this._back();
+      return;
+    }
 
     if (this._has2DNav()) {
       // Two axes, both with linear fallback at edges:
@@ -580,8 +638,16 @@ export class DeckRoot extends LitElement {
         return;
       }
     } else {
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); this._advance(); return; }
-      if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { e.preventDefault(); this._back(); return; }
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        this._advance();
+        return;
+      }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        this._back();
+        return;
+      }
     }
   };
 
@@ -627,7 +693,11 @@ export class DeckRoot extends LitElement {
     if (direct > 0) return direct;
     const code = s.querySelector('deck-code[step-groups]');
     if (code) {
-      try { return JSON.parse(code.getAttribute('step-groups')!).length; } catch { /* noop */ }
+      try {
+        return JSON.parse(code.getAttribute('step-groups')!).length;
+      } catch {
+        /* noop */
+      }
     }
     return 0;
   }
@@ -691,8 +761,9 @@ export class DeckRoot extends LitElement {
       const isCurrent = i === this.current;
       s.toggleAttribute('active', isCurrent);
       if (isCurrent) {
-        s.querySelectorAll<HTMLElement & { render?: () => void }>('deck-mermaid')
-          .forEach((m) => m.render?.());
+        s.querySelectorAll<HTMLElement & { render?: () => void }>('deck-mermaid').forEach((m) => {
+          m.render?.();
+        });
       }
     });
     // Lazy-load the transition plugin the first time we navigate when the
@@ -703,10 +774,12 @@ export class DeckRoot extends LitElement {
       void import('./deck-transition.js').then((m) => m.installTransitions(this));
     }
     if (previous !== next) {
-      this.dispatchEvent(new CustomEvent('slide-change', {
-        detail: { current: next, previous },
-        bubbles: false,
-      }));
+      this.dispatchEvent(
+        new CustomEvent('slide-change', {
+          detail: { current: next, previous },
+          bubbles: false,
+        }),
+      );
     }
   }
 
@@ -714,11 +787,13 @@ export class DeckRoot extends LitElement {
     const slide = this.slides[this.current];
     if (!slide) return;
     slide.applyStep?.(this.step);
-    slide.querySelectorAll<Slide>('*').forEach((el) => el.applyStep?.(this.step));
+    slide.querySelectorAll<Slide>('*').forEach((el) => {
+      el.applyStep?.(this.step);
+    });
     slide.querySelectorAll<HTMLElement>('[data-step-block]').forEach((el) => {
       const n = parseInt(el.dataset['stepBlock']!, 10);
       el.style.transition = 'opacity 0.25s ease';
-      el.style.opacity = (this.step === 0 || n <= this.step) ? '1' : '0.15';
+      el.style.opacity = this.step === 0 || n <= this.step ? '1' : '0.15';
     });
   }
 
@@ -726,16 +801,19 @@ export class DeckRoot extends LitElement {
     const total = this.slides.length;
     const n = this.current + 1;
     const progress = this.renderRoot.querySelector<HTMLDivElement>('#progress');
-    const counter  = this.renderRoot.querySelector<HTMLDivElement>('#counter');
-    const dots     = this.renderRoot.querySelector<HTMLDivElement>('#step-dots');
-    if (progress) progress.style.width = (n / total * 100) + '%';
+    const counter = this.renderRoot.querySelector<HTMLDivElement>('#counter');
+    const dots = this.renderRoot.querySelector<HTMLDivElement>('#step-dots');
+    if (progress) progress.style.width = (n / total) * 100 + '%';
     if (counter) counter.textContent = `${n} / ${total}`;
     const max = this._maxSteps();
     if (dots) {
-      dots.innerHTML = max === 0 ? '' :
-        Array.from({ length: max }, (_, i) =>
-          `<div class="dot${i < this.step ? ' active' : ''}"></div>`
-        ).join('');
+      dots.innerHTML =
+        max === 0
+          ? ''
+          : Array.from(
+              { length: max },
+              (_, i) => `<div class="dot${i < this.step ? ' active' : ''}"></div>`,
+            ).join('');
     }
   }
 
@@ -779,24 +857,38 @@ export class DeckRoot extends LitElement {
       <div id="progress"></div>
       <div id="counter"></div>
       <div id="step-dots"></div>
-      ${this.noHint ? '' : html`
+      ${
+        this.noHint
+          ? ''
+          : html`
       <div id="kb-hint">
         <kbd title="Previous" @click=${() => this._back()}>←</kbd
         ><kbd title="Next" @click=${() => this._advance()}>→</kbd>
-        ${this._has2DNav()
-          ? html`<kbd title="Previous" @click=${() => this._back()}>↑</kbd
+        ${
+          this._has2DNav()
+            ? html`<kbd title="Previous" @click=${() => this._back()}>↑</kbd
             ><kbd title="Next" @click=${() => this._advance()}>↓</kbd>`
-          : ''}
+            : ''
+        }
         <span>·</span>
-        <kbd title="Overview" @click=${() => { this.overview = !this.overview; }}>O</kbd>
+        <kbd title="Overview" @click=${() => {
+          this.overview = !this.overview;
+        }}>O</kbd>
         <span>·</span>
         <kbd title="Presenter" @click=${() => void this._togglePresenter()}>P</kbd>
         <span>·</span>
         <kbd title="Help" @click=${() => void this._toggleHelp()}>?</kbd>
-      </div>`}
+      </div>`
+      }
       ${this._navArrows()}
       <div id="stage"><slot></slot></div>
-      ${this.blank ? html`<div id="blank" data-tone="${this.blank}" @click=${() => { this.blank = null; }}></div>` : ''}
+      ${
+        this.blank
+          ? html`<div id="blank" data-tone="${this.blank}" @click=${() => {
+              this.blank = null;
+            }}></div>`
+          : ''
+      }
     `;
   }
 }

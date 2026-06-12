@@ -27,10 +27,10 @@ export type DeckCalloutType = 'info' | 'warn' | 'danger' | 'ok';
    because it is rendered as a zero-length path. Without round caps it
    collapses to nothing · the original bug. */
 const ICONS: Record<DeckCalloutType, string> = {
-  info:   '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
-  warn:   '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+  warn: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
   danger: '<circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>',
-  ok:     '<path d="M20 6 9 17l-5-5"/>',
+  ok: '<path d="M20 6 9 17l-5-5"/>',
 };
 
 @customElement('deck-callout')

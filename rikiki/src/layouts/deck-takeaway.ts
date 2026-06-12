@@ -16,7 +16,9 @@ export class DeckTakeaway extends LitElement {
        --deck-takeaway-display-color    (defaults to --rik-accent)
        --deck-takeaway-caption-color    (defaults to --rik-text-inverse--faint)
        --deck-takeaway-gap              vertical gap between elements */
-  static override styles = [...slideBase, css`
+  static override styles = [
+    ...slideBase,
+    css`
     :host {
       background: var(--deck-takeaway-bg, var(--rik-surface-inverse));
       color: var(--rik-text-inverse);
@@ -40,7 +42,8 @@ export class DeckTakeaway extends LitElement {
       font-size: var(--rik-font-size-lead);
       color: var(--deck-takeaway-caption-color, var(--rik-text-inverse--faint));
     }
-  `];
+  `,
+  ];
 
   @property({ type: String }) kicker?: string;
 

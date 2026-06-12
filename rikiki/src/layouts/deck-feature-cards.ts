@@ -14,7 +14,9 @@ import { slideBase } from '../shared-styles.js';
 
 @customElement('deck-feature-cards')
 export class DeckFeatureCards extends LitElement {
-  static override styles = [...slideBase, css`
+  static override styles = [
+    ...slideBase,
+    css`
     :host { justify-content: flex-start; }
     /* The hero (code/chart) gets at least half the available height; .detail
        (bullets + diagram) is capped at ~40%. Without these caps a tall mermaid
@@ -49,7 +51,8 @@ export class DeckFeatureCards extends LitElement {
       min-height: 0;
       overflow: hidden;
     }
-  `];
+  `,
+  ];
 
   @property({ type: String }) eyebrow?: string;
 

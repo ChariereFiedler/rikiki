@@ -12,7 +12,9 @@ import { slideBase } from '../shared-styles.js';
 
 @customElement('deck-feature')
 export class DeckFeature extends LitElement {
-  static override styles = [...slideBase, css`
+  static override styles = [
+    ...slideBase,
+    css`
     :host { justify-content: flex-start; }
     .body {
       flex: 1; min-height: 0;
@@ -27,7 +29,8 @@ export class DeckFeature extends LitElement {
     ::slotted(pre),
     ::slotted(svg),
     ::slotted(.hero-main) { max-height: 100%; flex: 0 1 auto; }
-  `];
+  `,
+  ];
 
   @property({ type: String }) eyebrow?: string;
 

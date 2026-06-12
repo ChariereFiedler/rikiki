@@ -113,10 +113,12 @@ function clickStepCount(slide: HTMLElement): number {
 function collectEntries(slide: HTMLElement): StageEntry[] {
   expandClickChildren(slide);
   const out: StageEntry[] = [];
-  let cursor = 0;     // last assigned click step
-  let autoAccum = 0;  // chained data-click-auto delays since that step
+  let cursor = 0; // last assigned click step
+  let autoAccum = 0; // chained data-click-auto delays since that step
   slide
-    .querySelectorAll<HTMLElement>(`[${REVEAL_ATTR}], [${HIDE_ATTR}], [${AUTO_ATTR}], [${STAGGER_ATTR}]`)
+    .querySelectorAll<HTMLElement>(
+      `[${REVEAL_ATTR}], [${HIDE_ATTR}], [${AUTO_ATTR}], [${STAGGER_ATTR}]`,
+    )
     .forEach((el) => {
       if (el.hasAttribute(STAGGER_ATTR)) {
         // Container consumes one click · children cascade in. "0" is a valid
@@ -128,7 +130,13 @@ function collectEntries(slide: HTMLElement): StageEntry[] {
         autoAccum = 0;
         Array.from(el.children).forEach((child, i) => {
           const c = child as HTMLElement;
-          out.push({ el: c, step, hide: c.hasAttribute(HIDE_ATTR), delay: i * gap + animDelayOf(c), scheduled: true });
+          out.push({
+            el: c,
+            step,
+            hide: c.hasAttribute(HIDE_ATTR),
+            delay: i * gap + animDelayOf(c),
+            scheduled: true,
+          });
         });
         return;
       }
@@ -137,7 +145,13 @@ function collectEntries(slide: HTMLElement): StageEntry[] {
         // No click consumed · fires after the previous stage (or slide
         // activation when cursor is still 0). Consecutive autos chain.
         autoAccum += parseInt(el.getAttribute(AUTO_ATTR) ?? '', 10) || 0;
-        out.push({ el, step: cursor, hide: false, delay: autoAccum + animDelayOf(el), scheduled: true });
+        out.push({
+          el,
+          step: cursor,
+          hide: false,
+          delay: autoAccum + animDelayOf(el),
+          scheduled: true,
+        });
         return;
       }
       const hide = el.hasAttribute(HIDE_ATTR);
@@ -207,7 +221,10 @@ function nameVisibleMorphs(groups: MorphGroups, targets?: Map<HTMLElement, boole
 
 /** First element of a morph group considered visible · predicate from the
  *  entries model when provided, else computed style. */
-function visibleMorphIn(els: HTMLElement[], targets?: Map<HTMLElement, boolean>): HTMLElement | undefined {
+function visibleMorphIn(
+  els: HTMLElement[],
+  targets?: Map<HTMLElement, boolean>,
+): HTMLElement | undefined {
   return els.find((el) => targets?.get(el) ?? isShown(el));
 }
 
@@ -225,7 +242,11 @@ const FLIP_EASE = 'cubic-bezier(0.22, 1, 0.3, 1)';
 
 /** WAAPI fallback when View Transitions are unavailable (Firefox) · glide
  *  each incoming morph element from the outgoing element's box to its own. */
-function flipMorphs(groups: MorphGroups, fromRects: Map<string, DOMRect>, targets?: Map<HTMLElement, boolean>): void {
+function flipMorphs(
+  groups: MorphGroups,
+  fromRects: Map<string, DOMRect>,
+  targets?: Map<HTMLElement, boolean>,
+): void {
   groups.forEach((els, key) => {
     const from = fromRects.get(key);
     const el = visibleMorphIn(els, targets);
@@ -239,10 +260,13 @@ function flipMorphs(groups: MorphGroups, fromRects: Map<string, DOMRect>, target
     if (!dx && !dy && sx === 1 && sy === 1) return;
     el.animate(
       [
-        { transformOrigin: 'top left', transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})` },
+        {
+          transformOrigin: 'top left',
+          transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`,
+        },
         { transformOrigin: 'top left', transform: 'none' },
       ],
-      { duration: FLIP_MS, easing: FLIP_EASE }
+      { duration: FLIP_MS, easing: FLIP_EASE },
     );
   });
 }
@@ -306,9 +330,11 @@ function prepare(el: HTMLElement, hide: boolean, scheduled = false): void {
   const cssDelay = scheduled ? 0 : delay;
   const anim = el.getAttribute('data-anim');
   const props =
-    anim === 'blur' ? ['opacity', 'transform', 'filter'] :
-    anim === 'draw' ? ['stroke-dashoffset'] :
-    ['opacity', 'transform'];
+    anim === 'blur'
+      ? ['opacity', 'transform', 'filter']
+      : anim === 'draw'
+        ? ['stroke-dashoffset']
+        : ['opacity', 'transform'];
   const transition = props.map((p) => `${p} ${dur}ms ${ease} ${cssDelay}ms`).join(', ');
   if (anim === 'draw') {
     prepareDraw(el, transition);
@@ -322,18 +348,28 @@ function prepare(el: HTMLElement, hide: boolean, scheduled = false): void {
 
 function animOffset(el: HTMLElement): string {
   switch (el.getAttribute('data-anim')) {
-    case 'slide-up':    return 'translateY(16px)';
-    case 'slide-down':  return 'translateY(-16px)';
-    case 'slide-left':  return 'translateX(16px)';
-    case 'slide-right': return 'translateX(-16px)';
-    case 'scale':       return 'scale(0.92)';
-    case 'flip-up':     return 'perspective(600px) rotateX(35deg)';
-    default:            return 'none'; // fade · blur
+    case 'slide-up':
+      return 'translateY(16px)';
+    case 'slide-down':
+      return 'translateY(-16px)';
+    case 'slide-left':
+      return 'translateX(16px)';
+    case 'slide-right':
+      return 'translateX(-16px)';
+    case 'scale':
+      return 'scale(0.92)';
+    case 'flip-up':
+      return 'perspective(600px) rotateX(35deg)';
+    default:
+      return 'none'; // fade · blur
   }
 }
 
 function setVisible(el: HTMLElement, visible: boolean): void {
-  if (el.getAttribute('data-anim') === 'draw') { applyDraw(el, visible); return; }
+  if (el.getAttribute('data-anim') === 'draw') {
+    applyDraw(el, visible);
+    return;
+  }
   el.style.opacity = visible ? '1' : '0';
   el.style.transform = visible ? 'none' : animOffset(el);
   if (el.getAttribute('data-anim') === 'blur') el.style.filter = visible ? 'none' : 'blur(12px)';
@@ -341,7 +377,9 @@ function setVisible(el: HTMLElement, visible: boolean): void {
 }
 
 export function installClickStages(): void {
-  const ctor = customElements.get('deck-root') as (typeof HTMLElement & { prototype: DeckRootProto }) | undefined;
+  const ctor = customElements.get('deck-root') as
+    | (typeof HTMLElement & { prototype: DeckRootProto })
+    | undefined;
   if (!ctor) {
     console.warn('[rikiki/click-stages] <deck-root> is not defined yet · import rikiki first');
     return;
@@ -361,14 +399,20 @@ export function installClickStages(): void {
   const TIMERS = new WeakMap<HTMLElement, number>();
   function cancelTimer(el: HTMLElement): void {
     const t = TIMERS.get(el);
-    if (t !== undefined) { window.clearTimeout(t); TIMERS.delete(el); }
+    if (t !== undefined) {
+      window.clearTimeout(t);
+      TIMERS.delete(el);
+    }
   }
   function scheduleVisible(el: HTMLElement, visible: boolean, delay: number): void {
     cancelTimer(el);
-    TIMERS.set(el, window.setTimeout(() => {
-      TIMERS.delete(el);
-      setVisible(el, visible);
-    }, delay));
+    TIMERS.set(
+      el,
+      window.setTimeout(() => {
+        TIMERS.delete(el);
+        setVisible(el, visible);
+      }, delay),
+    );
   }
 
   // Delayed flips started inside a view-transition callback would fire mid
@@ -379,11 +423,15 @@ export function installClickStages(): void {
     if (deferredFlips) deferredFlips.push({ el, target, delay });
     else scheduleVisible(el, target, delay);
   }
-  function deferFlips(): void { deferredFlips = []; }
+  function deferFlips(): void {
+    deferredFlips = [];
+  }
   function releaseFlips(): void {
     const queued = deferredFlips ?? [];
     deferredFlips = null;
-    queued.forEach(({ el, target, delay }) => scheduleVisible(el, target, delay));
+    queued.forEach(({ el, target, delay }) => {
+      scheduleVisible(el, target, delay);
+    });
   }
   /** The latest _applyStep owns each element · drop stale timers AND stale
    *  queued flips so a fast extra step during a transition can't resurrect
@@ -420,7 +468,7 @@ export function installClickStages(): void {
         const justReached = reached && this.step === step && prevStep < step;
         const onActivation = reached && step === 0 && prevStep === -1;
         if (delay > 0 && (justReached || onActivation)) {
-          setVisible(el, hide);                      // hold the pre-state…
+          setVisible(el, hide); // hold the pre-state…
           queueOrScheduleVisible(el, target, delay); // …then flip after the delay
         } else {
           setVisible(el, target);
@@ -437,15 +485,20 @@ export function installClickStages(): void {
     const groups = stepChanged && !vtActive && !reducedMotion() ? morphGroups(slide) : null;
     if (groups && groups.size > 0) {
       const targets = new Map(
-        entries.map(({ el, step, hide }) => [el, hide ? this.step < step : this.step >= step])
+        entries.map(({ el, step, hide }) => [el, hide ? this.step < step : this.step >= step]),
       );
       if (svt) {
-        nameVisibleMorphs(groups);          // old state, before capture
+        nameVisibleMorphs(groups); // old state, before capture
         vtActive = true;
         deferFlips();
         try {
-          svt(() => { run(); nameVisibleMorphs(groups, targets); })
-            .finished.finally(() => { vtActive = false; releaseFlips(); });
+          svt(() => {
+            run();
+            nameVisibleMorphs(groups, targets);
+          }).finished.finally(() => {
+            vtActive = false;
+            releaseFlips();
+          });
         } catch {
           // startViewTransition can throw synchronously (e.g. another transition
           // is mid-flight) · apply the step plainly and never strand vtActive
@@ -480,24 +533,28 @@ export function installClickStages(): void {
       // FLIP fallback (no View Transitions · Firefox) · measure the outgoing
       // boxes, navigate, then glide the incoming elements into place.
       const fromRects = visibleMorphRects(morphGroups(from!));
-      host.__rkMorphActive = true;   // deck-transition skips this navigation
+      host.__rkMorphActive = true; // deck-transition skips this navigation
       origGoTo.call(this, idx);
       flipMorphs(morphGroups(to!), fromRects);
-      window.setTimeout(() => { host.__rkMorphActive = false; }, FLIP_MS + 40);
+      window.setTimeout(() => {
+        host.__rkMorphActive = false;
+      }, FLIP_MS + 40);
       return;
     }
-    nameVisibleMorphs(morphGroups(from!));   // outgoing side, before capture
+    nameVisibleMorphs(morphGroups(from!)); // outgoing side, before capture
     vtActive = true;
     // deck-transition skips its classic animation for this navigation.
     host.__rkMorphActive = true;
     deferFlips();
     try {
-      svt(() => { origGoTo.call(this, idx); nameVisibleMorphs(morphGroups(to!)); })
-        .finished.finally(() => {
-          vtActive = false;
-          host.__rkMorphActive = false;
-          releaseFlips();
-        });
+      svt(() => {
+        origGoTo.call(this, idx);
+        nameVisibleMorphs(morphGroups(to!));
+      }).finished.finally(() => {
+        vtActive = false;
+        host.__rkMorphActive = false;
+        releaseFlips();
+      });
     } catch {
       // svt threw synchronously · fall back to a plain navigation and clear the
       // morph/flip guards so they aren't stranded.

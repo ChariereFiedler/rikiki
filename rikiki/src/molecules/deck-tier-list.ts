@@ -18,7 +18,9 @@ export class DeckTierList extends LitElement {
   static override styles = css`
     :host { display: flex; flex-direction: column; gap: var(--rik-space-2xs); }
   `;
-  override render() { return html`<slot></slot>`; }
+  override render() {
+    return html`<slot></slot>`;
+  }
 }
 
 @customElement('deck-tier')
@@ -87,7 +89,9 @@ export class DeckTierArrow extends LitElement {
       padding: 2px 0;
     }
   `;
-  override render() { return html`<slot></slot>`; }
+  override render() {
+    return html`<slot></slot>`;
+  }
 }
 
 declare global {

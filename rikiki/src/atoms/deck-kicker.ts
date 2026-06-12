@@ -20,6 +20,8 @@ export class DeckKicker extends LitElement {
     }
     :host([on-dark]) { color: var(--deck-kicker-on-dark-color, var(--rik-text-inverse--faint)); }
   `;
-  override render() { return html`<slot></slot>`; }
+  override render() {
+    return html`<slot></slot>`;
+  }
 }
 customElements.define('deck-kicker', DeckKicker);

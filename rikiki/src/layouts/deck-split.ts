@@ -26,7 +26,9 @@ export class DeckSplit extends LitElement {
   /* Customization tokens:
        --deck-split-gap (between columns, default 5 / 4 for 3-col)
        --deck-split-col-gap (between children inside a column, default 3) */
-  static override styles = [...slideBase, css`
+  static override styles = [
+    ...slideBase,
+    css`
     :host { justify-content: flex-start; }
     .body {
       flex: 1; min-height: 0;
@@ -45,7 +47,8 @@ export class DeckSplit extends LitElement {
       overflow: hidden;
     }
     .col.center { justify-content: center; }
-  `];
+  `,
+  ];
 
   @property({ type: String }) eyebrow?: string;
   @property({ type: String }) cols?: DeckSplitCols;
@@ -60,7 +63,7 @@ export class DeckSplit extends LitElement {
   }
 
   override updated() {
-    if (this.gap)    this.style.setProperty('--_gap',     this._resolveSp(this.gap));
+    if (this.gap) this.style.setProperty('--_gap', this._resolveSp(this.gap));
     if (this.colGap) this.style.setProperty('--_col-gap', this._resolveSp(this.colGap));
   }
 
@@ -72,14 +75,18 @@ export class DeckSplit extends LitElement {
       <slot name="title"></slot>
       <slot name="lead"></slot>
       <div class="body" part="body">
-        ${isThree ? html`
+        ${
+          isThree
+            ? html`
           <div class="col" part="col"><slot name="a"></slot></div>
           <div class="col" part="col"><slot name="b"></slot></div>
           <div class="col" part="col"><slot name="c"></slot></div>
-        ` : html`
+        `
+            : html`
           <div class="col" part="col"><slot name="left"></slot></div>
           <div class="col" part="col"><slot name="right"></slot></div>
-        `}
+        `
+        }
       </div>
     `;
   }

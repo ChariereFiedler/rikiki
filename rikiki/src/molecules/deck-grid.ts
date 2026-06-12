@@ -19,9 +19,9 @@ import { customElement, property } from 'lit/decorators.js';
 export type DeckGridAlign = 'start' | 'center' | 'end' | 'stretch';
 
 const MAP: Record<DeckGridAlign, string> = {
-  start:   'start',
-  center:  'center',
-  end:     'end',
+  start: 'start',
+  center: 'center',
+  end: 'end',
   stretch: 'stretch',
 };
 
@@ -67,11 +67,11 @@ export class DeckGrid extends LitElement {
   override updated() {
     const cols = expandTracks(this.cols);
     const rows = expandTracks(this.rows);
-    const gap  = expandGap(this.gap);
+    const gap = expandGap(this.gap);
     if (cols) this.style.setProperty('--_cols', cols);
     if (rows) this.style.setProperty('--_rows', rows);
-    if (gap)  this.style.setProperty('--_gap', gap);
-    if (this.align)   this.style.setProperty('--_align',   MAP[this.align]   ?? this.align);
+    if (gap) this.style.setProperty('--_gap', gap);
+    if (this.align) this.style.setProperty('--_align', MAP[this.align] ?? this.align);
     if (this.justify) this.style.setProperty('--_justify', MAP[this.justify] ?? this.justify);
   }
 
