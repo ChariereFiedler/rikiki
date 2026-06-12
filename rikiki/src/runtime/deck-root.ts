@@ -29,8 +29,8 @@ export class DeckRoot extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
       background: var(--deck-letterbox-bg, var(--deck-root-bg, var(--rik-surface-page)));
     }
@@ -217,7 +217,8 @@ export class DeckRoot extends LitElement {
   private _installRuntime(): void {
     this._applyCanvasVars();
     this._applyScale();
-    window.addEventListener('resize', this._applyScale);
+    this._resizeObserver = new ResizeObserver(this._applyScale);
+    this._resizeObserver.observe(this);
     window.addEventListener('keydown', this._onKey);
     window.addEventListener('hashchange', this._onHash);
     this.addEventListener('pointerdown', this._onNavPointerDown);
@@ -262,12 +263,14 @@ export class DeckRoot extends LitElement {
   }
 
   /** Uniform zoom-to-fit · scale the fixed logical canvas to the largest size
-   *  that still fits the viewport, so the slide layout is identical at any
-   *  window size (letterboxed when the aspect differs). Recomputed on resize. */
+   *  that still fits the host's own box (the viewport for a full-window deck,
+   *  the container for an embedded one). Driven by a ResizeObserver. */
   private _applyScale = (): void => {
-    const scale = Math.min(window.innerWidth / this.width, window.innerHeight / this.height);
-    this.style.setProperty('--deck-scale', String(scale));
+    const scale = Math.min(this.clientWidth / this.width, this.clientHeight / this.height);
+    if (scale > 0) this.style.setProperty('--deck-scale', String(scale));
   };
+
+  private _resizeObserver: ResizeObserver | null = null;
 
   /** Make the letterbox bands match the active slide's background, so a scaled
    *  deck blends seamlessly into the bands instead of sitting on a contrasting
@@ -325,7 +328,8 @@ export class DeckRoot extends LitElement {
     if (!document.querySelector('deck-root')) {
       document.getElementById('rik-deck-globals')?.remove();
     }
-    window.removeEventListener('resize', this._applyScale);
+    this._resizeObserver?.disconnect();
+    this._resizeObserver = null;
     window.removeEventListener('keydown', this._onKey);
     window.removeEventListener('hashchange', this._onHash);
     this.removeEventListener('pointerdown', this._onNavPointerDown);

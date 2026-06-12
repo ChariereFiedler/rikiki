@@ -67,9 +67,10 @@ export declare class DeckRoot extends LitElement {
      *  custom-property inheritance) size against the same numbers. */
     private _applyCanvasVars;
     /** Uniform zoom-to-fit · scale the fixed logical canvas to the largest size
-     *  that still fits the viewport, so the slide layout is identical at any
-     *  window size (letterboxed when the aspect differs). Recomputed on resize. */
+     *  that still fits the host's own box (the viewport for a full-window deck,
+     *  the container for an embedded one). Driven by a ResizeObserver. */
     private _applyScale;
+    private _resizeObserver;
     /** Make the letterbox bands match the active slide's background, so a scaled
      *  deck blends seamlessly into the bands instead of sitting on a contrasting
      *  frame. A slide with no background of its own (transparent) shows the page
