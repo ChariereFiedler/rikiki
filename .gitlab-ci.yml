@@ -50,6 +50,27 @@ lint:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
 
+# Quality gate for the published npm package (the site job above only covers
+# site/). Typecheck, lint (biome) and the consistency test suite. Runs in the
+# same cheap `check` stage so a broken package short-circuits before the build.
+package-check:
+  stage: check
+  image: ${NODE_IMAGE}
+  cache:
+    key: rikiki-node-modules-${CI_COMMIT_REF_SLUG}
+    paths:
+      - rikiki/node_modules/
+  before_script:
+    - cd rikiki
+    - npm ci --prefer-offline --no-audit
+  script:
+    - npm run typecheck
+    - npm run lint
+    - npm test
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+
 # Override the template's build-image job · the shared runner now selects
 # the `docker-container` buildx driver by default, which does not load the
 # built image into the local daemon. The template's plain `docker push`
