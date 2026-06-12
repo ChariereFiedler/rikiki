@@ -35,11 +35,12 @@ Create a todo per step and do them in order.
    Fill the new `CHANGELOG.md` section (Added / Changed / Fixed) and mirror it
    into the `<ul>` stub the CLI left in `changelog.astro`, replacing the TODO.
 4. **Evolve the docs for the new features.** A release is not just a version
-   bump — bring the user-facing docs up to date with what shipped: `README.md`
-   (TL;DR, component tables, navigation, the relevant sections), `llms.txt`, and
-   `docs/llms/rikiki-reference.md`. Add new tags/attributes/behaviours; leave
-   `since X` / `pre-X` historical notes untouched. The `rikiki v…` stamp was
-   already bumped by the CLI.
+   bump — bring the user-facing docs up to date with what shipped: the package
+   `README.md` and the **root `README.md`** (TL;DR, component lists, navigation),
+   `llms.txt`, and `docs/llms/rikiki-reference.md`. Cross-check `CONTRIBUTING.md`
+   if the contributor workflow changed. Add new tags/attributes/behaviours; leave
+   `since X` / `pre-X` historical notes untouched. The `rikiki v…` stamps were
+   already bumped by the CLI (both READMEs carry one).
 
 **Language:** all user-facing release content — `CHANGELOG.md`, the site, the
 `README.md`, `llms.txt`, and the reference — is written in **English**, even when

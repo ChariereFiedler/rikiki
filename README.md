@@ -2,6 +2,8 @@
 
 > A tiny Lit Web Components framework for technical presentations · zero-build for consumers, TypeScript for contributors.
 
+This documentation tracks rikiki v0.4.0.
+
 Open `index.html` in a browser and you get a deck. No dev server, no build step, no `dist/` to ship. Reopen the same folder in 2031 and it still runs · everything is Web standards (Custom Elements, Shadow DOM, ES Modules, CSS Custom Properties).
 
 ```
@@ -23,7 +25,7 @@ python3 -m http.server 7799
 
 Then open one of the examples:
 
-- <http://localhost:7799/examples/rikiki-tour/> · a 12-slide tour of every layout, atom and navigation key
+- <http://localhost:7799/examples/rikiki-tour/> · a guided tour of the layouts, atoms and navigation keys
 - <http://localhost:7799/rikiki/starter.html> · a blank template you can copy
 
 To author your own deck:
@@ -34,7 +36,7 @@ To author your own deck:
    <link rel="stylesheet" href="../../rikiki/tokens.css">
    <script type="module" src="../../rikiki/dist/index.js"></script>
    ```
-3. Write slides as `<deck-cover>`, `<deck-hero>`, `<deck-split>`, `<deck-hero-detail>`, `<deck-hook>` · each is plain HTML with a few slots and attributes.
+3. Write slides as `<deck-cover>`, `<deck-section>`, `<deck-feature>`, `<deck-split>`, `<deck-feature-cards>`, `<deck-takeaway>`, `<deck-photo>` · each is plain HTML with a few slots and attributes. See [`rikiki/docs/llms/rikiki-reference.md`](./rikiki/docs/llms/rikiki-reference.md) for the full tag/attribute/token list.
 
 ## Themes
 
@@ -52,14 +54,24 @@ Writing a third theme is a copy-paste of `rikiki/themes/rikiki.css` with the col
 
 ## Navigation
 
-- `←` / `→` · between sections (chapters)
-- `↑` / `↓` · within a section
-- `Space` / `PageDown` · linear next (any axis)
-- `O` · overview · `Esc` to close
+Decks are **linear by default** · arrows move to the next / previous slide:
+
+- `←` / `→` (or `↑` / `↓`) · previous / next slide (or step)
+- `Space` / `PageDown` · advance · `PageUp` · back
+- `O` · overview grid · `Esc` to close
+- `P` · presenter / speaker-notes window
 - `Home` / `End` · first / last
 - `?` · help
 
-URL hash stays flat (`#3` = slide 3) for shareability.
+Mouse is on by default too: click to advance (Shift+click to go back), scroll
+wheel, and the bottom-left hint chips are clickable. Opt out with
+`mouse-nav="none"` on `<deck-root>`.
+
+For chapter/slide **2D navigation**, opt in with `nav="2d"` on `<deck-root>`
+(with `<deck-section>` chapters): then `←` / `→` move between chapters and
+`↑` / `↓` within one.
+
+URL hash stays flat (`#3` = slide 3, `#3.2` = slide 3 step 2) for shareability.
 
 ## Contributing
 
@@ -69,9 +81,12 @@ Sources are in `rikiki/src/**/*.ts` (organised by DS bucket · runtime/, layouts
 cd rikiki
 npm install
 npm run build      # node build.mjs (esbuild) + tsc --emitDeclarationOnly
+npm run typecheck  # tsc --noEmit
+npm test           # release-consistency suite (vitest)
 ```
 
-Tests use Playwright; see existing test specs alongside examples.
+Browser-verification fixtures live in `rikiki/decks/tests/*.html`. See
+[`CONTRIBUTING.md`](./CONTRIBUTING.md) for the full workflow.
 
 ## License
 

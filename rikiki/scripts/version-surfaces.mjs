@@ -79,6 +79,11 @@ export const EXACT = [
     label: 'README.md doc stamp',
     find: /rikiki v(\d+\.\d+\.\d+)/g,
   },
+  {
+    file: at('README.md'),
+    label: 'root README.md doc stamp',
+    find: /rikiki v(\d+\.\d+\.\d+)/g,
+  },
 ];
 
 // HISTORICAL surfaces: free prose that legitimately mentions older versions
@@ -87,6 +92,7 @@ export const EXACT = [
 // are not matched.
 export const HISTORICAL = [
   { file: resolve(PKG_DIR, 'README.md'), label: 'README.md' },
+  { file: at('README.md'), label: 'root README.md' },
   { file: resolve(PKG_DIR, 'llms.txt'), label: 'llms.txt' },
   { file: resolve(PKG_DIR, 'docs/llms/rikiki-reference.md'), label: 'rikiki-reference.md' },
 ];
