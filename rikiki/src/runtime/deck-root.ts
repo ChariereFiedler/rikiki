@@ -25,33 +25,25 @@ export class DeckRoot extends LitElement {
        --deck-root-kb-hint-color (the bottom-left keyboard hint chip) */
   static override styles = css`
     :host {
-      display: block;
-      width: 100vw;
-      height: 100vh;
-      position: relative;
-      background: var(--deck-root-bg, var(--rik-surface-page));
-    }
-    /* Fluid mode (default): the stage is full-bleed and slides fill it just as
-       they filled the host before. No containment, so any cqw/cqh used by
-       components falls back to the viewport · identical to the old vw/vh. */
-    #stage { position: absolute; inset: 0; }
-
-    /* Fixed-viewport mode (opt-in via the fixed attribute): the host becomes
-       a letterbox frame that centers a fixed-aspect stage. The stage is a size
-       container, so the slides' cqw/cqh resolve against the canvas (1920×1080
-       by default) instead of the window · no hazardous reflow across screens. */
-    :host([fixed]) {
       display: flex;
       align-items: center;
       justify-content: center;
+      width: 100vw;
+      height: 100vh;
       overflow: hidden;
       background: var(--deck-letterbox-bg, var(--deck-root-bg, var(--rik-surface-page)));
     }
-    :host([fixed]) #stage {
-      position: relative;
-      inset: auto;
-      width: min(100vw, calc(100vh * var(--deck-canvas-w, 1920) / var(--deck-canvas-h, 1080)));
-      height: min(100vh, calc(100vw * var(--deck-canvas-h, 1080) / var(--deck-canvas-w, 1920)));
+    /* Zoom-to-fit · the stage is a fixed logical canvas (1920×1080 by default)
+       scaled uniformly to fit the viewport, so every slide keeps an identical
+       layout at any window size · letterboxed when the screen aspect differs.
+       --deck-scale is computed in JS on resize (see _applyScale); the stage is a
+       size container so the slides' cqw/cqh resolve against the canvas. */
+    #stage {
+      flex: none;
+      width: calc(var(--deck-canvas-w, 1920) * 1px);
+      height: calc(var(--deck-canvas-h, 1080) * 1px);
+      transform: scale(var(--deck-scale, 1));
+      transform-origin: center center;
       container-type: size;
     }
     #progress {
@@ -205,7 +197,9 @@ export class DeckRoot extends LitElement {
   private _wheelLockUntil = 0;
 
   override firstUpdated(): void {
-    if (this.fixed) this._applyCanvasVars();
+    this._applyCanvasVars();
+    this._applyScale();
+    window.addEventListener('resize', this._applyScale);
     this._scopeSlideStyles();
     this.slides = Array.from(this.querySelectorAll<Slide>(':scope > *')).filter(
       (el) =>
@@ -254,20 +248,61 @@ export class DeckRoot extends LitElement {
   }
 
   /** Publish the logical canvas size on the document root so both the
-   *  `html:has(deck-root[fixed])` font-size rule and the shadow `#stage`
-   *  (via custom-property inheritance) size against the same numbers. */
+   *  `html:has(deck-root)` rem-baseline rule and the shadow `#stage` (via
+   *  custom-property inheritance) size against the same numbers. */
   private _applyCanvasVars(): void {
     const root = document.documentElement;
     root.style.setProperty('--deck-canvas-w', String(this.width));
     root.style.setProperty('--deck-canvas-h', String(this.height));
   }
 
+  /** Uniform zoom-to-fit · scale the fixed logical canvas to the largest size
+   *  that still fits the viewport, so the slide layout is identical at any
+   *  window size (letterboxed when the aspect differs). Recomputed on resize. */
+  private _applyScale = (): void => {
+    const scale = Math.min(window.innerWidth / this.width, window.innerHeight / this.height);
+    this.style.setProperty('--deck-scale', String(scale));
+  };
+
+  /** Make the letterbox bands match the active slide's background, so a scaled
+   *  deck blends seamlessly into the bands instead of sitting on a contrasting
+   *  frame. A slide with no background of its own (transparent) shows the page
+   *  surface · removing the override lets the bands fall back to that same
+   *  surface, which stays seamless too. */
+  private _applyLetterbox(slide: Slide | null): void {
+    const bg = slide ? getComputedStyle(slide).backgroundColor : '';
+    const opaque = bg && bg !== 'transparent' && !/,\s*0\s*\)$/.test(bg);
+    if (opaque) this.style.setProperty('--deck-letterbox-bg', bg);
+    else this.style.removeProperty('--deck-letterbox-bg');
+  }
+
+  /** Injected once per document · true after the global baseline is in place. */
+  private static _globalsInjected = false;
+
+  /** The scaling baseline is a framework concern, not a theme one: inject it
+   *  globally so any theme (or none) gets it. The rem unit tracks the logical
+   *  canvas height — the #stage transform does the responsive scaling — and the
+   *  page never scrolls (so the letterbox is the only thing outside a slide). */
+  private static _injectGlobals(): void {
+    if (DeckRoot._globalsInjected || typeof document === 'undefined') return;
+    DeckRoot._globalsInjected = true;
+    const style = document.createElement('style');
+    style.id = 'rik-deck-globals';
+    style.textContent =
+      'html{font-size:calc(var(--deck-canvas-h,1080)*0.0235px)}html,body{margin:0;overflow:hidden}';
+    document.head.appendChild(style);
+  }
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    DeckRoot._injectGlobals();
+  }
+
   override disconnectedCallback(): void {
     super.disconnectedCallback();
-    if (this.fixed) {
-      document.documentElement.style.removeProperty('--deck-canvas-w');
-      document.documentElement.style.removeProperty('--deck-canvas-h');
-    }
+    document.documentElement.style.removeProperty('--deck-canvas-w');
+    document.documentElement.style.removeProperty('--deck-canvas-h');
+    window.removeEventListener('resize', this._applyScale);
     window.removeEventListener('keydown', this._onKey);
     window.removeEventListener('hashchange', this._onHash);
     this.removeEventListener('pointerdown', this._onNavPointerDown);
@@ -766,6 +801,7 @@ export class DeckRoot extends LitElement {
         });
       }
     });
+    this._applyLetterbox(next);
     // Lazy-load the transition plugin the first time we navigate when the
     // user has opted in via the `transition` attribute. The plugin attaches
     // its own listener for the `slide-change` event below.

@@ -177,7 +177,8 @@
   --rik-font-mono:                    'Space Mono', 'JetBrains Mono', ui-monospace, monospace;
 
   /* Typography · body scale · modular ratio 1.25 (major third) from 1rem.
-     html root-size is `clamp(14px, 2.35vh, 42px)` so rems scale with viewport.
+     html root-size is constant (`canvas-h × 0.0235` ≈ 25px); the deck-root
+     transform scales the whole canvas to fit, so rems never touch the viewport.
      New `--rik-text-*` aliases follow a documented t-shirt scale; the
      historical `--rik-font-size-*` names map to the same values for back-compat. */
   --rik-text-2xs:                     0.64rem;     /* 1 / 1.25^2 */
@@ -277,14 +278,10 @@
 *, *::before, *::after { box-sizing: border-box; }
 body, h1, h2, h3, h4, p, ul, ol, li, blockquote, pre, table, td, th,
 figure, dl, dd { margin: 0; padding: 0; }
-html { font-size: clamp(14px, 2.35vh, 42px); }
-/* Fixed-viewport decks (<deck-root fixed>) anchor the root font-size to the
-   logical canvas height instead of the window, so every rem-based size scales
-   with the letterboxed stage rather than the screen · no reflow off-ratio. */
-html:has(deck-root[fixed]) {
-  font-size: calc(min(100vh, 100vw * var(--deck-canvas-h, 1080) / var(--deck-canvas-w, 1920)) * 0.0235);
-}
-html, body { width: 100%; height: 100%; overflow: hidden; background: var(--rik-surface-page); }
+/* The rem baseline and the no-scroll reset are injected globally by deck-root
+   (theme-independent · see _injectGlobals). The theme only owns the page surface
+   and the type below. */
+html, body { background: var(--rik-surface-page); }
 body { font-family: var(--rik-font-sans); color: var(--rik-text-default); }
 
 ::selection { background: var(--rik-selection__bg); color: var(--rik-selection__text); }
