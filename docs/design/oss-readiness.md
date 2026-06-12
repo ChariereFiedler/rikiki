@@ -25,13 +25,14 @@ Analysis date: 2026-06-12.
 
 ## Lot 2 · Guardrails (P1 — contributor safety net)
 
-- [ ] Linter + formatter for the whole repo (proposal: **biome** — single dep,
-      fast, lint+format in one). Config + `npm run lint` / `format`.
-- [ ] CI job for the `rikiki/` package: `tsc --noEmit`, `npm test` (the version
-      consistency suite), lint. Today CI only builds/deploys the site, so
-      `version.test.mjs` never runs.
-- [ ] At least one automated render smoke test (Playwright over `decks/tests/*.html`)
-      wired into CI — visual checking is manual today.
+- [x] Linter + formatter via **biome**, scoped to `src/` + `scripts/`
+      (`rikiki/biome.json`, `npm run lint` / `format`). Adopted + applied.
+- [x] CI `package-check` job for `rikiki/`: `typecheck` + `lint` + `test`, in
+      the cheap `check` stage. Today the suite runs in CI, not just locally.
+- [ ] *(deferred)* Automated render smoke test (Playwright over
+      `decks/tests/*.html`) wired into CI. Needs a browser image on the
+      tordu-jardin runner — scoped as its own follow-up, not bundled into the
+      cheap check stage.
 
 ## Lot 3 · OSS hygiene files (P1)
 
