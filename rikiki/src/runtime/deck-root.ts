@@ -285,13 +285,26 @@ export class DeckRoot extends LitElement {
    *  canvas height — the #stage transform does the responsive scaling — and the
    *  page never scrolls (so the letterbox is the only thing outside a slide).
    *  Guarded by the element id (not a static) so separately-bundled copies of
-   *  this class on one page share the same once-per-document semantics. */
+   *  this class on one page share the same once-per-document semantics.
+   *
+   *  Every rule is scoped with `:has(> body > deck-root)`, so it is inert
+   *  unless a deck is a direct <body> child — i.e. a full-page deck. An
+   *  embedded deck (sitting in some container) never matches, so it leaves the
+   *  host page's scroll and rem baseline alone.
+   *
+   *  The `[fluid]` branch is consumed by a later task: until the `fluid`
+   *  attribute exists it matches nothing, while `:not([fluid])` covers every
+   *  current deck. The `height:100%` pair is also forward-looking — a later
+   *  task switches `:host` from 100vw/100vh to 100% sizing; it's harmless now. */
   private static _injectGlobals(): void {
     if (typeof document === 'undefined' || document.getElementById('rik-deck-globals')) return;
     const style = document.createElement('style');
     style.id = 'rik-deck-globals';
     style.textContent =
-      'html{font-size:calc(var(--deck-canvas-h,1080)*0.0235px)}html,body{margin:0;overflow:hidden}';
+      'html:has(> body > deck-root){overflow:hidden;height:100%}' +
+      'html:has(> body > deck-root) body{margin:0;overflow:hidden;height:100%}' +
+      'html:has(> body > deck-root:not([fluid])){font-size:calc(var(--deck-canvas-h,1080)*0.0235px)}' +
+      'html:has(> body > deck-root[fluid]){font-size:clamp(14px,2.35vh,42px)}';
     document.head.appendChild(style);
   }
 

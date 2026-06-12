@@ -81,7 +81,17 @@ export declare class DeckRoot extends LitElement {
      *  canvas height — the #stage transform does the responsive scaling — and the
      *  page never scrolls (so the letterbox is the only thing outside a slide).
      *  Guarded by the element id (not a static) so separately-bundled copies of
-     *  this class on one page share the same once-per-document semantics. */
+     *  this class on one page share the same once-per-document semantics.
+     *
+     *  Every rule is scoped with `:has(> body > deck-root)`, so it is inert
+     *  unless a deck is a direct <body> child — i.e. a full-page deck. An
+     *  embedded deck (sitting in some container) never matches, so it leaves the
+     *  host page's scroll and rem baseline alone.
+     *
+     *  The `[fluid]` branch is consumed by a later task: until the `fluid`
+     *  attribute exists it matches nothing, while `:not([fluid])` covers every
+     *  current deck. The `height:100%` pair is also forward-looking — a later
+     *  task switches `:host` from 100vw/100vh to 100% sizing; it's harmless now. */
     private static _injectGlobals;
     connectedCallback(): void;
     disconnectedCallback(): void;

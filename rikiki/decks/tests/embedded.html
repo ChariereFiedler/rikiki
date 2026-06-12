@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · embedded harness</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+</head>
+<body>
+<h1 id="host-title">Host page</h1>
+<p>A deck embedded in a regular, scrollable page · the deck must not touch
+the page's scroll or rem baseline.</p>
+<div id="deck-box" style="width: 800px; height: 450px">
+  <deck-root no-hint no-arrows>
+    <deck-section title="Embedded deck"></deck-section>
+    <deck-section title="Second slide"></deck-section>
+  </deck-root>
+</div>
+<div style="height: 2000px">tall host content · keeps the page scrollable</div>
+</body>
+</html>
