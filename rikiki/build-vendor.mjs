@@ -1,0 +1,83 @@
+#!/usr/bin/env node
+// Vendor every third-party runtime dependency into dist/vendor/ so a rikiki
+// deck runs fully offline · no CDN, no import map. Versions are pinned in
+// package.json (lit@3, marked@12, mermaid@10, shiki@1.24) so the runtime
+// loaders keep matching the APIs they expect.
+//
+//   node build-vendor.mjs
+//
+// Outputs (all self-contained ESM / UMD, no external imports left):
+//   dist/vendor/lit.js          · LitElement + html + css + all decorators
+//   dist/vendor/marked.js       · the markdown parser used by <deck-md>
+//   dist/vendor/shiki.js        · createHighlighter, JS regex engine (no wasm)
+//   dist/vendor/mermaid.min.js  · upstream UMD bundle, sets window.mermaid
+
+import { build } from 'esbuild';
+import { mkdirSync, copyFileSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
+const VENDOR = resolve(__dirname, 'dist', 'vendor');
+mkdirSync(VENDOR, { recursive: true });
+
+const common = {
+  bundle: true,
+  format: 'esm',
+  target: 'es2022',
+  platform: 'browser',
+  minify: true,
+  legalComments: 'none',
+  logLevel: 'info',
+};
+
+// lit · merge the two specifiers components import ('lit' and 'lit/decorators.js')
+// into one shared module so the browser fetches Lit exactly once for the whole deck.
+await build({
+  ...common,
+  stdin: {
+    contents: `export * from 'lit';\nexport * from 'lit/decorators.js';`,
+    resolveDir: __dirname,
+    loader: 'js',
+  },
+  outfile: resolve(VENDOR, 'lit.js'),
+});
+
+// marked · the markdown parser. <deck-md> imports the bare 'marked' specifier,
+// rewritten to this file by build.mjs for the per-component build.
+await build({
+  ...common,
+  stdin: {
+    contents: `export * from 'marked';`,
+    resolveDir: __dirname,
+    loader: 'js',
+  },
+  outfile: resolve(VENDOR, 'marked.js'),
+});
+
+// shiki · bundle the highlighter with the pure-JS regex engine so the whole
+// thing (core + grammars + themes) is one self-contained file with no wasm to
+// fetch. The default createHighlighter wires the JS engine in automatically.
+await build({
+  ...common,
+  stdin: {
+    contents: `
+      import { createHighlighter as base } from 'shiki';
+      import { createJavaScriptRegexEngine } from 'shiki/engine/javascript';
+      export function createHighlighter(opts = {}) {
+        return base({ ...opts, engine: opts.engine ?? createJavaScriptRegexEngine() });
+      }
+    `,
+    resolveDir: __dirname,
+    loader: 'js',
+  },
+  outfile: resolve(VENDOR, 'shiki.js'),
+});
+
+// mermaid · ship the upstream self-contained UMD bundle verbatim. It registers
+// window.mermaid on load · deck-mermaid injects it as a <script> on first use.
+copyFileSync(require.resolve('mermaid/dist/mermaid.min.js'), resolve(VENDOR, 'mermaid.min.js'));
+
+console.log('[vendor] wrote dist/vendor/{lit,marked,shiki}.js + mermaid.min.js');

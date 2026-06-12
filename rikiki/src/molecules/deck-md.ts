@@ -9,8 +9,9 @@
 
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-// @ts-expect-error · marked is loaded as ESM from CDN; no types ship with it.
-import { marked } from 'https://cdn.jsdelivr.net/npm/marked@12/+esm';
+// Bare specifier · build.mjs rewrites it to ./vendor/marked.js (offline);
+// the standalone build inlines it. marked ships its own types.
+import { marked } from 'marked';
 
 marked.setOptions({ gfm: true, breaks: false });
 

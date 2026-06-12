@@ -22,7 +22,9 @@ async function ensureMermaid(): Promise<void> {
   if (!window.mermaid) {
     await new Promise<void>((res, rej) => {
       const s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+      // Vendored UMD bundle · resolved next to this module's dist/ location so
+      // the deck stays offline. import.meta.url → dist/deck-mermaid.js.
+      s.src = new URL('./vendor/mermaid.min.js', import.meta.url).href;
       s.onload = () => res();
       s.onerror = () => rej(new Error('mermaid failed to load'));
       document.head.appendChild(s);
@@ -67,9 +69,9 @@ export class DeckMermaid extends LitElement {
     }
     :host([compact]) { padding: var(--rik-space-2); }
     .canvas { width: 100%; max-width: 100%; text-align: center; overflow: hidden; }
-    .canvas svg { width: 100% !important; height: auto !important; max-width: 100% !important; max-height: 60vh; }
+    .canvas svg { width: 100% !important; height: auto !important; max-width: 100% !important; max-height: 60cqh; }
     :host([compact]) .canvas { max-width: 60%; }
-    :host([compact]) .canvas svg { max-height: 22vh; }
+    :host([compact]) .canvas svg { max-height: 22cqh; }
   `;
 
   @property({ type: Boolean, reflect: true }) rendered = false;
