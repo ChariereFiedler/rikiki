@@ -7,6 +7,10 @@ export declare class DeckRoot extends LitElement {
      *  keys). Pressing any key dismisses it · same convention as PowerPoint. */
     blank: 'black' | 'white' | null;
     overview: boolean;
+    /** Fluid rendering · the deck fills its box and reflows like a web page
+     *  (no logical canvas, no zoom-to-fit scale, no letterbox). Opt-in · the
+     *  default stays the uniform zoom-to-fit canvas. */
+    fluid: boolean;
     /** Logical canvas size · defaults to 1920 × 1080 (16:9). Only the ratio and
      *  the rem baseline depend on these · the canvas is then scaled uniformly to
      *  fill the window (see _applyScale). */
