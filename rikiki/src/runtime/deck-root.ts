@@ -47,6 +47,11 @@ export class DeckRoot extends LitElement {
       transform-origin: center center;
       container-type: size;
     }
+    :host([fluid]) #stage {
+      width: 100%;
+      height: 100%;
+      transform: none;
+    }
     #progress {
       position: fixed; bottom: 0; left: 0;
       height: var(--deck-root-progress-height, 3px);
@@ -139,6 +144,10 @@ export class DeckRoot extends LitElement {
    *  keys). Pressing any key dismisses it · same convention as PowerPoint. */
   @state() blank: 'black' | 'white' | null = null;
   @property({ type: Boolean, reflect: true }) overview = false;
+  /** Fluid rendering · the deck fills its box and reflows like a web page
+   *  (no logical canvas, no zoom-to-fit scale, no letterbox). Opt-in · the
+   *  default stays the uniform zoom-to-fit canvas. */
+  @property({ type: Boolean, reflect: true }) fluid = false;
   /** Logical canvas size · defaults to 1920 × 1080 (16:9). Only the ratio and
    *  the rem baseline depend on these · the canvas is then scaled uniformly to
    *  fill the window (see _applyScale). */
@@ -257,6 +266,7 @@ export class DeckRoot extends LitElement {
    *  `html:has(deck-root)` rem-baseline rule and the shadow `#stage` (via
    *  custom-property inheritance) size against the same numbers. */
   private _applyCanvasVars(): void {
+    if (this.fluid) return;
     const root = document.documentElement;
     root.style.setProperty('--deck-canvas-w', String(this.width));
     root.style.setProperty('--deck-canvas-h', String(this.height));
@@ -266,6 +276,10 @@ export class DeckRoot extends LitElement {
    *  that still fits the host's own box (the viewport for a full-window deck,
    *  the container for an embedded one). Driven by a ResizeObserver. */
   private _applyScale = (): void => {
+    if (this.fluid) {
+      this.style.removeProperty('--deck-scale');
+      return;
+    }
     const scale = Math.min(this.clientWidth / this.width, this.clientHeight / this.height);
     if (scale > 0) this.style.setProperty('--deck-scale', String(scale));
   };
@@ -278,6 +292,10 @@ export class DeckRoot extends LitElement {
    *  surface · removing the override lets the bands fall back to that same
    *  surface, which stays seamless too. */
   private _applyLetterbox(slide: Slide | null): void {
+    if (this.fluid) {
+      this.style.removeProperty('--deck-letterbox-bg');
+      return;
+    }
     const bg = slide ? getComputedStyle(slide).backgroundColor : '';
     if (bg && isOpaqueColor(bg)) this.style.setProperty('--deck-letterbox-bg', bg);
     else this.style.removeProperty('--deck-letterbox-bg');

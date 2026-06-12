@@ -37,3 +37,29 @@ test('an embedded zoom-to-fit deck scales to its container, not the window', asy
     )
     .toBeCloseTo(800 / 1920, 2);
 });
+
+test('a fluid deck reflows with the viewport (no canvas, no letterbox)', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto('/rikiki/decks/tests/fluid.html');
+
+  const stageBox = () =>
+    page.evaluate(() => {
+      const stage = document.querySelector('deck-root')?.shadowRoot?.querySelector('#stage');
+      if (!stage) throw new Error('no #stage');
+      const b = stage.getBoundingClientRect();
+      return { w: b.width, h: b.height };
+    });
+
+  // The stage fills the viewport exactly · no 16:9 letterbox.
+  await page.setViewportSize({ width: 700, height: 1100 });
+  const tall = await stageBox();
+  expect(tall.w, 'stage fills the viewport width').toBeCloseTo(700, 0);
+  expect(tall.h, 'stage fills the viewport height').toBeCloseTo(1100, 0);
+
+  // Reflow, not zoom: the stage box CHANGES shape between viewports — the
+  // inverse of the zoom-to-fit invariant locked in scaling.spec.ts.
+  await page.setViewportSize({ width: 1600, height: 900 });
+  const wide = await stageBox();
+  expect(wide.w / wide.h, 'aspect follows the window').not.toBeCloseTo(tall.w / tall.h, 1);
+  expect(deck.consoleErrors).toEqual([]);
+});
