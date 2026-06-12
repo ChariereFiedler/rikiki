@@ -37,7 +37,10 @@
     "fonts",
     "README.md",
     "llms.txt",
-    "docs/llms"
+    "docs/llms",
+    ".claude/skills/rikiki-deck",
+    ".claude/skills/rikiki-theme",
+    ".claude/skills/rikiki-debug"
   ],
   "scripts": {
     "build": "node build-vendor.mjs && node build.mjs && node build-standalone.mjs && tsc --emitDeclarationOnly -p tsconfig.build.json",
