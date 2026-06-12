@@ -6,7 +6,7 @@
 
 A tiny **Lit Web Components** framework for technical presentations. Drop a folder anywhere, open `index.html`, give the talk. No build step on the consumer side · the framework itself is built from TypeScript, but the output is plain ES modules you import directly.
 
-This documentation tracks rikiki v0.4.0.
+This documentation tracks rikiki v0.5.0.
 
 ## TL;DR
 
@@ -158,6 +158,23 @@ element out.
 <deck-root mouse-nav="none">         <!-- keyboard-only, pre-0.3 behavior -->
 <deck-root mouse-nav="wheel arrows"> <!-- pick from: click wheel arrows aux -->
 ```
+
+## Rendering
+
+By default a deck renders into a fixed logical canvas (1920×1080, set via
+`width` / `height` on `<deck-root>`) scaled uniformly to fit, so a slide's
+layout is identical at any window size and the deck is letterboxed when the
+screen aspect differs. Add `fluid` to opt out · the deck then fills its box and
+reflows like a web page:
+
+```html
+<deck-root>        <!-- zoom-to-fit canvas (default) -->
+<deck-root fluid>  <!-- fills its box, reflows, no letterbox -->
+```
+
+Both modes are embed-safe · a `<deck-root>` placed inside a larger page scales
+to (or fills) its own container and never touches the host page's scroll or
+typography.
 
 ## Themes
 

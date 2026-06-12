@@ -8,6 +8,34 @@ import Docs from '../../layouts/Docs.astro';
   description="Notable changes. Follows Keep a Changelog · the project is on semver."
 >
 
+<h2 id="v050">0.5.0 · 2026-06-12</h2>
+
+<p>This release reworks the rendering model. Every deck now renders into a fixed logical canvas scaled uniformly to fit the viewport, with an opt-in fluid mode for decks that should reflow like a web page, and embedded decks no longer disturb the page that hosts them.</p>
+
+<h3>Added</h3>
+<ul>
+  <li><strong>Opt-in fluid mode.</strong> <code>&lt;deck-root fluid&gt;</code> makes a deck fill its box and reflow like a web page · no logical canvas, no zoom-to-fit scale, no letterbox. It can be toggled at runtime; the default stays zoom-to-fit.</li>
+  <li><strong>Playwright render net.</strong> A browser-level test suite (smoke, navigation, scaling, embedding) loads every fixture deck and asserts the engine upgrades, slides render, navigation works and the host page is left intact.</li>
+</ul>
+
+<h3>Changed</h3>
+<ul>
+  <li><strong>Uniform zoom-to-fit is now the default.</strong> Every deck renders into a fixed logical canvas (1920×1080 by default, set via <code>width</code>/<code>height</code>) scaled uniformly to fit, so a slide's layout is identical at any window size and letterboxed when the aspect differs. Author fluid layouts now opt in with <code>fluid</code>.</li>
+  <li><strong>Embedded decks leave the host page alone.</strong> The global baseline (scroll lock, rem sizing) is scoped to full-page decks, so a <code>&lt;deck-root&gt;</code> inside a larger document no longer hijacks the page's scroll or typography.</li>
+  <li><strong>Zoom-to-fit measures the deck's own box</strong> (via a <code>ResizeObserver</code> on the host, not the window), so an embedded deck scales to its container and re-fits on container resize.</li>
+</ul>
+
+<h3>Removed</h3>
+<ul>
+  <li><strong>The <code>fixed</code> attribute.</strong> Zoom-to-fit is now the only canvas mode, so <code>fixed</code> no longer has any effect and has been removed. Decks that still carry it render identically.</li>
+</ul>
+
+<h3>Fixed</h3>
+<ul>
+  <li><strong>Letterbox bands now match slides whose background has a zero blue channel</strong> (black, red, yellow). The opacity check parsed the blue channel as the alpha, so those slides wrongly fell back to the page surface for their bands.</li>
+  <li><strong>The deck no longer leaves marks on the host page.</strong> Removing the last deck restores the page's scroll and rem baseline; changing <code>width</code>/<code>height</code> after first render re-fits the canvas; a deck moved or re-attached in the DOM keeps rescaling on resize.</li>
+</ul>
+
 <h2 id="v040">0.4.0 · 2026-06-12</h2>
 
 <h3>Added</h3>
