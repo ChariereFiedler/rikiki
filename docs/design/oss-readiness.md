@@ -52,9 +52,11 @@ Analysis date: 2026-06-12.
       GitLab/GitHub mirror. The OSS surface is the **public npm package**
       (`rikiki-deck`); the repo stays self-hosted. ⇒ templates use GitLab format
       (`.gitlab/`), publish CI runs from the tordu-jardin runner.
-- [ ] `npm publish` automation: tag-triggered GitLab job, `prepublishOnly`
-      rebuilds `dist/`, npm provenance via `NPM_TOKEN`. Stop hand-publishing
-      (0.3.1 shipped untagged).
+- [x] `npm publish` automation: tag-triggered GitLab `publish-npm` job in a new
+      `release` stage; `prepublishOnly` rebuilds `dist/` and runs the test suite
+      so a stale/ drifted tag fails before publishing. Needs the masked
+      `NPM_TOKEN` CI variable. *(npm provenance via GitLab OIDC left as a future
+      enhancement — needs `id_tokens` config.)*
 
 ## Lot 5 · Architecture & modularity (P2 — do behind tests)
 
