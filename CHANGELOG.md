@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-06-12
+
+### Added
+- Release tooling: `npm run bump <version>` rewrites every version surface at
+  once (package.json/lock, CHANGELOG, site changelog, demo deck, doc stamps),
+  backed by a shared manifest (`scripts/version-surfaces.mjs`) and a Vitest
+  suite (`npm test`) that fails when any surface drifts. A `bump-version` skill
+  orchestrates the release.
+- The docs now declare which release they document via a `rikiki v<version>`
+  stamp in `README.md`, `llms.txt`, and the LLM reference.
+
+### Changed
+- The npm package now ships the LLM docs: `llms.txt` and `docs/llms` are
+  included in the published tarball, so the reference is available after
+  `npm install rikiki-deck`.
+
 ## [0.3.1] - 2026-06-09
 
 ### Fixed

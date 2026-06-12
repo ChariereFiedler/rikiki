@@ -5,6 +5,8 @@
 > stylesheet, then the component bundle, then write a `<deck-root>` wrapping
 > `deck-*` slide elements. No build step to author or run a deck.
 
+This reference documents rikiki v0.4.0.
+
 The framework is opinionated:
 
 - Web standards only (Custom Elements, Shadow DOM, ES Modules, CSS Custom Properties).
