@@ -146,7 +146,8 @@ export class DeckRoot extends LitElement {
   @property({ type: Boolean, reflect: true }) overview = false;
   /** Fluid rendering · the deck fills its box and reflows like a web page
    *  (no logical canvas, no zoom-to-fit scale, no letterbox). Opt-in · the
-   *  default stays the uniform zoom-to-fit canvas. */
+   *  default stays the uniform zoom-to-fit canvas. Toggleable at runtime ·
+   *  flipping it re-applies the canvas vars, scale and letterbox both ways. */
   @property({ type: Boolean, reflect: true }) fluid = false;
   /** Logical canvas size · defaults to 1920 × 1080 (16:9). Only the ratio and
    *  the rem baseline depend on these · the canvas is then scaled uniformly to
@@ -900,11 +901,19 @@ export class DeckRoot extends LitElement {
 
   override updated(changed: PropertyValues<this>): void {
     // A canvas resize after first render must republish the vars and rescale ·
-    // firstUpdated only covers the initial values. (Both calls are idempotent,
-    // so the overlap on the very first update cycle is harmless.)
-    if (changed.has('width') || changed.has('height')) {
+    // firstUpdated only covers the initial values. Toggling `fluid` at runtime
+    // goes through the same machinery: turning it off must re-engage the canvas
+    // vars and zoom-to-fit scale, turning it on hits their fluid guards (which
+    // clear the now-inert custom props). (All calls are idempotent, so the
+    // overlap on the very first update cycle is harmless.)
+    if (changed.has('width') || changed.has('height') || changed.has('fluid')) {
       this._applyCanvasVars();
       this._applyScale();
+    }
+    // The canvas vars/scale handle geometry; the letterbox bands also need the
+    // active slide, so re-apply them for the current slide on a `fluid` toggle.
+    if (changed.has('fluid')) {
+      this._applyLetterbox(this.slides[this.current] ?? null);
     }
     this._updateUI();
     void this._renderOverviewIfActive();

@@ -9,7 +9,8 @@ export declare class DeckRoot extends LitElement {
     overview: boolean;
     /** Fluid rendering · the deck fills its box and reflows like a web page
      *  (no logical canvas, no zoom-to-fit scale, no letterbox). Opt-in · the
-     *  default stays the uniform zoom-to-fit canvas. */
+     *  default stays the uniform zoom-to-fit canvas. Toggleable at runtime ·
+     *  flipping it re-applies the canvas vars, scale and letterbox both ways. */
     fluid: boolean;
     /** Logical canvas size · defaults to 1920 × 1080 (16:9). Only the ratio and
      *  the rem baseline depend on these · the canvas is then scaled uniformly to
