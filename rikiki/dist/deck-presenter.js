@@ -1,4 +1,5 @@
-var c="rik-presenter",f=new URL("./index.js",import.meta.url).href,t=null,i=null,o=null;function m(e){let r=Array.from(e.children).filter(l=>l.tagName.toLowerCase().startsWith("deck-")),s=r.findIndex(l=>l.hasAttribute("active")),a=r[s]??null,n=r[s+1]??null,p=(a?.querySelector("deck-notes")?.textContent??"").trim(),u=document.querySelector('link[rel="stylesheet"][href*="rikiki"], link[rel="stylesheet"][href*="tokens"], link[rel="stylesheet"][href*="theme"]')?.href??"";return{current:s+1,total:r.length,slideHtml:a?.outerHTML??"",nextHtml:n?.outerHTML??null,notes:p,themeHref:u,bundleHref:f}}function d(e){i&&i.postMessage({type:"state",state:m(e)})}var h=e=>`<!doctype html>
+var c="rik-presenter",g=new URL("./index.js",import.meta.url).href,t=null,l=null,o=null;function p(e){let r=Array.from(e.children).filter(i=>i.tagName.toLowerCase().startsWith("deck-")),s=r.findIndex(i=>i.hasAttribute("active")),a=r[s]??null,n=r[s+1]??null,m=(a?.querySelector("deck-notes")?.textContent??"").trim(),u=document.querySelector('link[rel="stylesheet"][href*="rikiki"], link[rel="stylesheet"][href*="tokens"], link[rel="stylesheet"][href*="theme"]')?.href??"",f=Array.from(document.querySelectorAll("style")).map(i=>i.textContent??"").join(`
+`),h=document.querySelector('script[type="module"][data-rikiki-bundle]')?.textContent??"";return{current:s+1,total:r.length,slideHtml:a?.outerHTML??"",nextHtml:n?.outerHTML??null,notes:m,themeHref:u,inlineStyles:f,bundleHref:g,bundleInline:h}}function d(e){l&&l.postMessage({type:"state",state:p(e)})}var y=e=>`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -113,36 +114,43 @@ ${e.themeHref?`<link rel="stylesheet" href="${e.themeHref}">`:""}
   resetBtn.onclick = () => { startedAt = Date.now(); elapsed = 0; running = true; toggleBtn.textContent = 'Pause'; };
 
   function wrapFrame(slideHtml) {
-    const themeHref  = ${JSON.stringify(e.themeHref)};
-    const bundleHref = ${JSON.stringify(e.bundleHref)};
+    const themeHref    = ${JSON.stringify(e.themeHref)};
+    const inlineStyles = ${JSON.stringify(e.inlineStyles)};
+    const bundleHref   = ${JSON.stringify(e.bundleHref)};
+    const bundleInline = ${JSON.stringify(e.bundleInline)};
     const themeLink  = themeHref ? '<link rel="stylesheet" href="' + themeHref + '">' : '';
-    // Bootstrap rikiki inside the iframe. For a file-served deck bundleHref is a
-    // real URL \xB7 load it with <script src>. For a single-file bundled deck the
-    // bundle is inlined, so import.meta.url (and thus bundleHref) is a data: URL.
-    // Loaded as <script src="data:..."> the module's own import.meta.url is that
-    // data: URL, where a top-level new URL(relative, import.meta.url) throws and
-    // aborts component registration \xB7 the iframe then shows raw, un-upgraded
-    // markup. Inline the same code instead so the module base is the iframe
-    // document URL (escaping any script end-tag in the bundle so it can't
-    // close this block early \xB7 note this very comment must avoid the literal).
+    const themeStyle = inlineStyles ? '<style>' + inlineStyles + '</style>' : '';
+    // Bootstrap rikiki inside the iframe so its <deck-*> elements upgrade.
+    //  \xB7 single-file deck \u2192 the framework is inlined and tagged \xB7 re-inline it
+    //    so the module base is the iframe document URL (a <script src="data:">
+    //    or a non-existent ./index.js would break new URL(rel, import.meta.url)
+    //    and abort registration). Escape any script end-tag so it can't close
+    //    this block early (this comment must avoid the literal too).
+    //  \xB7 served deck \u2192 load the real bundle URL with <script src>.
     let bundleTag;
-    if (bundleHref.slice(0, 5) === 'data:') {
+    const esc = (c) => c.replace(/<\\/script/gi, '<\\\\/script');
+    if (bundleInline) {
+      bundleTag = '<script type="module">' + esc(bundleInline) + '<' + '/script>';
+    } else if (bundleHref.slice(0, 5) === 'data:') {
       const b64 = bundleHref.indexOf(';base64,');
       const code = b64 >= 0
         ? atob(bundleHref.slice(b64 + 8))
         : decodeURIComponent(bundleHref.slice(bundleHref.indexOf(',') + 1));
-      bundleTag = '<script type="module">' + code.replace(/<\\/script/gi, '<\\\\/script') + '<' + '/script>';
+      bundleTag = '<script type="module">' + esc(code) + '<' + '/script>';
     } else {
       bundleTag = '<script type="module" src="' + bundleHref + '"><' + '/script>';
     }
     // Mark the cloned slide [active] so its real component CSS applies
     // (:host([active]){display:flex}) instead of forcing display via !important.
     const activeSlide = slideHtml.replace(/^(\\s*<deck-[a-z-]+)/i, '$1 active');
-    return '<!doctype html><html><head><meta charset="UTF-8">' + themeLink +
+    // Render the preview in fixed-viewport mode so the slide keeps its 16:9
+    // proportions (letterboxed) regardless of the pane's shape, and drop the
+    // hint / nav-arrow chrome \xB7 a clean, correctly-shaped thumbnail.
+    return '<!doctype html><html><head><meta charset="UTF-8">' + themeLink + themeStyle +
       bundleTag +
       '<style>html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#0f1422}' +
       'deck-root{position:absolute;inset:0}</style>' +
-      '</head><body><deck-root>' + activeSlide + '</deck-root></body></html>';
+      '</head><body><deck-root fixed no-hint no-arrows>' + activeSlide + '</deck-root></body></html>';
   }
 
   channel.onmessage = (e) => {
@@ -169,4 +177,4 @@ ${e.themeHref?`<link rel="stylesheet" href="${e.themeHref}">`:""}
   channel.postMessage({ type: 'hello' });
 <\/script>
 </body>
-</html>`;function y(e){if(o=o??new WeakSet,o.has(e)){t?.close(),t=null;return}o.add(e),i=new BroadcastChannel(c),e.addEventListener("slide-change",()=>d(e)),i.addEventListener("message",a=>{let n=a.data;n?.type==="key"&&n.key&&window.dispatchEvent(new KeyboardEvent("keydown",{key:n.key,shiftKey:!!n.shift,bubbles:!0})),n?.type==="hello"&&d(e)});let r=m(e);if(t=window.open("","rikiki-presenter","width=1280,height=800,popup=yes"),!t){console.warn("[rikiki/presenter] popup was blocked \xB7 allow popups for this site"),o.delete(e);return}t.document.open(),t.document.write(h(r)),t.document.close();let s=setInterval(()=>{t&&t.closed&&(clearInterval(s),o?.delete(e),t=null)},1e3)}export{y as installPresenter};
+</html>`;function x(e){if(o=o??new WeakSet,o.has(e)){t?.close(),t=null;return}o.add(e),l=new BroadcastChannel(c),e.addEventListener("slide-change",()=>d(e)),l.addEventListener("message",a=>{let n=a.data;n?.type==="key"&&n.key&&window.dispatchEvent(new KeyboardEvent("keydown",{key:n.key,shiftKey:!!n.shift,bubbles:!0})),n?.type==="hello"&&d(e)});let r=p(e);if(t=window.open("","rikiki-presenter","width=1280,height=800,popup=yes"),!t){console.warn("[rikiki/presenter] popup was blocked \xB7 allow popups for this site"),o.delete(e);return}t.document.open(),t.document.write(y(r)),t.document.close();let s=setInterval(()=>{t&&t.closed&&(clearInterval(s),o?.delete(e),t=null)},1e3)}export{x as installPresenter};

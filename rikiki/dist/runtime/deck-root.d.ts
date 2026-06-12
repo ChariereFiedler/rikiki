@@ -7,6 +7,19 @@ export declare class DeckRoot extends LitElement {
      *  keys). Pressing any key dismisses it · same convention as PowerPoint. */
     blank: 'black' | 'white' | null;
     overview: boolean;
+    /** Fixed-viewport mode · the deck renders into a fixed-aspect canvas that is
+     *  letterboxed to fit any screen, so layouts never reflow between displays.
+     *  Opt-in · the default stays fluid (100vw × 100vh). */
+    fixed: boolean;
+    /** Logical canvas size for fixed mode · defaults to 1920 × 1080 (16:9).
+     *  Only the ratio and the rem baseline depend on these · the canvas is then
+     *  scaled by CSS to fill the window. */
+    width: number;
+    height: number;
+    /** Hide the bottom-left keyboard-hint chip (the ←/→ · O · P · ? row). */
+    noHint: boolean;
+    /** Hide the bottom-right on-screen previous/next navigation arrows. */
+    noArrows: boolean;
     /** Optional slide transition · "slide" | "fade" | "zoom". When set, the
      *  deck-transition.js plugin is fetched on first navigation. Per-slide
      *  override available via `data-transition` on the slide host. */
@@ -42,6 +55,16 @@ export declare class DeckRoot extends LitElement {
     private _wheelAccum;
     private _wheelLockUntil;
     firstUpdated(): void;
+    /** Confine author `<style scoped>` blocks to their own slide. A light-DOM
+     *  <style> is a global stylesheet by default, so a per-slide tweak would
+     *  bleed across the whole deck. Wrapping its body in a native @scope rule
+     *  (whose implicit root is the style's parent slide) limits it to that slide
+     *  with no selector rewriting · plain CSS inside keeps working unchanged. */
+    private _scopeSlideStyles;
+    /** Publish the logical canvas size on the document root so both the
+     *  `html:has(deck-root[fixed])` font-size rule and the shadow `#stage`
+     *  (via custom-property inheritance) size against the same numbers. */
+    private _applyCanvasVars;
     disconnectedCallback(): void;
     private _startAutoplay;
     private _stopAutoplay;
