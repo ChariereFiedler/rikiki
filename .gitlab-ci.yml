@@ -87,7 +87,17 @@ e2e:
     - npm ci --prefer-offline --no-audit
   script:
     - npm run build            # decks load ../../dist · build it first
+    # The committed dist/ is what the deployed site and git consumers actually
+    # run · a rebuild that differs means src/ and dist/ drifted, and the tests
+    # below would green-light an artifact nobody ships. Fail fast instead.
+    - git diff --exit-code -- dist || { echo "ERROR · committed dist/ is stale, run 'npm run build' and commit it"; exit 1; }
     - npx playwright test
+  artifacts:
+    when: always
+    expire_in: 1 week
+    paths:
+      - rikiki/e2e-report.json
+      - rikiki/test-results/
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'

@@ -15,12 +15,24 @@ export function createDeckPage(page: Page) {
     consoleErrors.push(`pageerror: ${err.message}`);
   });
 
+  // A deck asset that 404s (theme CSS, tokens, lazy chunk) only surfaces in the
+  // console as the generic "Failed to load resource", which the smoke filters
+  // as network noise · track local failures structurally instead, so a broken
+  // stylesheet can't pass green. Favicons are browser noise, not deck assets.
+  const failedRequests: string[] = [];
+  page.on('response', (res) => {
+    if (res.status() >= 400 && res.url().includes('localhost') && !/favicon/.test(res.url())) {
+      failedRequests.push(`${res.status()} ${res.url()}`);
+    }
+  });
+
   const root: Locator = page.locator('deck-root');
   const activeSlide: Locator = page.locator('deck-root > [active]');
 
   return {
     page,
     consoleErrors,
+    failedRequests,
     root,
     activeSlide,
 
