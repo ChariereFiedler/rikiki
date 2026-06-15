@@ -3,7 +3,7 @@
 //
 // Usage in a deck:
 //   <script type="module">
-//     import { installShiki } from './rikiki/dist/shiki-plugin.js';
+//     import { installShiki } from './rikiki/dist/shiki.js';
 //     await installShiki({ theme: 'one-dark-pro', langs: ['ts', 'tsx', 'html', 'css'] });
 //   </script>
 //

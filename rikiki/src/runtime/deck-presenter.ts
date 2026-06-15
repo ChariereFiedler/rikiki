@@ -115,6 +115,12 @@ function sendDeckToScreen(host: DeckRoot, screen: ScreenLike): void {
   };
   el.requestFullscreen?.({ screen })
     .then(() => {
+      // The presenter may have been closed while the request was in flight ·
+      // don't strand the deck fullscreen with no presenter.
+      if (!installed?.has(host)) {
+        document.exitFullscreen?.().catch(() => {});
+        return;
+      }
       deckFullscreened = true;
     })
     .catch(() => {
@@ -122,8 +128,15 @@ function sendDeckToScreen(host: DeckRoot, screen: ScreenLike): void {
     });
 }
 
+/** Keep our fullscreen flag honest when the user exits fullscreen natively
+ *  (Esc) · otherwise restore would later think the deck is still fullscreen. */
+function onFullscreenChange(): void {
+  if (!document.fullscreenElement) deckFullscreened = false;
+}
+
 /** Exit the fullscreen we put the deck into when the presenter closes. */
 function restoreDeckFromFullscreen(): void {
+  document.removeEventListener('fullscreenchange', onFullscreenChange);
   if (deckFullscreened && document.fullscreenElement) {
     document.exitFullscreen?.().catch(() => {});
   }
@@ -430,6 +443,8 @@ export function installPresenter(host: DeckRoot): void {
   popup.document.close();
   // The main window is now the projected one · hide its hint chips / arrows.
   host.presenterActive = true;
+  // Track native fullscreen exits (Esc) so our flag doesn't go stale.
+  document.addEventListener('fullscreenchange', onFullscreenChange);
 
   // Tidy up if the popup is closed externally
   const watch = setInterval(() => {
