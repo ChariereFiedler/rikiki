@@ -17,6 +17,41 @@ type Slide = HTMLElement & {
 
 type Chapter = { startIdx: number; slides: Slide[] };
 
+/** The stable surface a plugin may touch · deliberately small so plugins never
+ *  reach into the engine's private internals (the old approach monkey-patched
+ *  the prototype's private methods, which broke silently on any rename). */
+export interface DeckContext {
+  /** The deck-root element · for ad-hoc first-party coordination markers. */
+  readonly host: DeckRoot;
+  readonly current: number;
+  readonly step: number;
+  readonly slides: readonly Slide[];
+  requestUpdate(): void;
+}
+
+/** A deck-root extension. Register one with `deckRoot.use(plugin)` · the engine
+ *  calls the optional hooks at the matching points. All hooks are optional so a
+ *  plugin implements only what it needs. */
+export interface DeckPlugin {
+  /** Unique name · registration is idempotent by this. */
+  name: string;
+  /** Run once on registration · may return a teardown run on unregister. */
+  // biome-ignore lint/suspicious/noConfusingVoidType: a teardown or nothing · mirrors React's effect cleanup contract
+  setup?(ctx: DeckContext): void | (() => void);
+  /** Contribute to the active slide's step count · combined with the engine's
+   *  own count (and other plugins') as a maximum. Must not call back into the
+   *  engine's step count. */
+  steps?(slide: Slide, ctx: DeckContext): number;
+  /** React after the engine applied a step to the active slide. */
+  applyStep?(step: number, slide: Slide, ctx: DeckContext): void;
+  /** Around-advice for navigation · call `proceed()` to run the real navigation
+   *  (optionally wrapped, e.g. inside a View Transition). Return a truthy value
+   *  when handled · otherwise the engine navigates normally. Only the first
+   *  registered plugin with a `navigate` hook owns navigation. */
+  // biome-ignore lint/suspicious/noConfusingVoidType: truthy = handled · returning nothing means not handled
+  navigate?(to: number, ctx: DeckContext, proceed: () => void): boolean | void;
+}
+
 @customElement('deck-root')
 export class DeckRoot extends LitElement {
   /* Customization tokens:
@@ -47,7 +82,11 @@ export class DeckRoot extends LitElement {
       transform-origin: center center;
       container-type: size;
     }
-    :host([fluid]) #stage {
+    /* Fluid deck, or a single per-slide fluid escape (host gets the unfixed
+       marker): the stage fills its box and drops the zoom-to-fit transform ·
+       the size container stays so cqw/cqh still resolve, against the real box. */
+    :host([fluid]) #stage,
+    :host([unfixed]) #stage {
       width: 100%;
       height: 100%;
       transform: none;
@@ -143,6 +182,10 @@ export class DeckRoot extends LitElement {
   /** When non-null, a full-screen overlay covers the deck (clicker B/./W/,
    *  keys). Pressing any key dismisses it · same convention as PowerPoint. */
   @state() blank: 'black' | 'white' | null = null;
+  /** Set by the presenter plugin while the speaker popup is open. The main
+   *  window is then the projected one, so its key-hint chips and nav arrows are
+   *  noise · hide them until the popup closes (issue #6). */
+  @state() presenterActive = false;
   @property({ type: Boolean, reflect: true }) overview = false;
   /** Fluid rendering · the deck fills its box and reflows like a web page
    *  (no logical canvas, no zoom-to-fit scale, no letterbox). Opt-in · the
@@ -202,6 +245,55 @@ export class DeckRoot extends LitElement {
   // Wheel navigation · deltaY accumulation + lockout against trackpad inertia
   private _wheelAccum = 0;
   private _wheelLockUntil = 0;
+  // Registered plugins (see use()) and the lazily-built, frozen context handed
+  // to their hooks.
+  private _plugins: DeckPlugin[] = [];
+  private _ctx: DeckContext | null = null;
+
+  /** Build (once) the stable context object plugins receive · live getters so a
+   *  plugin always sees the engine's current position (the object itself is
+   *  cached, not frozen). */
+  private _context(): DeckContext {
+    if (this._ctx) return this._ctx;
+    const host = this;
+    this._ctx = {
+      host,
+      get current() {
+        return host.current;
+      },
+      get step() {
+        return host.step;
+      },
+      get slides() {
+        return host.slides;
+      },
+      requestUpdate: () => host.requestUpdate(),
+    };
+    return this._ctx;
+  }
+
+  /** Register a plugin · idempotent by name. Returns an unregister function that
+   *  runs the plugin's teardown and detaches its hooks. A freshly registered
+   *  plugin may change step counts or element visibility, so the active slide is
+   *  re-applied immediately (this also covers plugins attached after the deck
+   *  has already rendered). */
+  use(plugin: DeckPlugin): () => void {
+    if (this._plugins.some((p) => p.name === plugin.name)) return () => {};
+    if (plugin.navigate && this._plugins.some((p) => p.navigate)) {
+      console.warn(
+        `[rikiki] plugin "${plugin.name}" has a navigate hook but another plugin already owns navigation · it will be ignored`,
+      );
+    }
+    this._plugins.push(plugin);
+    const teardown = plugin.setup?.(this._context());
+    this._applyStep();
+    this._updateUI();
+    return () => {
+      const i = this._plugins.indexOf(plugin);
+      if (i >= 0) this._plugins.splice(i, 1);
+      if (typeof teardown === 'function') teardown();
+    };
+  }
 
   override firstUpdated(): void {
     this._installRuntime();
@@ -266,12 +358,31 @@ export class DeckRoot extends LitElement {
   /** Publish the logical canvas size on the document root so both the
    *  `html:has(deck-root)` rem-baseline rule and the shadow `#stage` (via
    *  custom-property inheritance) size against the same numbers. */
+  /** True when the whole deck is fluid, or the active slide opts out of the
+   *  fixed canvas via its own `fluid` attribute · a per-slide viewport escape
+   *  (issue #4). It drives the canvas vars, scale and letterbox exactly like
+   *  the deck-wide `fluid` flag, just for that one slide. */
+  private _effectiveFluid(): boolean {
+    return this.fluid || (this.slides[this.current]?.hasAttribute('fluid') ?? false);
+  }
+
+  /** Reflect the active slide's per-slide fluid escape on the host · the
+   *  `unfixed` marker that the stage CSS and the injected rem baseline key on ·
+   *  then re-apply the canvas vars and scale for the new effective mode. Called
+   *  on every slide change · a no-op for a deck that never uses per-slide fluid. */
+  private _applySlideFluid(): void {
+    const slideFluid = !this.fluid && (this.slides[this.current]?.hasAttribute('fluid') ?? false);
+    this.toggleAttribute('unfixed', slideFluid);
+    this._applyCanvasVars();
+    this._applyScale();
+  }
+
   private _applyCanvasVars(): void {
     const root = document.documentElement;
     // Fluid mode has no logical canvas · clear the vars a prior non-fluid
     // render published (symmetric with the _applyScale / _applyLetterbox
     // guards) so toggling into fluid leaves no stale global state.
-    if (this.fluid) {
+    if (this._effectiveFluid()) {
       root.style.removeProperty('--deck-canvas-w');
       root.style.removeProperty('--deck-canvas-h');
       return;
@@ -284,7 +395,7 @@ export class DeckRoot extends LitElement {
    *  that still fits the host's own box (the viewport for a full-window deck,
    *  the container for an embedded one). Driven by a ResizeObserver. */
   private _applyScale = (): void => {
-    if (this.fluid) {
+    if (this._effectiveFluid()) {
       this.style.removeProperty('--deck-scale');
       return;
     }
@@ -300,7 +411,7 @@ export class DeckRoot extends LitElement {
    *  surface · removing the override lets the bands fall back to that same
    *  surface, which stays seamless too. */
   private _applyLetterbox(slide: Slide | null): void {
-    if (this.fluid) {
+    if (this._effectiveFluid()) {
       this.style.removeProperty('--deck-letterbox-bg');
       return;
     }
@@ -323,7 +434,11 @@ export class DeckRoot extends LitElement {
    *
    *  The `:not([fluid])` rule carries the zoom-to-fit canvas baseline; the
    *  `[fluid]` rule gives a fluid deck the viewport-relative rem baseline
-   *  instead. The `height:100%` pair backs the 100% `:host` sizing. */
+   *  instead. The `[unfixed]` rule (set while the active slide opts out via its
+   *  own `fluid` attribute) borrows that same viewport baseline for that one
+   *  slide · it comes last so it wins the equal-specificity tie with the
+   *  `:not([fluid])` rule. The `height:100%` pair backs the 100% `:host`
+   *  sizing. */
   private static _injectGlobals(): void {
     if (typeof document === 'undefined' || document.getElementById('rik-deck-globals')) return;
     const style = document.createElement('style');
@@ -332,7 +447,8 @@ export class DeckRoot extends LitElement {
       'html:has(> body > deck-root){overflow:hidden;height:100%}' +
       'html:has(> body > deck-root) body{margin:0;overflow:hidden;height:100%}' +
       'html:has(> body > deck-root:not([fluid])){font-size:calc(var(--deck-canvas-h,1080)*0.0235px)}' +
-      'html:has(> body > deck-root[fluid]){font-size:clamp(14px,2.35vh,42px)}';
+      'html:has(> body > deck-root[fluid]){font-size:clamp(14px,2.35vh,42px)}' +
+      'html:has(> body > deck-root[unfixed]){font-size:clamp(14px,2.35vh,42px)}';
     document.head.appendChild(style);
   }
 
@@ -488,6 +604,10 @@ export class DeckRoot extends LitElement {
   }
 
   private _onWheel = (e: WheelEvent): void => {
+    // Ctrl/⌘ + wheel is the browser zoom gesture · trackpad pinch-zoom also
+    // arrives as wheel events with ctrlKey set. Never intercept those, or the
+    // deck swallows the zoom ("it doesn't zoom"). Let the browser handle them.
+    if (e.ctrlKey || e.metaKey) return;
     if (!this._mouseEnabled('wheel') || this.overview || this.blank) return;
     if (this._wheelTargetScrolls(e)) return;
     e.preventDefault();
@@ -774,6 +894,20 @@ export class DeckRoot extends LitElement {
   }
 
   private _maxSteps(): number {
+    let n = this._baseMaxSteps();
+    const slide = this.slides[this.current];
+    if (slide) {
+      for (const p of this._plugins) {
+        if (p.steps) n = Math.max(n, p.steps(slide, this._context()));
+      }
+    }
+    return n;
+  }
+
+  /** The engine's own step count for the active slide · `steps`/`data-steps`
+   *  attribute, or a `deck-code[step-groups]` group count. Plugins extend this
+   *  through their `steps` hook (see _maxSteps). */
+  private _baseMaxSteps(): number {
     const s = this.slides[this.current];
     if (!s) return 0;
     const direct = parseInt(s.getAttribute('steps') || s.dataset?.['steps'] || '0', 10);
@@ -825,6 +959,15 @@ export class DeckRoot extends LitElement {
   }
 
   private _goTo(idx: number): void {
+    // A plugin may own navigation (e.g. wrap it in a View Transition for cross
+    // slide morphs) · it receives the real navigation as `proceed`. Only the
+    // first plugin with a navigate hook owns it; otherwise navigate normally.
+    const nav = this._plugins.find((p) => p.navigate);
+    if (nav?.navigate?.(idx, this._context(), () => this._goToNow(idx))) return;
+    this._goToNow(idx);
+  }
+
+  private _goToNow(idx: number): void {
     this.current = Math.max(0, Math.min(this.slides.length - 1, idx));
     this.step = 0;
     this._applyActive();
@@ -853,6 +996,7 @@ export class DeckRoot extends LitElement {
         });
       }
     });
+    this._applySlideFluid();
     this._applyLetterbox(next);
     // Lazy-load the transition plugin the first time we navigate when the
     // user has opted in via the `transition` attribute. The plugin attaches
@@ -883,6 +1027,9 @@ export class DeckRoot extends LitElement {
       el.style.transition = 'opacity 0.25s ease';
       el.style.opacity = this.step === 0 || n <= this.step ? '1' : '0.15';
     });
+    for (const p of this._plugins) {
+      p.applyStep?.(this.step, slide, this._context());
+    }
   }
 
   private _updateUI(): void {
@@ -891,7 +1038,7 @@ export class DeckRoot extends LitElement {
     const progress = this.renderRoot.querySelector<HTMLDivElement>('#progress');
     const counter = this.renderRoot.querySelector<HTMLDivElement>('#counter');
     const dots = this.renderRoot.querySelector<HTMLDivElement>('#step-dots');
-    if (progress) progress.style.width = `${(n / total) * 100}%`;
+    if (progress) progress.style.width = `${total > 0 ? (n / total) * 100 : 0}%`;
     if (counter) counter.textContent = `${n} / ${total}`;
     const max = this._maxSteps();
     if (dots) {
@@ -926,7 +1073,8 @@ export class DeckRoot extends LitElement {
   }
 
   private _navArrows(): unknown {
-    if (this.noArrows || !this._mouseEnabled('arrows') || this.overview) return '';
+    if (this.noArrows || this.presenterActive || !this._mouseEnabled('arrows') || this.overview)
+      return '';
     const total = this.slides.length;
     if (total === 0) return '';
     const atStart = this.current === 0 && this.step === 0;
@@ -961,7 +1109,7 @@ export class DeckRoot extends LitElement {
       <div id="counter"></div>
       <div id="step-dots"></div>
       ${
-        this.noHint
+        this.noHint || this.presenterActive
           ? ''
           : html`
       <div id="kb-hint">
