@@ -42,3 +42,22 @@ test('ctrl+wheel magnifies the slide', async ({ page }) => {
   expect(after.zoomed, 'data-zoomed set').toBe(true);
   expect(deck.consoleErrors).toEqual([]);
 });
+
+test('plus/minus/zero keys zoom and reset', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(DECK);
+
+  await page.keyboard.press('+');
+  await page.keyboard.press('+');
+  const zoomedIn = (await zoomState(page)).zoom;
+  expect(zoomedIn, 'plus zooms in').toBeGreaterThan(1);
+
+  await page.keyboard.press('-');
+  expect((await zoomState(page)).zoom, 'minus zooms out').toBeLessThan(zoomedIn);
+
+  await page.keyboard.press('0');
+  const reset = await zoomState(page);
+  expect(reset.zoom, 'zero resets to fit').toBe(1);
+  expect(reset.zoomed).toBe(false);
+  expect(deck.consoleErrors).toEqual([]);
+});
