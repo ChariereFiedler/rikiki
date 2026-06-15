@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Slide zoom.** Ctrl/⌘ + wheel, trackpad pinch and `+`/`-`/`0` magnify the
+  active slide around the cursor and pan it (drag or wheel), fixed-canvas only,
+  on by default. Scales fonts and layout together (no reflow). Opt out with
+  `no-zoom` on `<deck-root>`.
 - **Per-slide fluid escape.** A single slide can carry its own `fluid` attribute
   to escape the fixed canvas and use the real viewport (no zoom-to-fit scale, no
   letterbox), while the rest of the deck stays on the canvas · for one slide that

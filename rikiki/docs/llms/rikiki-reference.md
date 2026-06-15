@@ -107,12 +107,9 @@ debounce, discreet chevrons sit bottom-right (2D-aware), and mouse
 back/forward buttons map to back/advance. The wheel yields to scrollable
 content: a wheel over an overflowing descendant (a tall `deck-code` block, a
 zoomable inline `<svg>`, …) scrolls it natively and only advances the deck once
-that element reaches its scroll edge. **Ctrl/⌘ + wheel and trackpad pinch are
-left for the browser's zoom** · the deck never intercepts a zoom gesture. (Note
-that in the default fixed canvas, zoom-to-fit refits the deck to the viewport,
-so browser zoom won't magnify slide content and `vw`/`vh` track the window, not
-the canvas · use `fluid` and `cqw/cqh` for content that must truly zoom.) The
-bottom-left key-hint chips
+that element reaches its scroll edge. **Ctrl/⌘ + wheel and trackpad pinch zoom
+the slide** (see Slide zoom below); set `no-zoom` to leave zoom to the browser.
+The bottom-left key-hint chips
 (`← → O P ?`) are also clickable shortcuts for the matching action. Interactive
 elements (`a`, `button`, inputs, `[contenteditable]`) never trigger navigation;
 add `data-no-advance` to opt any element out. Configure with the `mouse-nav`
@@ -138,6 +135,7 @@ Chevron styling tokens: `--deck-root-nav-color`, `--deck-root-nav-bg`,
 | `width` / `height` | integers (default `1920` / `1080`) | Logical canvas size for zoom-to-fit · only the aspect ratio and the rem baseline depend on these. Ignored in `fluid` mode |
 | `no-hint` | *(boolean)* | Hide the bottom-left key-hint chips (`← → · O · P · ?`) |
 | `no-arrows` | *(boolean)* | Hide the bottom-right on-screen navigation chevrons |
+| `no-zoom` | *(boolean)* | Disable slide zoom (Ctrl/⌘+wheel, pinch, `+`/`-`/`0`) · on by default; restores the browser's own zoom |
 | `autoplay` | integer ms (e.g. `8000`) | Auto-advance every N ms; pauses on hover, resets on any manual nav. `0`/absent = off |
 | `loop` | *(boolean)* | With `autoplay`, wraps from the last slide back to the first |
 | `swipe` | *(boolean)* | Pointer-driven horizontal swipe (touch + mouse): a swipe ≥ 60 px advances / goes back |
@@ -173,6 +171,15 @@ while the rest of the deck stays on the predictable fixed canvas:
 
 (A deck-wide `fluid` already makes every slide fluid · the per-slide attribute
 is only meaningful inside an otherwise fixed deck.)
+
+**Slide zoom.** On by default in fixed-canvas mode: Ctrl/⌘ + wheel (and trackpad
+pinch) magnify the active slide around the cursor; `+`/`-` zoom by steps and `0`
+resets to fit. While magnified, a plain wheel and pointer drag pan the slide, and
+slide navigation snaps back to fit. Because it scales the whole stage uniformly,
+fonts and layout grow together (no reflow) · this is also how to "make the fonts
+bigger". Zoom is a no-op in `fluid` mode (nothing fixed to magnify), in overview,
+and with `no-zoom`. It is local to the projected window (not mirrored into the
+presenter popup).
 
 **Transition values** (deck-wide via `transition="…"` on `<deck-root>`, or
 per-slide via `data-transition="…"` on a slide host). When unset, the effective

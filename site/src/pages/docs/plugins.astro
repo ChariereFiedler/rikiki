@@ -322,6 +322,18 @@ document.querySelector('deck-root').use(stopwatch);`;
   call must register the plugin itself with <code>use()</code>.
 </p>
 
+<h2 id="zoom">Slide zoom</h2>
+<p>
+  In the default fixed canvas, <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + wheel and trackpad
+  pinch magnify the active slide around the cursor; <kbd>+</kbd>/<kbd>-</kbd> zoom
+  by steps and <kbd>0</kbd> resets. While magnified, a plain wheel and pointer
+  drag pan the slide, and changing slide snaps back to fit. It scales the whole
+  slide uniformly (fonts and layout together, no reflow), so it doubles as a
+  "bigger fonts" control. It is a no-op in <code>fluid</code> mode and in
+  overview; set <code>no-zoom</code> on <code>deck-root</code> to leave zoom to
+  the browser.
+</p>
+
 <h2 id="cost">Cost model</h2>
 <p>
   Plugin costs are paid <strong>only when you opt in</strong>:
