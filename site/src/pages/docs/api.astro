@@ -42,6 +42,9 @@ const carouselExample = `<!-- Carousel mode · auto-advance every 4 s, wrap at e
     <tr><td><code>autoplay</code></td>  <td><code>number</code> ms (reflected)</td>    <td>Auto-advance interval. <code>0</code> disables. Pauses on hover, resets on user nav.</td></tr>
     <tr><td><code>loop</code></td>      <td><code>boolean</code> (reflected)</td>      <td>Wrap around at the deck edges (carousel mode).</td></tr>
     <tr><td><code>swipe</code></td>     <td><code>boolean</code> (reflected)</td>      <td>Enable pointer-driven horizontal swipe navigation (touch + mouse).</td></tr>
+    <tr><td><code>fluid</code></td>     <td><code>boolean</code> (reflected)</td>      <td>Fill the box and reflow instead of the zoom-to-fit canvas. Also honoured <strong>per slide</strong> (a slide carrying <code>fluid</code> escapes the canvas for the real viewport).</td></tr>
+    <tr><td><code>noHint</code></td>   <td><code>boolean</code> · attr <code>no-hint</code></td>   <td>Hide the bottom-left key-hint chips.</td></tr>
+    <tr><td><code>noArrows</code></td> <td><code>boolean</code> · attr <code>no-arrows</code></td> <td>Hide the bottom-right navigation chevrons.</td></tr>
   </tbody>
 </table>
 
@@ -120,6 +123,15 @@ const carouselExample = `<!-- Carousel mode · auto-advance every 4 s, wrap at e
   decorate it with <code>@customElement('deck-myname')</code>, and import the
   file from your deck. The new tag is immediately usable inside any slide ·
   no registration step in <code>deck-root</code>.
+</p>
+<p>
+  To extend the deck's <em>behaviour</em> (step counts, reveals, navigation),
+  register a plugin with <code>deckRoot.use(plugin)</code> · a
+  <code>DeckPlugin</code> with optional <code>setup</code> / <code>steps</code> /
+  <code>applyStep</code> / <code>navigate</code> hooks. <code>use()</code> returns
+  an unregister function and is idempotent by the plugin's <code>name</code>. See
+  <a href="/docs/plugins#writing">Plugins · writing a plugin</a> for the full
+  contract and the <code>setDeckCodeHighlighter</code> hook.
 </p>
 
 <style>

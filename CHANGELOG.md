@@ -6,6 +6,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Per-slide fluid escape.** A single slide can carry its own `fluid` attribute
+  to escape the fixed canvas and use the real viewport (no zoom-to-fit scale, no
+  letterbox), while the rest of the deck stays on the canvas · for one slide that
+  embeds a live interactive demo. The canvas is restored on navigation away.
+- **Plugin hook API.** `<deck-root>` exposes a public `use(plugin)` method and a
+  `DeckPlugin` / `DeckContext` contract (`steps`, `applyStep`, `navigate`,
+  `setup` hooks) so plugins extend the deck through a stable surface instead of
+  patching engine internals. `setDeckCodeHighlighter()` is the matching hook for
+  `<deck-code>` syntax highlighting. All three (`DeckPlugin`, `DeckContext`,
+  `setDeckCodeHighlighter`) are re-exported from `dist/index.js`.
+- **Presenter multi-screen placement.** With the Window Management API the deck
+  goes fullscreen on the external screen (the projector) and the speaker window
+  opens on the speaker's current screen · released when the presenter closes,
+  with a fallback to leaving the deck in place otherwise.
+
+### Changed
+- **Presenter Current/Next previews are constrained to 16:9**, so the laptop
+  thumbnail matches the projected slide's geometry regardless of window shape.
+- **Presenter mode auto-hides the projected window's key-hint chips and nav
+  arrows** while the speaker window is open (restored on close).
+- **Click-stages and Shiki plugins migrated to the hook API.** They no longer
+  monkey-patch `deck-root` / `deck-code` prototypes. `installClickStages()` and
+  `installShiki()` keep working as back-compat shims that attach the plugin to
+  every `<deck-root>` already on the page · a deck created dynamically after the
+  call must now register the plugin itself via `deckRoot.use()`.
+
+### Documented
+- `no-hint` and `no-arrows` attributes on `<deck-root>` are now in the reference
+  attribute table (they already existed).
+
+### Fixed
+- **Wheel navigation no longer swallows browser zoom.** Ctrl/⌘ + wheel and
+  trackpad pinch (which fire `ctrlKey` wheel events) are left for the browser
+  instead of being `preventDefault`ed for slide navigation.
+- Shiki reference docs no longer mention a non-existent `cdn` option · the
+  highlighter loads from the vendored offline bundle, not a CDN.
+
 ## [0.5.0] - 2026-06-12
 
 This release reworks the rendering model. Every deck now renders into a fixed
