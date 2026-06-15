@@ -306,7 +306,7 @@ async function installShiki(opts?: {
 
 - Any Shiki theme/language works (not just the built-in highlighter's set); set
   `langs` to whatever your deck uses.
-- Shiki's inline token colors are stripped so the deck's `--rik-code__syntax-*`
+- Shiki's inline token colors are stripped so the deck's `--deck-code-syntax-*`
   tokens still theme the output.
 - A language not loaded falls back silently to the built-in regex highlighter
   (no error).
