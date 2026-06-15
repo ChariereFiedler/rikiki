@@ -35,15 +35,7 @@
 // their visibility. Respects prefers-reduced-motion.
 // ════════════════════════════════════════════════════════════════
 
-interface DeckRootProto {
-  _maxSteps(): number;
-  _applyStep(): void;
-  _goTo(idx: number): void;
-  current: number;
-  step: number;
-  // slides is private on the class; typed loosely here for the patch.
-  slides?: HTMLElement[];
-}
+import type { DeckPlugin } from '../runtime/deck-root.js';
 
 type DocWithVT = Document & {
   startViewTransition?: (cb: () => void) => { finished: Promise<void> };
@@ -376,43 +368,28 @@ function setVisible(el: HTMLElement, visible: boolean): void {
   el.style.pointerEvents = visible ? '' : 'none';
 }
 
-export function installClickStages(): void {
-  const ctor = customElements.get('deck-root') as
-    | (typeof HTMLElement & { prototype: DeckRootProto })
-    | undefined;
-  if (!ctor) {
-    console.warn('[rikiki/click-stages] <deck-root> is not defined yet · import rikiki first');
-    return;
-  }
-  const proto = ctor.prototype;
-  if ((proto as unknown as { _clickStagesInstalled?: boolean })._clickStagesInstalled) return;
-  (proto as unknown as { _clickStagesInstalled?: boolean })._clickStagesInstalled = true;
-
-  const origMax = proto._maxSteps;
-  proto._maxSteps = function (this: DeckRootProto): number {
-    const base = origMax.call(this);
-    const slide = this.slides?.[this.current];
-    const clicks = slide ? clickStepCount(slide) : 0;
-    return Math.max(base, clicks);
-  };
-
+export function clickStagesPlugin(): DeckPlugin {
   const TIMERS = new WeakMap<HTMLElement, number>();
+  // All live timer ids · the WeakMap can't be iterated, so this lets the
+  // teardown clear pending auto/stagger flips when the plugin is unregistered.
+  const ACTIVE = new Set<number>();
   function cancelTimer(el: HTMLElement): void {
     const t = TIMERS.get(el);
     if (t !== undefined) {
       window.clearTimeout(t);
+      ACTIVE.delete(t);
       TIMERS.delete(el);
     }
   }
   function scheduleVisible(el: HTMLElement, visible: boolean, delay: number): void {
     cancelTimer(el);
-    TIMERS.set(
-      el,
-      window.setTimeout(() => {
-        TIMERS.delete(el);
-        setVisible(el, visible);
-      }, delay),
-    );
+    const id = window.setTimeout(() => {
+      ACTIVE.delete(id);
+      TIMERS.delete(el);
+      setVisible(el, visible);
+    }, delay);
+    ACTIVE.add(id);
+    TIMERS.set(el, id);
   }
 
   // Delayed flips started inside a view-transition callback would fire mid
@@ -445,130 +422,153 @@ export function installClickStages(): void {
   // (play delays) apart from "jumped past it" (settle immediately).
   const LAST = new WeakMap<object, { slide: number; step: number }>();
 
-  const origApply = proto._applyStep;
-  proto._applyStep = function (this: DeckRootProto): void {
-    origApply.call(this);
-    const slide = this.slides?.[this.current];
-    if (!slide) return;
-    const last = LAST.get(this);
-    const prevStep = last && last.slide === this.current ? last.step : -1;
-    LAST.set(this, { slide: this.current, step: this.step });
+  return {
+    name: 'click-stages',
 
-    const entries = collectEntries(slide);
-    const run = () =>
-      entries.forEach(({ el, step, hide, delay, scheduled }) => {
-        prepare(el, hide, scheduled);
-        cancelFlip(el);
-        // reveal: visible once we've reached its step. hide: hidden once reached.
-        const reached = this.step >= step;
-        const target = hide ? !reached : reached;
-        // Delays only play when we land exactly on the step coming from before
-        // it (or on slide activation for step-0 autos) · deep links and back
-        // navigation settle instantly.
-        const justReached = reached && this.step === step && prevStep < step;
-        const onActivation = reached && step === 0 && prevStep === -1;
-        if (delay > 0 && (justReached || onActivation)) {
-          setVisible(el, hide); // hold the pre-state…
-          queueOrScheduleVisible(el, target, delay); // …then flip after the delay
-        } else {
-          setVisible(el, target);
-        }
-      });
+    // Clear any pending auto/stagger timers when the plugin is unregistered so
+    // they can't fire setVisible() on detached or no-longer-managed elements.
+    setup() {
+      return () => {
+        ACTIVE.forEach((id) => {
+          window.clearTimeout(id);
+        });
+        ACTIVE.clear();
+      };
+    },
 
-    // Intra-slide morph · wrap the step change in a view transition when the
-    // slide pairs data-morph elements across steps · WAAPI FLIP fallback when
-    // View Transitions are unavailable (Firefox). One morphGroups() scan per
-    // step change · the element tree doesn't change between name/measure/flip,
-    // only inline styles do.
-    const svt = (document as DocWithVT).startViewTransition?.bind(document);
-    const stepChanged = prevStep !== -1 && prevStep !== this.step;
-    const groups = stepChanged && !vtActive && !reducedMotion() ? morphGroups(slide) : null;
-    if (groups && groups.size > 0) {
-      const targets = new Map(
-        entries.map(({ el, step, hide }) => [el, hide ? this.step < step : this.step >= step]),
-      );
-      if (svt) {
-        nameVisibleMorphs(groups); // old state, before capture
-        vtActive = true;
-        deferFlips();
-        try {
-          svt(() => {
-            run();
-            nameVisibleMorphs(groups, targets);
-          }).finished.finally(() => {
+    // Contribute this slide's click-step count · the engine combines it with
+    // its own (and other plugins') as a maximum.
+    steps(slide) {
+      return clickStepCount(slide);
+    },
+
+    // The engine already applied its own step before calling this · here we
+    // toggle the data-click elements' visibility for the current step.
+    applyStep(_step, slide, ctx) {
+      const last = LAST.get(ctx.host);
+      const prevStep = last && last.slide === ctx.current ? last.step : -1;
+      LAST.set(ctx.host, { slide: ctx.current, step: ctx.step });
+
+      const entries = collectEntries(slide);
+      const run = () =>
+        entries.forEach(({ el, step, hide, delay, scheduled }) => {
+          prepare(el, hide, scheduled);
+          cancelFlip(el);
+          // reveal: visible once we've reached its step. hide: hidden once reached.
+          const reached = ctx.step >= step;
+          const target = hide ? !reached : reached;
+          // Delays only play when we land exactly on the step coming from before
+          // it (or on slide activation for step-0 autos) · deep links and back
+          // navigation settle instantly.
+          const justReached = reached && ctx.step === step && prevStep < step;
+          const onActivation = reached && step === 0 && prevStep === -1;
+          if (delay > 0 && (justReached || onActivation)) {
+            setVisible(el, hide); // hold the pre-state…
+            queueOrScheduleVisible(el, target, delay); // …then flip after the delay
+          } else {
+            setVisible(el, target);
+          }
+        });
+
+      // Intra-slide morph · wrap the step change in a view transition when the
+      // slide pairs data-morph elements across steps · WAAPI FLIP fallback when
+      // View Transitions are unavailable (Firefox). One morphGroups() scan per
+      // step change · the element tree doesn't change between name/measure/flip,
+      // only inline styles do.
+      const svt = (document as DocWithVT).startViewTransition?.bind(document);
+      const stepChanged = prevStep !== -1 && prevStep !== ctx.step;
+      const groups = stepChanged && !vtActive && !reducedMotion() ? morphGroups(slide) : null;
+      if (groups && groups.size > 0) {
+        const targets = new Map(
+          entries.map(({ el, step, hide }) => [el, hide ? ctx.step < step : ctx.step >= step]),
+        );
+        if (svt) {
+          nameVisibleMorphs(groups); // old state, before capture
+          vtActive = true;
+          deferFlips();
+          try {
+            svt(() => {
+              run();
+              nameVisibleMorphs(groups, targets);
+            }).finished.finally(() => {
+              vtActive = false;
+              releaseFlips();
+            });
+          } catch {
+            // startViewTransition can throw synchronously (e.g. another transition
+            // is mid-flight) · apply the step plainly and never strand vtActive
+            // or the deferred-flip queue.
             vtActive = false;
+            run();
             releaseFlips();
-          });
-        } catch {
-          // startViewTransition can throw synchronously (e.g. another transition
-          // is mid-flight) · apply the step plainly and never strand vtActive
-          // or the deferred-flip queue.
-          vtActive = false;
+          }
+        } else {
+          const fromRects = visibleMorphRects(groups);
           run();
-          releaseFlips();
+          flipMorphs(groups, fromRects, targets);
         }
       } else {
-        const fromRects = visibleMorphRects(groups);
         run();
-        flipMorphs(groups, fromRects, targets);
       }
-    } else {
-      run();
-    }
-  };
+    },
 
-  const origGoTo = proto._goTo;
-  proto._goTo = function (this: DeckRootProto, idx: number): void {
-    const slides = this.slides ?? [];
-    const from = slides[this.current];
-    const to = slides[Math.max(0, Math.min(slides.length - 1, idx))];
-    const svt = (document as DocWithVT).startViewTransition?.bind(document);
-    const keys = from && to && from !== to ? matchedMorphKeys(from, to) : [];
-    if (keys.length === 0 || vtActive || reducedMotion()) {
-      origGoTo.call(this, idx);
-      return;
-    }
-    const host = this as unknown as { __rkMorphActive?: boolean };
-    if (!svt) {
-      // FLIP fallback (no View Transitions · Firefox) · measure the outgoing
-      // boxes, navigate, then glide the incoming elements into place.
-      const fromRects = visibleMorphRects(morphGroups(from!));
-      host.__rkMorphActive = true; // deck-transition skips this navigation
-      origGoTo.call(this, idx);
-      flipMorphs(morphGroups(to!), fromRects);
-      window.setTimeout(() => {
-        host.__rkMorphActive = false;
-      }, FLIP_MS + 40);
-      return;
-    }
-    nameVisibleMorphs(morphGroups(from!)); // outgoing side, before capture
-    vtActive = true;
-    // deck-transition skips its classic animation for this navigation.
-    host.__rkMorphActive = true;
-    deferFlips();
-    try {
-      svt(() => {
-        origGoTo.call(this, idx);
-        nameVisibleMorphs(morphGroups(to!));
-      }).finished.finally(() => {
+    // Around-advice for navigation · cross-slide data-morph pairs animate via a
+    // View Transition (or a WAAPI FLIP fallback) with the real navigation run
+    // through `proceed`. Returns false for a plain navigation so the engine
+    // handles it.
+    navigate(to, ctx, proceed) {
+      const slides = ctx.slides;
+      const from = slides[ctx.current];
+      const toSlide = slides[Math.max(0, Math.min(slides.length - 1, to))];
+      const svt = (document as DocWithVT).startViewTransition?.bind(document);
+      const keys = from && toSlide && from !== toSlide ? matchedMorphKeys(from, toSlide) : [];
+      if (keys.length === 0 || vtActive || reducedMotion()) return false;
+      const host = ctx.host as unknown as { __rkMorphActive?: boolean };
+      if (!svt) {
+        // FLIP fallback (no View Transitions · Firefox) · measure the outgoing
+        // boxes, navigate, then glide the incoming elements into place.
+        const fromRects = visibleMorphRects(morphGroups(from!));
+        host.__rkMorphActive = true; // deck-transition skips this navigation
+        proceed();
+        flipMorphs(morphGroups(toSlide!), fromRects);
+        window.setTimeout(() => {
+          host.__rkMorphActive = false;
+        }, FLIP_MS + 40);
+        return true;
+      }
+      nameVisibleMorphs(morphGroups(from!)); // outgoing side, before capture
+      vtActive = true;
+      // deck-transition skips its classic animation for this navigation.
+      host.__rkMorphActive = true;
+      deferFlips();
+      try {
+        svt(() => {
+          proceed();
+          nameVisibleMorphs(morphGroups(toSlide!));
+        }).finished.finally(() => {
+          vtActive = false;
+          host.__rkMorphActive = false;
+          releaseFlips();
+        });
+      } catch {
+        // svt threw synchronously · fall back to a plain navigation and clear the
+        // morph/flip guards so they aren't stranded.
         vtActive = false;
         host.__rkMorphActive = false;
+        proceed();
         releaseFlips();
-      });
-    } catch {
-      // svt threw synchronously · fall back to a plain navigation and clear the
-      // morph/flip guards so they aren't stranded.
-      vtActive = false;
-      host.__rkMorphActive = false;
-      origGoTo.call(this, idx);
-      releaseFlips();
-    }
+      }
+      return true;
+    },
   };
+}
 
-  // Re-apply to any already-rendered decks · their initial _applyStep(0) ran
-  // before this patch, leaving data-click elements visible. Same idea as the
-  // Shiki plugin re-rendering existing <deck-code> instances on install.
+/** Back-compat shim · attach the click-stages plugin to every <deck-root> on the
+ *  page. Existing decks keep calling this; new code can call
+ *  `deckRoot.use(clickStagesPlugin())` for per-instance control. */
+export function installClickStages(): void {
+  const plugin = clickStagesPlugin();
   document.querySelectorAll('deck-root').forEach((dr) => {
-    (dr as unknown as { _applyStep?: () => void })._applyStep?.();
+    (dr as unknown as { use?: (p: DeckPlugin) => void }).use?.(plugin);
   });
 }

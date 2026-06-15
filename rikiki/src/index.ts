@@ -45,6 +45,14 @@ import './atoms/deck-kicker.js';
 import './atoms/deck-punch.js';
 import './atoms/deck-code.js';
 
+// Public extension API · the plugin hook contract (deckRoot.use) and the
+// deck-code highlighter hook, re-exported so authors import them from the one
+// bundle they already load (importing from the per-component dist files would
+// double-define the elements those files register).
+export type { DeckPlugin, DeckContext } from './runtime/deck-root.js';
+export type { DeckCodeHighlighter } from './atoms/deck-code.js';
+export { setDeckCodeHighlighter } from './atoms/deck-code-highlighter.js';
+
 // Mermaid optionnel (chargé via CDN si <deck-mermaid> est présent)
 // Voir starter.html pour l'init mermaid.
 

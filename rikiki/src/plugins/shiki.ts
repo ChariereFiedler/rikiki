@@ -12,9 +12,16 @@
 // CDN). The default regex highlighter remains the fallback when the language
 // isn't loaded.
 //
+// Integration · this registers a highlighter through deck-code's public
+// setDeckCodeHighlighter() hook rather than monkey-patching the component's
+// private render path · the hook owns the markup and may decline (return null)
+// to fall back to the built-in regex highlighter.
+//
 // Trade-off: the vendored Shiki bundle is large (every grammar + theme, JS
 // engine, no wasm). That's why this is opt-in and lazy · the core stays small.
 // ════════════════════════════════════════════════════════════════
+
+import { setDeckCodeHighlighter } from '../atoms/deck-code-highlighter.js';
 
 interface InstallOpts {
   /** Shiki theme name (https://shiki.style/themes) · default 'one-dark-pro'. */
@@ -68,42 +75,20 @@ export async function installShiki(opts: InstallOpts = {}): Promise<void> {
   theme = resolved.theme;
   const hl = await loadHighlighter(resolved);
 
-  // Patch DeckCode's render path: replace its internal _highlight() with one
-  // that goes through Shiki. We do this on the prototype so every existing
-  // and future instance picks it up.
-  const ctor = customElements.get('deck-code') as
-    | (typeof HTMLElement & { prototype: HTMLElement & { _highlight: () => void } })
-    | undefined;
-  if (!ctor) {
-    console.warn('[rikiki/shiki] <deck-code> is not defined yet · import rikiki first');
-    return;
-  }
-  const proto = ctor.prototype;
-
-  // Cache the original so we can fall back when a lang isn't loaded.
-  const original = proto._highlight;
-  proto._highlight = function () {
-    const self = this as unknown as { textContent: string | null; lang: string; _html: string };
-    const raw = self.textContent ?? '';
+  // Register the Shiki highlighter through deck-code's public hook · it reaches
+  // the shared <deck-code> class via customElements.get (no value import that
+  // would double-define the element) and re-highlights existing instances. The
+  // highlighter owns the block markup, or returns null when the language isn't
+  // loaded so the built-in regex highlighter takes over.
+  setDeckCodeHighlighter((code, lang) => {
     try {
-      const out = hl.codeToHtml(raw, { lang: self.lang || 'txt', theme });
-      // Shiki emits a <pre><code> wrapper; we already wrap in our render template.
-      // Extract just the inner spans + keep the syntax classes for theming.
+      const out = hl.codeToHtml(code, { lang: lang || 'txt', theme });
+      // Shiki emits a <pre><code> wrapper; we already wrap in our render
+      // template · extract just the inner spans + keep the classes for theming.
       const inner = out.replace(/^<pre[^>]*><code[^>]*>/, '').replace(/<\/code><\/pre>$/, '');
-      self._html = stripInlineColors(inner);
+      return stripInlineColors(inner);
     } catch {
-      // Lang not loaded · fall back to the regex highlighter
-      original.call(this);
+      return null; // lang not loaded · fall back to the regex highlighter
     }
-  };
-
-  // Re-render all existing <deck-code> instances now that the highlighter changed.
-  document
-    .querySelectorAll<HTMLElement & { _highlight?: () => void; requestUpdate?: () => void }>(
-      'deck-code',
-    )
-    .forEach((el) => {
-      el._highlight?.();
-      el.requestUpdate?.();
-    });
+  });
 }

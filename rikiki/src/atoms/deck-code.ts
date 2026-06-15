@@ -69,8 +69,26 @@ function highlight(src: string, lang: string): string {
   return s;
 }
 
+/** A custom highlighter for every <deck-code> · returns the block's inner HTML,
+ *  or null to fall back to the built-in regex highlighter. */
+export type DeckCodeHighlighter = (code: string, lang: string) => string | null;
+
 @customElement('deck-code')
 export class DeckCode extends LitElement {
+  /** Shared highlighter override · the opt-in Shiki plugin sets this on the
+   *  registered class (via customElements.get) so plugin and component share the
+   *  one class, not separate flat-dist bundles with their own module state. Null
+   *  keeps the built-in regex highlighter. */
+  static highlighter: DeckCodeHighlighter | null = null;
+
+  /** Re-highlight every <deck-code> on the page · called after the shared
+   *  highlighter changes so a deck already on screen picks it up. */
+  static rehighlightAll(): void {
+    document.querySelectorAll<DeckCode>('deck-code').forEach((el) => {
+      el.rehighlight();
+    });
+  }
+
   /* Customization tokens:
        --deck-code-bg / -border / -text
        --deck-code-radius / -padding-y / -padding-x
@@ -132,7 +150,22 @@ export class DeckCode extends LitElement {
     }
   }
 
+  /** Re-run highlighting and request a render · used after the shared
+   *  highlighter changes (see setDeckCodeHighlighter). */
+  rehighlight(): void {
+    this._highlight();
+    this.requestUpdate();
+  }
+
   private _highlight(): void {
+    // A registered external highlighter (e.g. Shiki) owns the markup · it
+    // returns the block's full inner HTML. Null means it declined (lang not
+    // loaded), so fall through to the built-in per-line regex highlighter.
+    const external = DeckCode.highlighter?.(this.textContent ?? '', this.lang || 'txt');
+    if (external != null) {
+      this._html = external;
+      return;
+    }
     const raw = this.textContent ?? '';
     const lines = raw.split('\n');
     while (lines.length && !lines[0]!.trim()) lines.shift();
