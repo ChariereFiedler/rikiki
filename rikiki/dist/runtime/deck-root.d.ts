@@ -60,6 +60,8 @@ export declare class DeckRoot extends LitElement {
     noHint: boolean;
     /** Hide the bottom-right on-screen previous/next navigation arrows. */
     noArrows: boolean;
+    /** Disable slide zoom (Ctrl/⌘+wheel, pinch, +/-/0) · on by default. */
+    noZoom: boolean;
     /** Optional slide transition · "slide" | "fade" | "zoom". When set, the
      *  deck-transition.js plugin is fetched on first navigation. Per-slide
      *  override available via `data-transition` on the slide host. */
@@ -94,6 +96,12 @@ export declare class DeckRoot extends LitElement {
     private _navDownY;
     private _wheelAccum;
     private _wheelLockUntil;
+    private _zoom;
+    private _panX;
+    private _panY;
+    private static readonly ZOOM_MAX;
+    private static readonly ZOOM_STEP;
+    private static readonly ZOOM_WHEEL_SENSITIVITY;
     private _plugins;
     private _ctx;
     /** Build (once) the stable context object plugins receive · live getters so a
@@ -137,6 +145,16 @@ export declare class DeckRoot extends LitElement {
      *  the container for an embedded one). Driven by a ResizeObserver. */
     private _applyScale;
     private _resizeObserver;
+    /** Zoom is live only in the fixed canvas and outside overlays. */
+    private _zoomEnabled;
+    /** Publish zoom + pan as custom props the #stage transform reads. */
+    private _applyZoom;
+    /** Keep the pan within bounds so the magnified stage always covers the
+     *  viewport (no gaps); at fit (zoom 1) it forces re-centring. */
+    private _clampPan;
+    /** Zoom by a factor, keeping the point at viewport (cx, cy) fixed. */
+    private _zoomAt;
+    private _resetZoom;
     /** Make the letterbox bands match the active slide's background, so a scaled
      *  deck blends seamlessly into the bands instead of sitting on a contrasting
      *  frame. A slide with no background of its own (transparent) shows the page
