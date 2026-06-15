@@ -68,7 +68,7 @@ test('hash deep-links to a slide and clamps out-of-range links', async ({ page }
   await expectActiveIndex(deck, last);
 });
 
-test('ctrl/pinch wheel is left for browser zoom, plain wheel still navigates', async ({ page }) => {
+test('plain wheel navigates; ctrl+wheel is claimed for slide zoom', async ({ page }) => {
   const deck = createDeckPage(page);
   await deck.goto(DEMO);
 
@@ -81,8 +81,9 @@ test('ctrl/pinch wheel is left for browser zoom, plain wheel still navigates', a
       return ev.defaultPrevented;
     }, opts);
 
-  // Zoom gesture (ctrl+wheel / trackpad pinch) must pass through to the browser.
-  expect(await prevented({ ctrlKey: true }), 'ctrl+wheel left for zoom').toBe(false);
-  // A plain wheel is still claimed for navigation.
+  // A plain wheel drives navigation; ctrl+wheel (and trackpad pinch) is claimed
+  // for slide zoom by default (see zoom.spec). `no-zoom` would leave it to the
+  // browser instead.
   expect(await prevented({}), 'plain wheel drives navigation').toBe(true);
+  expect(await prevented({ ctrlKey: true }), 'ctrl+wheel claimed for zoom').toBe(true);
 });
