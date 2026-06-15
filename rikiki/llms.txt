@@ -36,6 +36,7 @@ Authoring tags fall into four buckets (see the reference for the exhaustive attr
 - **Presenter window**: press `P` · mirrors current + next slide, timer, and `<deck-notes>`. With a second screen it sends the slides fullscreen to the projector and keeps the presenter view on the speaker's screen; previews are 16:9; the projected deck auto-hides its chrome while it's open.
 - **Shiki highlighting**: `import { installShiki } from './dist/shiki.js'` then `await installShiki({ theme, langs })`.
 - **Click-stages**: `import { installClickStages } from './dist/click-stages.js'` then `installClickStages()` · per-element `data-click` / `data-anim` / `data-morph` reveals.
+- **Slide zoom**: Ctrl/⌘+wheel / pinch / `+`/`-`/`0` magnify a slide (fixed canvas, on by default, pan by drag/wheel); `no-zoom` on `<deck-root>` opts out.
 - **Writing a plugin**: `deckRoot.use(plugin)` with a `DeckPlugin` (`steps` / `applyStep` / `navigate` / `setup` hooks); `setDeckCodeHighlighter(fn)` overrides `<deck-code>` highlighting. Both re-exported from `dist/index.js`. `installShiki` / `installClickStages` are back-compat shims.
 - **Livereload (authoring only)**: append `?live` to the deck URL.
 
