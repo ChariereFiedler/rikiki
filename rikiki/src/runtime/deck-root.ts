@@ -851,6 +851,22 @@ export class DeckRoot extends LitElement {
       return;
     }
 
+    // Slide zoom · +/= zoom in, - zoom out (centred), 0 resets to fit.
+    if (this._zoomEnabled() && (e.key === '+' || e.key === '=' || e.key === '-')) {
+      e.preventDefault();
+      const rect = this.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const factor = e.key === '-' ? 1 / DeckRoot.ZOOM_STEP : DeckRoot.ZOOM_STEP;
+      this._zoomAt(factor, cx, cy);
+      return;
+    }
+    if (e.key === '0' && this._zoom > 1) {
+      e.preventDefault();
+      this._resetZoom();
+      return;
+    }
+
     if (e.key === '?' || e.key === 'h' || e.key === 'H') {
       void this._toggleHelp();
       return;
