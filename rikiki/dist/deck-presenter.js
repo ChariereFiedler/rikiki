@@ -1,5 +1,5 @@
-var c="rik-presenter",g=new URL("./index.js",import.meta.url).href,t=null,l=null,o=null;function p(e){let r=Array.from(e.children).filter(i=>i.tagName.toLowerCase().startsWith("deck-")),s=r.findIndex(i=>i.hasAttribute("active")),a=r[s]??null,n=r[s+1]??null,m=(a?.querySelector("deck-notes")?.textContent??"").trim(),u=document.querySelector('link[rel="stylesheet"][href*="rikiki"], link[rel="stylesheet"][href*="tokens"], link[rel="stylesheet"][href*="theme"]')?.href??"",f=Array.from(document.querySelectorAll("style")).map(i=>i.textContent??"").join(`
-`),h=document.querySelector('script[type="module"][data-rikiki-bundle]')?.textContent??"";return{current:s+1,total:r.length,slideHtml:a?.outerHTML??"",nextHtml:n?.outerHTML??null,notes:m,themeHref:u,inlineStyles:f,bundleHref:g,bundleInline:h}}function d(e){l&&l.postMessage({type:"state",state:p(e)})}var y=e=>`<!doctype html>
+var w="rik-presenter",H=new URL("./index.js",import.meta.url).href,s=null,d=null,i=null,l=null,f=!1;async function L(){if(l)return l;let e=window.getScreenDetails;if(!e)return null;try{return l=await e.call(window),l}catch{return null}}var h=1280,g=720;function E(e){let t=Math.round(e.availLeft+(e.availWidth-h)/2),n=Math.round(e.availTop+(e.availHeight-g)/2);return`popup=yes,width=${h},height=${g},left=${t},top=${n}`}function b(e,t){e.requestFullscreen?.({screen:t}).then(()=>{f=!0}).catch(()=>{})}function m(){f&&document.fullscreenElement&&document.exitFullscreen?.().catch(()=>{}),f=!1}function v(e){let t=Array.from(e.children).filter(a=>a.tagName.toLowerCase().startsWith("deck-")),n=t.findIndex(a=>a.hasAttribute("active")),c=t[n]??null,u=t[n+1]??null,o=(c?.querySelector("deck-notes")?.textContent??"").trim(),p=document.querySelector('link[rel="stylesheet"][href*="rikiki"], link[rel="stylesheet"][href*="tokens"], link[rel="stylesheet"][href*="theme"]')?.href??"",x=Array.from(document.querySelectorAll("style")).map(a=>a.textContent??"").join(`
+`),S=document.querySelector('script[type="module"][data-rikiki-bundle]')?.textContent??"";return{current:n+1,total:t.length,slideHtml:c?.outerHTML??"",nextHtml:u?.outerHTML??null,notes:o,themeHref:p,inlineStyles:x,bundleHref:H,bundleInline:S}}function k(e){d&&d.postMessage({type:"state",state:v(e)})}var D=e=>`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -36,7 +36,17 @@ ${e.themeHref?`<link rel="stylesheet" href="${e.themeHref}">`:""}
     background: #161c2e;
   }
   .panel .body { flex: 1; min-height: 0; padding: 16px; overflow: hidden; border-radius: 8px; }
-  .panel iframe { width: 100%; height: 100%; border: 0; background: #0f1422; display: block; }
+  /* Preview panes center a 16:9 box so the thumbnail matches the projection
+     geometry regardless of the pane/window shape (issue #5) \xB7 the size
+     container lets the iframe size against the pane in cq units. */
+  #current .body, #next .body { display: grid; place-items: center; container-type: size; }
+  .panel iframe { border: 0; background: #0f1422; display: block; }
+  #current-frame, #next-frame {
+    aspect-ratio: 16 / 9;
+    width: min(100cqw, calc(100cqh * 16 / 9));
+    height: auto;
+    max-width: 100%;
+  }
   #notes { font-size: 17px; line-height: 1.6; white-space: pre-wrap; padding: 20px; overflow: auto; color: #e8e4f0; }
   #notes:empty::before { content: 'No notes for this slide.'; color: rgba(232,228,240,0.4); font-style: italic; }
   #footer {
@@ -83,7 +93,7 @@ ${e.themeHref?`<link rel="stylesheet" href="${e.themeHref}">`:""}
   </div>
 </div>
 <script>
-  const channel = new BroadcastChannel('${c}');
+  const channel = new BroadcastChannel('${w}');
   const current = document.getElementById('current-frame');
   const next = document.getElementById('next-frame');
   const notes = document.getElementById('notes');
@@ -177,4 +187,4 @@ ${e.themeHref?`<link rel="stylesheet" href="${e.themeHref}">`:""}
   channel.postMessage({ type: 'hello' });
 <\/script>
 </body>
-</html>`;function x(e){if(o=o??new WeakSet,o.has(e)){t?.close(),t=null;return}o.add(e),l=new BroadcastChannel(c),e.addEventListener("slide-change",()=>d(e)),l.addEventListener("message",a=>{let n=a.data;n?.type==="key"&&n.key&&window.dispatchEvent(new KeyboardEvent("keydown",{key:n.key,shiftKey:!!n.shift,bubbles:!0})),n?.type==="hello"&&d(e)});let r=p(e);if(t=window.open("","rikiki-presenter","width=1280,height=800,popup=yes"),!t){console.warn("[rikiki/presenter] popup was blocked \xB7 allow popups for this site"),o.delete(e);return}t.document.open(),t.document.write(y(r)),t.document.close();let s=setInterval(()=>{t?.closed&&(clearInterval(s),o?.delete(e),t=null)},1e3)}export{x as installPresenter};
+</html>`;function I(e){if(i=i??new WeakSet,i.has(e)){s?.close(),s=null,e.presenterActive=!1,m();return}i.add(e),d=new BroadcastChannel(w),e.addEventListener("slide-change",()=>k(e)),d.addEventListener("message",o=>{let r=o.data;r?.type==="key"&&r.key&&window.dispatchEvent(new KeyboardEvent("keydown",{key:r.key,shiftKey:!!r.shift,bubbles:!0})),r?.type==="hello"&&k(e)});let t=l,n=t?.screens.find(o=>o!==t.currentScreen)??null;n?b(e,n):L().then(o=>{let r=o?.screens.find(p=>p!==o.currentScreen);r&&b(e,r)});let c=v(e),u=t?.currentScreen?E(t.currentScreen):`popup=yes,width=${h},height=${g}`;if(s=window.open("","rikiki-presenter",u),!s){console.warn("[rikiki/presenter] popup was blocked \xB7 allow popups for this site"),i.delete(e),m();return}s.document.open(),s.document.write(D(c)),s.document.close(),e.presenterActive=!0;let y=setInterval(()=>{s?.closed&&(clearInterval(y),i?.delete(e),s=null,e.presenterActive=!1,m())},1e3)}export{I as installPresenter};

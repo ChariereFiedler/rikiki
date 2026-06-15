@@ -55,6 +55,81 @@ let popup: Window | null = null;
 let channel: BroadcastChannel | null = null;
 let installed: WeakSet<DeckRoot> | null = null;
 
+// ── Multi-screen placement (issue #5) ──────────────────────────────
+// On a projector setup the slides go fullscreen on the external screen and the
+// presenter popup opens on the speaker's (current) screen. We fetch the screen
+// layout on demand (the Window Management API prompts for permission the first
+// time · the prompt's own activation then lets the same press go fullscreen).
+// Everything is best-effort: without the API, the permission, or a second
+// screen, the deck stays put and the popup uses the default placement.
+//
+// Ordering: requestFullscreen consumes the press's transient activation, so it
+// goes first; window.open relies on popups being allowed for the origin (which
+// the presenter already requires) so it still opens afterwards.
+type ScreenLike = {
+  availLeft: number;
+  availTop: number;
+  availWidth: number;
+  availHeight: number;
+};
+type ScreenDetailsLike = { screens: ScreenLike[]; currentScreen: ScreenLike };
+type WindowWithScreens = Window & {
+  getScreenDetails?: () => Promise<ScreenDetailsLike>;
+};
+
+// The live ScreenDetails (cached once granted · the object self-updates), and a
+// flag so closing only exits the fullscreen we initiated.
+let cachedScreens: ScreenDetailsLike | null = null;
+let deckFullscreened = false;
+
+/** Resolve the screen layout · prompts for the Window Management permission the
+ *  first time, then reuses the live object. Null when the API is missing or the
+ *  permission is denied. */
+async function getScreens(): Promise<ScreenDetailsLike | null> {
+  if (cachedScreens) return cachedScreens;
+  const getScreenDetails = (window as WindowWithScreens).getScreenDetails;
+  if (!getScreenDetails) return null;
+  try {
+    cachedScreens = await getScreenDetails.call(window);
+    return cachedScreens;
+  } catch {
+    return null; // denied / dismissed · keep the deck in place
+  }
+}
+
+const POPUP_W = 1280;
+const POPUP_H = 720;
+
+/** Window features that center the presenter popup on a given screen. */
+function placementOn(s: ScreenLike): string {
+  const left = Math.round(s.availLeft + (s.availWidth - POPUP_W) / 2);
+  const top = Math.round(s.availTop + (s.availHeight - POPUP_H) / 2);
+  return `popup=yes,width=${POPUP_W},height=${POPUP_H},left=${left},top=${top}`;
+}
+
+/** Send the deck fullscreen to the given screen (the projector) · best-effort,
+ *  flips the restore flag on success. */
+function sendDeckToScreen(host: DeckRoot, screen: ScreenLike): void {
+  const el = host as unknown as {
+    requestFullscreen?: (opts?: { screen?: unknown }) => Promise<void>;
+  };
+  el.requestFullscreen?.({ screen })
+    .then(() => {
+      deckFullscreened = true;
+    })
+    .catch(() => {
+      // Older browser / the {screen} option unsupported · leave the deck put.
+    });
+}
+
+/** Exit the fullscreen we put the deck into when the presenter closes. */
+function restoreDeckFromFullscreen(): void {
+  if (deckFullscreened && document.fullscreenElement) {
+    document.exitFullscreen?.().catch(() => {});
+  }
+  deckFullscreened = false;
+}
+
 function readState(host: DeckRoot): PresenterState {
   const slides = Array.from(host.children).filter((el) =>
     el.tagName.toLowerCase().startsWith('deck-'),
@@ -133,7 +208,17 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${initial.themeHref}">` : ''
     background: #161c2e;
   }
   .panel .body { flex: 1; min-height: 0; padding: 16px; overflow: hidden; border-radius: 8px; }
-  .panel iframe { width: 100%; height: 100%; border: 0; background: #0f1422; display: block; }
+  /* Preview panes center a 16:9 box so the thumbnail matches the projection
+     geometry regardless of the pane/window shape (issue #5) · the size
+     container lets the iframe size against the pane in cq units. */
+  #current .body, #next .body { display: grid; place-items: center; container-type: size; }
+  .panel iframe { border: 0; background: #0f1422; display: block; }
+  #current-frame, #next-frame {
+    aspect-ratio: 16 / 9;
+    width: min(100cqw, calc(100cqh * 16 / 9));
+    height: auto;
+    max-width: 100%;
+  }
   #notes { font-size: 17px; line-height: 1.6; white-space: pre-wrap; padding: 20px; overflow: auto; color: #e8e4f0; }
   #notes:empty::before { content: 'No notes for this slide.'; color: rgba(232,228,240,0.4); font-style: italic; }
   #footer {
@@ -282,6 +367,8 @@ export function installPresenter(host: DeckRoot): void {
     // Toggle · already open, close it
     popup?.close();
     popup = null;
+    host.presenterActive = false;
+    restoreDeckFromFullscreen();
     return;
   }
   installed.add(host);
@@ -309,16 +396,40 @@ export function installPresenter(host: DeckRoot): void {
     }
   });
 
+  // Send the slides fullscreen to the external screen · NEVER block the popup on
+  // the permission prompt. When the screen layout is already cached we can call
+  // requestFullscreen synchronously, riding this keypress's activation. The very
+  // first time the layout isn't known yet: prompt for it (best-effort fullscreen
+  // once it resolves) and cache it so the next P press works synchronously.
+  const known = cachedScreens;
+  const external = known?.screens.find((s) => s !== known.currentScreen) ?? null;
+  if (external) {
+    sendDeckToScreen(host, external);
+  } else {
+    void getScreens().then((s) => {
+      const ext = s?.screens.find((x) => x !== s.currentScreen);
+      if (ext) sendDeckToScreen(host, ext);
+    });
+  }
+
   const state = readState(host);
-  popup = window.open('', 'rikiki-presenter', 'width=1280,height=800,popup=yes');
+  const features = known?.currentScreen
+    ? placementOn(known.currentScreen)
+    : `popup=yes,width=${POPUP_W},height=${POPUP_H}`;
+  popup = window.open('', 'rikiki-presenter', features);
   if (!popup) {
     console.warn('[rikiki/presenter] popup was blocked · allow popups for this site');
     installed.delete(host);
+    // We may have already sent the deck fullscreen · don't strand it without
+    // a presenter window.
+    restoreDeckFromFullscreen();
     return;
   }
   popup.document.open();
   popup.document.write(PRESENTER_HTML(state));
   popup.document.close();
+  // The main window is now the projected one · hide its hint chips / arrows.
+  host.presenterActive = true;
 
   // Tidy up if the popup is closed externally
   const watch = setInterval(() => {
@@ -326,6 +437,8 @@ export function installPresenter(host: DeckRoot): void {
       clearInterval(watch);
       installed?.delete(host);
       popup = null;
+      host.presenterActive = false;
+      restoreDeckFromFullscreen();
     }
   }, 1000);
 }
