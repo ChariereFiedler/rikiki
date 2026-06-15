@@ -26,3 +26,6 @@ import './atoms/deck-badge.js';
 import './atoms/deck-kicker.js';
 import './atoms/deck-punch.js';
 import './atoms/deck-code.js';
+export type { DeckPlugin, DeckContext } from './runtime/deck-root.js';
+export type { DeckCodeHighlighter } from './atoms/deck-code.js';
+export { setDeckCodeHighlighter } from './atoms/deck-code-highlighter.js';

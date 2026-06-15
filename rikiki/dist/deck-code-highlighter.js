@@ -1,0 +1,1 @@
+function t(i){let e=customElements.get("deck-code");if(!e){console.warn("[rikiki/deck-code] <deck-code> is not defined yet \xB7 import rikiki first");return}e.highlighter=i,e.rehighlightAll()}export{t as setDeckCodeHighlighter};

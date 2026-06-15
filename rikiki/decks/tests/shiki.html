@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · shiki harness</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module">
+  // Opt-in Shiki highlighter · registers through deck-code's setDeckCodeHighlighter
+  // hook (no prototype patching). Re-highlights the <deck-code> below on load.
+  import { installShiki } from '../../dist/shiki.js';
+  await installShiki({ theme: 'one-dark-pro', langs: ['ts'] });
+</script>
+</head>
+<body>
+<deck-root>
+  <deck-feature>
+    <h1 slot="title">Shiki</h1>
+    <deck-code lang="ts">const answer = 42;</deck-code>
+  </deck-feature>
+</deck-root>
+</body>
+</html>
