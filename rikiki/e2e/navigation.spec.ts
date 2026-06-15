@@ -67,3 +67,22 @@ test('hash deep-links to a slide and clamps out-of-range links', async ({ page }
   await page.goto(`${DEMO}#999`);
   await expectActiveIndex(deck, last);
 });
+
+test('ctrl/pinch wheel is left for browser zoom, plain wheel still navigates', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(DEMO);
+
+  // Dispatch on the deck shell and report whether the deck called preventDefault.
+  const prevented = (opts: { ctrlKey?: boolean }) =>
+    page.evaluate((o) => {
+      const root = document.querySelector('deck-root')!;
+      const ev = new WheelEvent('wheel', { deltaY: 120, cancelable: true, bubbles: true, ...o });
+      root.dispatchEvent(ev);
+      return ev.defaultPrevented;
+    }, opts);
+
+  // Zoom gesture (ctrl+wheel / trackpad pinch) must pass through to the browser.
+  expect(await prevented({ ctrlKey: true }), 'ctrl+wheel left for zoom').toBe(false);
+  // A plain wheel is still claimed for navigation.
+  expect(await prevented({}), 'plain wheel drives navigation').toBe(true);
+});

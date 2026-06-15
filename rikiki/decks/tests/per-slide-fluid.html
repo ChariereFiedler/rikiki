@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · per-slide fluid harness</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+</head>
+<body>
+<!-- A fixed-canvas deck with one slide that escapes to the real viewport via
+     its own `fluid` attribute (issue #4). The middle slide should drop the
+     zoom-to-fit canvas; the surrounding slides keep it. -->
+<deck-root>
+  <deck-section title="Fixed slide"></deck-section>
+  <deck-feature fluid>
+    <h1 slot="title">Fluid slide</h1>
+  </deck-feature>
+  <deck-section title="Back to fixed"></deck-section>
+</deck-root>
+</body>
+</html>

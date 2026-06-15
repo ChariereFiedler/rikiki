@@ -13,6 +13,7 @@ const DECKS = [
   '/rikiki/decks/tests/overview-svg.html',
   '/rikiki/decks/tests/embedded.html',
   '/rikiki/decks/tests/fluid.html',
+  '/rikiki/decks/tests/per-slide-fluid.html',
   '/examples/rikiki-tour/index.html',
 ];
 
