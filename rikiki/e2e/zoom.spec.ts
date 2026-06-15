@@ -110,3 +110,22 @@ test('navigating to another slide resets the zoom', async ({ page }) => {
   expect(after.zoomed).toBe(false);
   expect(deck.consoleErrors).toEqual([]);
 });
+
+test('no-zoom disables the feature (browser keeps its zoom)', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(DECK);
+  await page.evaluate(() => document.querySelector('deck-root')!.setAttribute('no-zoom', ''));
+
+  const prevented = await ctrlWheel(page, -300);
+  expect(prevented, 'ctrl+wheel left for the browser').toBe(false);
+  expect((await zoomState(page)).zoomed).toBe(false);
+});
+
+test('fluid deck does not zoom', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto('/rikiki/decks/tests/fluid.html');
+
+  const prevented = await ctrlWheel(page, -300);
+  expect(prevented, 'no zoom in fluid mode').toBe(false);
+  expect((await zoomState(page)).zoomed).toBe(false);
+});
