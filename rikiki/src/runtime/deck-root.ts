@@ -78,7 +78,8 @@ export class DeckRoot extends LitElement {
       flex: none;
       width: calc(var(--deck-canvas-w, 1920) * 1px);
       height: calc(var(--deck-canvas-h, 1080) * 1px);
-      transform: scale(var(--deck-scale, 1));
+      transform: translate(var(--deck-pan-x, 0px), var(--deck-pan-y, 0px))
+        scale(calc(var(--deck-scale, 1) * var(--deck-zoom, 1)));
       transform-origin: center center;
       container-type: size;
     }
@@ -91,6 +92,9 @@ export class DeckRoot extends LitElement {
       height: 100%;
       transform: none;
     }
+    /* While magnified beyond fit (slide zoom), the deck is grab-to-pan. */
+    :host([data-zoomed]) { cursor: grab; }
+    :host([data-zoomed][data-panning]) { cursor: grabbing; }
     #progress {
       position: fixed; bottom: 0; left: 0;
       height: var(--deck-root-progress-height, 3px);
@@ -201,6 +205,8 @@ export class DeckRoot extends LitElement {
   @property({ type: Boolean, reflect: true, attribute: 'no-hint' }) noHint = false;
   /** Hide the bottom-right on-screen previous/next navigation arrows. */
   @property({ type: Boolean, reflect: true, attribute: 'no-arrows' }) noArrows = false;
+  /** Disable slide zoom (Ctrl/⌘+wheel, pinch, +/-/0) · on by default. */
+  @property({ type: Boolean, reflect: true, attribute: 'no-zoom' }) noZoom = false;
   /** Optional slide transition · "slide" | "fade" | "zoom". When set, the
    *  deck-transition.js plugin is fetched on first navigation. Per-slide
    *  override available via `data-transition` on the slide host. */
@@ -245,6 +251,13 @@ export class DeckRoot extends LitElement {
   // Wheel navigation · deltaY accumulation + lockout against trackpad inertia
   private _wheelAccum = 0;
   private _wheelLockUntil = 0;
+  // Slide zoom · 1 = fit, panX/panY in viewport px.
+  private _zoom = 1;
+  private _panX = 0;
+  private _panY = 0;
+  private static readonly ZOOM_MAX = 4;
+  private static readonly ZOOM_STEP = 1.25;
+  private static readonly ZOOM_WHEEL_SENSITIVITY = 0.002;
   // Registered plugins (see use()) and the lazily-built, frozen context handed
   // to their hooks.
   private _plugins: DeckPlugin[] = [];
@@ -401,9 +414,66 @@ export class DeckRoot extends LitElement {
     }
     const scale = Math.min(this.clientWidth / this.width, this.clientHeight / this.height);
     if (scale > 0) this.style.setProperty('--deck-scale', String(scale));
+    if (this._zoom > 1) {
+      this._clampPan();
+      this._applyZoom();
+    }
   };
 
   private _resizeObserver: ResizeObserver | null = null;
+
+  /* ── Slide zoom ───────────────────────────────────────────────── */
+
+  /** Zoom is live only in the fixed canvas and outside overlays. */
+  private _zoomEnabled(): boolean {
+    return !this.noZoom && !this._effectiveFluid() && !this.overview && !this.blank;
+  }
+
+  /** Publish zoom + pan as custom props the #stage transform reads. */
+  private _applyZoom(): void {
+    this.style.setProperty('--deck-zoom', String(this._zoom));
+    this.style.setProperty('--deck-pan-x', `${this._panX}px`);
+    this.style.setProperty('--deck-pan-y', `${this._panY}px`);
+    this.toggleAttribute('data-zoomed', this._zoom > 1);
+  }
+
+  /** Keep the pan within bounds so the magnified stage always covers the
+   *  viewport (no gaps); at fit (zoom 1) it forces re-centring. */
+  private _clampPan(): void {
+    const fit =
+      this.clientWidth && this.clientHeight
+        ? Math.min(this.clientWidth / this.width, this.clientHeight / this.height)
+        : 1;
+    const s = fit * this._zoom;
+    const maxX = Math.max(0, (this.width * s - this.clientWidth) / 2);
+    const maxY = Math.max(0, (this.height * s - this.clientHeight) / 2);
+    this._panX = Math.max(-maxX, Math.min(maxX, this._panX));
+    this._panY = Math.max(-maxY, Math.min(maxY, this._panY));
+  }
+
+  /** Zoom by a factor, keeping the point at viewport (cx, cy) fixed. */
+  private _zoomAt(factor: number, cx: number, cy: number): void {
+    if (!this._zoomEnabled()) return;
+    const z0 = this._zoom;
+    const z1 = Math.max(1, Math.min(DeckRoot.ZOOM_MAX, z0 * factor));
+    if (z1 === z0) return;
+    const rect = this.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const ratio = z1 / z0;
+    this._panX += (cx - centerX - this._panX) * (1 - ratio);
+    this._panY += (cy - centerY - this._panY) * (1 - ratio);
+    this._zoom = z1;
+    this._clampPan();
+    this._applyZoom();
+  }
+
+  private _resetZoom(): void {
+    this._zoom = 1;
+    this._panX = 0;
+    this._panY = 0;
+    this._applyZoom();
+  }
 
   /** Make the letterbox bands match the active slide's background, so a scaled
    *  deck blends seamlessly into the bands instead of sitting on a contrasting
@@ -604,10 +674,15 @@ export class DeckRoot extends LitElement {
   }
 
   private _onWheel = (e: WheelEvent): void => {
-    // Ctrl/⌘ + wheel is the browser zoom gesture · trackpad pinch-zoom also
-    // arrives as wheel events with ctrlKey set. Never intercept those, or the
-    // deck swallows the zoom ("it doesn't zoom"). Let the browser handle them.
-    if (e.ctrlKey || e.metaKey) return;
+    // Ctrl/⌘ + wheel (and trackpad pinch, which fires ctrlKey wheel events) is a
+    // zoom gesture: magnify the slide around the cursor. When zoom is disabled
+    // (no-zoom / fluid / overlay) let the browser handle its own zoom instead.
+    if (e.ctrlKey || e.metaKey) {
+      if (!this._zoomEnabled()) return;
+      e.preventDefault();
+      this._zoomAt(Math.exp(-e.deltaY * DeckRoot.ZOOM_WHEEL_SENSITIVITY), e.clientX, e.clientY);
+      return;
+    }
     if (!this._mouseEnabled('wheel') || this.overview || this.blank) return;
     if (this._wheelTargetScrolls(e)) return;
     e.preventDefault();
