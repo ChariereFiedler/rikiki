@@ -95,3 +95,18 @@ test('plain wheel pans while zoomed, navigates at fit', async ({ page }) => {
   await page.mouse.wheel(0, 200);
   await expect.poll(() => deck.activeIndex()).toBeGreaterThan(idx);
 });
+
+test('navigating to another slide resets the zoom', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(DECK);
+
+  await page.keyboard.press('+');
+  await page.keyboard.press('+');
+  expect((await zoomState(page)).zoom).toBeGreaterThan(1);
+
+  await page.keyboard.press('ArrowRight'); // navigate
+  const after = await zoomState(page);
+  expect(after.zoom, 'zoom reset on slide change').toBe(1);
+  expect(after.zoomed).toBe(false);
+  expect(deck.consoleErrors).toEqual([]);
+});

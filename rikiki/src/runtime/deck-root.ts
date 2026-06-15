@@ -1114,6 +1114,7 @@ export class DeckRoot extends LitElement {
   }
 
   private _goToNow(idx: number): void {
+    this._resetZoom(); // each slide starts at fit
     this.current = Math.max(0, Math.min(this.slides.length - 1, idx));
     this.step = 0;
     this._applyActive();
