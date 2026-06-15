@@ -172,6 +172,16 @@ reflows like a web page:
 <deck-root fluid>  <!-- fills its box, reflows, no letterbox -->
 ```
 
+A single slide can also escape the canvas by carrying its own `fluid` attribute
+· that slide gets the real viewport (handy for an embedded live demo) while the
+rest of the deck stays on the fixed canvas:
+
+```html
+<deck-feature fluid>
+  <iframe src="playground.html" style="position:fixed; inset:0; border:0;"></iframe>
+</deck-feature>
+```
+
 Both modes are embed-safe · a `<deck-root>` placed inside a larger page scales
 to (or fills) its own container and never touches the host page's scroll or
 typography.

@@ -107,7 +107,12 @@ debounce, discreet chevrons sit bottom-right (2D-aware), and mouse
 back/forward buttons map to back/advance. The wheel yields to scrollable
 content: a wheel over an overflowing descendant (a tall `deck-code` block, a
 zoomable inline `<svg>`, …) scrolls it natively and only advances the deck once
-that element reaches its scroll edge. The bottom-left key-hint chips
+that element reaches its scroll edge. **Ctrl/⌘ + wheel and trackpad pinch are
+left for the browser's zoom** · the deck never intercepts a zoom gesture. (Note
+that in the default fixed canvas, zoom-to-fit refits the deck to the viewport,
+so browser zoom won't magnify slide content and `vw`/`vh` track the window, not
+the canvas · use `fluid` and `cqw/cqh` for content that must truly zoom.) The
+bottom-left key-hint chips
 (`← → O P ?`) are also clickable shortcuts for the matching action. Interactive
 elements (`a`, `button`, inputs, `[contenteditable]`) never trigger navigation;
 add `data-no-advance` to opt any element out. Configure with the `mouse-nav`
@@ -129,11 +134,17 @@ Chevron styling tokens: `--deck-root-nav-color`, `--deck-root-nav-bg`,
 | `nav` | `2d` | Opt into 2D (chapter/slide) navigation · see above |
 | `mouse-nav` | *(absent)* / `none` / subset of `click wheel arrows aux` | Mouse navigation config · see above |
 | `transition` | `slide` (default-ish) / `slide-up` / `slide-down` / `slide-right` / `fade` / `zoom` / `flip` | Deck-wide slide transition (see table below) |
-| `fluid` | *(boolean)* | Fluid rendering · the deck fills its box and reflows like a web page (no logical canvas, no zoom-to-fit scale, no letterbox). Default is zoom-to-fit · see Rendering & sizing below |
+| `fluid` | *(boolean)* | Fluid rendering · the deck fills its box and reflows like a web page (no logical canvas, no zoom-to-fit scale, no letterbox). Default is zoom-to-fit · see Rendering & sizing below. Also accepted **per slide** · see below |
 | `width` / `height` | integers (default `1920` / `1080`) | Logical canvas size for zoom-to-fit · only the aspect ratio and the rem baseline depend on these. Ignored in `fluid` mode |
+| `no-hint` | *(boolean)* | Hide the bottom-left key-hint chips (`← → · O · P · ?`) |
+| `no-arrows` | *(boolean)* | Hide the bottom-right on-screen navigation chevrons |
 | `autoplay` | integer ms (e.g. `8000`) | Auto-advance every N ms; pauses on hover, resets on any manual nav. `0`/absent = off |
 | `loop` | *(boolean)* | With `autoplay`, wraps from the last slide back to the first |
 | `swipe` | *(boolean)* | Pointer-driven horizontal swipe (touch + mouse): a swipe ≥ 60 px advances / goes back |
+
+In presenter mode (`P`) the projected (main) window auto-hides its hint chips
+and nav arrows while the speaker popup is open · `no-hint` / `no-arrows` stay
+useful for a clean look outside presenter mode (and for embedded thumbnails).
 
 **Rendering & sizing.** By default a deck renders into a fixed logical canvas
 (`width`×`height`, 1920×1080 by default) scaled uniformly to fit the host box,
@@ -142,6 +153,26 @@ when the aspect differs. Set `fluid` to opt out: the deck then fills its box and
 reflows like a web page. Either mode is embed-safe · a `<deck-root>` placed
 inside a larger document scales to (or fills) its own container and never
 touches the host page's scroll or typography.
+
+**Per-slide fluid escape.** A single slide can opt out of the fixed canvas by
+carrying its own `fluid` attribute · while that slide is active the deck drops
+the zoom-to-fit scale and letterbox and gives the slide the real viewport (the
+rem baseline tracks the viewport too), then restores the canvas on navigation
+back to a fixed slide. Use it for one slide that embeds a live interactive demo
+(an `<iframe>` playground, a mini-game) which should consume the whole screen
+while the rest of the deck stays on the predictable fixed canvas:
+
+```html
+<deck-root>
+  <deck-feature><h1 slot="title">Regular fixed slide</h1></deck-feature>
+  <deck-feature fluid>
+    <iframe src="playground.html" style="position:fixed; inset:0; border:0;"></iframe>
+  </deck-feature>
+</deck-root>
+```
+
+(A deck-wide `fluid` already makes every slide fluid · the per-slide attribute
+is only meaningful inside an otherwise fixed deck.)
 
 **Transition values** (deck-wide via `transition="…"` on `<deck-root>`, or
 per-slide via `data-transition="…"` on a slide host). When unset, the effective
@@ -245,8 +276,9 @@ Shiki's grammars/themes.
 ### Shiki plugin (optional, opt-in)
 
 `src/plugins/shiki.ts` (`dist/shiki.js`) re-renders all `<deck-code>` blocks
-through [Shiki](https://shiki.style), loaded from a CDN on first use. Install it
-after the rikiki bundle:
+through [Shiki](https://shiki.style), loaded from the vendored
+`dist/vendor/shiki.js` bundle on first use (offline · no CDN). Install it after
+the rikiki bundle:
 
 ```html
 <script type="module" src="./dist/index.js"></script>
@@ -262,7 +294,6 @@ API:
 async function installShiki(opts?: {
   theme?: string;    // any Shiki theme name (https://shiki.style/themes) · default 'one-dark-pro'
   langs?: string[];  // grammars to preload · default ['ts', 'js', 'html', 'css', 'json']
-  cdn?: string;      // CDN base to load Shiki from · default 'https://esm.sh/'
 }): Promise<void>
 ```
 
@@ -272,9 +303,12 @@ async function installShiki(opts?: {
   tokens still theme the output.
 - A language not loaded falls back silently to the built-in regex highlighter
   (no error).
-- **Trade-off:** pulls ~300 KB of Shiki + requested grammars from the CDN. That
-  is why it is opt-in · the core bundle stays ~12 KB gzip. Use `cdn` to point at
-  a self-hosted mirror.
+- **How it hooks in:** it registers a highlighter on the shared `<deck-code>`
+  class via `setDeckCodeHighlighter` (resolved through `customElements.get`), so
+  it never patches the component's internals · see *Writing a plugin* below.
+- **Trade-off:** the vendored Shiki bundle is large (every grammar + theme, JS
+  engine, no wasm). That is why it is opt-in and lazy · the core bundle stays
+  ~14 KB gzip.
 
 ---
 
@@ -343,15 +377,53 @@ Morph pairs that swap on the same click need explicit steps
 (`data-click-hide="1"` on the outgoing element, `data-click="1"` on the
 incoming one) · bare attributes would put them on two sequential clicks.
 
-The plugin patches `deck-root` so its step counter accounts for `[data-click]`
-elements, and stepping toggles their visibility. Going back cancels pending
-auto/stagger timers. Deep links and back-navigation settle instantly (no
+The plugin registers on each `<deck-root>` through the plugin hook API (see
+*Writing a plugin* below): its `steps` hook makes the step counter account for
+`[data-click]` elements, its `applyStep` hook toggles their visibility, and its
+`navigate` hook wraps cross-slide `data-morph` transitions. Going back cancels
+pending auto/stagger timers. Deep links and back-navigation settle instantly (no
 replayed delays). It respects `prefers-reduced-motion`. When a `data-morph`
 navigation runs, the deck-wide `transition="…"` animation is skipped for that
 navigation so the two don't fight, and pending auto/stagger reveals start
 once the morph settles instead of firing mid-transition. On auto/stagger
 elements, `data-anim-delay` is folded into the timer (delays add up once,
 they don't apply twice).
+
+### Writing a plugin (the hook API)
+
+Both opt-in plugins extend the deck through a small **public** contract rather
+than reaching into engine internals. A plugin is a `DeckPlugin` object; register
+it on a deck instance with `deckRoot.use(plugin)`, which returns an unregister
+function.
+
+```ts
+import type { DeckPlugin } from './dist/index.js';
+
+const myPlugin: DeckPlugin = {
+  name: 'my-plugin',                          // unique · use() is idempotent by name
+  setup(ctx) { /* … */ return () => {}; },    // on register · optional teardown
+  steps(slide, ctx) { return 0; },            // contribute step count (combined as a max)
+  applyStep(step, slide, ctx) { /* … */ },    // after the engine applied the step
+  navigate(to, ctx, proceed) { return false; }, // around-advice · call proceed() to navigate
+};
+document.querySelector('deck-root').use(myPlugin);
+```
+
+The `ctx` (`DeckContext`) is the only surface a plugin touches:
+`ctx.host` (the element), `ctx.current`, `ctx.step`, `ctx.slides`,
+`ctx.requestUpdate()`. Notes:
+
+- **`navigate` is around-advice** · return a truthy value to take ownership and
+  call `proceed()` yourself (e.g. inside a `startViewTransition`); return falsy
+  to let the engine navigate. Only the **first** registered plugin with a
+  `navigate` hook owns navigation (a second one warns and is ignored).
+- **`steps` from all plugins are combined with the engine's own as a maximum.**
+- **`<deck-code>` highlighting** is a separate hook: `setDeckCodeHighlighter(fn)`
+  registers a `(code, lang) => string | null` highlighter on the shared
+  `<deck-code>` class (return `null` to fall back to the built-in regex one).
+- `installClickStages()` / `installShiki()` are **back-compat shims** that attach
+  the plugin to every `<deck-root>` already on the page · a deck created
+  dynamically *after* the call must register the plugin itself with `use()`.
 
 ---
 
@@ -360,6 +432,28 @@ they don't apply twice).
 Press **`P`** to open a speaker window. It mirrors the current slide and the
 next slide (rendered live via the rikiki bundle), shows a timer/clock, and
 displays the speaker notes for the current slide.
+
+On a Chromium browser with a second screen, pressing **`P`** sends the **deck
+fullscreen to the external screen** (the projector) and opens the **speaker
+window on the speaker's current screen** · the audience gets the slides, the
+speaker keeps the presenter view on their laptop. The deck fullscreen is
+released when the presenter closes. Without the Window Management API
+(Firefox/Safari), the permission, or a second screen, the deck stays in its
+window and the popup uses the default placement.
+
+Notes on the first use: the **first** `P` press prompts for the Window
+Management permission; the speaker window always opens regardless (it is never
+blocked on the prompt). The slides move to the projector as soon as the screen
+layout is known · because that layout is only available after the permission is
+granted, the very first time may take a second `P` press (close + reopen) before
+the slides go fullscreen; afterwards it happens on the press itself (the cached
+layout lets the fullscreen ride the keypress activation, and `window.open`
+relies on popups being allowed for the origin · which the presenter already
+requires). The Current/Next previews are constrained to a 16:9 box so the
+thumbnail matches the projected slide's geometry regardless of the window shape.
+While the speaker window is open, the projected deck auto-hides its key-hint
+chips and nav arrows (the same effect as `no-hint` / `no-arrows`), restoring
+them on close.
 
 Speaker notes live in a `<deck-notes>` element placed inside any slide host.
 It is hidden in the deck itself; only the presenter window reads its text.
