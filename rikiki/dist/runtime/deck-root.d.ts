@@ -155,6 +155,13 @@ export declare class DeckRoot extends LitElement {
     /** Zoom by a factor, keeping the point at viewport (cx, cy) fixed. */
     private _zoomAt;
     private _resetZoom;
+    private _panBy;
+    private _panning;
+    private _panLastX;
+    private _panLastY;
+    private _onPanDown;
+    private _onPanMove;
+    private _onPanUp;
     /** Make the letterbox bands match the active slide's background, so a scaled
      *  deck blends seamlessly into the bands instead of sitting on a contrasting
      *  frame. A slide with no background of its own (transparent) shows the page

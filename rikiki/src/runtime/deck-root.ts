@@ -339,6 +339,10 @@ export class DeckRoot extends LitElement {
     this.addEventListener('pointerdown', this._onNavPointerDown);
     this.addEventListener('click', this._onClickNav);
     this.addEventListener('wheel', this._onWheel, { passive: false });
+    this.addEventListener('pointerdown', this._onPanDown);
+    this.addEventListener('pointermove', this._onPanMove);
+    this.addEventListener('pointerup', this._onPanUp);
+    this.addEventListener('pointercancel', this._onPanUp);
     window.addEventListener('mouseup', this._onAuxUp);
     window.addEventListener('auxclick', this._onAuxClick);
     if (this.autoplay > 0) this._startAutoplay();
@@ -475,6 +479,42 @@ export class DeckRoot extends LitElement {
     this._applyZoom();
   }
 
+  private _panBy(dx: number, dy: number): void {
+    this._panX += dx;
+    this._panY += dy;
+    this._clampPan();
+    this._applyZoom();
+  }
+
+  /* Drag-to-pan · active only while magnified beyond fit. */
+  private _panning = false;
+  private _panLastX = 0;
+  private _panLastY = 0;
+
+  private _onPanDown = (e: PointerEvent): void => {
+    if (this._zoom <= 1 || !this._zoomEnabled()) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    const target = e.target as HTMLElement | null;
+    if (target?.closest('a, button, input, textarea, select, [contenteditable]')) return;
+    this._panning = true;
+    this._panLastX = e.clientX;
+    this._panLastY = e.clientY;
+    this.toggleAttribute('data-panning', true);
+    this.setPointerCapture?.(e.pointerId);
+  };
+  private _onPanMove = (e: PointerEvent): void => {
+    if (!this._panning) return;
+    this._panBy(e.clientX - this._panLastX, e.clientY - this._panLastY);
+    this._panLastX = e.clientX;
+    this._panLastY = e.clientY;
+  };
+  private _onPanUp = (e: PointerEvent): void => {
+    if (!this._panning) return;
+    this._panning = false;
+    this.toggleAttribute('data-panning', false);
+    this.releasePointerCapture?.(e.pointerId);
+  };
+
   /** Make the letterbox bands match the active slide's background, so a scaled
    *  deck blends seamlessly into the bands instead of sitting on a contrasting
    *  frame. A slide with no background of its own (transparent) shows the page
@@ -546,6 +586,10 @@ export class DeckRoot extends LitElement {
     this.removeEventListener('pointerdown', this._onNavPointerDown);
     this.removeEventListener('click', this._onClickNav);
     this.removeEventListener('wheel', this._onWheel);
+    this.removeEventListener('pointerdown', this._onPanDown);
+    this.removeEventListener('pointermove', this._onPanMove);
+    this.removeEventListener('pointerup', this._onPanUp);
+    this.removeEventListener('pointercancel', this._onPanUp);
     window.removeEventListener('mouseup', this._onAuxUp);
     window.removeEventListener('auxclick', this._onAuxClick);
     this._stopAutoplay();
@@ -601,6 +645,10 @@ export class DeckRoot extends LitElement {
   };
   private _onPointerUp = (e: PointerEvent): void => {
     if (this._swipePointerId === null || e.pointerId !== this._swipePointerId) return;
+    if (this._zoom > 1) {
+      this._swipePointerId = null;
+      return;
+    }
     const dx = e.clientX - this._swipeStartX;
     const dy = e.clientY - this._swipeStartY;
     this._swipePointerId = null;
@@ -623,6 +671,7 @@ export class DeckRoot extends LitElement {
   private _onClickNav = (e: MouseEvent): void => {
     if (!this._mouseEnabled('click')) return;
     if (this.overview || this.blank) return;
+    if (this._zoom > 1) return; // panning, not advancing
     if (this.shadowRoot?.querySelector('#kb-overlay.open')) return;
     if (Math.hypot(e.clientX - this._navDownX, e.clientY - this._navDownY) > 5) return;
     const sel = window.getSelection();
@@ -681,6 +730,12 @@ export class DeckRoot extends LitElement {
       if (!this._zoomEnabled()) return;
       e.preventDefault();
       this._zoomAt(Math.exp(-e.deltaY * DeckRoot.ZOOM_WHEEL_SENSITIVITY), e.clientX, e.clientY);
+      return;
+    }
+    // While magnified, a plain wheel pans the slide instead of navigating.
+    if (this._zoom > 1 && this._zoomEnabled()) {
+      e.preventDefault();
+      this._panBy(-e.deltaX, -e.deltaY);
       return;
     }
     if (!this._mouseEnabled('wheel') || this.overview || this.blank) return;

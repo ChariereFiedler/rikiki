@@ -61,3 +61,37 @@ test('plus/minus/zero keys zoom and reset', async ({ page }) => {
   expect(reset.zoomed).toBe(false);
   expect(deck.consoleErrors).toEqual([]);
 });
+
+const panState = (page: Page) =>
+  page.evaluate(() => {
+    const root = document.querySelector('deck-root') as HTMLElement;
+    const cs = getComputedStyle(root);
+    return {
+      x: cs.getPropertyValue('--deck-pan-x').trim(),
+      y: cs.getPropertyValue('--deck-pan-y').trim(),
+    };
+  });
+
+test('plain wheel pans while zoomed, navigates at fit', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(DECK);
+
+  await page.keyboard.press('+');
+  await page.keyboard.press('+');
+  const before = await deck.activeIndex();
+
+  const prevented = await page.evaluate(() => {
+    const root = document.querySelector('deck-root')!;
+    const ev = new WheelEvent('wheel', { deltaY: 120, cancelable: true, bubbles: true });
+    root.dispatchEvent(ev);
+    return ev.defaultPrevented;
+  });
+  expect(prevented, 'wheel claimed for pan').toBe(true);
+  expect(await deck.activeIndex(), 'slide unchanged while zoomed').toBe(before);
+  expect((await panState(page)).y, 'pan moved').not.toBe('0px');
+
+  await page.keyboard.press('0');
+  const idx = await deck.activeIndex();
+  await page.mouse.wheel(0, 200);
+  await expect.poll(() => deck.activeIndex()).toBeGreaterThan(idx);
+});
