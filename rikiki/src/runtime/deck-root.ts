@@ -473,6 +473,7 @@ export class DeckRoot extends LitElement {
   }
 
   private _resetZoom(): void {
+    if (this._zoom === 1 && this._panX === 0 && this._panY === 0) return;
     this._zoom = 1;
     this._panX = 0;
     this._panY = 0;
@@ -598,6 +599,9 @@ export class DeckRoot extends LitElement {
     this.removeEventListener('pointercancel', this._onPointerUp);
     this.removeEventListener('mouseenter', this._onHoverEnter);
     this.removeEventListener('mouseleave', this._onHoverLeave);
+    // Drop any in-flight drag-pan state so a re-attach doesn't start stuck.
+    this._panning = false;
+    this.toggleAttribute('data-panning', false);
   }
 
   /* ── Autoplay ─────────────────────────────────────────────────── */
@@ -855,6 +859,7 @@ export class DeckRoot extends LitElement {
     const maxStep = this._maxSteps();
     this.step = maxStep > 0 ? Math.max(0, Math.min(maxStep, stepTarget)) : Math.max(0, stepTarget);
     if (!initial) {
+      this._resetZoom(); // a deep-link to another slide starts at fit
       this._applyActive();
       this._applyStep();
       this._updateUI();
@@ -1214,6 +1219,17 @@ export class DeckRoot extends LitElement {
     // active slide, so re-apply them for the current slide on a `fluid` toggle.
     if (changed.has('fluid')) {
       this._applyLetterbox(this.slides[this.current] ?? null);
+    }
+    // Entering overview / a blank screen, or disabling zoom at runtime, must drop
+    // any active magnification · otherwise the stage stays zoomed and panned
+    // underneath, with a stale grab cursor and no clean way back.
+    if (
+      (changed.has('overview') && this.overview) ||
+      (changed.has('blank') && this.blank) ||
+      (changed.has('noZoom') && this.noZoom) ||
+      (changed.has('fluid') && this.fluid)
+    ) {
+      this._resetZoom();
     }
     this._updateUI();
     void this._renderOverviewIfActive();

@@ -129,3 +129,72 @@ test('fluid deck does not zoom', async ({ page }) => {
   expect(prevented, 'no zoom in fluid mode').toBe(false);
   expect((await zoomState(page)).zoomed).toBe(false);
 });
+
+test('entering overview resets the zoom', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(DECK);
+  await page.keyboard.press('+');
+  await page.keyboard.press('+');
+  expect((await zoomState(page)).zoom).toBeGreaterThan(1);
+
+  await page.keyboard.press('o'); // overview
+  expect((await zoomState(page)).zoom, 'zoom cleared on overview').toBe(1);
+  expect((await zoomState(page)).zoomed).toBe(false);
+});
+
+test('setting no-zoom after zooming clears the magnification', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(DECK);
+  await page.keyboard.press('+');
+  await page.keyboard.press('+');
+  expect((await zoomState(page)).zoom).toBeGreaterThan(1);
+
+  await page.evaluate(() => document.querySelector('deck-root')!.setAttribute('no-zoom', ''));
+  await expect.poll(async () => (await zoomState(page)).zoom, 'zoom cleared by no-zoom').toBe(1);
+});
+
+test('hash deep-link to another slide resets the zoom', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(DECK);
+  await page.keyboard.press('+');
+  await page.keyboard.press('+');
+  expect((await zoomState(page)).zoom).toBeGreaterThan(1);
+
+  await page.evaluate(() => { location.hash = '#2'; });
+  await expect.poll(async () => (await zoomState(page)).zoom, 'zoom reset on hash nav').toBe(1);
+});
+
+test('pan is clamped (does not grow without bound)', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(DECK);
+  await page.keyboard.press('+');
+  await page.keyboard.press('+');
+
+  const panFar = () =>
+    page.evaluate(() => {
+      const root = document.querySelector('deck-root')!;
+      for (let i = 0; i < 50; i++) {
+        root.dispatchEvent(new WheelEvent('wheel', { deltaY: 400, cancelable: true, bubbles: true }));
+      }
+      return parseFloat(getComputedStyle(root as HTMLElement).getPropertyValue('--deck-pan-y'));
+    });
+  const first = await panFar();
+  const second = await panFar();
+  expect(second, 'pan saturates at the clamp bound').toBeCloseTo(first, 1);
+});
+
+test('drag pans the magnified slide', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(DECK);
+  await page.keyboard.press('+');
+  await page.keyboard.press('+');
+
+  await page.mouse.move(400, 300);
+  await page.mouse.down();
+  await page.mouse.move(300, 220, { steps: 5 });
+  await page.mouse.up();
+
+  const p = await panState(page);
+  expect(p.x !== '0px' || p.y !== '0px', 'drag moved the pan').toBe(true);
+  expect(deck.consoleErrors).toEqual([]);
+});
