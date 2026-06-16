@@ -25,7 +25,14 @@ attributes, or tokens — use only what the reference lists.
    `deck-feature-cards` for content, `deck-takeaway` to close. Respect named
    `slot=` attributes (`title`, `lead`, `left`/`right`, `a`/`b`/`c`).
 3. **Prose & code** — put Markdown inside `<deck-md>`; code inside
-   `<deck-code lang="…">`.
+   `<deck-code lang="…">`. The built-in highlighter only understands
+   `js`/`ts`/`json`/`html`/`xml`/`svg`/`css`/`scss`/`less`. Any other `lang`
+   (`python`, `rust`, `bash`, `go`, `sql`, …) is silently colored as JS — no
+   error — so it looks fine but is wrong. If the deck uses any language outside
+   that set, install Shiki **after** `dist/index.js`:
+   `import { installShiki } from './dist/shiki.js'; await installShiki({ theme: 'one-dark-pro', langs: ['ts','rust','bash'] });`
+   (list every language the deck uses in `langs`). See the reference's Shiki
+   section.
 4. **Reveals** — for stepped builds use `steps="N"` + `[data-step-block]` or
    `deck-code[step-groups]`; for per-element reveals install the click-stages
    plugin (`import { installClickStages } from './dist/click-stages.js';

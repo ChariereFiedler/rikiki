@@ -16,6 +16,21 @@ cp starter.html my-deck.html
 
 Edit `my-deck.html`. Each slide is a custom element. Markdown is available anywhere via `<deck-md>`. Navigate with `←` / `→` (or click, or the scroll wheel), `O` for the overview grid. Decks are linear by default; add `nav="2d"` on `<deck-root>` for chapter/slide grid navigation.
 
+## For LLMs / coding assistants
+
+If you point a coding assistant (Claude Code, Copilot, …) at this package, give it
+the machine-oriented docs — they are the single source of truth and ship with the
+npm package:
+
+- **[`llms.txt`](./llms.txt)** — concise capability map and entry points (the
+  [llms.txt convention](https://llmstxt.org)).
+- **[`docs/llms/rikiki-reference.md`](./docs/llms/rikiki-reference.md)** — every
+  tag, attribute, slot, design token, plugin, and recipe in one file. Have the
+  assistant read this first; tell it not to invent tags or tokens outside it.
+- **Claude Code skills** — `rikiki-deck`, `rikiki-theme`, `rikiki-debug` ship in
+  `.claude/skills/` (see [Claude Code skills](#claude-code-skills) to install
+  them); they teach an assistant the authoring/theming/debugging workflows.
+
 ## Layout
 
 ```
@@ -230,6 +245,25 @@ npm run typecheck  # tsc --noEmit
 ```
 
 `dist/` is versioned · consumers don't run a build.
+
+## Claude Code skills
+
+The package ships three Claude Code skills so an assistant authoring your deck
+knows the framework: `rikiki-deck` (build a deck), `rikiki-theme` (theming), and
+`rikiki-debug` (diagnose a deck). After `npm install rikiki-deck`, copy them into
+your project (or `~/.claude/skills` for all projects):
+
+```sh
+# project-local · available in this repo only
+mkdir -p .claude/skills
+cp -r node_modules/rikiki-deck/.claude/skills/* .claude/skills/
+
+# or global · available in every project
+cp -r node_modules/rikiki-deck/.claude/skills/* ~/.claude/skills/
+```
+
+Claude Code discovers them automatically on the next session. Re-run the copy
+after `npm update rikiki-deck` to pick up skill changes.
 
 ## Reveals & animations
 
