@@ -60,6 +60,14 @@ export declare class DeckRoot extends LitElement {
     noHint: boolean;
     /** Hide the bottom-right on-screen previous/next navigation arrows. */
     noArrows: boolean;
+    /** Hide the bottom-right slide counter (`n / total`) · used by the presenter
+     *  preview, which already shows the count in its own chrome. */
+    noCounter: boolean;
+    /** Passive-render mode · the deck still scales/letterboxes but wires NO
+     *  keyboard, mouse, autoplay or presenter handlers. Used by the presenter
+     *  preview iframes, which must not hijack keys or open a nested presenter on
+     *  the shared BroadcastChannel · the speaker drives the real deck instead. */
+    preview: boolean;
     /** Disable slide zoom (Ctrl/⌘+wheel, pinch, +/-/0) · on by default. */
     noZoom: boolean;
     /** Optional slide transition · "slide" | "fade" | "zoom". When set, the
@@ -246,6 +254,10 @@ export declare class DeckRoot extends LitElement {
     private _goToCoords;
     private _applyActive;
     private _applyStep;
+    /** The bottom-right slide counter is noise in modes where it shouldn't show:
+     *  the overview grid, a black/white blanked screen, and the cover slide (the
+     *  title slide has no business carrying a page number). */
+    private _counterHidden;
     private _updateUI;
     updated(changed: PropertyValues<this>): void;
     private _navArrows;
