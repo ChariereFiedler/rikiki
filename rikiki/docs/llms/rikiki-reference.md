@@ -269,16 +269,23 @@ Direct children of `<deck-root>`. Each is one slide.
 
 ### deck-code details
 
-- `lang` · drives highlighting: `js` / `ts` / `json` (default), `html` / `xml` /
-  `svg`, `css` / `scss` / `less`.
+- `lang` · drives highlighting. The **built-in highlighter understands only**
+  `js` / `ts` / `json` (default), `html` / `xml` / `svg`, and `css` / `scss` /
+  `less`. **Any other value** (`python`, `rust`, `bash`, `go`, `sql`, …) is **not
+  an error and produces no warning** — the block is silently colored with the JS
+  rules, so the result looks plausible but is wrong. For any language outside the
+  list above, install the Shiki plugin (see below); it adds Shiki's full set of
+  grammars and is the only way to highlight non-built-in languages correctly.
 - `hero` · centers the block vertically as the slide's focal element.
 - `nested` · lighter border, no shadow (for use inside a `deck-card`).
 - `step-groups` · a JSON array attribute that turns the snippet into a stepped
   reveal; the number of groups becomes the slide's step count (see §7).
 
 Highlighting is done client-side with a built-in regex highlighter (no build
-step). An opt-in **Shiki plugin** can upgrade every `deck-code` block to
-Shiki's grammars/themes.
+step), limited to the languages listed under `lang` above. An opt-in **Shiki
+plugin** upgrades every `deck-code` block to Shiki's full grammar/theme set —
+**required** whenever a deck uses a language the built-in highlighter does not
+understand.
 
 ### Shiki plugin (optional, opt-in)
 
@@ -306,8 +313,10 @@ async function installShiki(opts?: {
 
 - Any Shiki theme/language works (not just the built-in highlighter's set); set
   `langs` to whatever your deck uses.
-- Shiki's inline token colors are stripped so the deck's `--deck-code-syntax-*`
-  tokens still theme the output.
+- Shiki owns the palette under this plugin: it colors each token with an inline
+  style from the chosen `theme`, so pick a `theme` that suits your code
+  background (e.g. `one-dark-pro` on a dark deck). The `--deck-code-syntax-*`
+  tokens only affect the built-in highlighter, not Shiki output.
 - A language not loaded falls back silently to the built-in regex highlighter
   (no error).
 - **How it hooks in:** it registers a highlighter on the shared `<deck-code>`
