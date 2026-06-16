@@ -60,13 +60,6 @@ async function loadHighlighter(opts: Required<InstallOpts>): Promise<ShikiHighli
   return highlighter!;
 }
 
-/** Strip the inline color styles Shiki bakes into every span so our component
- *  tokens (`--deck-code-syntax-*`) still drive the colors. Returns the original
- *  HTML when the user wants Shiki's exact theme. */
-function stripInlineColors(html: string): string {
-  return html.replace(/ style="[^"]*"/g, '');
-}
-
 export async function installShiki(opts: InstallOpts = {}): Promise<void> {
   const resolved: Required<InstallOpts> = {
     theme: opts.theme ?? 'one-dark-pro',
@@ -84,9 +77,14 @@ export async function installShiki(opts: InstallOpts = {}): Promise<void> {
     try {
       const out = hl.codeToHtml(code, { lang: lang || 'txt', theme });
       // Shiki emits a <pre><code> wrapper; we already wrap in our render
-      // template · extract just the inner spans + keep the classes for theming.
-      const inner = out.replace(/^<pre[^>]*><code[^>]*>/, '').replace(/<\/code><\/pre>$/, '');
-      return stripInlineColors(inner);
+      // template · extract just the inner content. Keep Shiki's inline token
+      // colors verbatim: its default HTML colors each token with an inline
+      // `style="color:…"` and carries NO scope class, so stripping the styles
+      // would leave every token unclassed and unstyled (monochrome). The deck's
+      // `--deck-code-syntax-*` tokens only drive the built-in highlighter; under
+      // Shiki, the chosen `theme` owns the palette. The `class="line"` wrappers
+      // survive, so per-line step dimming still works.
+      return out.replace(/^<pre[^>]*><code[^>]*>/, '').replace(/<\/code><\/pre>$/, '');
     } catch {
       return null; // lang not loaded · fall back to the regex highlighter
     }
