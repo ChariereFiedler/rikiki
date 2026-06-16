@@ -100,11 +100,27 @@ async function getScreens(): Promise<ScreenDetailsLike | null> {
 const POPUP_W = 1280;
 const POPUP_H = 720;
 
+/** Top-left that centers the presenter popup on a given screen. */
+function popupTopLeft(s: ScreenLike): { left: number; top: number } {
+  return {
+    left: Math.round(s.availLeft + (s.availWidth - POPUP_W) / 2),
+    top: Math.round(s.availTop + (s.availHeight - POPUP_H) / 2),
+  };
+}
+
 /** Window features that center the presenter popup on a given screen. */
 function placementOn(s: ScreenLike): string {
-  const left = Math.round(s.availLeft + (s.availWidth - POPUP_W) / 2);
-  const top = Math.round(s.availTop + (s.availHeight - POPUP_H) / 2);
+  const { left, top } = popupTopLeft(s);
   return `popup=yes,width=${POPUP_W},height=${POPUP_H},left=${left},top=${top}`;
+}
+
+/** Move an already-open popup onto a screen · used on the first P press, where
+ *  the popup had to open with default placement before the screen layout was
+ *  known (window.open is synchronous; the layout resolves asynchronously). */
+function movePopupTo(win: Window, s: ScreenLike): void {
+  const { left, top } = popupTopLeft(s);
+  win.resizeTo(POPUP_W, POPUP_H);
+  win.moveTo(left, top);
 }
 
 /** Send the deck fullscreen to the given screen (the projector) · best-effort,
@@ -141,6 +157,20 @@ function restoreDeckFromFullscreen(): void {
     document.exitFullscreen?.().catch(() => {});
   }
   deckFullscreened = false;
+}
+
+/** Tear the presenter down · used both when the speaker toggles it off (P again)
+ *  and when the popup is closed externally. Closing the channel is essential:
+ *  leaving it open would keep its message listener alive, so the next presenter
+ *  would receive every key/click/wheel twice. */
+function teardown(host: DeckRoot): void {
+  popup?.close();
+  popup = null;
+  channel?.close();
+  channel = null;
+  installed?.delete(host);
+  host.presenterActive = false;
+  restoreDeckFromFullscreen();
 }
 
 function readState(host: DeckRoot): PresenterState {
@@ -255,6 +285,8 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${initial.themeHref}">` : ''
   }
   button:hover { background: rgba(255,255,255,0.06); }
   .ghost { color: rgba(232,228,240,0.4); }
+  .opt { display: inline-flex; align-items: center; gap: 6px; font: 600 13px/1 var(--rik-font-mono, monospace); color: rgba(232,228,240,0.7); cursor: pointer; user-select: none; }
+  .opt input { accent-color: var(--rik-accent, #8fd14f); cursor: pointer; }
 </style>
 </head>
 <body>
@@ -274,7 +306,10 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${initial.themeHref}">` : ''
   <div id="footer">
     <div><span id="timer">00:00</span> <button id="timer-toggle">Pause</button> <button id="timer-reset">Reset</button></div>
     <div id="counter">${initial.current} / ${initial.total}</div>
-    <div><span class="ghost">P to close</span></div>
+    <div>
+      <label class="opt"><input type="checkbox" id="opt-advance" checked> Advance on click</label>
+      <span class="ghost">· P to close</span>
+    </div>
   </div>
 </div>
 <script>
@@ -308,7 +343,12 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${initial.themeHref}">` : ''
   };
   resetBtn.onclick = () => { startedAt = Date.now(); elapsed = 0; running = true; toggleBtn.textContent = 'Pause'; };
 
-  function wrapFrame(slideHtml) {
+  // Presentation options · push each change to the live deck over the channel.
+  document.getElementById('opt-advance').addEventListener('change', (e) => {
+    channel.postMessage({ type: 'config', advanceOnClick: e.target.checked });
+  });
+
+  function wrapFrame(slideHtml, forward) {
     const themeHref    = ${JSON.stringify(initial.themeHref)};
     const inlineStyles = ${JSON.stringify(initial.inlineStyles)};
     const bundleHref   = ${JSON.stringify(initial.bundleHref)};
@@ -338,6 +378,17 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${initial.themeHref}">` : ''
     // Mark the cloned slide [active] so its real component CSS applies
     // (:host([active]){display:flex}) instead of forcing display via !important.
     const activeSlide = slideHtml.replace(/^(\\s*<deck-[a-z-]+)/i, '$1 active');
+    // Only the "Current" pane is a control surface · it captures key/click/wheel
+    // and posts them to this popup window, which relays them onto the channel so
+    // the live deck acts on them. Coords are normalised 0..1 over the iframe.
+    const forwarder = forward
+      ? '<scr' + 'ipt>(function(){' +
+        'var post=function(o){o.source="rikiki-presenter-input";parent.postMessage(o,"*");};' +
+        'addEventListener("keydown",function(e){var t=e.target;if(t&&t.matches&&t.matches("input,textarea,button"))return;post({type:"key",key:e.key,shift:!!e.shiftKey});});' +
+        'addEventListener("click",function(e){post({type:"click",x:e.clientX/innerWidth,y:e.clientY/innerHeight,shift:!!e.shiftKey});});' +
+        'addEventListener("wheel",function(e){if(e.ctrlKey||e.metaKey)return;post({type:"wheel",x:e.clientX/innerWidth,y:e.clientY/innerHeight,dx:e.deltaX,dy:e.deltaY});},{passive:true});' +
+        '})();<' + '/scr' + 'ipt>'
+      : '';
     // The deck always letterboxes into its logical canvas, so the slide keeps
     // its 16:9 proportions regardless of the pane's shape · just drop the
     // hint / nav-arrow chrome for a clean, correctly-shaped thumbnail.
@@ -345,7 +396,7 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${initial.themeHref}">` : ''
       bundleTag +
       '<style>html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#0f1422}' +
       'deck-root{position:absolute;inset:0}</style>' +
-      '</head><body><deck-root no-hint no-arrows>' + activeSlide + '</deck-root></body></html>';
+      '</head><body><deck-root no-hint no-arrows no-counter preview>' + activeSlide + '</deck-root>' + forwarder + '</body></html>';
   }
 
   channel.onmessage = (e) => {
@@ -353,8 +404,8 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${initial.themeHref}">` : ''
     const s = e.data.state;
     counter.textContent = s.current + ' / ' + s.total;
     notes.textContent = s.notes;
-    if (s.slideHtml) current.srcdoc = wrapFrame(s.slideHtml);
-    if (s.nextHtml)  next.srcdoc = wrapFrame(s.nextHtml);
+    if (s.slideHtml) current.srcdoc = wrapFrame(s.slideHtml, true);
+    if (s.nextHtml)  next.srcdoc = wrapFrame(s.nextHtml, false);
     else next.srcdoc = '<!doctype html><html><body style="background:#0f1422;color:rgba(232,228,240,0.4);display:flex;align-items:center;justify-content:center;font-family:system-ui">End of deck</body></html>';
   };
 
@@ -368,42 +419,162 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${initial.themeHref}">` : ''
     channel.postMessage({ type: 'key', key: e.key, shift: e.shiftKey });
   });
 
+  // Relay input captured inside the "Current" preview iframe (key/click/wheel)
+  // onto the channel · the iframe is a separate browsing context so its events
+  // never reach this window directly · it postMessages them here instead.
+  window.addEventListener('message', (e) => {
+    const d = e.data;
+    if (!d || d.source !== 'rikiki-presenter-input') return;
+    channel.postMessage({ type: d.type, key: d.key, shift: d.shift, x: d.x, y: d.y, dx: d.dx, dy: d.dy });
+  });
+
   // Tell main window we're alive
   channel.postMessage({ type: 'hello' });
 </script>
 </body>
 </html>`;
 
+/** Pierce open shadow roots to find the deepest element at a viewport point ·
+ *  document.elementFromPoint stops at a shadow host, but forwarded presenter
+ *  clicks must reach the real interactive element inside a slide component. */
+function deepElementFromPoint(x: number, y: number): Element | null {
+  let el = document.elementFromPoint(x, y);
+  while (el?.shadowRoot) {
+    const inner = el.shadowRoot.elementFromPoint(x, y);
+    if (!inner || inner === el) break;
+    el = inner;
+  }
+  return el;
+}
+
+/** Nearest scrollable ancestor in the given wheel direction · synthetic wheel
+ *  events never scroll natively, so the presenter replicates content scroll by
+ *  hand and only lets the deck navigate when nothing can scroll. */
+function scrollableAncestor(el: Element | null, dx: number, dy: number): Element | null {
+  for (let n: Element | null = el; n; n = n.parentElement) {
+    const cs = getComputedStyle(n);
+    if (dy !== 0 && n.scrollHeight > n.clientHeight && /auto|scroll/.test(cs.overflowY)) return n;
+    if (dx !== 0 && n.scrollWidth > n.clientWidth && /auto|scroll/.test(cs.overflowX)) return n;
+  }
+  return null;
+}
+
+/** Map a presenter-relative point (0..1 over the 16:9 preview) onto the live
+ *  deck's viewport rect. Assumes the projected deck fills its screen at 16:9
+ *  (true for a fullscreen projector) · letterbox bars would shift the mapping. */
+function pointInDeck(host: DeckRoot, rx: number, ry: number): { x: number; y: number } {
+  const r = host.getBoundingClientRect();
+  return { x: r.left + rx * r.width, y: r.top + ry * r.height };
+}
+
+/** Resolve a forwarded presenter point (normalised x/y) to a viewport point and
+ *  the deepest element under it · shared by the click and wheel handlers. */
+function resolveTarget(
+  host: DeckRoot,
+  data: { x?: number; y?: number },
+): { x: number; y: number; target: Element } {
+  const { x, y } = pointInDeck(host, data.x ?? 0.5, data.y ?? 0.5);
+  return { x, y, target: deepElementFromPoint(x, y) ?? host };
+}
+
+/** The deck's mouse-nav value with click-to-advance removed, preserving the
+ *  other mechanisms (wheel/arrows/aux) · used by the presenter "Advance on
+ *  click" option to flip just clicks without clobbering the rest. */
+function withoutClickNav(nav: string | null): string {
+  const v = (nav ?? 'all').trim();
+  if (v === 'none') return 'none';
+  if (v === '' || v === 'all') return 'wheel arrows aux';
+  return (
+    v
+      .split(/\s+/)
+      .filter((k) => k !== 'click')
+      .join(' ') || 'none'
+  );
+}
+
 export function installPresenter(host: DeckRoot): void {
   installed = installed ?? new WeakSet<DeckRoot>();
   if (installed.has(host)) {
     // Toggle · already open, close it
-    popup?.close();
-    popup = null;
-    host.presenterActive = false;
-    restoreDeckFromFullscreen();
+    teardown(host);
     return;
   }
   installed.add(host);
+
+  // Capture the deck's own mouse-nav config so the "Advance on click" option can
+  // toggle clicks off and back on without losing the author's other settings.
+  const originalMouseNav = host.mouseNav;
 
   channel = new BroadcastChannel(CHANNEL);
 
   // When the main deck advances, push the new state to the popup.
   host.addEventListener('slide-change', () => broadcast(host));
 
-  // Forward key events from the popup back to the main window's keyboard handler.
+  // Forward input events from the popup back to the live deck · the presenter's
+  // "Current" pane is a control surface: keys, positional clicks and wheel all
+  // act on the projected deck, which then re-broadcasts its new state.
   channel.addEventListener('message', (e: MessageEvent) => {
-    const data = e.data as { type: string; key?: string; shift?: boolean };
+    const data = e.data as {
+      type: string;
+      key?: string;
+      shift?: boolean;
+      x?: number;
+      y?: number;
+      dx?: number;
+      dy?: number;
+      advanceOnClick?: boolean;
+    };
     if (data?.type === 'key' && data.key) {
       window.dispatchEvent(
-        new KeyboardEvent('keydown', {
-          key: data.key,
-          shiftKey: !!data.shift,
-          bubbles: true,
-        }),
+        new KeyboardEvent('keydown', { key: data.key, shiftKey: !!data.shift, bubbles: true }),
       );
-    }
-    if (data?.type === 'hello') {
+    } else if (data?.type === 'click') {
+      // Positional click · land on the same element the speaker pointed at so a
+      // real sub-component (expandable card, button, …) opens, and plain slide
+      // areas advance through deck-root's own click-nav.
+      const { x, y, target } = resolveTarget(host, data);
+      const base = {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+        clientX: x,
+        clientY: y,
+        view: window,
+        shiftKey: !!data.shift,
+      };
+      target.dispatchEvent(
+        new PointerEvent('pointerdown', { ...base, pointerId: 1, isPrimary: true }),
+      );
+      target.dispatchEvent(
+        new PointerEvent('pointerup', { ...base, pointerId: 1, isPrimary: true }),
+      );
+      target.dispatchEvent(new MouseEvent('click', base));
+    } else if (data?.type === 'wheel') {
+      const { x, y, target } = resolveTarget(host, data);
+      const dx = data.dx ?? 0;
+      const dy = data.dy ?? 0;
+      const scroller = scrollableAncestor(target, dx, dy);
+      if (scroller) {
+        scroller.scrollBy({ left: dx, top: dy });
+      } else {
+        target.dispatchEvent(
+          new WheelEvent('wheel', {
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+            clientX: x,
+            clientY: y,
+            deltaX: dx,
+            deltaY: dy,
+            view: window,
+          }),
+        );
+      }
+    } else if (data?.type === 'config' && typeof data.advanceOnClick === 'boolean') {
+      // Presenter option · flip click-to-advance on the live deck, keeping the
+      // author's other mouse-nav mechanisms intact.
+      host.mouseNav = data.advanceOnClick ? originalMouseNav : withoutClickNav(originalMouseNav);
+    } else if (data?.type === 'hello') {
       // Popup just appeared · send a fresh state snapshot
       broadcast(host);
     }
@@ -420,8 +591,12 @@ export function installPresenter(host: DeckRoot): void {
     sendDeckToScreen(host, external);
   } else {
     void getScreens().then((s) => {
-      const ext = s?.screens.find((x) => x !== s.currentScreen);
+      if (!s) return;
+      const ext = s.screens.find((x) => x !== s.currentScreen);
       if (ext) sendDeckToScreen(host, ext);
+      // First press · the popup opened with default placement before the layout
+      // was known. Now that it resolved, move it onto the speaker's screen.
+      if (popup && s.currentScreen) movePopupTo(popup, s.currentScreen);
     });
   }
 
@@ -432,10 +607,9 @@ export function installPresenter(host: DeckRoot): void {
   popup = window.open('', 'rikiki-presenter', features);
   if (!popup) {
     console.warn('[rikiki/presenter] popup was blocked · allow popups for this site');
-    installed.delete(host);
-    // We may have already sent the deck fullscreen · don't strand it without
-    // a presenter window.
-    restoreDeckFromFullscreen();
+    // We may have already sent the deck fullscreen · don't strand it without a
+    // presenter window (teardown also closes the channel we just opened).
+    teardown(host);
     return;
   }
   popup.document.open();
@@ -450,10 +624,7 @@ export function installPresenter(host: DeckRoot): void {
   const watch = setInterval(() => {
     if (popup?.closed) {
       clearInterval(watch);
-      installed?.delete(host);
-      popup = null;
-      host.presenterActive = false;
-      restoreDeckFromFullscreen();
+      teardown(host);
     }
   }, 1000);
 }
