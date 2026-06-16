@@ -109,6 +109,8 @@ export class DeckRoot extends LitElement {
       font-family: var(--rik-font-mono);
       z-index: 100;
     }
+    :host([no-counter]) #counter { display: none; }
+    #counter.hidden { display: none; }
     #step-dots {
       position: fixed; bottom: 1rem; left: 50%;
       transform: translateX(-50%);
@@ -205,6 +207,14 @@ export class DeckRoot extends LitElement {
   @property({ type: Boolean, reflect: true, attribute: 'no-hint' }) noHint = false;
   /** Hide the bottom-right on-screen previous/next navigation arrows. */
   @property({ type: Boolean, reflect: true, attribute: 'no-arrows' }) noArrows = false;
+  /** Hide the bottom-right slide counter (`n / total`) · used by the presenter
+   *  preview, which already shows the count in its own chrome. */
+  @property({ type: Boolean, reflect: true, attribute: 'no-counter' }) noCounter = false;
+  /** Passive-render mode · the deck still scales/letterboxes but wires NO
+   *  keyboard, mouse, autoplay or presenter handlers. Used by the presenter
+   *  preview iframes, which must not hijack keys or open a nested presenter on
+   *  the shared BroadcastChannel · the speaker drives the real deck instead. */
+  @property({ type: Boolean, reflect: true }) preview = false;
   /** Disable slide zoom (Ctrl/⌘+wheel, pinch, +/-/0) · on by default. */
   @property({ type: Boolean, reflect: true, attribute: 'no-zoom' }) noZoom = false;
   /** Optional slide transition · "slide" | "fade" | "zoom". When set, the
@@ -334,6 +344,9 @@ export class DeckRoot extends LitElement {
     this._applyScale();
     this._resizeObserver = new ResizeObserver(this._applyScale);
     this._resizeObserver.observe(this);
+    // Preview decks render and letterbox but stay inert · no input, autoplay or
+    // presenter wiring (see the `preview` property).
+    if (this.preview) return;
     window.addEventListener('keydown', this._onKey);
     window.addEventListener('hashchange', this._onHash);
     this.addEventListener('pointerdown', this._onNavPointerDown);
@@ -1184,6 +1197,14 @@ export class DeckRoot extends LitElement {
     }
   }
 
+  /** The bottom-right slide counter is noise in modes where it shouldn't show:
+   *  the overview grid, a black/white blanked screen, and the cover slide (the
+   *  title slide has no business carrying a page number). */
+  private _counterHidden(): boolean {
+    const active = this.slides[this.current];
+    return this.overview || this.blank !== null || active?.tagName.toLowerCase() === 'deck-cover';
+  }
+
   private _updateUI(): void {
     const total = this.slides.length;
     const n = this.current + 1;
@@ -1269,7 +1290,7 @@ export class DeckRoot extends LitElement {
   override render(): unknown {
     return html`
       <div id="progress"></div>
-      <div id="counter"></div>
+      <div id="counter" class=${this._counterHidden() ? 'hidden' : ''}></div>
       <div id="step-dots"></div>
       ${
         this.noHint || this.presenterActive
