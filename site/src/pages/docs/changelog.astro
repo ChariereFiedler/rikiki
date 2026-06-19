@@ -8,6 +8,33 @@ import Docs from '../../layouts/Docs.astro';
   description="Notable changes. Follows Keep a Changelog · the project is on semver."
 >
 
+<h2 id="v060">0.6.0 · 2026-06-19</h2>
+
+<h3>Added</h3>
+<ul>
+  <li><strong>Slide zoom.</strong> Ctrl/⌘ + wheel, trackpad pinch and <code>+</code>/<code>-</code>/<code>0</code> magnify the active slide around the cursor and pan it (drag or wheel), fixed-canvas only, on by default. Scales fonts and layout together (no reflow). Opt out with <code>no-zoom</code> on <code>&lt;deck-root&gt;</code>.</li>
+  <li><strong>Per-slide fluid escape.</strong> A single slide can carry its own <code>fluid</code> attribute to escape the fixed canvas and use the real viewport, while the rest of the deck stays on the canvas · for one slide that embeds a live interactive demo. The canvas is restored on navigation away.</li>
+  <li><strong>Plugin hook API.</strong> <code>&lt;deck-root&gt;</code> exposes a public <code>use(plugin)</code> method and a <code>DeckPlugin</code> / <code>DeckContext</code> contract so plugins extend the deck through a stable surface instead of patching engine internals. <code>setDeckCodeHighlighter()</code> is the matching hook for <code>&lt;deck-code&gt;</code> syntax highlighting; all three are re-exported from <code>dist/index.js</code>.</li>
+  <li><strong>Presenter multi-screen placement.</strong> With the Window Management API the deck goes fullscreen on the external screen (the projector) and the speaker window opens on the speaker's current screen, released when the presenter closes.</li>
+  <li><strong>Preview (inert) mode.</strong> <code>preview</code> on <code>&lt;deck-root&gt;</code> renders and letterboxes a deck but wires no input, autoplay or presenter handlers · used so the presenter's Current preview acts as a control surface. A <code>no-counter</code> attribute hides the slide counter outright.</li>
+</ul>
+
+<h3>Changed</h3>
+<ul>
+  <li><strong>Presenter Current preview is a live control surface.</strong> Keyboard, click and wheel events on the Current preview are forwarded to the projected deck, with an opt-in advance-on-click. The preview renders the inert <code>preview</code> deck.</li>
+  <li><strong>Slide counter is hidden on cover, overview and blank screens</strong> (in addition to the new <code>no-counter</code> opt-out).</li>
+  <li><strong>Default slide typography scaled up for projection.</strong> Body, lead and heading sizes step up the type scale (body ≈32px on the 1080 canvas) in both shipped themes so text reads from the back of a room; the hierarchy stays monotonic.</li>
+  <li><strong>Presenter Current/Next previews are constrained to 16:9</strong>, so the laptop thumbnail matches the projected slide's geometry regardless of window shape, and presenter mode auto-hides the projected window's key-hint chips and nav arrows while the speaker window is open.</li>
+  <li><strong>Click-stages and Shiki plugins migrated to the hook API.</strong> They no longer monkey-patch prototypes. <code>installClickStages()</code> and <code>installShiki()</code> keep working as back-compat shims; a deck created dynamically after the call must register the plugin itself via <code>deckRoot.use()</code>.</li>
+</ul>
+
+<h3>Fixed</h3>
+<ul>
+  <li><strong>Wheel navigation no longer swallows browser zoom.</strong> Ctrl/⌘ + wheel and trackpad pinch are left for the browser instead of being <code>preventDefault</code>ed for slide navigation.</li>
+  <li><strong>Shiki-highlighted code keeps its colors.</strong> The vendored Shiki emits token colors as inline styles, so stripping them left every token monochrome · the palette is now preserved while the <code>class="line"</code> wrappers survive for step dimming.</li>
+  <li><strong>Presenter places the speaker window on the right screen on the first press</strong> and closes its <code>BroadcastChannel</code> on teardown, so reopening no longer doubles forwarded input.</li>
+</ul>
+
 <h2 id="v050">0.5.0 · 2026-06-12</h2>
 
 <p>This release reworks the rendering model. Every deck now renders into a fixed logical canvas scaled uniformly to fit the viewport, with an opt-in fluid mode for decks that should reflow like a web page, and embedded decks no longer disturb the page that hosts them.</p>

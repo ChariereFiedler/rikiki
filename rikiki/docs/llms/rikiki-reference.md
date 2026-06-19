@@ -1,6 +1,6 @@
 # Rikiki · LLM reference
 
-This reference documents rikiki v0.5.0.
+This reference documents rikiki v0.6.0.
 
 Exhaustive, self-consistent reference for authoring valid **rikiki** decks. Every
 tag, attribute, slot, and token below was derived from the source in this repo
@@ -136,6 +136,8 @@ Chevron styling tokens: `--deck-root-nav-color`, `--deck-root-nav-bg`,
 | `no-hint` | *(boolean)* | Hide the bottom-left key-hint chips (`← → · O · P · ?`) |
 | `no-arrows` | *(boolean)* | Hide the bottom-right on-screen navigation chevrons |
 | `no-zoom` | *(boolean)* | Disable slide zoom (Ctrl/⌘+wheel, pinch, `+`/`-`/`0`) · on by default; restores the browser's own zoom |
+| `no-counter` | *(boolean)* | Hide the slide counter (it is already hidden on cover, overview and blank screens) |
+| `preview` | *(boolean)* | Inert mode · render and letterbox the deck but wire no input, autoplay or presenter handlers. Used internally by the presenter's Current preview as a control surface; rarely set by hand |
 | `autoplay` | integer ms (e.g. `8000`) | Auto-advance every N ms; pauses on hover, resets on any manual nav. `0`/absent = off |
 | `loop` | *(boolean)* | With `autoplay`, wraps from the last slide back to the first |
 | `swipe` | *(boolean)* | Pointer-driven horizontal swipe (touch + mouse): a swipe ≥ 60 px advances / goes back |

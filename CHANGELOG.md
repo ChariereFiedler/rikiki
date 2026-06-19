@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-06-19
 ### Added
 - **Slide zoom.** Ctrl/⌘ + wheel, trackpad pinch and `+`/`-`/`0` magnify the
   active slide around the cursor and pan it (drag or wheel), fixed-canvas only,
@@ -25,8 +26,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   goes fullscreen on the external screen (the projector) and the speaker window
   opens on the speaker's current screen · released when the presenter closes,
   with a fallback to leaving the deck in place otherwise.
+- **Preview (inert) mode.** `preview` on `<deck-root>` renders and letterboxes a
+  deck but wires no input, autoplay or presenter handlers · used internally so
+  the presenter's Current preview can act as a control surface without spawning a
+  nested presenter. A `no-counter` attribute hides the slide counter outright.
 
 ### Changed
+- **Presenter Current preview is a live control surface.** Keyboard, click and
+  wheel events on the Current preview are forwarded to the projected deck, with
+  an opt-in advance-on-click. The preview renders the inert `preview` deck.
+- **Slide counter is hidden on cover, overview and blank screens** (in addition
+  to the new `no-counter` opt-out).
+- **Default slide typography scaled up for projection.** Body, lead and heading
+  sizes step up the type scale (body ≈32px on the 1080 canvas) in both shipped
+  themes so text reads from the back of a room; the hierarchy stays monotonic.
 - **Presenter Current/Next previews are constrained to 16:9**, so the laptop
   thumbnail matches the projected slide's geometry regardless of window shape.
 - **Presenter mode auto-hides the projected window's key-hint chips and nav
@@ -45,6 +58,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Wheel navigation no longer swallows browser zoom.** Ctrl/⌘ + wheel and
   trackpad pinch (which fire `ctrlKey` wheel events) are left for the browser
   instead of being `preventDefault`ed for slide navigation.
+- **Shiki-highlighted code keeps its colors.** The vendored Shiki emits token
+  colors as inline styles, so stripping them left every token monochrome · the
+  palette is now preserved while the `class="line"` wrappers survive for step
+  dimming.
+- **Presenter places the speaker window on the right screen on the first press**
+  and closes its `BroadcastChannel` on teardown, so reopening no longer doubles
+  forwarded input.
 - Shiki reference docs no longer mention a non-existent `cdn` option · the
   highlighter loads from the vendored offline bundle, not a CDN.
 
