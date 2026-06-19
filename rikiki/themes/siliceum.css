@@ -164,10 +164,12 @@
 
   --rik-font-size-xs:                 var(--rik-text-2xs);
   --rik-font-size-sm:                 var(--rik-text-xs);
-  --rik-font-size-body:               0.92rem;
-  --rik-font-size-lead:               var(--rik-text-sm);
-  --rik-font-size-h2:                 var(--rik-text-base);
-  --rik-font-size-h1:                 var(--rik-text-md);
+  /* Slide body sized for projection (≈32px on the 1080 canvas) · the headings
+     step up with it so the hierarchy (incl. markdown ## → h2) stays above body. */
+  --rik-font-size-body:               var(--rik-text-base);
+  --rik-font-size-lead:               var(--rik-text-md);
+  --rik-font-size-h2:                 var(--rik-text-md);
+  --rik-font-size-h1:                 var(--rik-text-lg);
   --rik-font-size-section:            var(--rik-text-lg);
   --rik-font-size-display:            var(--rik-text-xl);
   --rik-font-size-mono:               0.88rem;
