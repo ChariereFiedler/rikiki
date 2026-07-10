@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · bento harness</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module">
+  import { installClickStages } from '../../dist/click-stages.js';
+  installClickStages();
+</script>
+</head>
+<body>
+<!-- Bento layout harness · a multi-row/column grid whose cells share the space,
+     with a fit-to-box punch in a deliberately tight cell. -->
+<deck-root>
+  <deck-bento eyebrow="Bento" cols="3" rows="2" gap="3">
+    <h1 slot="title">Sharing the space</h1>
+
+    <!-- A wide hero cell · the punch must shrink to never overflow it. -->
+    <deck-cell id="hero" span="2x1" align="center" justify="center">
+      <deck-punch id="fitline" fit fit-min="1" fit-max="9"
+        >Antidisestablishmentarianism overflows unless it fits</deck-punch>
+    </deck-cell>
+
+    <deck-cell id="side" span="1x2" tone="info">
+      <h3>Side</h3>
+      <p>Tall cell.</p>
+    </deck-cell>
+
+    <deck-cell id="a" tone="ok"><h3>A</h3></deck-cell>
+    <deck-cell id="b" tone="warn"><h3>B</h3></deck-cell>
+  </deck-bento>
+
+  <!-- Second slide so the first can deactivate · used to prove the fit recomputes
+       when the slide is shown (display:none → flex resizes the cell). -->
+  <deck-bento cols="2">
+    <h1 slot="title">Next</h1>
+    <deck-cell id="reveal-cell" plain align="center" justify="center">
+      <deck-punch id="reveal-fit" fit fit-max="8" data-click
+        >Revealed line that should fit once shown</deck-punch>
+    </deck-cell>
+    <deck-cell><h3>Static</h3></deck-cell>
+  </deck-bento>
+
+  <!-- Media + CSV · an image contains itself, a dense csv shrinks to fit. -->
+  <deck-bento cols="2" gap="3">
+    <h1 slot="title">Media + data</h1>
+    <deck-cell id="img-cell">
+      <img id="demo-img" alt="demo"
+        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 260'%3E%3Crect width='400' height='260' fill='%23f07020'/%3E%3C/svg%3E">
+    </deck-cell>
+    <deck-cell id="csv-cell">
+      <deck-csv id="csv-fit" fit delimiter=";">
+        Region; Users; Plan
+        EMEA; 12 040; Pro
+        APAC; 9 310; Pro
+        AMER; 18 220; Ent
+        LATAM; 4 105; Pro
+        MENA; 2 870; Starter
+      </deck-csv>
+    </deck-cell>
+  </deck-bento>
+</deck-root>
+</body>
+</html>

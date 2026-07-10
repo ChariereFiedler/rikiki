@@ -233,6 +233,7 @@ Direct children of `<deck-root>`. Each is one slide.
 | `deck-feature-cards` | Hero focal block + two detail cards under it | `eyebrow` | `title`, `lead`, default (hero block), `left`, `right` |
 | `deck-photo` | Full-bleed image slide, content on overlay | `src` (required), `position` (CSS `object-position`, default `center`), `darken` (0..1 overlay alpha, default `0.35`), `align` (top/center/bottom, default center), `text-align` (left/center/right, default left) | default slot: any content; style slotted children with `.sub`/`.kicker` classes (these are **CSS classes**, not named slots) |
 | `deck-takeaway` | Centered punchline, dark | `kicker` | default (e.g. `p.display`, `p.caption`, a `deck-callout`) |
+| `deck-bento` | Bento grid slide · multi-row/column cells share the space | `eyebrow`, `cols` (1..12 or template, default 2), `rows` (1..12 or template, default 1 full-height row), `gap` (1..6 or CSS, default 3), `align`, `justify` | `title` (`<h1>`), default (`deck-cell` children) |
 
 ---
 
@@ -242,7 +243,7 @@ Direct children of `<deck-root>`. Each is one slide.
 |-----|---------|----------------|------------------|
 | `deck-callout` | Highlighted note box | `type` (`info`/`warn`/`danger`/`ok`) | default (text / `deck-md`) |
 | `deck-card` | Tinted card | `color` (`yellow`/`orange`/`green`/`red`), `center`, `compact` | default (`<h3>` + body) |
-| `deck-md` | Render Markdown (GFM) | · | default = raw Markdown text |
+| `deck-md` | Render Markdown (GFM) · also expands `::: cards` blocks into a tinted card grid | · | default = raw Markdown text |
 | `deck-mermaid` | Render a Mermaid diagram (loads Mermaid from CDN) | `compact` | default = Mermaid source |
 | `deck-stat` | Big-number visual | `num`, `tone` (`yellow`/`orange`/`green`/`red`/`purple`/`lime`/`cyan`) | `claim` (`<h3>`), default = body line |
 | `deck-metric-list` | Wraps `deck-metric` rows | · | `deck-metric` children |
@@ -257,6 +258,9 @@ Direct children of `<deck-root>`. Each is one slide.
 | `deck-kbd` | Inline key chip | `tone` (`accent`/`ok`) | default = key text |
 | `deck-stack` | Flex stack helper | `gap` (1..6), `direction` (`row`/`column`), `align` (`start`/`center`/`end`/`stretch`), `justify` (`start`/`center`/`end`/`between`/`around`), `fill` (grow to fill the cross axis) | children |
 | `deck-grid` | CSS grid helper | `cols` (1..12 or template), `rows`, `gap` (1..6 or CSS), `align`, `justify`, `fill` | children |
+| `deck-cell` | Bento grid item · a `container-type: size` box so child `cqw`/`cqh` type scales against the cell, not the slide. A slotted `img`/`svg`/`video` auto-fits the cell (object-fit contain); a slotted `table` fills the width | `span` (`"CxR"`, e.g. `2x1`, or a bare column count), `col`/`row` (per-axis override · integer → `span N`, else raw line syntax), `tone` (`info`/`warn`/`ok`/`danger`), `plain` (drop the card chrome), `flat` (keep the surface but drop the border), `align`/`justify` | default (`<h3>` + body, or any block) |
+| `deck-fit` | Shrink slotted content to fit its box by font-size (for non-`deck-punch` text content · not for images, which scale geometrically) | `min` (rem, default 1), `max` (rem, default 12) | default = any content |
+| `deck-csv` | Render inline CSV as a styled table (cells are trimmed) | `delimiter` (default `,`), `no-header` (first row is data), `fit` (shrink the table to fit the cell), `fit-min`/`fit-max` (rem bounds, default 0.6/2) | default = raw CSV text |
 
 ---
 
@@ -266,7 +270,7 @@ Direct children of `<deck-root>`. Each is one slide.
 |-----|---------|----------------|-------|
 | `deck-badge` | Small status badge | `type` (`bad`/`ok`/`info`/`warn`/`neutral`) | default = text |
 | `deck-kicker` | Uppercase eyebrow label | `on-dark` | default = text |
-| `deck-punch` | Short punchy line | `tone` (`warn`/`danger`/`ok`/`info`/`muted`/`accent`; inherits text color if absent), `size` (`lead`/`big`/`mega`/`stat`/`display`), `weight` (`700`/`800`/`900`), `align` (`left`/`center`/`right`) | default = text |
+| `deck-punch` | Short punchy line | `tone` (`warn`/`danger`/`ok`/`info`/`muted`/`accent`; inherits text color if absent), `size` (`lead`/`big`/`mega`/`stat`/`display`), `weight` (`700`/`800`/`900`), `align` (`left`/`center`/`right`), `fit` (shrink to fit the box · overrides `size`/cqw fluid scaling), `fit-min`/`fit-max` (rem bounds, default 1/12) | default = text |
 | `deck-code` | Syntax-highlighted code | `lang`, `hero`, `nested`, `step-groups` | default = code text |
 
 ### deck-code details
@@ -683,6 +687,57 @@ them freely. Assume the deck head loads the theme then `dist/index.js` (§2).
   <deck-card slot="right" color="green"><h3>Serve</h3><deck-md>…</deck-md></deck-card>
 </deck-feature-cards>
 ```
+
+### Bento layout (adaptive cells + fit-to-box text)
+
+Cells share a multi-row/column grid via `span`. Each `deck-cell` is a size
+container, so `cqw`/`cqh` type (and `<deck-punch fit>`) adapts to the cell it
+lands in, not the whole slide. Use `fit` when the text length is unknown and
+must never overflow; use `size="display"` (or any `cqw`-based size) for plain
+fluid scaling without the JS measure.
+
+```html
+<deck-bento eyebrow="Overview" cols="3" rows="2" gap="3">
+  <h1 slot="title">Sharing the space</h1>
+  <deck-cell span="2x1" align="center" justify="center">
+    <deck-punch fit>Headline that shrinks to fit its cell</deck-punch>
+  </deck-cell>
+  <deck-cell span="1x2" tone="info"><h3>Side</h3><deck-md>Tall cell.</deck-md></deck-cell>
+  <deck-cell tone="ok"><h3>A</h3></deck-cell>
+  <deck-cell tone="warn"><h3>B</h3></deck-cell>
+</deck-bento>
+```
+
+### Cards from markdown (`::: cards`)
+
+Author a whole slide in markdown and let `deck-md` expand a `::: cards` fenced
+block into a tinted card grid · the fast way to write a bento without HTML.
+Inside the fence, `:: <tone> <span> | <title>` opens a card (both `tone` —
+`info`/`warn`/`ok`/`danger` — and `span` like `2x1` are optional, any order);
+the lines until the next `::` are its markdown body. The fence takes `cols=N`
+and `gap=N` (default `cols` = number of cards).
+
+```html
+<deck-feature>
+  <deck-md>
+# You won't write it all yourself
+
+Every dependency is a trade-off:
+
+::: cards cols=3
+:: warn | Reproducibility
+same versions on every machine, every CI run
+:: warn | Build cost
+source you compile vs prebuilt you link
+:: ok 2x1 | Control
+who owns the version, the flags, the patches
+:::
+  </deck-md>
+</deck-feature>
+```
+
+For pixel control (true cell spans, `fit` text, images, `deck-csv`), author the
+grid explicitly with `deck-bento` + `deck-cell` instead.
 
 ### Big-number stat
 

@@ -7,6 +7,12 @@ export declare class DeckPunch extends LitElement {
     size?: DeckPunchSize;
     weight?: string;
     align?: string;
+    /** Shrink to fit the box (overrides `size`/cqw fluid scaling). */
+    fit: boolean;
+    /** fit floor / ceiling in rem · default 1 / 12. */
+    fitMin?: number;
+    fitMax?: number;
+    private fitter;
     updated(): void;
     render(): import("lit-html").TemplateResult<1>;
 }

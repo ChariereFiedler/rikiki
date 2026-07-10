@@ -15,6 +15,7 @@ const DECKS = [
   '/rikiki/decks/tests/fluid.html',
   '/rikiki/decks/tests/per-slide-fluid.html',
   '/rikiki/decks/tests/zoom.html',
+  '/rikiki/decks/tests/bento.html',
   '/examples/rikiki-tour/index.html',
 ];
 

@@ -25,6 +25,7 @@ import './layouts/deck-split.js';
 import './layouts/deck-feature-cards.js';
 import './layouts/deck-photo.js';
 import './layouts/deck-takeaway.js';
+import './layouts/deck-bento.js';
 
 // Molecules · containers, multi-slot, lifecycle
 import './molecules/deck-callout.js';
@@ -38,6 +39,9 @@ import './molecules/deck-step-list.js';
 import './molecules/deck-shortcut.js';
 import './molecules/deck-stack.js';
 import './molecules/deck-grid.js';
+import './molecules/deck-cell.js';
+import './molecules/deck-fit.js';
+import './molecules/deck-csv.js';
 
 // Atoms · primitives
 import './atoms/deck-badge.js';
