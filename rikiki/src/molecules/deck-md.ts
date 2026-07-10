@@ -12,6 +12,7 @@ import { customElement, state } from 'lit/decorators.js';
 // Bare specifier · build.mjs rewrites it to ./vendor/marked.js (offline);
 // the standalone build inlines it. marked ships its own types.
 import { marked } from 'marked';
+import { expandCards } from '../shared/cards-syntax.js';
 
 marked.setOptions({ gfm: true, breaks: false });
 
@@ -55,6 +56,31 @@ export class DeckMd extends LitElement {
       margin: 0 0 var(--rik-space-3);
     }
     hr { border: none; border-top: 1px solid var(--rik-border-default); margin: var(--rik-space-4) 0; }
+    img { max-width: 100%; height: auto; display: block; border-radius: var(--rik-radius-md); margin: 0 0 var(--rik-space-3); }
+    table { width: 100%; border-collapse: collapse; font-size: var(--rik-font-size-body); margin: 0 0 var(--rik-space-3); }
+    th, td { border: 1px solid var(--rik-border-default); padding: var(--rik-space-1) var(--rik-space-2); text-align: left; vertical-align: top; }
+    th { background: var(--rik-surface-tint); color: var(--rik-text-default); font-weight: 700; }
+    /* ::: cards grid · authored as compact markdown, rendered as tinted cards. */
+    .md-cards {
+      display: grid;
+      grid-template-columns: repeat(var(--cards-cols, 2), minmax(0, 1fr));
+      gap: var(--cards-gap, var(--rik-space-3));
+      margin: 0 0 var(--rik-space-3);
+    }
+    .md-card {
+      background: var(--rik-surface-raised--strong);
+      border: 1px solid var(--rik-border-default);
+      border-radius: var(--rik-radius-lg);
+      padding: var(--rik-space-3) var(--rik-space-4);
+      container-type: inline-size;
+      min-width: 0;
+    }
+    .md-card[data-tone="info"]   { background: var(--rik-status-info__bg);    border-color: var(--rik-status-info__border); }
+    .md-card[data-tone="warn"]   { background: var(--rik-status-warn__bg);    border-color: var(--rik-status-warn__border); }
+    .md-card[data-tone="ok"]     { background: var(--rik-status-success__bg); border-color: var(--rik-status-success__border); }
+    .md-card[data-tone="danger"] { background: var(--rik-status-danger__bg);  border-color: var(--rik-status-danger__border); }
+    .md-card h3 { margin: 0 0 var(--rik-space-2); }
+    .md-card > :last-child { margin-bottom: 0; }
     .content { display: contents; }
   `;
 
@@ -62,6 +88,12 @@ export class DeckMd extends LitElement {
 
   override connectedCallback() {
     super.connectedCallback();
+    this._parse();
+  }
+
+  /** Re-read the light-DOM source and re-render · used by the live editor when
+   *  the markdown is edited in place. */
+  reparse(): void {
     this._parse();
   }
 
@@ -75,9 +107,22 @@ export class DeckMd extends LitElement {
       .reduce((min: number, l: string) => Math.min(min, l.match(/^ */)?.[0].length ?? 0), Infinity);
     const cleaned =
       indent === Infinity ? raw : lines.map((l: string) => l.slice(indent)).join('\n');
-    this._html = marked.parse(cleaned.trim()) as string;
-    // Clear the original slot · we render via shadow DOM.
-    this.textContent = '';
+    // Expand `::: cards` blocks first · they pre-render to HTML behind comment
+    // placeholders that marked passes through, then get swapped back in.
+    const { text, blocks } = expandCards(cleaned.trim(), {
+      inline: (s) => marked.parseInline(s) as string,
+      block: (s) => marked.parse(s) as string,
+    });
+    let out = marked.parse(text) as string;
+    blocks.forEach((b, i) => {
+      // Function replacer · a string replacement would interpret `$&`, `$1`…
+      // inside the card HTML (a body with a "$5" price could be mangled).
+      out = out.replace(`<!--cards:${i}-->`, () => b);
+    });
+    this._html = out;
+    // Keep the raw source in light DOM · the template has no <slot>, so it stays
+    // invisible, but the overview clones the light DOM to build thumbnails · a
+    // cleared source would re-render blank there (and drops out of search).
   }
 
   override render() {

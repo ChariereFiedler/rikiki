@@ -16,6 +16,7 @@
 
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { FitController } from '../shared/fit-controller.js';
 
 export type DeckPunchTone = 'warn' | 'danger' | 'ok' | 'info' | 'muted' | 'accent';
 export type DeckPunchSize = 'lead' | 'big' | 'mega' | 'stat' | 'display';
@@ -56,14 +57,35 @@ export class DeckPunch extends LitElement {
     :host([weight="800"]) { font-weight: 800; }
     :host([align="center"]) { text-align: center; }
     :host([align="right"])  { text-align: right; }
+    /* fit · the punch fills its cell so FitController can measure the cell's
+       box (clientW/H) against the text (scrollW/H) and pick the biggest size
+       that rides inside · overflow hidden clips any sub-px remainder. */
+    :host([fit]) {
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
   `;
 
   @property({ type: String }) tone?: DeckPunchTone;
   @property({ type: String }) size?: DeckPunchSize;
   @property({ type: String, reflect: true }) weight?: string;
   @property({ type: String, reflect: true }) align?: string;
+  /** Shrink to fit the box (overrides `size`/cqw fluid scaling). */
+  @property({ type: Boolean }) fit = false;
+  /** fit floor / ceiling in rem · default 1 / 12. */
+  @property({ type: Number, attribute: 'fit-min' }) fitMin?: number;
+  @property({ type: Number, attribute: 'fit-max' }) fitMax?: number;
+
+  private fitter = new FitController(this, {
+    enabled: () => this.fit,
+    minRem: () => this.fitMin ?? 1,
+    maxRem: () => this.fitMax ?? 12,
+  });
 
   override updated() {
+    this.fitter.refit();
     if (this.tone && TONES[this.tone]) {
       this.style.setProperty('--_color', TONES[this.tone]);
     } else {

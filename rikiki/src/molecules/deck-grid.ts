@@ -15,31 +15,9 @@
 
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { expandGap, expandTracks } from '../shared/grid-tracks.js';
 
 export type DeckGridAlign = 'start' | 'center' | 'end' | 'stretch';
-
-const MAP: Record<DeckGridAlign, string> = {
-  start: 'start',
-  center: 'center',
-  end: 'end',
-  stretch: 'stretch',
-};
-
-function expandTracks(value: string | undefined): string | null {
-  if (!value) return null;
-  const n = parseInt(value, 10);
-  if (!Number.isNaN(n) && String(n) === value.trim() && n >= 1 && n <= 12) {
-    return `repeat(${n}, minmax(0, 1fr))`;
-  }
-  return value;
-}
-
-function expandGap(value: string | undefined): string | null {
-  if (!value) return null;
-  const n = parseInt(value, 10);
-  if (!Number.isNaN(n) && n >= 1 && n <= 6) return `var(--rik-space-${n})`;
-  return value;
-}
 
 @customElement('deck-grid')
 export class DeckGrid extends LitElement {
@@ -71,8 +49,8 @@ export class DeckGrid extends LitElement {
     if (cols) this.style.setProperty('--_cols', cols);
     if (rows) this.style.setProperty('--_rows', rows);
     if (gap) this.style.setProperty('--_gap', gap);
-    if (this.align) this.style.setProperty('--_align', MAP[this.align] ?? this.align);
-    if (this.justify) this.style.setProperty('--_justify', MAP[this.justify] ?? this.justify);
+    if (this.align) this.style.setProperty('--_align', this.align);
+    if (this.justify) this.style.setProperty('--_justify', this.justify);
   }
 
   override render() {
