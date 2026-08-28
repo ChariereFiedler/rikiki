@@ -4,7 +4,7 @@ import { defineConfig } from 'astro/config';
 // The Rikiki web components are loaded at runtime from the sibling rikiki/
 // package via plain <script type="module">.
 export default defineConfig({
-  site: 'https://rikiki.dev',
+  site: 'https://rikiki.tordu-jardin.fr',
   base: '/',
   trailingSlash: 'ignore',
   outDir: './dist',
