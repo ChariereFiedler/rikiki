@@ -8,7 +8,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "lint:dashes": "node scripts/lint-dashes.mjs",
-    "lint": "npm run lint:dashes && astro check"
+    "lint:links": "node scripts/lint-links.mjs",
+    "lint": "npm run lint:dashes && npm run lint:links && astro check"
   },
   "keywords": [],
   "author": "",
