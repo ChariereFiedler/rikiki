@@ -1,0 +1,37 @@
+{
+  "source": {
+    "package": "ronce-racine",
+    "version": "0.8.0",
+    "contentHash": "sha256-ba3a60cc8bc2b37b6ede410ccaf74d107378739f0dbc04293e972c7c8db8e18e"
+  },
+  "installed": [
+    "agent:code-reviewer.md",
+    "agent:qa-tester.md",
+    "hook:bash-npm-silent.ts",
+    "hook:skill-reminder.ts",
+    "hook:truncate-bash-output.ts",
+    "hook:truncate-output.ts",
+    "rule:commits.md",
+    "rule:doc-code-parity.md",
+    "rule:error-handling-discipline.md",
+    "rule:minimal-code.md",
+    "rule:pre-commit-secret-detection.md",
+    "rule:secure-logging.md",
+    "rule:test-discipline.md",
+    "skill:adversarial-feature-challenge",
+    "skill:bug-ticket-root-cause",
+    "skill:bug-triage-structured",
+    "skill:ci-pipeline-orchestration",
+    "skill:commit-readiness-review",
+    "skill:comprehensive-test-strategy",
+    "skill:detection-sweep",
+    "skill:domain-glossary",
+    "skill:merge-request-review",
+    "skill:performance-profiling",
+    "skill:recording-decisions",
+    "skill:recurring-bug-root-cause",
+    "skill:validating-features-end-to-end",
+    "skill:writing-robust-tests"
+  ],
+  "detached": []
+}

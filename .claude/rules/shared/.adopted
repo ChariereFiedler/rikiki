@@ -1,0 +1,8 @@
+# Generic rules adopted (ronce-racine). Resync: ronce-racine install --rules-only .
+commits.md
+doc-code-parity.md
+error-handling-discipline.md
+minimal-code.md
+pre-commit-secret-detection.md
+secure-logging.md
+test-discipline.md
