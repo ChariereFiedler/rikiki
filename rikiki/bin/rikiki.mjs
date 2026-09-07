@@ -21,6 +21,7 @@ import { fileURLToPath } from 'node:url';
 import { inlineDeck } from './lib/inline.mjs';
 import { starterHtml } from './lib/starter.mjs';
 import { formatExternal, scanExternal } from './lib/scan-external.mjs';
+import { pruneIcons } from './lib/prune-icons.mjs';
 import { exportPdf } from './lib/export-pdf.mjs';
 
 const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -256,7 +257,24 @@ async function cmdBundle(argv) {
     withMermaid: values['with-mermaid'],
     withShiki: values['with-shiki'],
   });
-  const inlined = await inlineDeck({ html, baseDir: dirname(inputPath), pkgRoot: PKG_ROOT, ...inlineOpts(values) });
+  let inlined = await inlineDeck({
+    html,
+    baseDir: dirname(inputPath),
+    pkgRoot: PKG_ROOT,
+    ...inlineOpts(values),
+  });
+  // Curate the icon set the way components are already curated · a bundled deck
+  // carries the glyphs it writes and nothing else.
+  const icons = pruneIcons(inlined, html);
+  if (icons.pruned) {
+    inlined = icons.js;
+    console.error(
+      `rikiki · icons · kept ${icons.kept.length}, dropped ${icons.dropped} (${icons.saved} bytes)`,
+    );
+  } else if (icons.reason?.startsWith('unknown icon name')) {
+    // Worth saying out loud · the glyph will not render.
+    console.error(`rikiki · WARNING · ${icons.reason}`);
+  }
   writeOut(inlined, outputPath);
   // A bundle that still fetches is a broken deliverable, not a warning · the
   // exit code is the only thing a CI job or a script can act on.

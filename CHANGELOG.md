@@ -28,6 +28,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `deck-agenda` · the running order and where the talk is. It reads the deck's
     own chapter structure through the navigation domain, so adding a
     `deck-section` grows a line and there is nothing to keep in sync.
+- **Nine more opt-in components**, all outside the default bundle.
+  `deck-icon` (24 drawn glyphs, nothing vendored, pruned by the bundler to what
+  the deck writes), `deck-checklist`/`deck-check`, `deck-kpi-grid`/`deck-kpi`,
+  `deck-pull`, `deck-persona`, `deck-versus`, `deck-flow`/`deck-flow-step`,
+  `deck-timeline`/`deck-milestone`, `deck-table`.
+- **`deck-graph`, `deck-node`, `deck-edge`** · nodes and edges, the primitive
+  behind every boxes-and-arrows slide. Unlike mermaid it inherits the theme,
+  reveals with the engine's own steps, prints, and weighs 2.5 KB gzip instead of
+  1 MB. It runs no layout solver on purpose: an automatic layout moves every
+  node when you add one, which breaks "source = output". `at="x,y"` in percent
+  is the layout language, plus `row` and `column` for the common cases.
+- **One visual signature for all of them** (`src/extras/signature.ts`): an
+  accent rule marks what matters, a mono uppercase micro-label carries the
+  metadata, and structure comes from hairlines and space rather than filled
+  boxes. The first pass rendered a row of identical tinted tiles, which gives a
+  projected slide no hierarchy at all.
+- **Icon curation in `rikiki bundle`** · the set is one JSON string literal, so
+  pruning it to the glyphs a deck writes is an exact swap the CLI verifies,
+  reported like the component curation already is.
 - **Four knobs on components that already existed**, chosen over four new
   elements that would have duplicated a vocabulary the project already has.
   `deck-split` takes `pivot` and `winner` for a directed comparison;

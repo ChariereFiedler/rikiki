@@ -1066,6 +1066,16 @@ and the rest of the deck is unaffected.
 | Tag | Purpose | Key attributes | Slots |
 |-----|---------|----------------|-------|
 | `deck-bar` | A proportion, drawn · one value against a total, or a stack of categories on one track | `value`, `total`, `label`, `tone` (`accent`/`ok`/`warn`/`danger`/`info`/`muted`), `segments` (`label:value:tone` triples separated by `\|`), `no-value`, `no-legend` | · |
+| `deck-icon` | A symbol · one of 24 drawn glyphs by `name`, or any `<svg>` you slot in. Nothing is vendored; `rikiki bundle` keeps only the glyphs the deck writes | `name`, `size` (`sm`/`md`/`lg`/`xl`), `tone`, `label` (absent means decorative, and it is hidden from assistive technology) | default = a fallback `<svg>` |
+| `deck-checklist` / `deck-check` | What works and what does not, told apart by shape as well as colour | list: `cols` · item: `no` | item default = the text |
+| `deck-kpi-grid` / `deck-kpi` | Several figures that read as one family | grid: `cols`, `ruled` · figure: `value`, `label`, `note`, `tone` | · |
+| `deck-pull` | An excerpt lifted out of a dense slide · text wraps around it when floated | `side` (`full`/`left`/`right`) | default = the excerpt |
+| `deck-persona` | Who is speaking, or who the case study is about | `name`, `person-role` (**not** `role`), `org`, `context`, `src` (a portrait; initials stand in without one), `on-dark` | · |
+| `deck-versus` | A directed comparison as a BLOCK inside a slide (`deck-split` covers the case where the comparison is the whole slide) | `pivot`, `winner` (`left`/`right`) | `left`, `right` |
+| `deck-flow` / `deck-flow-step` | A chain across the width · numbered stages under an accent rule | flow: `cols`, `reveal` · stage: `label`, `note` | stage default = extra content |
+| `deck-timeline` / `deck-milestone` | A trajectory in time, on an axis | timeline: `direction` (`row`/`column`), `reveal` · milestone: `date`, `label`, `note`, `tone` | · |
+| `deck-graph` / `deck-node` / `deck-edge` | Nodes and edges · the primitive behind every boxes-and-arrows slide | graph: `layout` (`free`/`row`/`column`), `reveal` · node: `at` (`x,y` in percent), `label`, `note` · edge: `from`, `to`, `label`, `dashed` | node default = extra content |
+| `deck-table` | A hand-authored table with the hierarchy `deck-csv` has · the table stays in your light DOM, so its cells may carry markup | `highlight-rows`, `highlight-cols`, `reveal` | default = your `<table>` |
 | `deck-annotate` | A screenshot the speaker can point at · numbered markers positioned in percent, revealed one per step through the engine's own step mechanism | `src`, `alt`, `marks` (`x,y,label` triples separated by `\|`, coordinates in percent), `all-at-once`, `no-legend` | · |
 | `deck-agenda` | The running order and where the talk is · reads the deck's own chapter structure, so adding a `deck-section` grows a line | `no-numbers`, `no-jump` | · |
 | `deck-quote` | Someone else's words, attributed · distinct from `deck-punch`, which is the speaker's own line | `author`, `author-role` (**not** `role`, which belongs to ARIA), `size` (`lead`/`big`/`mega`), `plain` (drop the accent rule), `on-dark`, `no-mark` | default = the quoted text |
@@ -1080,7 +1090,55 @@ semantic `--rik-*` token, so both shipped themes are covered:
 `--deck-annotate-mark-bg`, `--deck-annotate-mark-color`, `--deck-annotate-mark-size`,
 `--deck-annotate-mark-ring`, `--deck-annotate-radius`, `--deck-annotate-legend-color`;
 `--deck-agenda-current-color`, `--deck-agenda-done-color`, `--deck-agenda-rule`,
-`--deck-agenda-marker`, `--deck-agenda-size`, `--deck-agenda-gap`.
+`--deck-agenda-marker`, `--deck-agenda-size`, `--deck-agenda-gap`;
+`--deck-icon-size`, `--deck-icon-color`, `--deck-icon-stroke`;
+`--deck-check-yes`, `--deck-check-no`, `--deck-check-size`;
+`--deck-kpi-value-size`, `--deck-kpi-grid-cols`, `--deck-kpi-grid-rule`;
+`--deck-pull-rule`, `--deck-pull-size`, `--deck-pull-width`;
+`--deck-persona-avatar-size`, `--deck-persona-name-color`;
+`--deck-versus-winner-ring`, `--deck-versus-loser-opacity`, `--deck-versus-pivot-color`;
+`--deck-flow-gap`, `--deck-flow-step-accent`;
+`--deck-timeline-axis`, `--deck-milestone-dot`;
+`--deck-graph-edge`, `--deck-graph-edge-width`, `--deck-graph-ratio`, `--deck-node-rule`;
+`--deck-table-mark-bg`.
+
+Three of them are shared and change every component here at once:
+`--rik-extras-rule` (the accent bar), `--rik-extras-rule-width`,
+`--rik-extras-rule-length`.
+
+### The look these share
+
+One direction, one signature, repeated: **an accent rule marks what matters, a
+mono uppercase micro-label carries the metadata, and structure comes from
+hairlines and space rather than from filled boxes.** That is deliberate. A row
+of identical tinted rectangles gives a projected slide no hierarchy at all ·
+everything reads as equally important, which is the same as nothing being
+important. See `src/extras/signature.ts`.
+
+`reveal` on `deck-flow`, `deck-timeline` and `deck-graph` **emphasises**, it
+does not hide: at step 0 the whole chain, span or diagram is visible and
+neutral, because its shape is half the message. `deck-annotate` is the
+exception and shows nothing at step 0 · there the screenshot must speak first.
+
+```html
+<deck-graph layout="row">
+  <deck-node id="a" label="Collect" note="raw"></deck-node>
+  <deck-node id="b" label="Decide" note="verdict"></deck-node>
+  <deck-edge from="a" to="b" label="rules"></deck-edge>
+</deck-graph>
+
+<deck-graph>
+  <deck-node id="client" at="8,50" label="Client"></deck-node>
+  <deck-node id="api" at="64,25" label="API" note="node 24"></deck-node>
+  <deck-edge from="client" to="api" label="https"></deck-edge>
+</deck-graph>
+```
+
+`deck-graph` places nodes where the author puts them and never runs a layout
+solver: an automatic layout moves every node when you add one, which breaks
+"source = output" and makes the file unreadable a year later. `at="x,y"` in
+percent is the whole layout language, plus `row` and `column` for the two cases
+that would otherwise be typed out every time.
 
 ```html
 <deck-annotate

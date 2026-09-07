@@ -414,3 +414,31 @@ deck-root table.dense tr:last-child td { border-bottom: none; }
 deck-root table.dense td.ok { color: var(--rik-status-success);  font-weight: 700; }
 deck-root table.dense td.no { color: var(--rik-status-danger); }
 deck-root table.dense td.meh { color: var(--rik-status-warn); }
+
+/* deck-table · the table stays in the author's light DOM, so its emphasis
+   rules live here rather than in a shadow root. Scoped to the deck subtree
+   like every other helper. */
+deck-root table[data-rik-table] tr[data-mark] > td {
+  background: var(--deck-table-mark-bg, var(--rik-status-info__bg, var(--rik-surface-tint)));
+  color: var(--deck-table-mark-color, var(--rik-text-default));
+  font-weight: 700;
+}
+deck-root table[data-rik-table] td[data-mark],
+deck-root table[data-rik-table] th[data-mark] {
+  background: var(--deck-table-mark-bg, var(--rik-status-info__bg, var(--rik-surface-tint)));
+  font-weight: 700;
+}
+deck-root table[data-rik-table] tr[data-pending] {
+  /* Hidden but still occupying its row · a table that grows makes the slide
+     jump under the audience. */
+  visibility: hidden;
+}
+@media print {
+  deck-root table[data-rik-table] tr[data-pending] { visibility: visible; }
+  deck-root table[data-rik-table] tr[data-mark] > td,
+  deck-root table[data-rik-table] td[data-mark],
+  deck-root table[data-rik-table] th[data-mark] {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

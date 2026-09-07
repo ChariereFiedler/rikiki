@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · the rest of the opt-in components</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-icon.js"></script>
+<script type="module" src="../../dist/deck-checklist.js"></script>
+<script type="module" src="../../dist/deck-kpi-grid.js"></script>
+<script type="module" src="../../dist/deck-pull.js"></script>
+<script type="module" src="../../dist/deck-persona.js"></script>
+<script type="module" src="../../dist/deck-versus.js"></script>
+<script type="module" src="../../dist/deck-flow.js"></script>
+<script type="module" src="../../dist/deck-timeline.js"></script>
+<script type="module" src="../../dist/deck-table.js"></script>
+<script type="module" src="../../dist/deck-graph.js"></script>
+</head>
+<body>
+<deck-root no-hint no-arrows>
+
+  <deck-feature id="s-icons" eyebrow="symbols">
+    <h1 slot="title">Icons</h1>
+    <p>
+      <deck-icon id="ico-check" name="check" tone="ok" size="lg"></deck-icon>
+      <deck-icon id="ico-alert" name="alert" tone="warn" size="lg"></deck-icon>
+      <deck-icon id="ico-unknown" name="unicorn" size="lg">
+        <svg viewBox="0 0 24 24"><path d="M4 12h16" /></svg>
+      </deck-icon>
+      <deck-icon id="ico-labelled" name="user" label="One person"></deck-icon>
+    </p>
+  </deck-feature>
+
+  <deck-feature id="s-check" eyebrow="yes / no">
+    <h1 slot="title">Checklist</h1>
+    <deck-checklist id="checks" cols="2">
+      <deck-check id="chk-yes">Reviewed in CI</deck-check>
+      <deck-check id="chk-no" no>Reviewed on the branch</deck-check>
+    </deck-checklist>
+  </deck-feature>
+
+  <deck-feature id="s-kpi" eyebrow="numbers">
+    <h1 slot="title">Figures</h1>
+    <deck-kpi-grid id="kpis" cols="3" ruled>
+      <deck-kpi id="kpi-a" value="34" label="components"></deck-kpi>
+      <deck-kpi id="kpi-b" value="24 KB" label="gzip" tone="ok"></deck-kpi>
+      <deck-kpi id="kpi-c" value="3" label="engines" note="chromium, firefox, webkit"></deck-kpi>
+    </deck-kpi-grid>
+  </deck-feature>
+
+  <deck-feature id="s-pull" eyebrow="excerpt">
+    <h1 slot="title">Pull</h1>
+    <deck-pull id="pull-right" side="right">The one line that matters.</deck-pull>
+    <deck-md>A dense paragraph that wraps around the excerpt beside it, which is
+    what makes it an excerpt rather than an interruption in the flow.</deck-md>
+  </deck-feature>
+
+  <deck-feature id="s-persona" eyebrow="who">
+    <h1 slot="title">Persona</h1>
+    <deck-persona id="who" name="Marie Dupont" person-role="CTO" org="Acme"
+      context="Fifty engineers, two monoliths, one deadline."></deck-persona>
+  </deck-feature>
+
+  <deck-feature id="s-versus" eyebrow="compare">
+    <h1 slot="title">Versus</h1>
+    <deck-versus id="vs" pivot="vs" winner="right">
+      <div slot="left"><h3>Manual review</h3><p>Four hours.</p></div>
+      <div slot="right"><h3>Reviewed in CI</h3><p>Twelve minutes.</p></div>
+    </deck-versus>
+  </deck-feature>
+
+  <deck-feature id="s-flow" eyebrow="chain">
+    <h1 slot="title">Flow</h1>
+    <deck-flow id="flow" reveal>
+      <deck-flow-step id="fs-1" label="Collect" note="raw" icon="database"></deck-flow-step>
+      <deck-flow-step id="fs-2" label="Analyse" note="rules" icon="search"></deck-flow-step>
+      <deck-flow-step id="fs-3" label="Decide" note="verdict" icon="target"></deck-flow-step>
+      <deck-flow-step id="fs-4" label="Act" note="ship" icon="check"></deck-flow-step>
+    </deck-flow>
+  </deck-feature>
+
+  <deck-feature id="s-timeline" eyebrow="over time">
+    <h1 slot="title">Timeline</h1>
+    <deck-timeline id="tl">
+      <deck-milestone id="ms-1" date="Jan" label="First audit"></deck-milestone>
+      <deck-milestone id="ms-2" date="Mar" label="CI gate" tone="ok"></deck-milestone>
+      <deck-milestone id="ms-3" date="Jun" label="v1.0" tone="accent" note="tagged"></deck-milestone>
+    </deck-timeline>
+  </deck-feature>
+
+  <deck-feature id="s-table" eyebrow="data">
+    <h1 slot="title">Table</h1>
+    <deck-table id="tbl" highlight-rows="2" highlight-cols="2">
+      <table>
+        <thead><tr><th>Region</th><th>Users</th><th>Plan</th></tr></thead>
+        <tbody>
+          <tr><td>EMEA</td><td>12 040</td><td>Pro</td></tr>
+          <tr><td>APAC</td><td>9 310</td><td>Pro</td></tr>
+          <tr><td>AMER</td><td>18 220</td><td>Ent</td></tr>
+        </tbody>
+      </table>
+    </deck-table>
+  </deck-feature>
+
+  <deck-feature id="s-graph" eyebrow="architecture" fill>
+    <h1 slot="title">Graph</h1>
+    <deck-graph id="gr" reveal>
+      <deck-node id="n-client" at="8,50" label="Client" note="browser"></deck-node>
+      <deck-node id="n-edge" at="34,50" label="Gateway" note="nginx"></deck-node>
+      <deck-node id="n-api" at="64,25" label="API" note="node 24"></deck-node>
+      <deck-node id="n-db" at="64,78" label="Store" note="postgres"></deck-node>
+      <deck-node id="n-obj" at="92,78" label="Objects" note="s3"></deck-node>
+      <deck-edge from="n-client" to="n-edge" label="https"></deck-edge>
+      <deck-edge from="n-edge" to="n-api"></deck-edge>
+      <deck-edge from="n-api" to="n-db" label="sql"></deck-edge>
+      <deck-edge from="n-db" to="n-obj" dashed label="backup"></deck-edge>
+    </deck-graph>
+  </deck-feature>
+
+  <deck-feature id="s-chain" eyebrow="chain" fill>
+    <h1 slot="title">Chain, as a graph</h1>
+    <deck-graph id="gr-row" layout="row">
+      <deck-node id="c1" label="Collect" note="raw"></deck-node>
+      <deck-node id="c2" label="Analyse" note="rules"></deck-node>
+      <deck-node id="c3" label="Decide" note="verdict"></deck-node>
+      <deck-node id="c4" label="Act" note="ship"></deck-node>
+      <deck-edge from="c1" to="c2"></deck-edge>
+      <deck-edge from="c2" to="c3"></deck-edge>
+      <deck-edge from="c3" to="c4"></deck-edge>
+    </deck-graph>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>
