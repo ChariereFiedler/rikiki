@@ -9,6 +9,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { slideBase } from '../shared-styles.js';
+import { spreadValue } from '../shared/slide-fill.js';
 
 @customElement('deck-feature')
 export class DeckFeature extends LitElement {
@@ -29,10 +30,33 @@ export class DeckFeature extends LitElement {
     ::slotted(pre),
     ::slotted(svg),
     ::slotted(.hero-main) { max-height: 100%; flex: 0 1 auto; }
+
+    /* Vertical distribution · both opt-in, both no-ops when absent.
+       spread shares the leftover height between the blocks; fill gives that
+       height to the blocks themselves (put a deck-fit inside and its text
+       grows into it). See src/shared/slide-fill.ts.
+       No backticks in here · this sits inside a css template literal. */
+    .body { justify-content: var(--_spread, flex-start); }
+    :host([fill]) .body > ::slotted(*) { flex: 1 1 0; min-height: 0; }
+    :host([fill]) .body { justify-content: stretch; }
   `,
   ];
 
   @property({ type: String }) eyebrow?: string;
+
+  /** Distribute the leftover vertical space of the body ·
+   *  `between` / `around` / `evenly` / `center` / `end` / `start` (default). */
+  @property({ type: String, reflect: true }) spread?: string;
+
+  /** Let the body's blocks take the leftover height instead of distributing it
+   *  around them · pair with a `<deck-fit>` child to grow its text into it. */
+  @property({ type: Boolean, reflect: true }) fill = false;
+
+  override willUpdate(): void {
+    // The style follows the ATTRIBUTE everywhere in this library, so reflect
+    // both and write the resolved value as a custom property.
+    this.style.setProperty('--_spread', spreadValue(this.spread ?? null));
+  }
 
   override render() {
     return html`

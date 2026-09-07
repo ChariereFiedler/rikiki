@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · fill and spread harness</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+</head>
+<body>
+<!-- Vertical distribution · a short slide left ~60% of the canvas empty.
+     `spread` shares that space between the blocks, `fill` gives it to them. -->
+<deck-root no-hint no-arrows>
+
+  <deck-feature id="plain" eyebrow="reveals">
+    <h1 slot="title">Stacked at the top</h1>
+    <p id="plain-a">First line...</p>
+    <p id="plain-b">...second...</p>
+    <p id="plain-c">...third.</p>
+  </deck-feature>
+
+  <deck-feature id="spread" eyebrow="reveals" spread="between">
+    <h1 slot="title">Spread between</h1>
+    <p id="spread-a">First line...</p>
+    <p id="spread-b">...second...</p>
+    <p id="spread-c">...third.</p>
+  </deck-feature>
+
+  <deck-feature id="filled" eyebrow="reveals" fill>
+    <h1 slot="title">Filled</h1>
+    <deck-fit id="fill-a" max="5">First line...</deck-fit>
+    <deck-fit id="fill-b" max="5">...second...</deck-fit>
+  </deck-feature>
+
+  <deck-feature id="bogus" eyebrow="reveals" spread="nope">
+    <h1 slot="title">Unknown spread</h1>
+    <p id="bogus-a">Falls back to the top-aligned default.</p>
+    <p id="bogus-b">It must not drop the layout.</p>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>
