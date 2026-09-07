@@ -45,3 +45,41 @@ describe('parseCsv', () => {
     expect(parseCsv('')).toEqual([]);
   });
 });
+
+// ── Regressions · data loss and dropped terminators (v1.0 audit) ──
+
+describe('rows a deck author cannot afford to lose', () => {
+  it('keeps a quoted empty field as its own row', () => {
+    // `""` is an explicit empty value, not the blank spacer line the filter
+    // is meant to drop.
+    expect(parseCsv('name\n""\nbob')).toEqual([['name'], [''], ['bob']]);
+  });
+
+  it('still drops an unquoted blank spacer line', () => {
+    expect(parseCsv('a\n\nb')).toEqual([['a'], ['b']]);
+  });
+
+  it('treats a lone \\r as a row terminator', () => {
+    // Classic-Mac and some spreadsheet exports use CR alone · today every row
+    // collapses into one.
+    expect(parseCsv('a,b\rc,d')).toEqual([
+      ['a', 'b'],
+      ['c', 'd'],
+    ]);
+  });
+
+  it('does not split twice on a CRLF pair', () => {
+    expect(parseCsv('a,b\r\nc,d')).toEqual([
+      ['a', 'b'],
+      ['c', 'd'],
+    ]);
+  });
+
+  it('splits on a multi-character delimiter', () => {
+    expect(parseCsv('a::b::c', '::')).toEqual([['a', 'b', 'c']]);
+  });
+
+  it('keeps a lone delimiter character as text when the delimiter is longer', () => {
+    expect(parseCsv('a:b::c', '::')).toEqual([['a:b', 'c']]);
+  });
+});

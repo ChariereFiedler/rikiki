@@ -103,7 +103,14 @@ export class DeckCsv extends LitElement {
     const cleaned = indent === Infinity ? raw : lines.map((l) => l.slice(indent)).join('\n');
     // Trim each cell · authors naturally write "a, b, c" with spaces after the
     // delimiter, and leading/trailing padding never matters on a slide.
-    this.rows = parseCsv(cleaned.trim(), this.delimiter).map((r) => r.map((c) => c.trim()));
+    const parsed = parseCsv(cleaned.trim(), this.delimiter).map((r) => r.map((c) => c.trim()));
+    // Pad short rows to the widest one · a ragged source would otherwise render
+    // a table whose rows have fewer cells than the header, which is invalid
+    // markup and misaligns every column after the gap.
+    const width = parsed.reduce((max, r) => Math.max(max, r.length), 0);
+    this.rows = parsed.map((r) =>
+      r.length === width ? r : [...r, ...Array(width - r.length).fill('')],
+    );
     // Keep the raw CSV in light DOM · the template has no <slot>, so it stays
     // invisible, but the overview clones the light DOM to build thumbnails · a
     // cleared source would re-render an empty table there.

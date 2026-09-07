@@ -116,3 +116,21 @@ test('a fit punch recomputes when its slide is shown and its step revealed', asy
 
   expect(deck.consoleErrors, 'no JavaScript errors').toEqual([]);
 });
+
+test('a ragged csv keeps every row aligned with its header', async ({ page }) => {
+  // Regression · a short row used to render fewer <td> than the header has
+  // <th> (invalid markup, columns drift), and a quoted empty value used to be
+  // dropped as if it were a blank spacer line.
+  const deck = createDeckPage(page);
+  await deck.goto(`${DECK}#4`);
+
+  const table = await page.evaluate(() => {
+    const el = document.getElementById('csv-ragged');
+    const head = el?.shadowRoot?.querySelectorAll('thead th').length ?? 0;
+    const rows = Array.from(el?.shadowRoot?.querySelectorAll('tbody tr') ?? []);
+    return { head, widths: rows.map((r) => r.querySelectorAll('td').length) };
+  });
+
+  expect(table.head, 'header columns parsed').toBe(3);
+  expect(table.widths, 'every body row matches the header width').toEqual([3, 3, 3]);
+});
