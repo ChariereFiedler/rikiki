@@ -49,20 +49,6 @@ export class DeckSplit extends LitElement {
     }
     .col.center { justify-content: center; }
 
-    /* Vertical distribution · see src/shared/slide-fill.ts.
-       The body already owns the height left under the title. What it does with
-       the leftover is the whole difference between a composed slide and one
-       that hangs from the top with a hole under it. The default is still that
-       hole, and changing it is the open question e2e/balance.spec.ts exists to
-       answer · measured, because the obvious replacement (centre the body in
-       the leftover) detaches the block and reads worse than the hole.
-       The default no longer comes from a theme file: a vertical distribution
-       is structure, and a theme carries values. A deck may still set
-       --rik-slide-spread at :root, and a per-slide spread attribute wins.
-       No backticks in here · this sits inside a css template literal. */
-    .body { justify-content: var(--_spread, var(--rik-slide-spread, flex-start)); }
-    :host([fill]) .body > ::slotted(*) { flex: 1 1 0; min-height: 0; }
-    :host([fill]) .body { justify-content: stretch; }
 
     /* Directed comparison · a before/after has a reading direction, a pivot in
        the middle and, often, a side that wins. Tokens only, both themes.

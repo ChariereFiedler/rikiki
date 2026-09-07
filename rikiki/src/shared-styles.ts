@@ -20,6 +20,29 @@ export const slideShell = css`
   }
   :host([active]) { display: flex; }
 
+  /* ════ Vertical distribution · one copy, for every layout ════
+     What a slide does with the height its content does not need is the whole
+     difference between a composition and a stack with a hole under it. The
+     rule used to live in three layouts, copied word for word including its
+     comment, and the five others had no vertical control at all · which is the
+     mechanical source of the heterogeneity e2e/ink.spec.ts measures: over 71
+     slides the layouts that centre sit within six points of each other and the
+     title-and-body family sprays across forty-seven.
+
+     It is stated once here because slideShell is the only module all eight
+     import · deck-photo takes it alone, without slideBase, so a rule written in
+     typo or helpers would miss it.
+
+     .body is the box three layouts already name; the others are reached as
+     they gain one. See src/shared/slide-fill.ts for the attribute vocabulary.
+     A theme may set --rik-slide-spread, a per-slide spread attribute wins, and
+     the default is still the historical top stack · changing it is the next
+     lot, and it is measured before it is chosen.
+     No backticks in here · this sits inside a css template literal. */
+  .body { justify-content: var(--_spread, var(--rik-slide-spread, flex-start)); }
+  :host([fill]) .body > ::slotted(*) { flex: 1 1 0; min-height: 0; }
+  :host([fill]) .body { justify-content: stretch; }
+
   /* Print · every slide is shown and becomes exactly one page.
      On screen a slide is an absolutely-positioned layer inside a scaled stage;
      on paper it is a block the size of the deck's own canvas, so the layout an
