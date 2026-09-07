@@ -4,9 +4,9 @@
 // Enabled by setting `transition="slide|fade|zoom|flip"` on <deck-root>.
 // When deck-root navigates for the first time, it lazy-imports this
 // module and calls `installTransitions(host)` once. The plugin then
-// listens for the host's `slide-change` event and animates BOTH the
-// incoming and outgoing slides so the deck-root background never
-// flashes through.
+// listens for the host's `slide-change` event and animates the incoming
+// slide · plus the outgoing one when, and only when, the two tile (see
+// TILING below).
 //
 // Per-slide override · set `data-transition="zoom"` on any slide host
 // to overrule the deck-wide default.
@@ -26,12 +26,23 @@ const TIMINGS: Record<Name, number> = {
   flip: 560,
 };
 
+/* The transitions whose two slides TILE · together they cover the canvas at
+   every instant, so both have to be painted. Every other transition scales or
+   rotates the incoming slide, which means it is smaller than the canvas for
+   part of the animation. Painting the outgoing slide under one of those frames
+   the new slide in the old slide's surface · paper around a dark slide, and the
+   room reads it as a border rather than as motion. deck-root has already
+   repainted the letterbox in the incoming slide's own colour by the time this
+   runs (see _applyLetterbox), so dropping the outgoing slide leaves the gap
+   filled with the right colour instead of the wrong one.
+   Measured by e2e/transition-cover.spec.ts. */
+const TILING: ReadonlySet<Name> = new Set<Name>(['slide', 'slide-right', 'slide-up', 'slide-down']);
+
 const EASE_OUT = 'var(--rik-motion__ease-out, cubic-bezier(0.16, 1, 0.3, 1))';
 const EASE_SPRING = 'var(--rik-motion__ease-spring, cubic-bezier(0.5, 1.8, 0.3, 1))';
 
 /* Both enter and exit animations · the outgoing slide travels out of view
-   while the incoming slide travels in. Animating both prevents the
-   deck-root background from flashing through during the transition.
+   while the incoming slide travels in.
    No opacity changes anywhere · everything is transform-only. */
 const SHEET = `
   /* Incoming · from right (forward) */
@@ -145,7 +156,8 @@ export function installTransitions(host: DeckRoot): () => void {
     const duration = TIMINGS[name] ?? 480;
 
     // ── Outgoing slide · keep it visible during exit, then hide it back ──
-    if (prev && prev !== next) {
+    // Only for a transition whose two slides tile · see TILING above.
+    if (prev && prev !== next && TILING.has(name)) {
       prev.classList.remove(...ENTER_CLASSES, ...EXIT_CLASSES, 'rk-leaving');
       // Inline display:flex overrides the slide-host :host shadow CSS that
       // would otherwise display:none it (it lost [active] when nav moved on).
