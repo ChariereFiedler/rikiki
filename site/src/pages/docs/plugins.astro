@@ -110,7 +110,7 @@ document.querySelector('deck-root').use(stopwatch);`;
 <h2 id="overview">The five plugins</h2>
 <p>
   Rikiki ships five optional modules. The core (<code>dist/index.js</code>,
-  ~14 KB gzip) doesn't load any of them. Each one fetches separately the
+  ~38 KB gzip) doesn't load any of them. Each one fetches separately the
   first time it's needed, so a deck that doesn't use a plugin pays nothing
   for it.
 </p>
@@ -122,13 +122,13 @@ document.querySelector('deck-root').use(stopwatch);`;
   <tbody>
     <tr>
       <td><a href="#transition"><code>deck-transition</code></a></td>
-      <td>~1.7 KB</td>
+      <td>~1.6 KB</td>
       <td><code>transition="..."</code> attr on <code>deck-root</code></td>
       <td>Slide-in / fade / zoom / flip animations between slides</td>
     </tr>
     <tr>
       <td><a href="#presenter"><code>deck-presenter</code></a></td>
-      <td>~2.9 KB</td>
+      <td>~6.0 KB</td>
       <td>Press <kbd>P</kbd></td>
       <td>Speaker window with notes + next-slide preview + timer</td>
     </tr>
@@ -140,7 +140,7 @@ document.querySelector('deck-root').use(stopwatch);`;
     </tr>
     <tr>
       <td><a href="#click-stages"><code>click-stages</code></a></td>
-      <td>~0.8 KB</td>
+      <td>~2.6 KB</td>
       <td>Explicit <code>import + installClickStages()</code></td>
       <td>Reveal elements one click at a time (Slidev-style <code>v-click</code>)</td>
     </tr>
@@ -346,7 +346,7 @@ document.querySelector('deck-root').use(stopwatch);`;
   <li><code>deck-notes</code> ships with the core (0.4 KB) but if you don't use the element, it's just one unused custom-element registration.</li>
 </ul>
 <p>
-  Core (<code>dist/index.js</code>) stays at ~14 KB gzip regardless of which
+  Core (<code>dist/index.js</code>) stays at ~21 KB gzip regardless of which
   plugins your deck eventually uses.
 </p>
 
