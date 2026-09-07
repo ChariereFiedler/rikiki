@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · balance harness</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+</head>
+<body>
+<!-- Four slides, one per rejected defect. Each is written the way an author
+     actually writes one · no attribute is added to provoke the defect, because
+     the point is that the DEFAULT produces it. Measured by e2e/balance.spec.ts
+     and e2e/letterbox.spec.ts. -->
+<deck-root no-hint no-arrows transition="fade">
+
+  <!-- D2a · the flow stops when the content stops, and the bottom is dead. -->
+  <deck-feature id="dead-bottom" eyebrow="What governs the four">
+    <h1 slot="title">Three rules, one per lesson</h1>
+    <p id="dead-a">Because it does not doubt.</p>
+    <p id="dead-b">Because it invents what it does not know.</p>
+    <p id="dead-c">Because it starts over on its own.</p>
+  </deck-feature>
+
+  <!-- D2b · one cell carries chrome, its siblings do not. The row stretches all
+       three to the same height, so the chrome shows a box twice its content,
+       and its padding pushes its text off the reading edge of its siblings. -->
+  <deck-bento id="stretched" cols="3">
+    <h1 slot="title">Three rules, one per lesson</h1>
+    <deck-cell id="mass-a" plain>
+      <h3>A format</h3>
+      <p id="edge-a">Because it does not doubt.</p>
+    </deck-cell>
+    <deck-cell id="mass-b" tone="info">
+      <h3>A proof</h3>
+      <p id="edge-b">Because it invents what it does not know.</p>
+    </deck-cell>
+    <deck-cell id="mass-c" plain>
+      <h3>A procedure</h3>
+      <p id="edge-c">Because it starts over on its own.</p>
+    </deck-cell>
+  </deck-bento>
+
+  <!-- D4 · four independent flows side by side. Two titles wrap to a second
+       line and drag their body text down with them, so no row shares a
+       baseline. -->
+  <deck-bento id="ragged" cols="4">
+    <h1 slot="title">The four questions</h1>
+    <deck-cell id="q-a" plain>
+      <h3>What</h3>
+      <p id="base-a">may go in</p>
+    </deck-cell>
+    <deck-cell id="q-b" plain>
+      <h3>With whom</h3>
+      <p id="base-b">and under which contract</p>
+    </deck-cell>
+    <deck-cell id="q-c" plain>
+      <h3>For how long</h3>
+      <p id="base-c">it is kept</p>
+    </deck-cell>
+    <deck-cell id="q-d" plain>
+      <h3>How</h3>
+      <p id="base-d">erasure is proven</p>
+    </deck-cell>
+  </deck-bento>
+
+  <!-- D1 · a dark slide. The letterbox around it is painted paper. -->
+  <deck-section id="dark-section" num="Act 4">
+    <h1>What it<br>costs</h1>
+  </deck-section>
+
+</deck-root>
+</body>
+</html>
