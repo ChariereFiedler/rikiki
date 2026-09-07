@@ -20,6 +20,7 @@ import {
 import { publishDeepLink, readDeepLink } from '../application/deep-link.js';
 import { isMove, keyIntent, resolveMove } from '../application/keymap.js';
 import { type MouseMechanism, mouseEnabled } from '../application/mouse-nav.js';
+import { FIT, type Viewport, clampPan, isAtFit, panBy, zoomAt } from '../domain/viewport.js';
 import { browserLocation } from '../infrastructure/browser-location.js';
 import {
   advance as advanceFrom,
@@ -526,47 +527,59 @@ export class DeckRoot extends LitElement {
 
   /** Keep the pan within bounds so the magnified stage always covers the
    *  viewport (no gaps); at fit (zoom 1) it forces re-centring. */
+  /** The three fields above, as the viewport model sees them. */
+  private get _view(): Viewport {
+    return { zoom: this._zoom, panX: this._panX, panY: this._panY };
+  }
+
+  private set _view(next: Viewport) {
+    this._zoom = next.zoom;
+    this._panX = next.panX;
+    this._panY = next.panY;
+  }
+
+  /** The logical canvas and the box it is shown in · the two measurements the
+   *  arithmetic in src/domain/viewport.ts needs, and the only DOM it involves. */
+  private get _canvas() {
+    return { width: this.width, height: this.height };
+  }
+
+  private get _box() {
+    return { width: this.clientWidth, height: this.clientHeight };
+  }
+
   private _clampPan(): void {
-    const fit =
-      this.clientWidth && this.clientHeight
-        ? Math.min(this.clientWidth / this.width, this.clientHeight / this.height)
-        : 1;
-    const s = fit * this._zoom;
-    const maxX = Math.max(0, (this.width * s - this.clientWidth) / 2);
-    const maxY = Math.max(0, (this.height * s - this.clientHeight) / 2);
-    this._panX = Math.max(-maxX, Math.min(maxX, this._panX));
-    this._panY = Math.max(-maxY, Math.min(maxY, this._panY));
+    this._view = clampPan(this._view, this._canvas, this._box);
   }
 
   /** Zoom by a factor, keeping the point at viewport (cx, cy) fixed. */
   private _zoomAt(factor: number, cx: number, cy: number): void {
     if (!this._zoomEnabled()) return;
-    const z0 = this._zoom;
-    const z1 = Math.max(1, Math.min(DeckRoot.ZOOM_MAX, z0 * factor));
-    if (z1 === z0) return;
     const rect = this.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const ratio = z1 / z0;
-    this._panX += (cx - centerX - this._panX) * (1 - ratio);
-    this._panY += (cy - centerY - this._panY) * (1 - ratio);
-    this._zoom = z1;
-    this._clampPan();
+    // The model works from the centre of the box, which is where the stage
+    // transform originates.
+    const next = zoomAt(
+      this._view,
+      factor,
+      cx - (rect.left + rect.width / 2),
+      cy - (rect.top + rect.height / 2),
+      this._canvas,
+      this._box,
+      { max: DeckRoot.ZOOM_MAX },
+    );
+    if (next === this._view) return;
+    this._view = next;
     this._applyZoom();
   }
 
   private _resetZoom(): void {
-    if (this._zoom === 1 && this._panX === 0 && this._panY === 0) return;
-    this._zoom = 1;
-    this._panX = 0;
-    this._panY = 0;
+    if (isAtFit(this._view)) return;
+    this._view = FIT;
     this._applyZoom();
   }
 
   private _panBy(dx: number, dy: number): void {
-    this._panX += dx;
-    this._panY += dy;
-    this._clampPan();
+    this._view = panBy(this._view, dx, dy, this._canvas, this._box);
     this._applyZoom();
   }
 

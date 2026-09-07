@@ -110,6 +110,28 @@ green; a red check is fixed before the next gate starts, never carried.
 | **D** | input adapters (keyboard, pointer, autoplay) behind ports | input rules testable without a browser; `mouse-nav` and embed scoping preserved |
 | **E** | `deck-root` is an edge component | architecture guard covers every layer; the navigation rules no longer appear in the edge |
 
+### Outcome
+
+All five passed, 2026-09-07. What moved, and what it bought:
+
+| Layer | Modules | Tests, no browser |
+|---|---|---|
+| domain | outline, navigation verbs, deep-link grammar, zoom/pan arithmetic | 99 |
+| application | deep-link use case, keymap, mouse-nav | 66 |
+| infrastructure | the URL adapter | via the use case |
+
+Two defects fell out of the move rather than being hunted:
+
+- Going back across a `data-morph` pair landed on step 0 instead of the slide's
+  last step. Two statements decided one thing; the morph deferred the first.
+  Reproduced (`0.0` before, `0.3` after) and pinned in `e2e/navigation.spec.ts`.
+- A 2D deck wrote a deep link it could not read back: `#3.1` written for
+  "slide 3, step 1", parsed as "chapter 3, slide 1". One grammar, both ways.
+
+The guard in `scripts/architecture.test.mjs` now checks the domain, the
+application layer, the adapters **and** the edge, and each of its rules has been
+verified to fail when the property it defends is broken.
+
 Common bar for every gate: `biome`, `tsc --noEmit`, `vitest run`,
 `playwright test` on the three engines, no `dist` drift, and no change to the
 public API (custom elements, attributes, events, CSS parts and tokens).
