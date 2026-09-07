@@ -69,6 +69,37 @@ describe.each(themeFiles())('$name', ({ file, name }) => {
     ).toEqual([]);
   });
 
+  /* The 8H rule · the furthest seat in a room is about eight screen heights
+   * back, and text stays legible from there at 1/50 of the screen height. It
+   * is the one number in presentation practice that is a floor rather than a
+   * preference, so it is the one worth encoding: below it the text is not
+   * quiet, it is absent.
+   *
+   * The canvas is 1080 logical pixels tall and deck-root sets the rem baseline
+   * to 2.35% of it, which is what makes a rem convertible to a share of the
+   * screen here. See https://presentationguild.org/how-big-big-enough-the-8h-rule-reveals-all/
+   */
+  const CANVAS_H = 1080;
+  const REM = CANVAS_H * 0.0235;
+  const FLOOR = CANVAS_H / 50;
+
+  it('keeps every text role above the legibility floor', () => {
+    const tooSmall = [];
+    for (const [role, rem] of sizes) {
+      if (!Number.isFinite(rem)) continue;
+      const px = rem * REM;
+      if (px < FLOOR) {
+        tooSmall.push(
+          `${role} is ${px.toFixed(1)}px · 1/${Math.round(CANVAS_H / px)} of the height`,
+        );
+      }
+    }
+    expect(
+      tooSmall,
+      `${name} sets text below 1/50 of the screen height, which the back row cannot read`,
+    ).toEqual([]);
+  });
+
   it('makes a statement a different size, not the same size in bold', () => {
     const body = sizes.get('body');
     const title = sizes.get('h1');

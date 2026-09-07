@@ -226,8 +226,14 @@
      Legacy names · kept aligned to the new scale.
      Fixed in 2026-05-20: --rik-font-size-mega was smaller than -big · the
      order is now monotonic (strong < big < mega < hook < stat). */
-  --rik-font-size-xs:                 var(--rik-text-2xs);
-  --rik-font-size-sm:                 var(--rik-text-xs);
+  /* Both of these used to sit under the legibility floor · the 8H rule puts
+     the smallest readable text at 1/50 of the screen height, which is 21.6px
+     on the 1080 canvas, and they resolved to 16.2px (1/66) and 20.3px (1/53).
+     A size nobody in the room can read is not a quiet tier, it is a tier that
+     is not there, and it was the size the micro-label tier lived at.
+     scripts/type-scale.test.mjs holds the floor now. */
+  --rik-font-size-xs:                 var(--rik-text-sm);
+  --rik-font-size-sm:                 var(--rik-text-sm);
   --rik-font-size-body:               var(--rik-text-base);  /* ≈32px · sized for projection */
   --rik-font-size-lead:               var(--rik-text-md);
   --rik-font-size-h2:                 var(--rik-text-md);
