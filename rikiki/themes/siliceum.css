@@ -31,21 +31,24 @@
 
   --rik-palette-mango-700: #a87e00;
   --rik-palette-mango-500: #F7CB44;
+  /* The -100 step is the status FILL, and a fill has to be seen: measured
+     against the page it must clear a CIE76 delta E of 10, which lands every
+     hue at an alpha of 0.18. Enforced by scripts/theme-contrast.test.mjs. */
   --rik-palette-mango-200: rgba(247, 203, 68, 0.45);
   --rik-palette-mango-100: rgba(247, 203, 68, 0.18);
   --rik-palette-mango-50:  rgba(247, 203, 68, 0.05);
 
   --rik-palette-ember-500: #dc2626;
   --rik-palette-ember-200: rgba(220, 38, 38, 0.45);
-  --rik-palette-ember-100: rgba(220, 38, 38, 0.10);
+  --rik-palette-ember-100: rgba(220, 38, 38, 0.18);
 
   --rik-palette-helico-500: #16a34a;
   --rik-palette-helico-200: rgba(22, 163, 74, 0.45);
-  --rik-palette-helico-100: rgba(22, 163, 74, 0.08);
+  --rik-palette-helico-100: rgba(22, 163, 74, 0.18);
 
   --rik-palette-warm-500:  #ea580c;
   --rik-palette-warm-200:  rgba(234, 88, 12, 0.40);
-  --rik-palette-warm-100:  rgba(234, 88, 12, 0.08);
+  --rik-palette-warm-100:  rgba(234, 88, 12, 0.18);
 
   --rik-palette-orchid-500: #7c3aed;
   --rik-palette-lime-500:   #84cc16;
@@ -101,7 +104,7 @@
 
   --rik-status-info:                  var(--rik-palette-mango-500);
   --rik-status-info__text:            var(--rik-palette-mango-700);
-  --rik-status-info__bg:              var(--rik-palette-mango-50);
+  --rik-status-info__bg:              var(--rik-palette-mango-100);
   --rik-status-info__bg--mid:         var(--rik-palette-mango-100);
   --rik-status-info__bg--strong:      rgba(247, 203, 68, 0.18);
   --rik-status-info__border:          var(--rik-palette-mango-200);
@@ -415,19 +418,60 @@ deck-root table.dense td.ok { color: var(--rik-status-success);  font-weight: 70
 deck-root table.dense td.no { color: var(--rik-status-danger); }
 deck-root table.dense td.meh { color: var(--rik-status-warn); }
 
-/* deck-table · the table stays in the author's light DOM, so its emphasis
-   rules live here rather than in a shadow root. Scoped to the deck subtree
-   like every other helper. */
+/* deck-table · the table stays in the author's light DOM, so its rules live
+   here rather than in a shadow root. Scoped to the deck subtree like every
+   other helper.
+
+   The look is the extras direction applied to data (docs/design/adr-002): the
+   header is told apart by weight and one rule, rows by hairlines, and nothing
+   is filled except the single row that matters. A pale tint reads as nothing at projection distance
+   (the raised surface sits at 1.10 contrast against the page), so emphasis is
+   the inverse surface · a dark band across the row. */
+deck-root table[data-rik-table] {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+deck-root table[data-rik-table] thead th {
+  text-align: left;
+  font-weight: 700;
+  color: var(--rik-text-default--muted);
+  padding: 0 var(--rik-space-4) var(--rik-space-2);
+  border-bottom: 2px solid var(--rik-accent);
+}
+deck-root table[data-rik-table] tbody td {
+  padding: var(--rik-space-3) var(--rik-space-4);
+  border-bottom: 1px solid var(--rik-border-default);
+  color: var(--rik-text-default);
+  line-height: 1.35;
+}
+deck-root table[data-rik-table] tbody tr:last-child td { border-bottom: none; }
+
+/* The emphasised row · one dark band, the only filled thing on the slide. */
 deck-root table[data-rik-table] tr[data-mark] > td {
-  background: var(--deck-table-mark-bg, var(--rik-status-info__bg, var(--rik-surface-tint)));
-  color: var(--deck-table-mark-color, var(--rik-text-default));
+  background: var(--deck-table-mark-bg, var(--rik-surface-inverse));
+  color: var(--deck-table-mark-color, var(--rik-text-inverse));
+  border-bottom-color: var(--deck-table-mark-bg, var(--rik-surface-inverse));
   font-weight: 700;
 }
+deck-root table[data-rik-table] tr[data-mark] > td:first-child {
+  border-radius: var(--rik-radius-sm) 0 0 var(--rik-radius-sm);
+}
+deck-root table[data-rik-table] tr[data-mark] > td:last-child {
+  border-radius: 0 var(--rik-radius-sm) var(--rik-radius-sm) 0;
+}
+
+/* The emphasised column · colour and weight, never a second fill · two
+   overlapping tints is how a table stops having a hierarchy at all. */
 deck-root table[data-rik-table] td[data-mark],
 deck-root table[data-rik-table] th[data-mark] {
-  background: var(--deck-table-mark-bg, var(--rik-status-info__bg, var(--rik-surface-tint)));
+  color: var(--deck-table-col-color, var(--rik-accent__text));
   font-weight: 700;
 }
+deck-root table[data-rik-table] tr[data-mark] > td[data-mark] {
+  color: var(--deck-table-col-on-mark, var(--rik-accent));
+}
+
 deck-root table[data-rik-table] tr[data-pending] {
   /* Hidden but still occupying its row · a table that grows makes the slide
      jump under the audience. */
@@ -435,9 +479,7 @@ deck-root table[data-rik-table] tr[data-pending] {
 }
 @media print {
   deck-root table[data-rik-table] tr[data-pending] { visibility: visible; }
-  deck-root table[data-rik-table] tr[data-mark] > td,
-  deck-root table[data-rik-table] td[data-mark],
-  deck-root table[data-rik-table] th[data-mark] {
+  deck-root table[data-rik-table] tr[data-mark] > td {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }

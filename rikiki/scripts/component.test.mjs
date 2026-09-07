@@ -1,5 +1,5 @@
-import { readFileSync } from 'node:fs';
-import { relative } from 'node:path';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join, relative, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   CATALOGUE_PAGE,
@@ -7,6 +7,7 @@ import {
   catalogueCounts,
   LLM_REFERENCE,
   NOT_IN_CATALOGUE,
+  PKG_DIR,
   REPO_ROOT,
   coreElements,
   optInElements,
@@ -71,5 +72,42 @@ describe('every element is documented where an author will look', () => {
     const reference = readFileSync(LLM_REFERENCE, 'utf8');
     const missing = elements.filter((name) => !reference.includes(name));
     expect(missing, `absent from the LLM reference: ${missing.join(', ')}`).toEqual([]);
+  });
+});
+
+// ────────────────────────────────────────────────────────────────
+// The showcase has to show it
+//
+// e2e/emphasis.spec.ts and e2e/ink.spec.ts only measure what a fixture actually
+// renders. An extras component that appears in no fixture is checked by nothing
+// at all, and the gap is invisible · the suite stays green and the component
+// ships unlooked-at. This is the cheapest guard in the set and the one that
+// keeps the expensive ones honest.
+// ────────────────────────────────────────────────────────────────
+
+describe('every opt-in component appears in a fixture deck', () => {
+  const EXTRAS_DIR = resolve(PKG_DIR, 'src', 'extras');
+  const FIXTURES = resolve(PKG_DIR, 'decks', 'tests');
+
+  /** Every element registered under src/extras/, the opt-in surface. */
+  const extras = readdirSync(EXTRAS_DIR)
+    .filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'))
+    .flatMap((f) => [
+      ...readFileSync(join(EXTRAS_DIR, f), 'utf8').matchAll(/@customElement\('([^']+)'\)/g),
+    ])
+    .map((m) => m[1])
+    .sort();
+
+  const decks = readdirSync(FIXTURES)
+    .filter((f) => f.endsWith('.html'))
+    .map((f) => readFileSync(join(FIXTURES, f), 'utf8'))
+    .join('\n');
+
+  it('finds the opt-in components to check', () => {
+    expect(extras.length).toBeGreaterThan(10);
+  });
+
+  it.each(extras)('%s is written on a slide somewhere', (tag) => {
+    expect(decks, `<${tag}> appears in no deck under decks/tests/`).toContain(`<${tag}`);
   });
 });

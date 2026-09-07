@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = resolve(here, '..', '..');
-const PKG_DIR = resolve(here, '..');
+export const PKG_DIR = resolve(here, '..');
 const SRC_DIR = resolve(PKG_DIR, 'src');
 
 const at = (...p) => resolve(REPO_ROOT, ...p);
