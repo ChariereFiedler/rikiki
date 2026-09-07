@@ -19,14 +19,16 @@ import { customElement, property } from 'lit/decorators.js';
 
 export type DeckStatTone = 'yellow' | 'orange' | 'green' | 'red' | 'purple' | 'lime' | 'cyan';
 
+// Text-grade companions · a stat is a large number, still text. See TONES in
+// src/atoms/deck-punch.ts and the contract in src/shared/contrast.test.ts.
 const TONES: Record<DeckStatTone, string> = {
-  yellow: 'var(--rik-accent)',
-  orange: 'var(--rik-status-warn)',
-  green: 'var(--rik-status-success)',
-  red: 'var(--rik-status-danger)',
-  purple: 'var(--rik-decor-orchid)',
-  lime: 'var(--rik-decor-lime)',
-  cyan: 'var(--rik-decor-canary)',
+  yellow: 'var(--rik-accent__text)',
+  orange: 'var(--rik-status-warn__text)',
+  green: 'var(--rik-status-success__text)',
+  red: 'var(--rik-status-danger__text)',
+  purple: 'var(--rik-decor-orchid__text)',
+  lime: 'var(--rik-decor-lime__text)',
+  cyan: 'var(--rik-decor-canary__text)',
 };
 
 @customElement('deck-stat')
