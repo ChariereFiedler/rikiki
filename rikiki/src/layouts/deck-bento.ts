@@ -41,6 +41,11 @@ export class DeckBento extends LitElement {
       }
       .grid {
         flex: 1 1 auto;
+        /* Bleed the cells' own gutter outward so the text of the first column
+           lands on the slide's text edge, and the last column's on the other ·
+           the cells all inset their content by the same amount now, so without
+           this the whole grid would sit a gutter inside the title above it. */
+        margin-inline: calc(-1 * var(--deck-cell-padding-x, var(--rik-space-4)));
         display: grid;
         grid-template-columns: var(--_cols, repeat(2, minmax(0, 1fr)));
         grid-template-rows: var(--_rows, minmax(0, 1fr));
