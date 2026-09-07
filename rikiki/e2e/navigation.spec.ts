@@ -87,3 +87,40 @@ test('plain wheel navigates; ctrl+wheel is claimed for slide zoom', async ({ pag
   expect(await prevented({}), 'plain wheel drives navigation').toBe(true);
   expect(await prevented({ ctrlKey: true }), 'ctrl+wheel claimed for zoom').toBe(true);
 });
+
+test('going back into a slide lands on its last step, even when the transition defers', async ({
+  page,
+}) => {
+  // The regression the navigation domain exists for. The engine used to decide
+  // "previous slide" and "its last step" in two statements; a transition plugin
+  // defers the first one, so the second ran against the old slide and the
+  // deferred move then reset the step to 0.
+  const deck = createDeckPage(page);
+  await deck.goto('/rikiki/decks/tests/morph-back.html#2');
+
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const slides = Array.from(document.querySelectorAll('deck-root > *'));
+        return slides.findIndex((s) => s.hasAttribute('active'));
+      }),
+    )
+    .toBe(1);
+
+  await page.keyboard.press('ArrowLeft');
+
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const root = document.querySelector('deck-root') as unknown as {
+          current: number;
+          step: number;
+        };
+        return `${root.current}.${root.step}`;
+      }),
+    )
+    .toBe('0.3');
+
+  // And the reveals really are all showing, not just the counter.
+  await expect(page.locator('#s3')).toBeVisible();
+});

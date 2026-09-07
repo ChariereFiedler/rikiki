@@ -64,6 +64,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`scripts/packaging.test.mjs`). A page that drifts fails the build.
 
 ### Fixed
+- **Going back into a slide lost its steps when a morph deferred the move.**
+  Crossing a `data-morph` pair backwards landed on step 0 instead of the slide's
+  last step. The engine decided "previous slide" and "its last step" in two
+  statements; the morph plugin defers the first into a View Transition, so the
+  second ran against the old slide and the deferred move then reset the step.
+  The navigation model now returns one complete position, so the two cannot come
+  apart. Reproduced and pinned by `e2e/navigation.spec.ts`.
+- **A 2D deck wrote a deep link it could not read back.** With `nav="2d"` and
+  steps, the engine wrote the linear form (`#3.1` for slide 3, step 1) and parsed
+  it as "chapter 3, slide 1". Both sides now use the same grammar.
 - **XSS through a mermaid error message.** mermaid folds the offending source
   into `UnknownDiagramError`, and that text reached an `innerHTML` sink unescaped
   in both the slide and the overview thumbnail. mermaid now also runs at its
@@ -84,6 +94,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   in the showcase deck, which had them swapped.
 
 ### Changed
+- **The navigation rules moved into a domain model** (`src/domain/`) that runs
+  without a browser: slide and step position, chapter outline, 2D coordinates,
+  loop, deep-link grammar. `deck-root` now asks it where to go and applies the
+  answer. The layering and its five gates are recorded in
+  `docs/design/adr-001-deck-navigation-domain.md`, and the dependency direction
+  is enforced by `scripts/architecture.test.mjs` rather than by convention. No
+  public API change.
 - **Print promises are now backed by tests.** `e2e/print.spec.ts` reads the
   produced PDF back with poppler: page count, page geometry, text on every page,
   no chrome, and a rasterised check that the backgrounds printed.

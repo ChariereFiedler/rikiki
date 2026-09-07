@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · back-navigation across a deferred morph</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module">
+  import { installClickStages } from '../../dist/click-stages.js';
+  installClickStages();
+</script>
+</head>
+<body>
+<!-- Back-navigation across a MORPH pair, which defers the real navigation into
+     a View Transition (or a FLIP fallback). Coming back from slide 2 must land
+     on slide 1 at its LAST step, not at step 0 · the two-statement version of
+     _back() lost the step exactly here. -->
+<deck-root transition="slide" no-hint no-arrows>
+
+  <deck-feature id="one">
+    <h1 slot="title" data-morph="pair">Three steps</h1>
+    <p data-click="1" id="s1">first</p>
+    <p data-click="2" id="s2">second</p>
+    <p data-click="3" id="s3">third</p>
+  </deck-feature>
+
+  <deck-feature id="two">
+    <h1 slot="title" data-morph="pair">Three steps</h1>
+    <p>Press left to come back.</p>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>
