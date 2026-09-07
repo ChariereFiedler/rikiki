@@ -974,3 +974,36 @@ incomplete PDF. It needs **Playwright**, an optional peer dependency:
 
 The whole contract is verified in `e2e/print.spec.ts` by reading the produced
 PDF back with poppler.
+
+---
+
+## 18 · Embedding a deck in a page
+
+A `<deck-root>` that is a direct child of `<body>` **is** the page: it owns the
+scroll, the rem baseline, the URL hash, the keyboard and the wheel. Anywhere
+else it is a widget, and owns none of that.
+
+An embedded deck:
+
+- **leaves the host's styling alone.** The theme's reset, page background and
+  helper classes (`.accent`, `.lead`, `.display`, `table.dense` …) are scoped to
+  the deck subtree. Importing a theme does not restyle the page around it.
+- **does not touch the URL.** `#section-3` stays the host's anchor. Deep links
+  work on a full-page deck only.
+- **takes the keyboard only while focused.** It gets `tabindex="0"`, so a reader
+  tabs to it and then navigates with the arrow keys. Until then the arrows
+  belong to the host page.
+- **lets the wheel scroll the host.** Ctrl/⌘ + wheel still zooms, and panning
+  still works once a slide is magnified.
+
+**Several decks per document are supported.** Each keeps its own canvas, its own
+slide index and its own navigation; focus decides which one the keyboard drives.
+Only one of them can be the page. Pinned by `e2e/multi-deck.spec.ts`.
+
+Recommended for a thumbnail or an inline demo:
+
+```html
+<div style="width: 640px; height: 360px">
+  <deck-root no-hint no-arrows>…</deck-root>
+</div>
+```

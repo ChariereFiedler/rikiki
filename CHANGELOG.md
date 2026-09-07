@@ -15,6 +15,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Trust model, stated and tested.** `SECURITY.md` and the shipped LLM
   reference now spell out the line: deck content is the author's code and renders
   as written; text *derived* from it is escaped. Frozen by `e2e/security.spec.ts`.
+- **Embedded decks stop touching the host page.** A `<deck-root>` that is not a
+  direct child of `<body>` no longer rewrites the URL hash, no longer captures
+  the arrow keys until it is focused (it gains `tabindex="0"`), and lets the
+  wheel scroll the page it sits in. The themes' reset, page background and
+  helper classes (`.accent`, `.lead`, `.display`, `table.dense` …) are scoped to
+  the deck subtree, so importing a theme no longer restyles the document around
+  it. Pinned by `e2e/embed.spec.ts` against a host page that styles itself
+  *before* importing the theme.
+- **Several decks per document are supported**, and now say so. Each keeps its
+  own canvas, slide index and navigation; focus decides which one the keyboard
+  drives. Verified by `e2e/multi-deck.spec.ts`.
 - **Accessibility baseline, tested.** An Axe pass over the reference decks
   (`e2e/a11y.spec.ts`) plus targeted keyboard assertions. The keyboard hint chips
   were `<kbd>` elements with click handlers, unreachable by keyboard; the
