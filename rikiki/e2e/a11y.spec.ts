@@ -46,12 +46,19 @@ test('the overview opens, moves and picks a slide with the keyboard alone', asyn
 
   // Something inside the overview must hold focus · without it a keyboard user
   // lands nowhere and has no way in.
-  const focused = await page.evaluate(() => {
-    const active = document.activeElement;
-    const inner = active?.shadowRoot?.activeElement;
-    return (inner ?? active)?.tagName?.toLowerCase() ?? null;
-  });
-  expect(focused, 'the overview takes focus when it opens').not.toBe('body');
+  //
+  // The overview attribute lands before the focus call does, so reading
+  // activeElement straight after the assertion above races the engine and went
+  // red on WebKit under a loaded worker. Wait for the state, never for a delay.
+  const focusedTag = () =>
+    page.evaluate(() => {
+      const active = document.activeElement;
+      const inner = active?.shadowRoot?.activeElement;
+      return (inner ?? active)?.tagName?.toLowerCase() ?? null;
+    });
+  await expect
+    .poll(focusedTag, { message: 'the overview takes focus when it opens' })
+    .not.toBe('body');
 
   // Enter picks the focused slide and closes the overview.
   await page.keyboard.press('Enter');
