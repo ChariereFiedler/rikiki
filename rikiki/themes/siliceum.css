@@ -250,40 +250,52 @@
 }
 
 /* Minimal reset */
-*, *::before, *::after { box-sizing: border-box; }
-body, h1, h2, h3, h4, p, ul, ol, li, blockquote, pre, table, td, th,
-figure, dl, dd { margin: 0; padding: 0; }
+/* Scoped to the deck subtree · a host page that imports this theme to show an
+   embedded deck keeps its own box model and its own heading margins. */
+deck-root, deck-root *, deck-root *::before, deck-root *::after { box-sizing: border-box; }
+deck-root h1, deck-root h2, deck-root h3, deck-root h4, deck-root p,
+deck-root ul, deck-root ol, deck-root li, deck-root blockquote, deck-root pre,
+deck-root table, deck-root td, deck-root th, deck-root figure,
+deck-root dl, deck-root dd { margin: 0; padding: 0; }
 /* The rem baseline and the no-scroll reset are injected globally by deck-root
    (theme-independent · see _injectGlobals). The theme only owns the page surface
    and the type below. */
-html, body { background: var(--rik-surface-page); }
-body { font-family: var(--rik-font-sans); color: var(--rik-text-default); }
+/* Page surface · only when the deck IS the page. An embedded deck must not
+   repaint the document around it. */
+html:has(> body > deck-root), html:has(> body > deck-root) body {
+  background: var(--rik-surface-page);
+}
+html:has(> body > deck-root) body {
+  margin: 0;
+  font-family: var(--rik-font-sans);
+  color: var(--rik-text-default);
+}
 
 ::selection { background: var(--rik-selection__bg); color: var(--rik-selection__text); }
 
 /* Light-DOM helpers */
-.accent          { color: var(--rik-accent); }      /* bright yellow · for slides on dark; on paper, use --rik-link */
-.accent-danger   { color: var(--rik-status-danger); }
-.accent-warn     { color: var(--rik-status-warn); }
-.accent-success  { color: var(--rik-status-success); }
-.accent-orchid   { color: var(--rik-decor-orchid); }
-.accent-lime     { color: var(--rik-decor-lime); }
+deck-root .accent { color: var(--rik-accent); }      /* bright yellow · for slides on dark; on paper, use --rik-link */
+deck-root .accent-danger { color: var(--rik-status-danger); }
+deck-root .accent-warn { color: var(--rik-status-warn); }
+deck-root .accent-success { color: var(--rik-status-success); }
+deck-root .accent-orchid { color: var(--rik-decor-orchid); }
+deck-root .accent-lime { color: var(--rik-decor-lime); }
 
-.sub {
+deck-root .sub {
   font-size: var(--rik-font-size-h2);
   color: var(--rik-text-inverse--faint);
   line-height: 1.45;
   max-width: 60ch;
 }
-.display {
+deck-root .display {
   font-size: clamp(3rem, 7cqw, 5.5rem);
   font-weight: 900;
   line-height: 1.05;
   letter-spacing: -0.03em;
 }
-.display.danger      { color: var(--rik-status-danger); }
-.caption.on-dark     { color: var(--rik-text-inverse--faint); font-size: var(--rik-font-size-lead); }
-.lead {
+deck-root .display.danger { color: var(--rik-status-danger); }
+deck-root .caption.on-dark { color: var(--rik-text-inverse--faint); font-size: var(--rik-font-size-lead); }
+deck-root .lead {
   font-size: var(--rik-font-size-lead);
   color: var(--rik-text-default--faint);
   line-height: 1.5;
@@ -292,7 +304,7 @@ body { font-family: var(--rik-font-sans); color: var(--rik-text-default); }
 
 deck-feature > h1,
 deck-split > h1,
-deck-feature-cards > h1 {
+deck-root deck-feature-cards > h1 {
   font-family: var(--rik-font-display);
   font-size: var(--rik-font-size-h1);
   font-weight: 700;
@@ -305,7 +317,7 @@ deck-feature-cards > h1 {
   display: inline-block;
   align-self: flex-start;
 }
-deck-cover > h1 {
+deck-root deck-cover > h1 {
   font-size: clamp(3.6rem, 9cqw, 8.5rem);
   font-weight: 900;
   color: var(--rik-text-inverse);
@@ -313,7 +325,7 @@ deck-cover > h1 {
   letter-spacing: -0.035em;
   margin-bottom: var(--rik-space-4);
 }
-deck-section > h1 {
+deck-root deck-section > h1 {
   font-size: var(--rik-font-size-section);
   font-weight: 900;
   color: var(--rik-accent);
@@ -322,13 +334,13 @@ deck-section > h1 {
   max-width: 18ch;
   text-align: center;
 }
-deck-section > h1 em {
+deck-root deck-section > h1 em {
   color: var(--rik-text-inverse--faint);
   font-style: normal;
   font-weight: 700;
 }
 
-deck-cover > .sub, deck-cover > p.sub {
+deck-root deck-cover > .sub, deck-root deck-cover > p.sub {
   display: block;
   font-size: var(--rik-font-size-h2);
   color: var(--rik-text-inverse--faint);
@@ -339,7 +351,7 @@ deck-cover > .sub, deck-cover > p.sub {
 
 deck-feature > .lead,
 deck-split > .lead,
-deck-feature-cards > .lead {
+deck-root deck-feature-cards > .lead {
   display: block;
   font-size: var(--rik-font-size-lead);
   color: var(--rik-text-default--faint);
@@ -348,7 +360,7 @@ deck-feature-cards > .lead {
   max-width: 75ch;
 }
 
-deck-feature code, deck-split code, deck-feature-cards code, deck-md code {
+deck-root deck-feature code, deck-root deck-split code, deck-root deck-feature-cards code, deck-root deck-md code {
   font-family: var(--rik-font-mono);
   font-size: var(--rik-font-size-mono-sm);
   background: var(--rik-surface-tint);
@@ -356,16 +368,16 @@ deck-feature code, deck-split code, deck-feature-cards code, deck-md code {
   border-radius: var(--rik-radius-sm);
   color: var(--rik-text-default);
 }
-deck-code code { all: unset; }
+deck-root deck-code code { all: unset; }
 
-.card-text {
+deck-root .card-text {
   font-size: var(--rik-font-size-body);
   color: var(--rik-text-default--muted);
   line-height: 1.55;
   margin: 0;
 }
 
-table.dense {
+deck-root table.dense {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
@@ -376,7 +388,7 @@ table.dense {
   background: var(--rik-surface-raised--strong);
   box-shadow: var(--rik-elevation-2);
 }
-table.dense th {
+deck-root table.dense th {
   text-align: left;
   padding: 10px var(--rik-space-3);
   color: var(--rik-text-default--faint);
@@ -387,13 +399,13 @@ table.dense th {
   border-bottom: 1px solid var(--rik-border-default);
   background: var(--rik-surface-sunken);
 }
-table.dense td {
+deck-root table.dense td {
   padding: 10px var(--rik-space-3);
   border-bottom: 1px solid var(--rik-border-default);
   color: var(--rik-text-default--muted);
   line-height: 1.4;
 }
-table.dense tr:last-child td { border-bottom: none; }
-table.dense td.ok  { color: var(--rik-status-success);  font-weight: 700; }
-table.dense td.no  { color: var(--rik-status-danger); }
-table.dense td.meh { color: var(--rik-status-warn); }
+deck-root table.dense tr:last-child td { border-bottom: none; }
+deck-root table.dense td.ok { color: var(--rik-status-success);  font-weight: 700; }
+deck-root table.dense td.no { color: var(--rik-status-danger); }
+deck-root table.dense td.meh { color: var(--rik-status-warn); }
