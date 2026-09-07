@@ -79,6 +79,14 @@ export class DeckStat extends LitElement {
       background: var(--rik-surface-tint); color: var(--rik-text-default);
       padding: 2px 6px; border-radius: var(--rik-radius-sm);
     }
+
+    /* Compact · for three or four stats side by side in a deck-grid. The scale
+       drops, the block stops claiming the slide, and the typographic treatment
+       is otherwise identical so a row of them reads as one family. */
+    :host([compact]) {
+      --deck-stat-num-size: var(--rik-font-size-big);
+      gap: var(--rik-space-1);
+    }
   `;
 
   @property({ type: String }) num?: string;
@@ -91,6 +99,9 @@ export class DeckStat extends LitElement {
       this.style.removeProperty('--_c');
     }
   }
+
+  /** Smaller scale, for a row of stats rather than a single hero figure. */
+  @property({ type: Boolean, reflect: true }) compact = false;
 
   override render() {
     return html`

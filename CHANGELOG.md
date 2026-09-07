@@ -19,6 +19,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `deck-quote` · someone else's words, attributed. Distinct from `deck-punch`,
     which is the speaker's own line. The attribution attribute is `author-role`,
     never `role`, which belongs to ARIA.
+  - `deck-annotate` · a screenshot the speaker can point at. Numbered markers
+    positioned in percent, so they hold under zoom-to-fit, in the overview
+    thumbnail and in the PDF. They reveal one per step through the engine's own
+    step mechanism, with no plugin.
+  - `deck-agenda` · the running order and where the talk is. It reads the deck's
+    own chapter structure through the navigation domain, so adding a
+    `deck-section` grows a line and there is nothing to keep in sync.
+- **Four knobs on components that already existed**, chosen over four new
+  elements that would have duplicated a vocabulary the project already has.
+  `deck-split` takes `pivot` and `winner` for a directed comparison;
+  `deck-step-list` takes `direction="row"` with connectors for a chain across
+  the width; `deck-csv` takes `highlight-rows`, `highlight-cols` and `reveal`;
+  `deck-stat` takes `compact` for a row of figures. All opt-in, all absent by
+  default.
+- **A deck-wide density default**, as a theme token (`--rik-slide-spread`)
+  rather than a deck attribute · density is a per-slide judgement, so the
+  per-slide `spread` still wins and `spread="theme"` defers explicitly.
+- **A slide budget guard** (`e2e/slide-budget.spec.ts`). The engine never lets
+  content overflow, it CLIPS it, so an over-filled slide silently loses its last
+  lines. Every shipped deck is walked slide by slide and a clipping box that
+  loses more than a few pixels fails the build. Under-filled slides are measured
+  and reported, never failed · that one is a judgement, not a defect.
 - **Vertical distribution on content layouts.** A three-line slide left 62% of
   the canvas empty, with no way to use it short of switching to a bento grid.
   `deck-feature`, `deck-split` and `deck-takeaway` now take `spread`

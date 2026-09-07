@@ -11,12 +11,46 @@ import { customElement, property } from 'lit/decorators.js';
 
 @customElement('deck-step-list')
 export class DeckStepList extends LitElement {
+  /* Customization tokens:
+       --deck-step-list-gap        space between steps
+       --deck-step-list-connector  colour of the connector in row direction
+       --deck-step-list-arrow      size of the connector                    */
   static override styles = css`
     :host {
-      display: flex; flex-direction: column;
-      gap: var(--rik-space-2xs);
+      display: flex;
+      flex-direction: column;
+      gap: var(--deck-step-list-gap, var(--rik-space-2xs));
+    }
+    /* Horizontal · the steps share the width and a connector sits between
+       them. The connector is drawn on the gap, so it never shifts the steps. */
+    :host([direction='row']) {
+      flex-direction: row;
+      align-items: stretch;
+      gap: var(--deck-step-list-gap, var(--rik-space-4));
+    }
+    :host([direction='row']) ::slotted(*) {
+      flex: 1 1 0;
+      min-width: 0;
+      position: relative;
+    }
+    :host([direction='row']:not([no-connectors])) ::slotted(* + *)::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: 100%;
+      width: var(--deck-step-list-gap, var(--rik-space-4));
+      height: var(--deck-step-list-arrow, 2px);
+      transform: translateY(-50%);
+      background: var(--deck-step-list-connector, var(--rik-border-default));
     }
   `;
+
+  /** `column` (default) or `row` · a chain that wants the slide width. */
+  @property({ type: String, reflect: true }) direction: 'column' | 'row' = 'column';
+
+  /** Drop the connectors between steps in row direction. */
+  @property({ type: Boolean, reflect: true, attribute: 'no-connectors' }) noConnectors = false;
+
   override render() {
     return html`<slot></slot>`;
   }

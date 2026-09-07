@@ -10,6 +10,8 @@
      dist/index.js. A deck that does not use them pays nothing. -->
 <script type="module" src="../../dist/deck-bar.js"></script>
 <script type="module" src="../../dist/deck-quote.js"></script>
+<script type="module" src="../../dist/deck-annotate.js"></script>
+<script type="module" src="../../dist/deck-agenda.js"></script>
 </head>
 <body>
 <deck-root no-hint no-arrows>
@@ -33,6 +35,29 @@
     <deck-quote id="q-bare" size="lead" plain no-mark>
       A quote can stand on its own.
     </deck-quote>
+  </deck-feature>
+
+  <deck-section id="chapter-one">
+    <h1>First act</h1>
+  </deck-section>
+
+  <deck-feature id="annotated" eyebrow="pointing">
+    <h1 slot="title">Annotate</h1>
+    <deck-annotate
+      id="shot"
+      alt="A placeholder dashboard"
+      src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'%3E%3Crect width='800' height='450' fill='%23dcd6cc'/%3E%3C/svg%3E"
+      marks="20,30,Queue depth|55,60,Latency spike|82,25,Retries"
+    ></deck-annotate>
+  </deck-feature>
+
+  <deck-section id="chapter-two">
+    <h1>Second act</h1>
+  </deck-section>
+
+  <deck-feature id="agenda-slide" eyebrow="where we are">
+    <h1 slot="title">Agenda</h1>
+    <deck-agenda id="agenda"></deck-agenda>
   </deck-feature>
 
 </deck-root>

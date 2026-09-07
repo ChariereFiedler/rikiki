@@ -15,13 +15,18 @@ describe('spreadValue', () => {
     expect(spreadValue('start')).toBe('flex-start');
   });
 
-  it('falls back to the top-aligned default rather than dropping it', () => {
+  it('defers to the theme rather than dropping the layout', () => {
     // A typo must not silently remove the layout · BENTO-11 was exactly this
-    // failure mode on deck-cell, and it is not repeated here.
-    expect(spreadValue('bogus')).toBe('flex-start');
-    expect(spreadValue('')).toBe('flex-start');
-    expect(spreadValue(undefined)).toBe('flex-start');
-    expect(spreadValue(null)).toBe('flex-start');
+    // failure mode on deck-cell. An empty value means "no per-slide opinion",
+    // and the layouts fall through to --rik-slide-spread, then to flex-start.
+    expect(spreadValue('bogus')).toBe('');
+    expect(spreadValue('')).toBe('');
+    expect(spreadValue(undefined)).toBe('');
+    expect(spreadValue(null)).toBe('');
+  });
+
+  it('takes `theme` as an explicit way to say "use the theme default"', () => {
+    expect(spreadValue('theme')).toBe('');
   });
 
   it('ignores case and surrounding whitespace', () => {

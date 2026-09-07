@@ -15,6 +15,11 @@ export declare class DeckSplit extends LitElement {
     /** Let the body's blocks take the leftover height instead of distributing it
      *  around them · pair with a `<deck-fit>` child to grow its text into it. */
     fill: boolean;
+    /** Symbol or word between the two columns · turns a neutral split into a
+     *  directed comparison. Two columns only; ignored in the three-column form. */
+    pivot?: string;
+    /** Which side carries the accent · `left` or `right`, or absent for neither. */
+    winner?: 'left' | 'right';
     willUpdate(): void;
     render(): import("lit-html").TemplateResult<1>;
 }

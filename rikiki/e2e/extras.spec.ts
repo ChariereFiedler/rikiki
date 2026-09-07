@@ -129,3 +129,83 @@ test('the extras are genuinely opt-in', async ({ page }) => {
   await expect(page.locator('deck-root > [active]')).toHaveCount(1);
   expect(deck.consoleErrors, 'an unknown element is not an error').toEqual([]);
 });
+
+test('annotation marks are placed by percentage and revealed one per step', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(`${DECK}#4`);
+
+  // Step 0 shows the screenshot alone · the room looks before being pointed at.
+  const visible = () =>
+    page.evaluate(() => {
+      const shadow = document.getElementById('shot')?.shadowRoot;
+      return [...(shadow?.querySelectorAll('.mark') ?? [])].filter(
+        (m) => !(m as HTMLElement).hidden,
+      ).length;
+    });
+  expect(await visible()).toBe(0);
+
+  await page.keyboard.press('ArrowRight');
+  await expect.poll(visible).toBe(1);
+  await page.keyboard.press('ArrowRight');
+  await expect.poll(visible).toBe(2);
+
+  // The placement is a percentage of the frame, not a pixel offset.
+  const placed = await page.evaluate(() => {
+    const shadow = document.getElementById('shot')?.shadowRoot;
+    const frame = shadow?.querySelector('.frame') as HTMLElement;
+    const mark = shadow?.querySelector('.mark') as HTMLElement;
+    const f = frame.getBoundingClientRect();
+    const m = mark.getBoundingClientRect();
+    return Math.round(((m.left + m.width / 2 - f.left) / f.width) * 100);
+  });
+  expect(placed, 'the first mark sits at 20% of the frame').toBeGreaterThan(17);
+  expect(placed).toBeLessThan(23);
+});
+
+test('an annotated slide asks the engine for one step per mark', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(`${DECK}#4`);
+  const steps = await page.evaluate(
+    () => document.getElementById('annotated')?.getAttribute('data-steps'),
+  );
+  expect(steps, 'three marks means three steps').toBe('3');
+});
+
+test('the agenda reads the deck own chapters and marks the current one', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(`${DECK}#6`);
+
+  const entries = await page.evaluate(() => {
+    const shadow = document.getElementById('agenda')?.shadowRoot;
+    return [...(shadow?.querySelectorAll('li') ?? [])].map((li) => ({
+      state: li.getAttribute('data-state'),
+      title: li.textContent?.trim().replace(/\s+/g, ' ') ?? '',
+    }));
+  });
+
+  expect(entries.length, 'one entry per chapter, derived not typed').toBeGreaterThan(2);
+  expect(entries.map((e) => e.state)).toContain('current');
+  expect(entries.some((e) => e.title.includes('Second act'))).toBe(true);
+  // The chapter the deck is in is the current one, and earlier ones are done.
+  const current = entries.findIndex((e) => e.state === 'current');
+  expect(entries.slice(0, current).every((e) => e.state === 'done')).toBe(true);
+});
+
+test('an agenda entry is a real button that jumps to its chapter', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(`${DECK}#6`);
+
+  await page.evaluate(() => {
+    const shadow = document.getElementById('agenda')?.shadowRoot;
+    (shadow?.querySelectorAll('button')[0] as HTMLElement).click();
+  });
+
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const slides = [...document.querySelectorAll('deck-root > *')];
+        return slides.findIndex((s) => s.hasAttribute('active'));
+      }),
+    )
+    .toBe(0);
+});
