@@ -47,8 +47,8 @@ async function readCells(page: import('@playwright/test').Page, slideId: string)
   return page.evaluate((id) => {
     const slide = document.querySelector(`#${id}`);
     if (!slide) throw new Error(`no slide #${id} in this deck`);
-    const cells = [...slide.querySelectorAll('deck-cell')];
-    if (cells.length === 0) throw new Error(`#${id} holds no cell to measure`);
+    const cells = [...slide.querySelectorAll('deck-point, deck-cell')];
+    if (cells.length === 0) throw new Error(`#${id} holds nothing to measure`);
 
     const rect = (el: Element) => {
       const b = el.getBoundingClientRect();
@@ -81,26 +81,7 @@ async function readCells(page: import('@playwright/test').Page, slideId: string)
 }
 
 test.describe('a row of cells', () => {
-  // KNOWN DEFECT, measured and left visible · the second of the three rejected
-  // geometries, blocked by the same thing as the third.
-  //
-  // A row is a share of the slide rather than a share of what it holds, so
-  // every cell is as tall as the slide and the one cell carrying a surface
-  // paints a box several times the height of its text. Making the row hug is
-  // one line, and it works · the whole bento showcase then clips, because
-  // deck-cell is a size container and a size container reports no height for a
-  // content-sized row to use.
-  //
-  // Dropping the containment to the inline axis fixes both and is nearly free
-  // on paper (deck-fit measures in script, not in cqh). It is not free in fact:
-  // the row then depends on the fit, the fit on the row, and WebKit reports the
-  // loop the containment used to break. Scoping the containment to the cells
-  // that hold a fit passes on Chromium and fails on WebKit.
-  //
-  // So the same one decision blocks both remaining geometries, and it is a
-  // product decision about what a bento cell IS · not a refactor. Nothing is
-  // traded away quietly here.
-  test.fixme('gives a painted cell no more height than it holds', async ({ page }) => {
+  test('gives a painted cell no more height than it holds', async ({ page }) => {
     const deck = createDeckPage(page);
     await deck.goto(`${DECK}#2`);
     await settled(page);
@@ -149,22 +130,7 @@ test.describe('a row of cells', () => {
     ).toBeLessThan(ALIGNED);
   });
 
-  // KNOWN DEFECT, and left visible on purpose · this is the third of the three
-  // rejected geometries and the only one still open.
-  //
-  // The fix is for the cells of a row to share the grid's rows (subgrid), so
-  // every first child sits in one band and every second child in the next. It
-  // was implemented and it does not work here, for a reason that is structural
-  // rather than incidental: deck-cell declares container-type, container-type
-  // applies layout containment, and layout containment makes subgrid compute to
-  // none. Measured · with the containment dropped the bands resolve correctly
-  // (two rows of 142px), with it in place they collapse.
-  //
-  // So the row cannot share baselines while the cell stays a query container,
-  // and the cell being a query container is what makes fit-to-cell text work,
-  // which is the bento's headline feature. Choosing between them is a product
-  // decision, not a refactor, so nothing is quietly traded away here.
-  test.fixme('shares a baseline per row, whatever a title wraps to', async ({ page }) => {
+  test('shares a baseline per row, whatever a title wraps to', async ({ page }) => {
     const deck = createDeckPage(page);
     await deck.goto(`${DECK}#3`);
     await settled(page);

@@ -40,6 +40,7 @@ import './molecules/deck-shortcut.js';
 import './molecules/deck-stack.js';
 import './molecules/deck-grid.js';
 import './molecules/deck-cell.js';
+import './molecules/deck-point.js';
 import './molecules/deck-fit.js';
 import './molecules/deck-csv.js';
 
