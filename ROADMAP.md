@@ -72,12 +72,21 @@ Milestones aimed at "publishable releases". Every milestone is shippable and usa
 
 **Goal**: produce a clean PDF from a deck, scriptable in CI.
 
-- [ ] Complete `@media print`: one slide per A4 landscape page, hide chrome (counter, progress, kb hints)
-- [ ] `tools/export-pdf.mjs` script: headless Playwright → PDF, one command
-- [ ] `?export` mode: forces sequential layout for print (all slides stacked vertically)
-- [ ] Document per-slide PNG export (useful for tweets / threads)
+- [x] `@media print`: one slide per page at the deck's own canvas size (not A4 · a
+      16:9 slide on A4 prints cropped), chrome hidden, backgrounds kept.
+      The `@page` box is written from the canvas variables by `deck-root`.
+- [x] `rikiki export <deck.html> [--output deck.pdf]`: headless Chromium, waits
+      for fonts and mermaid diagrams, reports any asset it could not load.
+      Playwright is an optional peer dependency.
+- [x] Sequential print layout · the print stylesheet stacks every slide, so no
+      separate `?export` mode is needed.
+- [ ] Per-slide PNG export (useful for tweets / threads)
 
-**Acceptance**: `node tools/export-pdf.mjs my-deck/index.html out.pdf` produces a PDF identical to the on-screen render, fonts embedded, vector graphics.
+**Acceptance**: `rikiki export my-deck/index.html --output out.pdf` produces one
+page per slide at the deck canvas, backgrounds included. Verified end to end by
+`e2e/print.spec.ts`, which reads the produced PDF back with poppler: page count,
+page geometry, text on every page, no navigation chrome, and a rasterised check
+that the backgrounds actually printed.
 
 ## v0.5 · Extended components · *richer library*
 

@@ -92,6 +92,35 @@ export class DeckRoot extends LitElement {
       height: 100%;
       transform: none;
     }
+    /* Print · the deck stops being a viewport-sized stage and becomes a stack
+       of canvas-sized pages. The zoom-to-fit transform, the scroll lock and the
+       overlay chrome all belong to the screen, not to paper. Each slide sets its
+       own page break (see slideShell in shared-styles.ts). */
+    @media print {
+      :host {
+        display: block;
+        position: static;
+        height: auto;
+        overflow: visible;
+        background: none;
+      }
+      #stage {
+        display: block;
+        width: auto;
+        height: auto;
+        transform: none;
+        container-type: normal;
+      }
+      #counter,
+      #progress,
+      #nav-arrows,
+      #kb-hint,
+      #step-dots,
+      #blank {
+        display: none;
+      }
+    }
+
     /* While magnified beyond fit (slide zoom), the deck is grab-to-pan. */
     :host([data-zoomed]) { cursor: grab; }
     :host([data-zoomed][data-panning]) { cursor: grabbing; }
@@ -419,6 +448,7 @@ export class DeckRoot extends LitElement {
     }
     root.style.setProperty('--deck-canvas-w', String(this.width));
     root.style.setProperty('--deck-canvas-h', String(this.height));
+    this._applyPageSize();
   }
 
   /** Uniform zoom-to-fit · scale the fixed logical canvas to the largest size
@@ -563,6 +593,30 @@ export class DeckRoot extends LitElement {
    *  slide · it comes last so it wins the equal-specificity tie with the
    *  `:not([fluid])` rule. The `height:100%` pair backs the 100% `:host`
    *  sizing. */
+  /** Size the printed page from the deck's own canvas.
+   *
+   *  `@page` cannot read a custom property, so the rule is written from JS every
+   *  time the canvas changes. Without it the browser prints A4 and crops a 16:9
+   *  slide down its right edge · the exact symptom the FAQ promised away. */
+  private _applyPageSize(): void {
+    if (typeof document === 'undefined') return;
+    const id = 'rik-deck-page';
+    let style = document.getElementById(id) as HTMLStyleElement | null;
+    if (!style) {
+      style = document.createElement('style');
+      style.id = id;
+      document.head.appendChild(style);
+    }
+    style.textContent =
+      `@page { size: ${this.width}px ${this.height}px; margin: 0 }` +
+      // The scroll lock and the fixed height belong to the screen · on paper
+      // they collapse the document to a single viewport-sized page.
+      '@media print{' +
+      'html:has(> body > deck-root),html:has(> body > deck-root) body' +
+      '{overflow:visible;height:auto}' +
+      '}';
+  }
+
   private static _injectGlobals(): void {
     if (typeof document === 'undefined' || document.getElementById('rik-deck-globals')) return;
     const style = document.createElement('style');

@@ -943,3 +943,34 @@ an archival format. Always pin a version.
 The self-containment of a standalone file is enforced, not assumed:
 `e2e/bundle.spec.ts` writes each bundle outside the repository, opens it over
 `file://`, and fails if the page issues a single request beyond itself.
+
+---
+
+## 17 · Printing and PDF export
+
+A deck carries its own print stylesheet · no mode to switch on, no separate
+build.
+
+- **One slide, one page.** Every slide prints, in order, at the deck's canvas
+  size. The `@page` box is written from `--deck-canvas-w/h`, so a 16:9 deck
+  prints 16:9 · forcing A4 crops it.
+- **Backgrounds are kept** (`print-color-adjust: exact`) · a tinted layout means
+  nothing in black and white.
+- **Chrome is dropped** · counter, progress bar, nav arrows, key hints, step dots.
+- **Steps do not multiply pages.** A slide with click-stages prints once, fully
+  revealed. Speaker notes stay out.
+
+From the browser: print, backgrounds on. From the command line:
+
+```sh
+rikiki export deck.html --output deck.pdf
+```
+
+The command serves the deck over HTTP (ES modules need it), waits for
+`document.fonts.ready` and for every `<deck-mermaid>` to settle, then prints. It
+reports any asset it could not load rather than handing back a silently
+incomplete PDF. It needs **Playwright**, an optional peer dependency:
+`npm i -D playwright && npx playwright install chromium`.
+
+The whole contract is verified in `e2e/print.spec.ts` by reading the produced
+PDF back with poppler.

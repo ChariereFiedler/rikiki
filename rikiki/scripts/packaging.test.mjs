@@ -18,9 +18,23 @@ describe('install cost', () => {
     expect(deps, `production dependencies: ${deps.join(', ')}`).toEqual([]);
   });
 
-  it('declares rolldown as an optional peer, not a hard requirement', () => {
-    expect(pkg.peerDependencies?.rolldown).toBeTruthy();
-    expect(pkg.peerDependenciesMeta?.rolldown?.optional).toBe(true);
+  it.each([
+    'rolldown',
+    'playwright',
+  ])('declares %s as an optional peer, not a hard requirement', (name) => {
+    // rolldown serves `bundle`, playwright serves `export` · neither belongs
+    // in the install of someone who only shows decks in their own browser.
+    expect(pkg.peerDependencies?.[name]).toBeTruthy();
+    expect(pkg.peerDependenciesMeta?.[name]?.optional).toBe(true);
+  });
+
+  it('loads both optional peers lazily', () => {
+    for (const file of ['bin/lib/inline.mjs', 'bin/lib/export-pdf.mjs']) {
+      const src = readFileSync(resolve(PKG_DIR, file), 'utf8');
+      expect(src, `${file} must not import an optional peer statically`).not.toMatch(
+        /^import .*from '(rolldown|playwright)'/m,
+      );
+    }
   });
 
   it('keeps lit as a required peer · the shipped .d.ts files import it', () => {
