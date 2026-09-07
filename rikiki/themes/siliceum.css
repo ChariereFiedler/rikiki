@@ -127,6 +127,19 @@
   --rik-decor-lime:                   var(--rik-palette-lime-500);
   --rik-decor-canary:                 var(--rik-palette-canary-500);
 
+  /* Text-grade tone companions · the plain tones are surface/decoration colors
+     and several of them sit under WCAG AA on the page. Anything that renders
+     TEXT in a tone (deck-punch, deck-stat) must route here instead.
+     Measured, not eyeballed · src/shared/contrast.test.ts fails if a value
+     drifts under the large-text threshold. */
+  --rik-status-success__text:       var(--rik-palette-helico-500);
+  --rik-status-warn__text:          var(--rik-palette-warm-500);
+  --rik-status-danger__text:        var(--rik-palette-ember-500);
+  --rik-accent__text:               #ab8d2f;
+  --rik-decor-orchid__text:         var(--rik-palette-orchid-500);
+  --rik-decor-lime__text:           #67a011;
+  --rik-decor-canary__text:         var(--rik-palette-canary-500);
+
   --rik-elevation-1:                  0 1px 2px rgba(0, 0, 0, 0.04);
   --rik-elevation-2:                  0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.04);
   --rik-elevation-3:                  0 2px 6px rgba(0, 0, 0, 0.06), 0 8px 20px rgba(0, 0, 0, 0.06);

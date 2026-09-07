@@ -134,7 +134,7 @@
   --rik-focus-ring--width:            2px;
   --rik-focus-ring--offset:           2px;
 
-  /* Link · mango-500 on paper is 3.2:1 (fails WCAG AA for body text).
+  /* Link · mango-500 on paper is 2.81:1 (fails WCAG AA for body text).
      Default link uses mango-700 (≥4.5:1); hover bumps to the brighter
      accent for visual feedback. */
   --rik-link:                         var(--rik-accent--strong);
@@ -149,6 +149,19 @@
   --rik-decor-orchid:                 var(--rik-palette-orchid-500);
   --rik-decor-lime:                   var(--rik-palette-lime-500);
   --rik-decor-canary:                 var(--rik-palette-canary-500);
+
+  /* Text-grade tone companions · the plain tones are surface/decoration colors
+     and several of them sit under WCAG AA on the page. Anything that renders
+     TEXT in a tone (deck-punch, deck-stat) must route here instead.
+     Measured, not eyeballed · src/shared/contrast.test.ts fails if a value
+     drifts under the large-text threshold. */
+  --rik-status-success__text:       #00a282;
+  --rik-status-warn__text:          var(--rik-palette-warm-500);
+  --rik-status-danger__text:        var(--rik-palette-ember-500);
+  --rik-accent__text:               #e66b1f;
+  --rik-decor-orchid__text:         var(--rik-palette-orchid-500);
+  --rik-decor-lime__text:           #7a9a20;
+  --rik-decor-canary__text:         #00a281;
 
   /* Elevation */
   --rik-elevation-1:                  0 1px 2px rgba(6, 8, 15, 0.04);

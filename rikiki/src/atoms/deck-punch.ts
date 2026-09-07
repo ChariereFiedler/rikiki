@@ -21,13 +21,16 @@ import { FitController } from '../shared/fit-controller.js';
 export type DeckPunchTone = 'warn' | 'danger' | 'ok' | 'info' | 'muted' | 'accent';
 export type DeckPunchSize = 'lead' | 'big' | 'mega' | 'stat' | 'display';
 
+// Text-grade companions, not the plain tones · a punch always renders text, and
+// several plain tones sit under WCAG AA on the page surface. See the contract
+// pinned in src/shared/contrast.test.ts.
 const TONES: Record<DeckPunchTone, string> = {
-  warn: 'var(--rik-status-warn)',
-  danger: 'var(--rik-status-danger)',
-  ok: 'var(--rik-status-success)',
-  info: 'var(--rik-accent)',
+  warn: 'var(--rik-status-warn__text)',
+  danger: 'var(--rik-status-danger__text)',
+  ok: 'var(--rik-status-success__text)',
+  info: 'var(--rik-accent__text)',
   muted: 'var(--rik-text-default--faint)',
-  accent: 'var(--rik-accent)',
+  accent: 'var(--rik-accent__text)',
 };
 
 const SIZES: Record<DeckPunchSize, string> = {
