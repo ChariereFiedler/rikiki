@@ -22,7 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `deck-annotate` · a screenshot the speaker can point at. Numbered markers
     positioned in percent, so they hold under zoom-to-fit, in the overview
     thumbnail and in the PDF. They reveal one per step through the engine's own
-    step mechanism, with no plugin.
+    step mechanism, with no plugin. The percentages are relative to the PAINTED
+    picture, not to the element box: an image is letterboxed inside its box, and
+    anchoring to the box put markers on the empty margin beside the screenshot.
   - `deck-agenda` · the running order and where the talk is. It reads the deck's
     own chapter structure through the navigation domain, so adding a
     `deck-section` grows a line and there is nothing to keep in sync.
@@ -36,6 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **A deck-wide density default**, as a theme token (`--rik-slide-spread`)
   rather than a deck attribute · density is a per-slide judgement, so the
   per-slide `spread` still wins and `spread="theme"` defers explicitly.
+- **A guard against a backtick inside a `css` template literal**
+  (`scripts/css-template.test.mjs`). It closes the literal, and the parse error
+  it produces points nowhere near the comment that caused it. Three debugging
+  rounds went into that trap before the test did.
 - **A slide budget guard** (`e2e/slide-budget.spec.ts`). The engine never lets
   content overflow, it CLIPS it, so an over-filled slide silently loses its last
   lines. Every shipped deck is walked slide by slide and a clipping box that
