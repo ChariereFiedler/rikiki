@@ -16,7 +16,25 @@ export default defineConfig({
     // trace of every failure instead (collected as a CI artifact).
     trace: 'retain-on-failure',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    // Chromium runs the whole suite · it is the only engine Playwright can
+    // drive `page.pdf()` on, and the only one with the multi-screen APIs the
+    // presenter uses.
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    // Firefox and WebKit run the BASE contract: rendering, navigation, scaling,
+    // bento, offline bundles, security. What they skip is skipped because the
+    // capability is Chromium-only, never because it is inconvenient.
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+      testIgnore: [/print\.spec\.ts/, /presenter\.spec\.ts/],
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+      testIgnore: [/print\.spec\.ts/, /presenter\.spec\.ts/],
+    },
+  ],
   webServer: {
     command: `python3 -m http.server ${PORT} --directory ..`,
     url: `http://localhost:${PORT}/rikiki/dist/index.js`,
