@@ -2,17 +2,26 @@
 // RIKIKI · CSV parser
 // A small RFC-4180-ish parser · pure and DOM-free so it is unit-testable.
 // Handles quoted fields, the delimiter inside quotes, escaped quotes (""),
-// and both \n and \r\n line endings.
+// and \n, \r\n and lone \r line endings.
 // ════════════════════════════════════════════════════════════════
 
-/** Parse CSV text into a matrix of rows × cells. Fully-empty lines (a single
- *  empty field, e.g. a trailing newline or a blank separator line) are dropped
- *  so a deck author can space the source out for readability. */
+/** Parse CSV text into a matrix of rows × cells.
+ *
+ *  A blank spacer line (a single UNQUOTED empty field) is dropped so an author
+ *  can space the source out for readability. A quoted `""` is a value the author
+ *  wrote on purpose and survives · dropping it silently loses data.
+ *
+ *  Row terminators: `\n`, `\r\n` and a lone `\r` (some spreadsheet exports).
+ *  The delimiter may be more than one character. */
 export function parseCsv(text: string, delimiter = ','): string[][] {
   const rows: string[][] = [];
+  // Parallel to `rows` · true when the row contained a quoted field, which makes
+  // an empty value explicit rather than a spacer line.
+  const rowWasQuoted: boolean[] = [];
   let row: string[] = [];
   let field = '';
   let inQuotes = false;
+  let sawQuote = false;
 
   const endField = () => {
     row.push(field);
@@ -21,7 +30,9 @@ export function parseCsv(text: string, delimiter = ','): string[][] {
   const endRow = () => {
     endField();
     rows.push(row);
+    rowWasQuoted.push(sawQuote);
     row = [];
+    sawQuote = false;
   };
 
   for (let i = 0; i < text.length; i++) {
@@ -37,18 +48,25 @@ export function parseCsv(text: string, delimiter = ','): string[][] {
       } else {
         field += c;
       }
-    } else if (c === '"') {
+      continue;
+    }
+    if (c === '"') {
       inQuotes = true;
-    } else if (c === delimiter) {
+      sawQuote = true;
+    } else if (text.startsWith(delimiter, i)) {
       endField();
+      i += delimiter.length - 1;
     } else if (c === '\n') {
       endRow();
-    } else if (c !== '\r') {
+    } else if (c === '\r') {
+      // CRLF is one terminator · let the \n close the row.
+      if (text[i + 1] !== '\n') endRow();
+    } else {
       field += c;
     }
   }
-  // Flush the trailing field/row when the text does not end on a newline.
+  // Flush the trailing field/row when the text does not end on a terminator.
   if (field.length > 0 || row.length > 0) endRow();
 
-  return rows.filter((r) => !(r.length === 1 && r[0] === ''));
+  return rows.filter((r, i) => rowWasQuoted[i] || !(r.length === 1 && r[0] === ''));
 }

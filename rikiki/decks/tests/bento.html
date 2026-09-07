@@ -62,6 +62,20 @@
       </deck-csv>
     </deck-cell>
   </deck-bento>
+
+  <!-- Ragged source · rows shorter than the header, plus a quoted empty value.
+       Pins that no row is dropped and no column drifts (see e2e/bento.spec.ts). -->
+  <deck-bento eyebrow="csv" cols="1" rows="1">
+    <h1 slot="title">Ragged csv</h1>
+    <deck-cell>
+      <deck-csv id="csv-ragged">
+        Region, Users, Plan
+        EMEA, 12 040, Pro
+        APAC, 9 310
+        "", 4 105, Pro
+      </deck-csv>
+    </deck-cell>
+  </deck-bento>
 </deck-root>
 </body>
 </html>
