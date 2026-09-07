@@ -1007,3 +1007,39 @@ Recommended for a thumbnail or an inline demo:
   <deck-root no-hint no-arrows>…</deck-root>
 </div>
 ```
+
+---
+
+## 19 · Filling the slide vertically
+
+A slide body takes the height left under the title, but its blocks stack at the
+top. A short slide therefore leaves most of the canvas empty · measured at 62%
+on a three-line `deck-feature`. Two opt-in attributes on `deck-feature`,
+`deck-split` and `deck-takeaway` share that space. Both are no-ops when absent,
+so existing decks are untouched.
+
+| Attribute | Effect |
+|---|---|
+| `spread="between"` | push the blocks apart over the full height |
+| `spread="around"` / `"evenly"` | distribute the space around / between evenly |
+| `spread="center"` / `"end"` / `"start"` | group the blocks, centred / bottom / top (default) |
+| `fill` | give the height to the blocks themselves rather than to the gaps |
+
+An unknown `spread` value falls back to `start` rather than dropping the
+layout.
+
+`fill` on its own makes the blocks taller, not the text. Pair it with
+`<deck-fit>` to grow the text into the box it now has:
+
+```html
+<deck-feature fill>
+  <h1 slot="title">Filled</h1>
+  <deck-fit max="5">One line that grows to fill its share of the slide.</deck-fit>
+  <deck-fit max="5">And a second one.</deck-fit>
+</deck-feature>
+```
+
+Which to reach for: `spread` when the type size is right and only the rhythm is
+wrong; `fill` when the slide is genuinely under-filled and the text should be
+bigger. `deck-bento` remains the answer when the content wants a grid rather
+than a stack.

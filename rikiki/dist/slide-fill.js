@@ -1,0 +1,1 @@
+var t=new Map([["start","flex-start"],["center","center"],["end","flex-end"],["between","space-between"],["around","space-around"],["evenly","space-evenly"]]);function r(e){let n=(e??"").trim().toLowerCase();return t.get(n)??"flex-start"}export{t as SPREAD,r as spreadValue};

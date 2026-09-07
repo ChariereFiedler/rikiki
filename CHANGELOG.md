@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Vertical distribution on content layouts.** A three-line slide left 62% of
+  the canvas empty, with no way to use it short of switching to a bento grid.
+  `deck-feature`, `deck-split` and `deck-takeaway` now take `spread`
+  (`between` / `around` / `evenly` / `center` / `end` / `start`) to share the
+  leftover height between the blocks, and `fill` to give that height to the
+  blocks themselves · paired with `<deck-fit>` the text grows into it. Both are
+  opt-in and absent means unchanged. An unknown `spread` value falls back to the
+  documented default rather than dropping the layout.
 - **Bento grid slides.** `<deck-bento>` lays out `<deck-cell>` children on a
   multi-row, multi-column canvas · cells take a `span` (`2x1`), a `tone`, and
   per-axis `col`/`row` overrides. Each cell is a size container, so `cqw`/`cqh`
