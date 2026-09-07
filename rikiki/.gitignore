@@ -10,3 +10,4 @@ livereload-section.jpeg
 decks/*/*.html
 # … except hand-written browser-verification fixtures
 !decks/tests/*.html
+.shots/
