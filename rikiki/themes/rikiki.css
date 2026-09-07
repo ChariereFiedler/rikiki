@@ -215,7 +215,15 @@
   --rik-text-3xl:                     3.815rem;    /* 1.25^6 */
   --rik-text-4xl:                     4.768rem;    /* 1.25^7 */
 
-  /* Legacy names · kept aligned to the new scale.
+  /* Semantic sizes · the roles, mapped onto the raw scale above.
+     The step between a statement and the reading size is the one axis ADR-002
+     leaves free, and it used to be spent on nothing: a slide title was 1.56x
+     the body, which is not two sizes but one size in two weights, and it is
+     why the decks read flat from the back of a room. The title is 2.44x now
+     and a chapter title 3.05x, both held under the clipping budget that
+     e2e/slide-budget.spec.ts measures.
+
+     Legacy names · kept aligned to the new scale.
      Fixed in 2026-05-20: --rik-font-size-mega was smaller than -big · the
      order is now monotonic (strong < big < mega < hook < stat). */
   --rik-font-size-xs:                 var(--rik-text-2xs);
@@ -223,9 +231,9 @@
   --rik-font-size-body:               var(--rik-text-base);  /* ≈32px · sized for projection */
   --rik-font-size-lead:               var(--rik-text-md);
   --rik-font-size-h2:                 var(--rik-text-md);
-  --rik-font-size-h1:                 var(--rik-text-lg);
-  --rik-font-size-section:            var(--rik-text-lg);
-  --rik-font-size-display:            var(--rik-text-xl);
+  --rik-font-size-h1:                 var(--rik-text-2xl);
+  --rik-font-size-section:            var(--rik-text-3xl);
+  --rik-font-size-display:            var(--rik-text-2xl);
   --rik-font-size-mono:               0.88rem;
   --rik-font-size-mono-sm:            var(--rik-text-xs);
 

@@ -191,9 +191,9 @@
   --rik-font-size-body:               var(--rik-text-base);
   --rik-font-size-lead:               var(--rik-text-md);
   --rik-font-size-h2:                 var(--rik-text-md);
-  --rik-font-size-h1:                 var(--rik-text-lg);
-  --rik-font-size-section:            var(--rik-text-lg);
-  --rik-font-size-display:            var(--rik-text-xl);
+  --rik-font-size-h1:                 var(--rik-text-2xl);
+  --rik-font-size-section:            var(--rik-text-3xl);
+  --rik-font-size-display:            var(--rik-text-2xl);
   --rik-font-size-mono:               0.88rem;
   --rik-font-size-mono-sm:            var(--rik-text-xs);
 
