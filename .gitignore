@@ -34,3 +34,9 @@ Thumbs.db
 
 # Slidev (legacy)
 .slidev/
+
+# Local artefacts, not deliverables
+.playwright-mcp/
+docs/chardon/
+rikiki/-dbg-deck.html
+rikiki/-e2e-deck.html
