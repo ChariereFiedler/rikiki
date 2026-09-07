@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>rikiki · extras NOT loaded</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+</head>
+<body>
+<!-- The same tags, WITHOUT their modules · proves the components are opt-in
+     and that a deck which does not load them still renders. -->
+<deck-root no-hint no-arrows>
+  <deck-feature id="slide">
+    <h1 slot="title">Extras are opt-in</h1>
+    <deck-bar value="1" total="2" label="not registered"></deck-bar>
+    <deck-quote author="nobody">not registered</deck-quote>
+  </deck-feature>
+</deck-root>
+</body>
+</html>

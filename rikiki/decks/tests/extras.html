@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · opt-in extras</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<!-- Opt-in components · each is its own module and none of them is in
+     dist/index.js. A deck that does not use them pays nothing. -->
+<script type="module" src="../../dist/deck-bar.js"></script>
+<script type="module" src="../../dist/deck-quote.js"></script>
+</head>
+<body>
+<deck-root no-hint no-arrows>
+
+  <deck-feature id="bars" eyebrow="proportion">
+    <h1 slot="title">Bars</h1>
+    <deck-bar id="bar-part" value="160" total="538" label="Worth a second look"></deck-bar>
+    <deck-bar
+      id="bar-stack"
+      label="Four thousand findings"
+      segments="blocker:137:danger|major:921:warn|minor:1544:info|info:812:ok|noise:586:muted"
+    ></deck-bar>
+    <deck-bar id="bar-token" value="1" total="2" label="Themed" style="--deck-bar-height: 40px"></deck-bar>
+  </deck-feature>
+
+  <deck-feature id="quotes" eyebrow="verbatim">
+    <h1 slot="title">Quotes</h1>
+    <deck-quote id="q-full" author="Marie Dupont" author-role="CTO, Acme">
+      We stopped arguing about the diff and started arguing about the design.
+    </deck-quote>
+    <deck-quote id="q-bare" size="lead" plain no-mark>
+      A quote can stand on its own.
+    </deck-quote>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

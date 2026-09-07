@@ -42,6 +42,34 @@ export function registeredElements() {
  *  the components catalogue, which documents what you put on a slide. */
 export const NOT_IN_CATALOGUE = ['deck-root'];
 
+/** Elements the DEFAULT bundle registers · everything src/index.ts imports.
+ *
+ *  The split matters for what the docs may claim. "Rikiki has N components" is
+ *  a statement about what you get when you load dist/index.js; an opt-in module
+ *  a deck may never import does not belong in that number. Manifesto principle
+ *  3: light by default, extensible on demand. */
+export function coreElements() {
+  const entry = readFileSync(resolve(SRC_DIR, 'index.ts'), 'utf8');
+  const imported = new Set(
+    [...entry.matchAll(/^\s*import\s+'\.\/([^']+)\.js'/gm)].map((m) => `${m[1]}.ts`),
+  );
+  const names = new Set();
+  for (const file of walk(SRC_DIR)) {
+    const relative = file.slice(SRC_DIR.length + 1);
+    if (!imported.has(relative)) continue;
+    const src = readFileSync(file, 'utf8');
+    for (const m of src.matchAll(/@customElement\('([^']+)'\)/g)) names.add(m[1]);
+    for (const m of src.matchAll(/customElements\.define\('([^']+)'/g)) names.add(m[1]);
+  }
+  return [...names].sort();
+}
+
+/** Registered, but only when the deck asks for the module · src/extras/**. */
+export function optInElements() {
+  const core = new Set(coreElements());
+  return registeredElements().filter((name) => !core.has(name));
+}
+
 /** Every page that publishes a component count. */
 export const COUNT_SURFACES = [
   {
