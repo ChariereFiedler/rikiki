@@ -24,9 +24,13 @@ export class DeckPersona extends LitElement {
   static override styles = [
     signature,
     css`
+      /* Anchored to the name, not centred against the stack. Centring made the
+         avatar drift down as soon as the context ran to two lines, so it sat
+         between the role and the context, attached to neither · the name is
+         what it identifies, so it lines up with the name. */
       :host {
         display: flex;
-        align-items: center;
+        align-items: start;
         gap: var(--deck-persona-gap, var(--rik-space-5));
       }
       /* A portrait is a portrait. Without one, the initials are set at
@@ -43,6 +47,11 @@ export class DeckPersona extends LitElement {
       }
       .avatar .statement {
         font-size: calc(var(--deck-persona-avatar-size, 6rem) * 0.45);
+      }
+      /* Initials are type, so they align on their first line like type. A
+         portrait is a picture and keeps its box centring. */
+      :host(:not([src])) .avatar {
+        place-items: start;
       }
       :host([src]) .avatar {
         border-radius: var(--rik-radius-sm);
