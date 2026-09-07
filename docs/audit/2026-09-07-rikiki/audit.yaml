@@ -3,7 +3,7 @@
 date: 2026-09-07
 projet: rikiki
 commit: 12b0f7b
-status: in-progress
+status: complete
 
 meta:
   methode: >-
@@ -138,7 +138,8 @@ domaines:
           site/package.json déclare `"license": "ISC"` (valeur par défaut de
           `npm init` jamais corrigée) alors que le dépôt est sous MIT. Les champs
           author et description y sont également vides.
-        recommandation: Aligner sur MIT et renseigner author/description, ou passer le paquet en `"private": true`.
+        recommandation: >-
+          Aligner sur MIT et renseigner author/description, ou passer le paquet en `"private": true`.
       - niveau: attention
         titre: Contact sécurité sur une adresse personnelle
         detail: >-
@@ -380,7 +381,93 @@ domaines:
           d'architecture sur deck-root.ts.
 
 synthese:
-  score_global: null
-  points_forts: []
-  risques_majeurs: []
-  recommandations: []
+  score_global: 66
+  methode_score: >-
+    Moyenne non pondérée des 9 domaines (597/9). Le score est tiré vers le bas
+    par observability (35) et compliance (45) ; le socle livraison (ci-cd 82,
+    architecture 78, quality 76, testing 74) est nettement au-dessus.
+  lecture_generale: >-
+    rikiki est un projet dont la chaîne de livraison est mûre et dont les
+    arbitrages sont documentés — le RUNBOOK capitalise les incidents, le CI
+    protège l'artefact réellement publié, les risques du « dist versionné » sont
+    identifiés et gardés. Les faiblesses ne sont pas des négligences de code mais
+    des couches d'industrialisation jamais posées : rien ne surveille la
+    production entre deux commits, et aucune analyse de sécurité ni de licence
+    n'est automatisée. Trois des quatre chantiers prioritaires se règlent en
+    ajoutant des jobs CI, pas en refactorant.
+  points_forts:
+    - Garde-fou anti-dérive du dist/ versionné (`git diff --exit-code -- dist` en CI) — la bonne réponse au risque du zero-build.
+    - Images de base épinglées par digest sha256 et dépendances runtime vendorées (plus d'appel CDN tiers).
+    - Portes qualité rapides avant le build coûteux : typecheck + biome + vitest + astro check en stage `check`.
+    - Exploitation documentée et réversible : RUNBOOK avec « Known gotchas », rollback outillé par short-sha, smoke-test externe post-déploiement.
+    - Pyramide de tests cohérente avec le produit : 10 specs Playwright sur le rendu réel, 5 suites vitest sur la logique pure extraite.
+    - Chargement différé systématique des modules lourds (shiki, overview, presenter, transitions).
+  risques_majeurs:
+    - domaine: security
+      severite: critique
+      risque: >-
+        Aucune analyse automatisée dans le pipeline — ni secret detection, ni SAST,
+        ni scan de dépendances ou d'image ; `npm ci --no-audit` désactive même le
+        contrôle par défaut. La règle projet désigne pourtant la CI comme filet de
+        sécurité, et aucun hook pre-commit n'est installé : il n'y a aucun filet.
+    - domaine: observability
+      severite: critique
+      risque: >-
+        Aucune remontée d'erreur runtime et aucune sonde entre deux déploiements.
+        Le seul canal de détection d'une régression en production est le
+        signalement humain ; le MTTD est indéterminé.
+    - domaine: compliance
+      severite: critique
+      risque: >-
+        12,6 Mo de dépendances tierces (lit BSD-3, marked/mermaid/shiki MIT)
+        redistribuées via git et npm avec les notices de copyright supprimées à la
+        minification, sans NOTICE ni THIRD_PARTY — manquement objectif aux
+        licences, trivial à corriger.
+    - domaine: performance-frontend
+      severite: risque
+      risque: >-
+        shiki.js (9,2 Mo, toutes grammaires) et mermaid.min.js (3,3 Mo) sont
+        versionnés et publiés ; aucun budget de taille ne surveille cette dérive.
+  recommandations:
+    - priorite: 1
+      effort: faible
+      domaine: security
+      action: >-
+        Inclure les templates GitLab Secret-Detection et Dependency-Scanning dans
+        le stage `check`, retirer `--no-audit` (ou ajouter `npm audit --audit-level=high`),
+        et installer le hook pre-commit gitleaks prescrit par
+        .claude/rules/shared/pre-commit-secret-detection.md via core.hooksPath.
+    - priorite: 2
+      effort: faible
+      domaine: compliance
+      action: >-
+        Faire émettre à build-vendor.mjs un en-tête de licence préservé
+        (esbuild --legal-comments=inline) et générer un THIRD_PARTY.md ajouté au
+        champ `files` de package.json. Aligner site/package.json sur MIT.
+    - priorite: 3
+      effort: faible
+      domaine: observability
+      action: >-
+        Poser une sonde externe d'uptime avec alerte sur https://rikiki.tordu-jardin.fr/
+        et ajouter un pipeline planifié rejouant check + smoke-test, pour ne plus
+        dépendre du prochain commit comme signal de rupture.
+    - priorite: 4
+      effort: moyen
+      domaine: performance-frontend
+      action: >-
+        Restreindre le build shiki aux langages et thèmes réellement utilisés
+        (createHighlighterCore + imports granulaires) et poser une porte de taille
+        sur dist/ dans le stage check.
+    - priorite: 5
+      effort: eleve
+      domaine: architecture / testing
+      action: >-
+        Extraire la machine à états de navigation et la logique de stages de
+        deck-root.ts (1 335 LOC) vers shared/, puis les couvrir en vitest et
+        activer la mesure de couverture avec un seuil à cliquet. Chantier unique
+        qui répond simultanément au constat d'architecture et à celui de testing.
+  suite_a_donner_forge:
+    - >-
+      Installer le pack de skills audit-* (absent de cet environnement) ou
+      retirer ces domaines du contrat de run : le run a dû être conduit par
+      analyse directe, sans les grilles attendues. Voir meta.methode.
