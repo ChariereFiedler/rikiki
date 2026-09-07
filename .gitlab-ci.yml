@@ -77,6 +77,10 @@ package-check:
 
 # Render net · loads every fixture deck in a real browser and asserts the
 # engine upgrades, slides render, navigation works and content has no JS errors.
+# Also runs the offline-bundle, print/PDF and accessibility suites.
+# Three engines: Chromium runs everything; Firefox and WebKit run the base
+# contract (they skip print, which needs page.pdf, and the presenter, which
+# needs the multi-screen APIs).
 # Uses the official Playwright image (browsers + python3 for the static server)
 # pinned to the installed @playwright/test version.
 e2e:
