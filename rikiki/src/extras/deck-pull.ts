@@ -22,10 +22,13 @@ export class DeckPull extends LitElement {
   static override styles = css`
     :host {
       display: block;
-      font-family: var(--rik-font-sans);
-      font-size: var(--deck-pull-size, var(--rik-font-size-lead));
-      line-height: 1.3;
-      font-weight: 700;
+      /* The display face, not bold body text · an excerpt has to look lifted
+         out, and weight alone does not do that at projection distance. */
+      font-family: var(--deck-pull-font, var(--rik-font-display, var(--rik-font-sans)));
+      font-size: var(--deck-pull-size, var(--rik-font-size-big));
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      font-weight: 800;
       color: var(--deck-pull-color, var(--rik-text-default));
       background: var(--deck-pull-bg, transparent);
       padding: var(--deck-pull-padding, var(--rik-space-2) 0);

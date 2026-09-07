@@ -14,6 +14,7 @@
 
 import { LitElement, css, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { signature } from './signature.js';
 
 export type DeckKpiTone = 'default' | 'accent' | 'ok' | 'warn' | 'danger' | 'muted';
 
@@ -36,11 +37,14 @@ export class DeckKpiGrid extends LitElement {
     :host {
       display: grid;
       grid-template-columns: repeat(var(--deck-kpi-grid-cols, var(--_cols, 3)), minmax(0, 1fr));
-      gap: var(--deck-kpi-grid-gap, var(--rik-space-5));
+      gap: var(--deck-kpi-grid-gap, var(--rik-space-6));
       align-items: start;
     }
-    /* A hairline between figures · it is what makes a row read as one block
-       rather than three unrelated slides squeezed together. */
+    /* The ruled attribute draws a line between figures. It survives as an
+       opt-in because a
+       dense row of four sometimes needs it, but the default is space: at
+       projection distance a hairline between two columns is not seen, it is
+       inferred, and the gap does the same job for free. */
     :host([ruled]) ::slotted(deck-kpi:not(:first-child)) {
       border-left: 1px solid var(--deck-kpi-grid-rule, var(--rik-border-default));
       padding-left: var(--deck-kpi-grid-gap, var(--rik-space-5));
@@ -67,35 +71,31 @@ export class DeckKpi extends LitElement {
   /* Customization tokens:
        --deck-kpi-value-size / --deck-kpi-value-color
        --deck-kpi-label-color / --deck-kpi-note-color                       */
-  static override styles = css`
-    :host {
-      display: flex;
-      flex-direction: column;
-      gap: var(--rik-space-1);
-      font-family: var(--rik-font-sans);
-      min-width: 0;
-    }
-    .value {
-      font-family: var(--rik-font-display, var(--rik-font-sans));
-      font-size: var(--deck-kpi-value-size, var(--rik-font-size-big));
-      font-weight: 900;
-      line-height: 1;
-      letter-spacing: -0.02em;
-      color: var(--deck-kpi-value-color, var(--_tone));
-      font-variant-numeric: tabular-nums;
-      /* A long value shrinks rather than pushing its neighbours around. */
-      overflow-wrap: anywhere;
-    }
-    .label {
-      font-size: var(--rik-font-size-lead);
-      color: var(--deck-kpi-label-color, var(--rik-text-default));
-    }
-    .note {
-      font-size: var(--rik-font-size-xs);
-      color: var(--deck-kpi-note-color, var(--rik-text-default--faint));
-      line-height: 1.35;
-    }
-  `;
+  static override styles = [
+    signature,
+    css`
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--rik-space-2);
+        min-width: 0;
+      }
+      /* The figure IS the design · at ten metres a number is either large
+         enough to read or it is decoration, and there is no middle. */
+      .value {
+        color: var(--deck-kpi-value-color, var(--_tone));
+      }
+      /* The label is a sentence, not a tag. It used to be a tracked-out mono
+         micro-label, which is unreadable across a room and is one of the
+         clearest marks of a generated slide. */
+      .label {
+        color: var(--deck-kpi-label-color, var(--rik-text-default));
+      }
+      .note {
+        color: var(--deck-kpi-note-color, var(--rik-text-default--muted));
+      }
+    `,
+  ];
 
   @property({ type: String }) value?: string;
   @property({ type: String }) label?: string;
@@ -109,9 +109,9 @@ export class DeckKpi extends LitElement {
 
   override render() {
     return html`
-      <span class="value" part="value">${this.value ?? ''}</span>
-      ${this.label ? html`<span class="label" part="label">${this.label}</span>` : ''}
-      ${this.note ? html`<span class="note" part="note">${this.note}</span>` : ''}
+      <span class="value statement" part="value">${this.value ?? ''}</span>
+      ${this.label ? html`<span class="label reading" part="label">${this.label}</span>` : ''}
+      ${this.note ? html`<span class="note reading quiet" part="note">${this.note}</span>` : ''}
       <slot></slot>
     `;
   }

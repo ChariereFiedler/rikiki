@@ -20,7 +20,7 @@
 <body>
 <deck-root no-hint no-arrows>
 
-  <deck-feature id="s-icons" eyebrow="symbols">
+  <deck-feature id="s-icons" eyebrow="symbols" spread="center">
     <h1 slot="title">Icons</h1>
     <p>
       <deck-icon id="ico-check" name="check" tone="ok" size="lg"></deck-icon>
@@ -32,7 +32,7 @@
     </p>
   </deck-feature>
 
-  <deck-feature id="s-check" eyebrow="yes / no">
+  <deck-feature id="s-check" eyebrow="yes / no" spread="center">
     <h1 slot="title">Checklist</h1>
     <deck-checklist id="checks" cols="2">
       <deck-check id="chk-yes">Reviewed in CI</deck-check>
@@ -40,7 +40,7 @@
     </deck-checklist>
   </deck-feature>
 
-  <deck-feature id="s-kpi" eyebrow="numbers">
+  <deck-feature id="s-kpi" eyebrow="numbers" spread="center">
     <h1 slot="title">Figures</h1>
     <deck-kpi-grid id="kpis" cols="3" ruled>
       <deck-kpi id="kpi-a" value="34" label="components"></deck-kpi>
@@ -49,20 +49,20 @@
     </deck-kpi-grid>
   </deck-feature>
 
-  <deck-feature id="s-pull" eyebrow="excerpt">
+  <deck-feature id="s-pull" eyebrow="excerpt" spread="center">
     <h1 slot="title">Pull</h1>
     <deck-pull id="pull-right" side="right">The one line that matters.</deck-pull>
     <deck-md>A dense paragraph that wraps around the excerpt beside it, which is
     what makes it an excerpt rather than an interruption in the flow.</deck-md>
   </deck-feature>
 
-  <deck-feature id="s-persona" eyebrow="who">
+  <deck-feature id="s-persona" eyebrow="who" spread="center">
     <h1 slot="title">Persona</h1>
     <deck-persona id="who" name="Marie Dupont" person-role="CTO" org="Acme"
       context="Fifty engineers, two monoliths, one deadline."></deck-persona>
   </deck-feature>
 
-  <deck-feature id="s-versus" eyebrow="compare">
+  <deck-feature id="s-versus" eyebrow="compare" spread="center">
     <h1 slot="title">Versus</h1>
     <deck-versus id="vs" pivot="vs" winner="right">
       <div slot="left"><h3>Manual review</h3><p>Four hours.</p></div>
@@ -70,17 +70,17 @@
     </deck-versus>
   </deck-feature>
 
-  <deck-feature id="s-flow" eyebrow="chain">
+  <deck-feature id="s-flow" eyebrow="chain" spread="center">
     <h1 slot="title">Flow</h1>
     <deck-flow id="flow" reveal>
-      <deck-flow-step id="fs-1" label="Collect" note="raw" icon="database"></deck-flow-step>
-      <deck-flow-step id="fs-2" label="Analyse" note="rules" icon="search"></deck-flow-step>
-      <deck-flow-step id="fs-3" label="Decide" note="verdict" icon="target"></deck-flow-step>
-      <deck-flow-step id="fs-4" label="Act" note="ship" icon="check"></deck-flow-step>
+      <deck-flow-step id="fs-1" label="Collect" note="raw"></deck-flow-step>
+      <deck-flow-step id="fs-2" label="Analyse" note="rules"></deck-flow-step>
+      <deck-flow-step id="fs-3" label="Decide" note="verdict"></deck-flow-step>
+      <deck-flow-step id="fs-4" label="Act" note="ship"></deck-flow-step>
     </deck-flow>
   </deck-feature>
 
-  <deck-feature id="s-timeline" eyebrow="over time">
+  <deck-feature id="s-timeline" eyebrow="over time" spread="center">
     <h1 slot="title">Timeline</h1>
     <deck-timeline id="tl">
       <deck-milestone id="ms-1" date="Jan" label="First audit"></deck-milestone>
@@ -89,7 +89,7 @@
     </deck-timeline>
   </deck-feature>
 
-  <deck-feature id="s-table" eyebrow="data">
+  <deck-feature id="s-table" eyebrow="data" spread="center">
     <h1 slot="title">Table</h1>
     <deck-table id="tbl" highlight-rows="2" highlight-cols="2">
       <table>

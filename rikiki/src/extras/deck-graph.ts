@@ -82,6 +82,14 @@ export class DeckGraph extends LitElement {
     .head {
       fill: var(--deck-graph-edge, var(--rik-text-default--faint));
     }
+    /* A drawing annotates itself · an edge carries a short name. Plain sans at
+       a smaller size, not a tracked-out mono tag: the convention comes from
+       technical drawings, the mono uppercase came from nowhere. */
+    .tag {
+      font-family: var(--rik-font-sans);
+      font-size: 0.75em;
+      line-height: 1.2;
+    }
     .edge-label {
       position: absolute;
       transform: translate(-50%, -50%);
@@ -259,7 +267,7 @@ export class DeckGraph extends LitElement {
       ${edges.map(({ edge, geom }) =>
         geom && edge.getAttribute('label')
           ? html`<span
-              class="meta edge-label"
+              class="tag edge-label"
               style="left:${geom.mx}%;top:${geom.my}%"
               >${edge.getAttribute('label')}</span
             >`
@@ -294,13 +302,9 @@ export class DeckNode extends LitElement {
     :host([pending]) {
       opacity: var(--deck-node-pending-opacity, 0.25);
     }
-    /* Bare · the node is type plus a rule, so the graph reads as words on a
-       field of lines. */
-    .rule {
-      width: 100%;
-      background: var(--deck-node-rule, var(--rik-text-default));
-      transition: background 0.2s ease, height 0.2s ease;
-    }
+    /* Bare · the node is words on the field, and the edges carry the
+       structure. It used to also draw a rule under the label, which added a
+       line to a picture already made of lines. */
     /* Boxed · a real block. The theme's raised surface measures 1.10 against
        the page, which is invisible at projection distance, so a block that
        must READ as a block uses the inverse surface. Dark on light is the one
@@ -313,15 +317,9 @@ export class DeckNode extends LitElement {
       max-width: var(--deck-node-size, 18ch);
     }
     :host([boxed]) .label,
-    :host([boxed]) .meta {
+    :host([boxed]) .note {
       background: none;
       color: inherit;
-    }
-    :host([boxed]) .meta {
-      opacity: 0.72;
-    }
-    :host([boxed]) .rule {
-      display: none;
     }
     :host([boxed][tone='accent']) {
       background: var(--rik-accent);
@@ -340,15 +338,22 @@ export class DeckNode extends LitElement {
       color: var(--rik-surface-page);
     }
     :host([boxed][active]) {
-      outline: var(--rik-extras-rule-width, 3px) solid var(--rik-accent);
+      outline: var(--deck-node-active-width, 3px) solid var(--rik-accent);
       outline-offset: 3px;
     }
     deck-icon {
       margin-bottom: var(--rik-space-1);
     }
-    :host([active]) .rule {
-      background: var(--rik-accent);
-      height: calc(var(--rik-extras-rule-width, 3px) * 2);
+    /* The node being discussed · a bare node has no box to outline, so the
+       label takes the accent instead. */
+    :host([active]:not([boxed])) .label {
+      color: var(--deck-node-active-color, var(--rik-accent__text));
+    }
+    .note {
+      font-size: 0.8em;
+      line-height: 1.25;
+      color: var(--deck-node-note-color, var(--rik-text-default--muted));
+      opacity: 0.85;
     }
     .label {
       font-weight: 700;
@@ -359,7 +364,7 @@ export class DeckNode extends LitElement {
     }
     @media print {
       :host { opacity: 1; }
-      .rule { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      :host { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     }
   `,
   ];
@@ -385,8 +390,7 @@ export class DeckNode extends LitElement {
     return html`
       ${this.icon ? html`<deck-icon name=${this.icon} size="md"></deck-icon>` : ''}
       <span class="label" part="label">${this.label ?? ''}</span>
-      <span class="rule" part="rule"></span>
-      ${this.note ? html`<span class="meta">${this.note}</span>` : ''}
+      ${this.note ? html`<span class="note" part="note">${this.note}</span>` : ''}
       <slot></slot>
     `;
   }
@@ -416,7 +420,16 @@ export class DeckGroup extends LitElement {
       z-index: 0;
       pointer-events: none;
     }
-    .meta {
+    /* A drawing annotates itself · an edge, a region and a band each carry a
+       short name. Plain sans at a smaller size, not a tracked-out mono tag:
+       the convention comes from technical drawings, the mono uppercase came
+       from nowhere. */
+    .tag {
+      font-family: var(--rik-font-sans);
+      font-size: 0.75em;
+      line-height: 1.2;
+    }
+    .tag {
       position: absolute;
       top: 0;
       left: var(--rik-space-3);
@@ -441,7 +454,7 @@ export class DeckGroup extends LitElement {
   @property({ type: Boolean, reflect: true }) solid = false;
 
   override render() {
-    return html`${this.label ? html`<span class="meta">${this.label}</span>` : ''}`;
+    return html`${this.label ? html`<span class="tag">${this.label}</span>` : ''}`;
   }
 }
 
@@ -466,7 +479,16 @@ export class DeckLane extends LitElement {
       z-index: 0;
       pointer-events: none;
     }
-    .meta {
+    /* A drawing annotates itself · an edge, a region and a band each carry a
+       short name. Plain sans at a smaller size, not a tracked-out mono tag:
+       the convention comes from technical drawings, the mono uppercase came
+       from nowhere. */
+    .tag {
+      font-family: var(--rik-font-sans);
+      font-size: 0.75em;
+      line-height: 1.2;
+    }
+    .tag {
       position: absolute;
       top: var(--rik-space-1);
       left: 0;
@@ -481,7 +503,7 @@ export class DeckLane extends LitElement {
   @property({ type: String }) label?: string;
 
   override render() {
-    return html`${this.label ? html`<span class="meta">${this.label}</span>` : ''}`;
+    return html`${this.label ? html`<span class="tag">${this.label}</span>` : ''}`;
   }
 }
 

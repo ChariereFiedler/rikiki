@@ -13,7 +13,7 @@
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, css, html } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 
 export type DeckMilestoneTone = 'default' | 'accent' | 'ok' | 'warn' | 'danger';
 
@@ -138,21 +138,23 @@ export class DeckMilestone extends LitElement {
       box-shadow: 0 0 0 4px var(--rik-surface-page);
       flex: none;
     }
+    /* The date is written, not tagged · it used to be tracked-out small caps,
+       which is unreadable across a room and is exactly the template chrome a
+       generated slide reaches for. */
     .date {
-      font-size: var(--rik-font-size-xs);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--deck-milestone-date-color, var(--rik-text-default--faint));
+      font-size: var(--rik-font-size-body);
+      color: var(--deck-milestone-date-color, var(--rik-text-default--muted));
       font-variant-numeric: tabular-nums;
     }
     .label {
+      font-size: var(--rik-font-size-lead);
       font-weight: 700;
       line-height: 1.25;
       color: var(--deck-milestone-label-color, var(--rik-text-default));
     }
     .note {
-      font-size: var(--rik-font-size-sm);
-      color: var(--deck-milestone-note-color, var(--rik-text-default--faint));
+      font-size: var(--rik-font-size-body);
+      color: var(--deck-milestone-note-color, var(--rik-text-default--muted));
       line-height: 1.35;
     }
     @media print {

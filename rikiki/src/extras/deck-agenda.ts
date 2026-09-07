@@ -72,12 +72,13 @@ export class DeckAgenda extends LitElement {
       border-left-color: var(--deck-agenda-rule, var(--rik-accent));
       font-weight: 700;
     }
+    /* An agenda IS a sequence, so it is numbered · one of only two components
+       here that earn a number. Written as a figure at reading size, not as a
+       zero-padded tracked-out tag. */
     .n {
       flex: none;
       min-width: 2ch;
       font-variant-numeric: tabular-nums;
-      font-size: var(--rik-font-size-xs);
-      letter-spacing: 0.08em;
       color: var(--deck-agenda-num-color, var(--rik-text-default--faint));
     }
     li[data-state='current'] .n {
@@ -176,7 +177,7 @@ export class DeckAgenda extends LitElement {
       <ol part="list">
         ${this._entries.map(
           (entry, i) => html`<li data-state=${this._state(i)} part="entry">
-            ${this.noNumbers ? '' : html`<span class="n">${String(i + 1).padStart(2, '0')}</span>`}
+            ${this.noNumbers ? '' : html`<span class="n">${i + 1}</span>`}
             ${
               this.noJump
                 ? html`<span>${entry.title}</span>`

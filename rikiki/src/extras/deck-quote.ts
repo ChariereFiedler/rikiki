@@ -83,12 +83,12 @@ export class DeckQuote extends LitElement {
       font-weight: 700;
       color: var(--deck-quote-author-color, var(--rik-text-default));
     }
+    /* Who they are, written as a phrase · the tracked-out small caps it used
+       to wear said nothing the words do not, and said it illegibly. */
     .role {
       display: block;
-      font-size: var(--rik-font-size-xs);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--deck-quote-role-color, var(--rik-text-default--faint));
+      font-size: var(--rik-font-size-body);
+      color: var(--deck-quote-role-color, var(--rik-text-default--muted));
     }
     /* On a dark slide (a cover, a section) the inverse text tokens apply. */
     :host([on-dark]) .quote,
