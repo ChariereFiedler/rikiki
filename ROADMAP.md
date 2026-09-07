@@ -111,7 +111,14 @@ Milestones aimed at "publishable releases". Every milestone is shippable and usa
 
 ## Anti-features · what we won't do
 
-Considered and **explicitly rejected**, to keep the project light and faithful to the manifesto:
+Considered and **explicitly rejected**, to keep the project light and faithful to the manifesto.
+
+Two entries left this table when they shipped in 0.6.0: a **plugin hook API**
+(`deck-root.use(plugin)`, a `DeckPlugin` contract) and a **built-in bundler**
+(`rikiki bundle`, which produces one self-contained file). Both earned their
+place · the first replaced plugins patching engine internals, the second is how
+a deck becomes archivable. Neither reopens the door to a plugin marketplace or a
+Vite-style dev pipeline.
 
 | Anti-feature | Reason |
 |---|---|
@@ -121,8 +128,6 @@ Considered and **explicitly rejected**, to keep the project light and faithful t
 | Built-in video recording | OS-native (QuickTime, OBS) does it better. No reason to reinvent. |
 | Multiplexing (synced multi-client presentation) | Niche use case. External plugin if anyone wants it. |
 | SSR / SSG | The HTML is already static. No need. |
-| Formal plugin system | ES modules already are a plugin system. `import './my-plugin.js'` suffices. |
-| Built-in bundler (Vite-like) | Breaks "source = output". If you want a prod bundle, run esbuild yourself. |
 | JS theming (`props.theme=…`) | CSS custom properties do the job, no JS runtime needed. |
 | State management (Redux-like) | These are slides. Not a SPA. |
 

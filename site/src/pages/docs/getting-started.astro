@@ -26,8 +26,8 @@ const minDeck = `<!doctype html>
 </body>
 </html>`;
 
-const cdnDeck = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rikiki-deck/tokens.css">
-<script type="module" src="https://cdn.jsdelivr.net/npm/rikiki-deck/dist/index.js"></script>`;
+const cdnDeck = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rikiki-deck@0.6.0/tokens.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/rikiki-deck@0.6.0/dist/index.js"></script>`;
 
 const serve = `# Any static server works · pick one you already have:
 python3 -m http.server 7799
@@ -47,8 +47,13 @@ npx serve .
   Pick the install style that fits your workflow.
 </p>
 
-<h3 id="install-cdn">Via CDN (no install)</h3>
-<p>Add two lines to any HTML page. Zero tooling, zero dependencies.</p>
+<h3 id="install-cdn">Via CDN (no install, needs the network)</h3>
+<p>
+  Add two lines to any HTML page. Zero tooling · but the deck fetches the
+  framework at load time, so it needs a working connection to jsdelivr every
+  time it runs. For an offline or archived deck, install from npm or bundle to
+  a single file instead. Always pin a version, as below.
+</p>
 <CodeBlock label="<head>" lang="html" code={cdnDeck} />
 
 <h3 id="install-npm">Via npm (versioned, offline-friendly)</h3>
