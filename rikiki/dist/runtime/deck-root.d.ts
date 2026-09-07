@@ -240,6 +240,16 @@ export declare class DeckRoot extends LitElement {
     /** Flat index → {chapter, intra-chapter index}. */
     private _coords;
     private _flatFromCoords;
+    /** True when the deck IS the page rather than a widget inside one.
+     *
+     *  A full-page deck owns the URL, the keyboard and the wheel · that is the
+     *  whole point. An embedded deck owns none of them by default: the host put
+     *  the anchor in the URL, the host's reader is using the arrow keys to read
+     *  the host's page, and the wheel over a widget scrolls the page it sits in. */
+    private _isFullPage;
+    /** Does a key press belong to this deck right now? Always, when the deck is
+     *  the page · only while focus is inside it, when it is embedded. */
+    private _ownsKeyboard;
     private _onHash;
     private _readHash;
     private _writeHash;
