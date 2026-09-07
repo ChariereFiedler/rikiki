@@ -20,6 +20,7 @@ const DECKS = [
   '/rikiki/decks/tests/extensions.html',
   '/rikiki/starter.html',
   '/examples/rikiki-tour/index.html',
+  '/examples/showcase/index.html',
 ];
 
 interface SlideBudget {

@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · layout showcase</title>
+<link rel="stylesheet" href="../../rikiki/themes/rikiki.css">
+<script type="module" src="../../rikiki/dist/index.js"></script>
+<!-- Opt-in components · one script tag each, after the core bundle. -->
+<script type="module" src="../../rikiki/dist/deck-icon.js"></script>
+<script type="module" src="../../rikiki/dist/deck-kpi-grid.js"></script>
+<script type="module" src="../../rikiki/dist/deck-flow.js"></script>
+<script type="module" src="../../rikiki/dist/deck-graph.js"></script>
+<script type="module" src="../../rikiki/dist/deck-timeline.js"></script>
+<script type="module" src="../../rikiki/dist/deck-bar.js"></script>
+<script type="module" src="../../rikiki/dist/deck-quote.js"></script>
+<script type="module" src="../../rikiki/dist/deck-versus.js"></script>
+<script type="module" src="../../rikiki/dist/deck-checklist.js"></script>
+<script type="module" src="../../rikiki/dist/deck-persona.js"></script>
+<script type="module" src="../../rikiki/dist/deck-table.js"></script>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════
+     A deck whose subject is its own layouts.
+     One slide per composition, densest first inside each chapter, so the
+     shapes can be compared against each other rather than described.
+     Written the way the reference tells an author to write · no attribute is
+     here to work around a component.
+     ════════════════════════════════════════════════════════════════ -->
+<deck-root transition="fade">
+
+<deck-cover brand="rikiki" speaker="Layout showcase" duration="~10 min" audience="Anyone judging the design system">
+  <h1>Every shape a slide<br>can <span class="accent">take</span></h1>
+  <p class="sub">One slide per composition · read them against each other, not one at a time.</p>
+</deck-cover>
+
+<!-- ═══════════════ 1 · The plain ones ═══════════════ -->
+
+<deck-section num="One"><h1>The shapes<br>you use <em>daily</em></h1></deck-section>
+
+<deck-feature eyebrow="A statement" spread="center">
+  <h1 slot="title">A slide with one thing on it</h1>
+  <p slot="lead" class="lead">The lead sits under the title and carries the sentence the title cannot.</p>
+  <deck-punch size="display">Say one thing, and say it at a size the back row can read.</deck-punch>
+</deck-feature>
+
+<deck-split eyebrow="Two columns" cols="1-1" gap="5">
+  <h1 slot="title">Two columns, equal weight</h1>
+  <deck-stack slot="left" gap="3">
+    <deck-callout type="info">A callout carries the aside that would otherwise crowd the prose.</deck-callout>
+    <deck-md>Prose lives in **markdown**, with `inline code` and lists.
+
+- one point
+- another
+- a third</deck-md>
+  </deck-stack>
+  <deck-code slot="right" lang="ts">export function compose(slide: Slide): Layout {
+  const role = slide.role ?? 'feature';
+  return LAYOUTS[role] ?? LAYOUTS.feature;
+}</deck-code>
+</deck-split>
+
+<deck-split eyebrow="Asymmetric" cols="2-1" gap="5">
+  <h1 slot="title">Two columns, one leading</h1>
+  <deck-code slot="left" lang="js">const deck = document.querySelector('deck-root');
+
+deck.addEventListener('slide-change', (e) => {
+  const { current, previous } = e.detail;
+  track(current.id, previous?.id);
+});</deck-code>
+  <deck-stack slot="right" gap="3">
+    <deck-callout type="warn">A 2-1 split is the shape for code with a commentary beside it.</deck-callout>
+    <deck-callout type="ok">The narrow column is for words about the wide one.</deck-callout>
+  </deck-stack>
+</deck-split>
+
+<deck-split eyebrow="Three columns" cols="3" gap="4">
+  <h1 slot="title">Three columns, one idea each</h1>
+  <deck-stack slot="a" gap="2">
+    <deck-icon name="database" size="xl" tone="accent"></deck-icon>
+    <h3>What goes in</h3>
+    <p>The input, named before anything else.</p>
+  </deck-stack>
+  <deck-stack slot="b" gap="2">
+    <deck-icon name="code" size="xl" tone="accent"></deck-icon>
+    <h3>What runs</h3>
+    <p>The transformation, in one sentence.</p>
+  </deck-stack>
+  <deck-stack slot="c" gap="2">
+    <deck-icon name="check" size="xl" tone="accent"></deck-icon>
+    <h3>What comes out</h3>
+    <p>The result, and how you know it worked.</p>
+  </deck-stack>
+</deck-split>
+
+<deck-feature-cards eyebrow="Hero and details">
+  <h1 slot="title">One hero, two details under it</h1>
+  <deck-code lang="html" hero>&lt;deck-bento cols="3"&gt;
+  &lt;h1 slot="title"&gt;Three rules&lt;/h1&gt;
+  &lt;deck-point&gt;&lt;h3&gt;A format&lt;/h3&gt;&lt;p&gt;…&lt;/p&gt;&lt;/deck-point&gt;
+&lt;/deck-bento&gt;</deck-code>
+  <deck-card slot="left" color="green">
+    <h3>The hero takes half</h3>
+    <deck-md>Code, a chart or a diagram · whatever the slide is actually about.</deck-md>
+  </deck-card>
+  <deck-card slot="right" color="yellow">
+    <h3>The details take the rest</h3>
+    <deck-md>Two short cards, never a third · the shape stops working at three.</deck-md>
+  </deck-card>
+</deck-feature-cards>
+
+<!-- ═══════════════ 2 · Rows and grids ═══════════════ -->
+
+<deck-section num="Two"><h1>Rows that<br><em>line up</em></h1></deck-section>
+
+<deck-bento eyebrow="A row of points" cols="3">
+  <h1 slot="title">Three points, one baseline</h1>
+  <deck-point plain>
+    <h3>Sized by its words</h3>
+    <p>A point is as tall as what it holds, so nothing paints a hole under its text.</p>
+  </deck-point>
+  <deck-point tone="info">
+    <h3>The one that is marked</h3>
+    <p>A tone fills exactly one of them · the eye lands where the speaker is.</p>
+  </deck-point>
+  <deck-point plain>
+    <h3>Same reading edge</h3>
+    <p>Painted or plain, every point starts its text on the same line down the slide.</p>
+  </deck-point>
+</deck-bento>
+
+<deck-bento eyebrow="Four across" cols="4">
+  <h1 slot="title">Four questions, whatever the titles do</h1>
+  <deck-point plain>
+    <h3>What</h3>
+    <p>may go in</p>
+  </deck-point>
+  <deck-point plain>
+    <h3>With whom and under which contract</h3>
+    <p>a title of four lines</p>
+  </deck-point>
+  <deck-point plain>
+    <h3>For how long it is kept</h3>
+    <p>and one of two</p>
+  </deck-point>
+  <deck-point plain>
+    <h3>How</h3>
+    <p>erasure is proven</p>
+  </deck-point>
+</deck-bento>
+
+<deck-bento eyebrow="A bento" cols="4" rows="2" gap="3">
+  <h1 slot="title">Cells share the space</h1>
+  <deck-cell span="2x2" tone="info">
+    <deck-punch fit>The wide one holds the number.</deck-punch>
+  </deck-cell>
+  <deck-cell><h3>Tall and narrow</h3><p>A cell takes a share of the slide.</p></deck-cell>
+  <deck-cell tone="ok"><h3>Marked</h3><p>One tone, not four.</p></deck-cell>
+  <deck-cell span="2x1" plain><h3>Wide and bare</h3><p>Plain drops the surface, never the gutter.</p></deck-cell>
+</deck-bento>
+
+<!-- ═══════════════ 3 · Numbers and comparisons ═══════════════ -->
+
+<deck-section num="Three"><h1>Numbers, and<br>what they <em>mean</em></h1></deck-section>
+
+<deck-feature eyebrow="Figures" spread="center">
+  <h1 slot="title">Several figures, one family</h1>
+  <deck-kpi-grid cols="3">
+    <deck-kpi value="35" label="components in the default bundle"></deck-kpi>
+    <deck-kpi value="14" label="more, one script tag each" tone="accent"></deck-kpi>
+    <deck-kpi value="0" label="network calls at runtime" note="a bundled deck runs offline"></deck-kpi>
+  </deck-kpi-grid>
+</deck-feature>
+
+<deck-feature eyebrow="Proportions" spread="center">
+  <h1 slot="title">A proportion, drawn</h1>
+  <deck-stack gap="4">
+    <deck-bar value="42" total="56" label="initial load, of the 56 KB budget" tone="accent"></deck-bar>
+    <deck-bar label="where the bytes go" segments="engine:25:accent|lit:7:info|marked:10:muted"></deck-bar>
+  </deck-stack>
+</deck-feature>
+
+<deck-split eyebrow="A comparison" cols="1-1" gap="5" pivot="vs" winner="right">
+  <h1 slot="title">Two ways, and the one that wins</h1>
+  <deck-stack slot="left" gap="2">
+    <h3>A build step</h3>
+    <deck-checklist>
+      <deck-check no>A toolchain to resurrect in 2031</deck-check>
+      <deck-check no>A dist/ that drifts from its source</deck-check>
+      <deck-check>Tree shaking</deck-check>
+    </deck-checklist>
+  </deck-stack>
+  <deck-stack slot="right" gap="2">
+    <h3>No build step</h3>
+    <deck-checklist>
+      <deck-check>Open index.html and it runs</deck-check>
+      <deck-check>The folder is the deliverable</deck-check>
+      <deck-check>Edit a file, reload, see it</deck-check>
+    </deck-checklist>
+  </deck-stack>
+</deck-split>
+
+<deck-feature eyebrow="A table" spread="center">
+  <h1 slot="title">A table with a hierarchy</h1>
+  <deck-table highlight-rows="2">
+    <table>
+      <thead><tr><th>Framework</th><th>Runtime</th><th>Build</th><th>Opens in 2031</th></tr></thead>
+      <tbody>
+        <tr><td>Reveal.js</td><td>~80 KB</td><td>optional</td><td>Probably</td></tr>
+        <tr><td>rikiki</td><td>~42 KB</td><td>none</td><td>Yes</td></tr>
+        <tr><td>Slidev</td><td>~250 KB</td><td>required</td><td>Unlikely</td></tr>
+      </tbody>
+    </table>
+  </deck-table>
+</deck-feature>
+
+<!-- ═══════════════ 4 · Processes and pictures ═══════════════ -->
+
+<deck-section num="Four"><h1>Chains, maps<br>and <em>time</em></h1></deck-section>
+
+<deck-feature eyebrow="A chain" spread="center" data-steps="4">
+  <h1 slot="title">One stage at a time</h1>
+  <deck-flow cols="4" reveal>
+    <deck-flow-step label="Write" note="one HTML file"></deck-flow-step>
+    <deck-flow-step label="Preview" note="open it"></deck-flow-step>
+    <deck-flow-step label="Bundle" note="one command"></deck-flow-step>
+    <deck-flow-step label="Present" note="offline"></deck-flow-step>
+  </deck-flow>
+  <deck-notes>Step 0 shows the whole chain · its shape is half the message.</deck-notes>
+</deck-feature>
+
+<deck-feature eyebrow="A map" fill>
+  <h1 slot="title">Boxes, arrows and regions</h1>
+  <deck-graph>
+    <deck-lane at="6,34" label="edge"></deck-lane>
+    <deck-group at="44,52,52,42" label="vpc · eu-west-3"></deck-group>
+    <deck-node id="s-client" at="10,20" boxed icon="user" label="Client" note="browser"></deck-node>
+    <deck-node id="s-cdn" at="32,20" boxed icon="cloud" label="CDN" note="edge cache"></deck-node>
+    <deck-node id="s-api" at="58,70" boxed tone="accent" icon="code" label="API" note="node 24"></deck-node>
+    <deck-node id="s-db" at="84,70" boxed icon="database" label="Store" note="postgres"></deck-node>
+    <deck-edge from="s-client" to="s-cdn" label="https"></deck-edge>
+    <deck-edge from="s-cdn" to="s-api" label="origin"></deck-edge>
+    <deck-edge from="s-api" to="s-db" label="sql" arrow="both"></deck-edge>
+  </deck-graph>
+</deck-feature>
+
+<deck-feature eyebrow="A trajectory" spread="center">
+  <h1 slot="title">Where it has been</h1>
+  <deck-timeline direction="row">
+    <deck-milestone date="v0.1" label="Public MVP" note="TypeScript sources"></deck-milestone>
+    <deck-milestone date="v0.3" label="Presenter" note="second screen"></deck-milestone>
+    <deck-milestone date="v0.6" label="Opt-in set" note="fourteen components" tone="accent"></deck-milestone>
+    <deck-milestone date="v1.0" label="Release candidate" note="every promise measured"></deck-milestone>
+  </deck-timeline>
+</deck-feature>
+
+<!-- ═══════════════ 5 · Words ═══════════════ -->
+
+<deck-section num="Five"><h1>Someone else's<br><em>words</em></h1></deck-section>
+
+<deck-split eyebrow="Attribution" cols="1-2" gap="5">
+  <h1 slot="title">A quote, and who said it</h1>
+  <deck-persona slot="left"
+    name="A reviewer"
+    person-role="Staff engineer"
+    org="siliceum"
+    context="Three rounds of visual rejection"></deck-persona>
+  <deck-quote slot="right" size="big" author="ADR-002" author-role="the visual direction">
+    The look was not under-designed. It was designed from the wrong source.
+  </deck-quote>
+</deck-split>
+
+<deck-photo>
+  <h1>A full-bleed picture</h1>
+  <p class="caption on-dark">Without a src this stays the inverse surface · the layout is the point.</p>
+</deck-photo>
+
+<deck-takeaway kicker="What to look at">
+  <deck-punch size="display">Judge the shapes against each other, not one slide at a time.</deck-punch>
+  <p class="caption on-dark">Press O for the overview · every composition on one screen.</p>
+</deck-takeaway>
+
+</deck-root>
+</body>
+</html>
