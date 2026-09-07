@@ -75,14 +75,25 @@ async function measureActive(page: import('@playwright/test').Page): Promise<Sli
       clippedY = Math.max(clippedY, el.scrollHeight - el.clientHeight);
     }
 
-    const shadowBody = (slide.shadowRoot?.querySelector('.body') ?? null) as HTMLElement | null;
-    const body = shadowBody ?? slide;
+    /* How much of the slide the author's content spans.
+       It used to divide the shadow body's height by the SLIDE's height, so the
+       numerator and the denominator were different boxes: the ratio could never
+       reach 1, and it meant something different depending on whether a layout
+       had a `.body` at all · three of the eight do. Measured from the light-DOM
+       children instead, which every layout has, against the box they sit in. */
+    const written = [...slide.children]
+      .filter((el) => el.tagName.toLowerCase() !== 'deck-notes')
+      .map((el) => el.getBoundingClientRect())
+      .filter((b) => b.height > 0);
+    const spanned = written.length
+      ? Math.max(...written.map((b) => b.bottom)) - Math.min(...written.map((b) => b.top))
+      : 0;
     return {
       index,
       tag: slide.tagName.toLowerCase(),
       overflowX: Math.max(0, Math.round(clippedX)),
       overflowY: Math.max(0, Math.round(clippedY)),
-      fillRatio: Math.round((body.scrollHeight / box.height) * 100) / 100,
+      fillRatio: Math.round((spanned / box.height) * 100) / 100,
     };
   });
 }
