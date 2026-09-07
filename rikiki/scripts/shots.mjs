@@ -118,7 +118,12 @@ const readSlides = () =>
  */
 async function useTheme(page, theme) {
   const before = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-  if (await page.evaluate((n) => document.querySelector(`link[href*="themes/${n}.css"]`) !== null, theme)) {
+  if (
+    await page.evaluate(
+      (n) => document.querySelector(`link[href*="themes/${n}.css"]`) !== null,
+      theme,
+    )
+  ) {
     return before;
   }
   await page.evaluate(async (name) => {
