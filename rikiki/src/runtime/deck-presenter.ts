@@ -20,6 +20,7 @@
 // ════════════════════════════════════════════════════════════════
 
 import type { DeckRoot } from './deck-root.js';
+import { escapeHtml } from '../shared/escape-html.js';
 
 const CHANNEL = 'rik-presenter';
 
@@ -219,7 +220,7 @@ const PRESENTER_HTML = (initial: PresenterState): string => `<!doctype html>
 <head>
 <meta charset="utf-8">
 <title>Rikiki · presenter</title>
-${initial.themeHref ? `<link rel="stylesheet" href="${initial.themeHref}">` : ''}
+${initial.themeHref ? `<link rel="stylesheet" href="${escapeHtml(initial.themeHref)}">` : ''}
 <style>
   html, body { margin: 0; padding: 0; height: 100%; background: #0f1422; color: #fafafa; font-family: var(--rik-font-sans, system-ui); }
   .grid {
@@ -376,8 +377,14 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${initial.themeHref}">` : ''
     const inlineStyles = ${JSON.stringify(initial.inlineStyles)};
     const bundleHref   = ${JSON.stringify(initial.bundleHref)};
     const bundleInline = ${JSON.stringify(initial.bundleInline)};
-    const themeLink  = themeHref ? '<link rel="stylesheet" href="' + themeHref + '">' : '';
-    const themeStyle = inlineStyles ? '<style>' + inlineStyles + '</style>' : '';
+    // Both values come from the host document, so they are only as trustworthy
+    // as the deck · escape before they become markup. escAttr closes an attribute
+    // breakout; escStyle stops a </style> inside the deck's own CSS (a string or
+    // a comment) from ending the block early.
+    const escAttr  = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    const escStyle = (s) => s.replace(/<\\/(style|script)/gi, '<\\\\/$1');
+    const themeLink  = themeHref ? '<link rel="stylesheet" href="' + escAttr(themeHref) + '">' : '';
+    const themeStyle = inlineStyles ? '<style>' + escStyle(inlineStyles) + '</style>' : '';
     // Bootstrap rikiki inside the iframe so its <deck-*> elements upgrade.
     //  · single-file deck → the framework is inlined and tagged · re-inline it
     //    so the module base is the iframe document URL (a <script src="data:">
