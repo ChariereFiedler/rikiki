@@ -1,0 +1,473 @@
+# Audit d'industrialisation — rikiki
+# Fichier lu par le cockpit via l'API forge. Ne pas déplacer.
+date: 2026-09-07
+projet: rikiki
+commit: 12b0f7b
+status: complete
+
+meta:
+  methode: >-
+    Les skills audit-* (audit-architecture, audit-ci-cd, audit-compliance,
+    audit-industrialisation, audit-observability, audit-performance-frontend,
+    audit-quality, audit-security, audit-testing) ne sont PAS installées dans
+    cet environnement : absentes de .claude/skills/ (14 skills présentes,
+    aucune audit-*) comme de ~/.claude/skills/ (répertoire inexistant).
+    La commande /audit-report n'existe pas non plus (.claude/commands/ vide).
+    Chaque domaine est donc couvert par analyse directe en lecture seule du
+    dépôt. À corriger côté forge : installer le pack audit-* ou retirer ces
+    domaines du contrat de run.
+  skills_disponibles_utilisees: []
+  perimetre:
+    - rikiki/ (paquet npm rikiki-deck v0.6.0 · ~7 300 LOC TS sur 48 fichiers)
+    - site/ (site vitrine Astro 6)
+    - .gitlab-ci.yml + scripts/ (chaîne CI/CD et exploitation)
+  score_echelle: "0-100 (100 = état de l'art industrialisé)"
+
+domaines:
+
+  architecture:
+    status: done
+    score: 78
+    constats:
+      - niveau: fort
+        titre: Découpage atomique explicite et respecté
+        detail: >-
+          src/ est organisé en atoms/ molecules/ layouts/ runtime/ plugins/ shared/.
+          La logique pure est bien extraite dans shared/ (parse-csv, cards-syntax,
+          grid-tracks, fit-controller), ce qui la rend testable hors navigateur.
+      - niveau: fort
+        titre: Frontière consommateur nette
+        detail: >-
+          exports map explicite dans package.json (., ./tokens.css, ./themes/*,
+          ./livereload), champ files restrictif. La promesse « zero-build » est
+          tenue par un dist/ versionné.
+      - niveau: risque
+        titre: "deck-root.ts est un objet-dieu (1 335 LOC)"
+        detail: >-
+          rikiki/src/runtime/deck-root.ts concentre 18 % du code du paquet et
+          orchestre navigation, overview, presenter, help, transitions et zoom.
+          Les 4 plus gros fichiers (deck-root 1335, deck-overview 691,
+          deck-presenter 630, click-stages 574) pèsent 44 % de la base.
+        impact: >-
+          Coût de modification et risque de régression concentrés sur un seul
+          fichier ; c'est aussi le fichier le moins couvert par des tests unitaires.
+        recommandation: >-
+          Extraire les responsabilités déjà chargées dynamiquement (overview,
+          presenter, help) derrière des interfaces stables, et sortir la machine
+          à états de navigation dans shared/ pour la rendre testable en Node.
+
+  ci-cd:
+    status: done
+    score: 82
+    constats:
+      - niveau: fort
+        titre: Portes qualité en amont du build coûteux
+        detail: >-
+          Stage `check` avec trois jobs parallèles (lint site, package-check
+          typecheck+biome+vitest, e2e Playwright) avant `build`. Un échec TS
+          court-circuite le pipeline avant la construction Docker.
+      - niveau: fort
+        titre: Garde-fou anti-dérive du dist/ versionné
+        detail: >-
+          Le job e2e rebuild puis exécute `git diff --exit-code -- dist`. Un dist/
+          commité obsolète casse le pipeline au lieu de laisser tester un artefact
+          que personne ne livre. C'est la bonne réponse au risque induit par le
+          choix « dist versionné ».
+      - niveau: fort
+        titre: Images de base épinglées par digest sha256
+        detail: >-
+          NODE_IMAGE, NGINX_IMAGE, DOCKER_CLI_IMAGE, ALPINE_IMAGE sont tous
+          épinglés par sha256 — un refresh de tag amont ne déplace plus le build.
+      - niveau: fort
+        titre: Post-déploiement vérifié et réversible
+        detail: >-
+          smoke-test curl 5 routes depuis l'extérieur après recréation Portainer,
+          plus un contrôle de contenu (non-régression de l'import jsdelivr de
+          marked, casseur de CSP déjà rencontré). Rollback outillé via
+          scripts/rollback.sh <short-sha>, chaque build poussant un tag :<sha>.
+      - niveau: risque
+        titre: Aucun environnement de pré-production
+        detail: >-
+          Documenté dans docs/RUNBOOK.md : « Single environment · no staging ».
+          Le déploiement sur main va directement en production ; le smoke-test
+          détecte après coup, il ne prévient pas.
+        impact: Toute régression non couverte par les tests est visible en production.
+        recommandation: >-
+          Déployer les MR sur une URL éphémère (environment:on_stop GitLab) ou au
+          minimum rejouer le smoke-test contre un conteneur local dans le stage build.
+      - niveau: risque
+        titre: Le pipeline n'est jamais exécuté à froid
+        detail: >-
+          Toutes les règles sont `main` ou `merge_request_event`. Aucun job
+          planifié : une rupture due à une dépendance amont ou à un certificat
+          expiré n'est découverte qu'au prochain commit.
+        recommandation: Ajouter un pipeline programmé (nightly) exécutant check + smoke-test.
+
+  compliance:
+    status: done
+    score: 45
+    constats:
+      - niveau: fort
+        titre: Socle documentaire projet complet
+        detail: >-
+          LICENSE (MIT), CODE_OF_CONDUCT.md, CONTRIBUTING.md, SECURITY.md,
+          AUTHORS, CHANGELOG.md, MANIFESTO.md, ROADMAP.md sont présents à la
+          racine. Modèles GitLab d'issue (Bug, Feature) et de MR fournis.
+      - niveau: critique
+        titre: Dépendances tierces redistribuées sans mention de licence
+        detail: >-
+          rikiki/dist/vendor/ contient lit.js, marked.js, mermaid.min.js (3,3 Mo)
+          et shiki.js (9,2 Mo), minifiés avec en-têtes de licence supprimés
+          (vérifié : aucun des 4 fichiers ne commence par un bloc de commentaire).
+          Aucun fichier NOTICE ni THIRD_PARTY dans le dépôt. Ce dist/ est versionné
+          ET publié sur npm (champ `files: ["dist", ...]`).
+        impact: >-
+          MIT (marked, mermaid, shiki) et BSD-3-Clause (lit) exigent tous que la
+          notice de copyright soit conservée dans les redistributions. En l'état,
+          chaque publication npm et chaque clone du dépôt est une redistribution
+          non conforme. Risque juridique faible en pratique, mais c'est un
+          manquement objectif et trivial à corriger.
+        recommandation: >-
+          Faire générer par build-vendor.mjs un en-tête `/*! <paquet> <version> ·
+          <licence> · <copyright> */` préservé à la minification (esbuild
+          `--legal-comments=inline`), et produire un THIRD_PARTY.md agrégé,
+          ajouté au champ `files`.
+      - niveau: risque
+        titre: Licence incohérente dans site/package.json
+        detail: >-
+          site/package.json déclare `"license": "ISC"` (valeur par défaut de
+          `npm init` jamais corrigée) alors que le dépôt est sous MIT. Les champs
+          author et description y sont également vides.
+        recommandation: >-
+          Aligner sur MIT et renseigner author/description, ou passer le paquet en `"private": true`.
+      - niveau: attention
+        titre: Contact sécurité sur une adresse personnelle
+        detail: >-
+          SECURITY.md dirige les signalements vers une adresse gmail personnelle,
+          alors que le projet dispose d'un domaine (tordu-jardin.fr).
+        recommandation: Utiliser une adresse du domaine projet, pérenne et redirigeable.
+
+  industrialisation:
+    status: done
+    score: 70
+    constats:
+      - niveau: fort
+        titre: Exploitation documentée et rejouable
+        detail: >-
+          docs/RUNBOOK.md donne le pipeline, la procédure de rollback, l'ID de
+          stack Portainer et une section « Known gotchas » qui capitalise trois
+          incidents réels (healthcheck IPv6, CSP/marked, absence de staging).
+          C'est au-dessus du standard pour un projet de cette taille.
+      - niveau: fort
+        titre: Publication npm verrouillée
+        detail: >-
+          Le job publish-npm ne se déclenche que sur un tag /^v\d+\.\d+\.\d+$/,
+          et `prepublishOnly` rebuild + rejoue les tests avant tout push registry.
+      - niveau: risque
+        titre: Aucune mise à jour automatisée des dépendances
+        detail: >-
+          Ni Renovate, ni Dependabot, ni job de veille. Les dépendances sont en
+          plages caret (^) mais les lockfiles figent les versions ; les images de
+          base épinglées par digest doivent être bumpées « à la main » (commentaire
+          explicite dans .gitlab-ci.yml).
+        impact: Dérive silencieuse et rattrapage par gros sauts, plus risqués.
+        recommandation: Activer Renovate, y compris sur les digests d'images.
+      - niveau: risque
+        titre: Aucun hook git installé
+        detail: >-
+          .git/hooks/ ne contient que les samples. .claude/hooks/ existe mais ne
+          couvre que l'outillage agent (bash-npm-silent, skill-reminder, truncate).
+          La règle projet .claude/rules/shared/pre-commit-secret-detection.md
+          prescrit un scan du diff stagé avant chaque commit : rien ne l'applique.
+        recommandation: >-
+          Installer un pre-commit versionné (core.hooksPath) exécutant
+          `gitleaks protect --staged` avec repli grep, comme le prévoit la règle.
+      - niveau: attention
+        titre: Ni CODEOWNERS ni protection de revue formalisée
+        detail: Aucun fichier CODEOWNERS ; l'historique montre des pushes directs sur main (c069214, 6cc0edf, f04b428).
+
+  observability:
+    status: done
+    score: 35
+    constats:
+      - niveau: fort
+        titre: Sonde de disponibilité en place
+        detail: >-
+          HEALTHCHECK Docker (wget sur 127.0.0.1, interval 30s, 3 retries) dans le
+          Dockerfile généré, plus le smoke-test externe post-déploiement.
+      - niveau: critique
+        titre: Aucune remontée d'erreur runtime
+        detail: >-
+          5 appels console au total dans tout src/ (4 console.warn, 1 console.error)
+          et aucun collecteur d'erreurs. Une exception JS dans un deck chez un
+          spectateur n'est jamais observée. Les tests e2e assertent l'absence
+          d'erreurs JS, mais uniquement sur les fixtures du dépôt.
+        impact: >-
+          Le seul canal de détection d'une régression en production est le
+          signalement humain. Le MTTD est indéterminé.
+        recommandation: >-
+          Poser un window.onerror / unhandledrejection dans le runtime, derrière une
+          option opt-in (le projet ne collecte volontairement aucune donnée), et à
+          défaut journaliser côté nginx avec une alerte sur taux de 4xx/5xx.
+      - niveau: risque
+        titre: Pas de surveillance continue entre deux déploiements
+        detail: >-
+          Le smoke-test ne s'exécute que dans le pipeline. Entre deux commits, une
+          chute du stack Portainer n'est signalée par rien.
+        recommandation: Sonde externe (uptime) sur https://rikiki.tordu-jardin.fr/ + alerte.
+      - niveau: attention
+        titre: Aucune métrique d'usage ni budget de performance suivi
+        detail: >-
+          Choix cohérent avec la posture « no data collection » de SECURITY.md,
+          mais cela prive le projet de tout signal de régression perçue.
+
+  performance-frontend:
+    status: done
+    score: 72
+    constats:
+      - niveau: fort
+        titre: Chargement différé systématique du coûteux
+        detail: >-
+          Les modules lourds sont tous en import() dynamique : shiki (plugins/shiki.ts:54),
+          overview, presenter, help, transitions (deck-root.ts:1027-1171), livereload
+          (index.ts:66). Le chemin critique d'un deck simple n'embarque pas le
+          surligneur de code.
+      - niveau: fort
+        titre: Dépendances vendorées plutôt que CDN
+        detail: >-
+          build-vendor.mjs produit dist/vendor/, ce qui supprime les requêtes
+          tierces (et le problème CSP documenté au RUNBOOK). Bon pour la latence
+          comme pour la vie privée.
+      - niveau: risque
+        titre: "9,2 Mo de shiki et 3,3 Mo de mermaid dans un dist/ versionné"
+        detail: >-
+          rikiki/dist pèse 13 Mo dont 12,6 Mo de vendor/. Ces fichiers sont suivis
+          par git (91 fichiers sous dist/) et publiés sur npm. shiki.js embarque
+          l'intégralité des grammaires (le fichier commence par la grammaire ABAP).
+        impact: >-
+          Tout consommateur npm télécharge ~13 Mo. Un utilisateur de deck qui
+          déclenche le surlignage paie 9,2 Mo réseau. Le .git reste à 5,1 Mo
+          (bonne compression), donc le coût est surtout côté distribution.
+        recommandation: >-
+          Restreindre le build shiki aux langages et thèmes réellement utilisés par
+          les decks (`createHighlighterCore` + imports granulaires) ; cela ramène
+          typiquement l'artefact sous 500 Ko.
+      - niveau: risque
+        titre: Aucun budget de taille ni mesure de performance en CI
+        detail: >-
+          Rien ne surveille la taille des artefacts ni les Core Web Vitals. Une
+          dépendance qui double de volume passe inaperçue.
+        recommandation: Ajouter une porte de taille sur dist/ (échec au-delà d'un seuil) dans le stage check.
+
+  quality:
+    status: done
+    score: 76
+    constats:
+      - niveau: fort
+        titre: Typecheck et lint bloquants en CI
+        detail: >-
+          package-check enchaîne `tsc --noEmit`, `biome check src scripts` et
+          `vitest run`. Côté site, `astro check` plus deux linters maison
+          (lint-dashes, lint-links) — ce dernier ayant déjà rattrapé des liens
+          morts (commit d77411b).
+      - niveau: fort
+        titre: Base de code sans dette annotée
+        detail: Zéro TODO / FIXME / HACK / XXX sur les 48 fichiers TS de src/.
+      - niveau: risque
+        titre: Règles de lint dégradées en avertissement
+        detail: >-
+          biome.json met `suspicious.noExplicitAny` et `style.useTemplate` en
+          "warn", et désactive `noNonNullAssertion` et `useLiteralKeys`. `biome check`
+          sortant en succès sur des warnings, ces règles n'ont aucun effet bloquant.
+        recommandation: >-
+          Passer noExplicitAny en "error" (avec suppressions ciblées et justifiées)
+          ou assumer explicitement le choix dans biome.json.
+      - niveau: risque
+        titre: Périmètre de lint plus étroit que le code livré
+        detail: >-
+          biome ne couvre que src/** et scripts/**. Les scripts de build à la racine
+          du paquet (build.mjs, build-vendor.mjs, build-standalone.mjs, bundle.mjs,
+          minify-templates.mjs) — qui produisent l'artefact publié — ne sont ni
+          lintés ni typés.
+
+  security:
+    status: done
+    score: 65
+    constats:
+      - niveau: fort
+        titre: Surface d'attaque intrinsèquement réduite et assumée
+        detail: >-
+          Framework 100 % client, sans composant serveur ni collecte. SECURITY.md
+          délimite le périmètre et la politique de signalement. Vérifié : aucun
+          eval(), aucun new Function(), aucun fetch de contenu distant dans
+          deck-md.ts ni deck-csv.ts — le contenu rendu provient du deck lui-même.
+      - niveau: fort
+        titre: Chaîne de build durcie
+        detail: >-
+          Images CI épinglées par digest, vendoring des dépendances runtime
+          (plus d'appel CDN tiers à l'exécution), secrets CI masqués et vérifiés
+          en before_script (TJ_REGISTRY_*, NPM_TOKEN échouent explicitement si absents).
+      - niveau: critique
+        titre: Aucune analyse de sécurité automatisée dans le pipeline
+        detail: >-
+          Recherche exhaustive dans .gitlab-ci.yml : aucun job gitleaks / Secret-Detection,
+          aucun SAST, aucun scan de dépendances, aucun scan d'image (trivy). Les 4
+          occurrences du mot « audit » sont toutes des `npm ci --no-audit`, qui
+          désactivent l'unique contrôle par défaut. La règle projet
+          pre-commit-secret-detection.md désigne pourtant la CI comme « filet de
+          sécurité » — ce filet n'existe pas.
+        impact: >-
+          Ni un secret commité, ni une CVE dans une dépendance transitive, ni une
+          vulnérabilité de l'image nginx ne sont détectés par la chaîne actuelle.
+        recommandation: >-
+          Inclure les templates GitLab Secret-Detection et Dependency-Scanning dans
+          le stage check, et retirer --no-audit ou ajouter un `npm audit --audit-level=high`.
+      - niveau: attention
+        titre: "9 écritures innerHTML sans assainissement"
+        detail: >-
+          deck-md.ts:129 (sortie marked), deck-mermaid.ts:125 (SVG rendu),
+          deck-code.ts:213 (sortie shiki), deck-callout.ts:90, deck-help.ts:115,
+          deck-overview.ts:376/449/689, deck-root.ts:1218. marked ne sanitise plus
+          depuis la v5 : du HTML brut dans un deck s'exécute.
+        impact: >-
+          Risque réel uniquement si un deck rend du contenu d'un tiers non fiable.
+          Le scénario est explicitement écarté par SECURITY.md (« Treat deck content
+          as you would any HTML you publish ») et aucun chemin de chargement distant
+          n'existe aujourd'hui. Risque accepté, pas une vulnérabilité ouverte.
+        recommandation: >-
+          Conserver l'arbitrage, mais documenter la contrainte dans les docs de
+          deck-md et prévoir une option de sanitisation avant d'introduire toute
+          source de contenu distante (un futur `src=` sur deck-md ou deck-csv
+          transformerait ce constat en faille).
+
+  testing:
+    status: done
+    score: 74
+    constats:
+      - niveau: fort
+        titre: Pyramide cohérente avec la nature du produit
+        detail: >-
+          10 specs Playwright (smoke, navigation, lifecycle, scaling, zoom, embed,
+          shiki, bento, click-stages, per-slide-fluid) pour ce qui n'a de sens qu'en
+          navigateur, et 5 suites vitest en Node sur la logique pure extraite
+          (color, parse-csv, cards-syntax, grid-tracks, fit-controller). La
+          séparation est explicitée et outillée (exclude e2e/ dans vitest.config.ts).
+      - niveau: fort
+        titre: Tests exécutés sur l'artefact réellement livré
+        detail: >-
+          Le job e2e build, vérifie la non-dérive de dist/, puis teste — les specs
+          chargent ../../dist. On teste le code publié, pas une compilation ad hoc.
+        detail_bonus: Un sous-ensemble @smoke est isolé (`npm run test:smoke`) pour les boucles rapides.
+      - niveau: risque
+        titre: Aucune mesure de couverture, aucun seuil
+        detail: >-
+          vitest.config.ts ne configure pas de provider de couverture et la CI
+          n'impose aucun plancher. L'étendue réelle de la protection est inconnue
+          et peut se dégrader sans signal.
+        recommandation: Activer `--coverage` avec un seuil initial calé sur l'existant, puis à cliquet.
+      - niveau: risque
+        titre: Le cœur du runtime n'a pas de tests unitaires
+        detail: >-
+          Les 5 suites vitest couvrent exclusivement shared/ et un helper runtime
+          (color). deck-root.ts (1 335 LOC), deck-overview.ts (691),
+          deck-presenter.ts (630) et click-stages.ts (574) — soit 44 % du code —
+          ne sont vérifiés qu'indirectement, par le e2e.
+        impact: >-
+          Les régressions sur ces fichiers se paient au tarif e2e : détection tardive,
+          diagnostic lent, aucun test capable de localiser la cause.
+        recommandation: >-
+          Extraire la machine à états de navigation et la logique de stages dans
+          shared/ pour les couvrir en Node — chantier commun avec le constat
+          d'architecture sur deck-root.ts.
+
+synthese:
+  score_global: 66
+  methode_score: >-
+    Moyenne non pondérée des 9 domaines (597/9). Le score est tiré vers le bas
+    par observability (35) et compliance (45) ; le socle livraison (ci-cd 82,
+    architecture 78, quality 76, testing 74) est nettement au-dessus.
+  lecture_generale: >-
+    rikiki est un projet dont la chaîne de livraison est mûre et dont les
+    arbitrages sont documentés — le RUNBOOK capitalise les incidents, le CI
+    protège l'artefact réellement publié, les risques du « dist versionné » sont
+    identifiés et gardés. Les faiblesses ne sont pas des négligences de code mais
+    des couches d'industrialisation jamais posées : rien ne surveille la
+    production entre deux commits, et aucune analyse de sécurité ni de licence
+    n'est automatisée. Trois des quatre chantiers prioritaires se règlent en
+    ajoutant des jobs CI, pas en refactorant.
+  points_forts:
+    - Garde-fou anti-dérive du dist/ versionné (`git diff --exit-code -- dist` en CI) — la bonne réponse au risque du zero-build.
+    - Images de base épinglées par digest sha256 et dépendances runtime vendorées (plus d'appel CDN tiers).
+    - Portes qualité rapides avant le build coûteux : typecheck + biome + vitest + astro check en stage `check`.
+    - Exploitation documentée et réversible : RUNBOOK avec « Known gotchas », rollback outillé par short-sha, smoke-test externe post-déploiement.
+    - Pyramide de tests cohérente avec le produit : 10 specs Playwright sur le rendu réel, 5 suites vitest sur la logique pure extraite.
+    - Chargement différé systématique des modules lourds (shiki, overview, presenter, transitions).
+  risques_majeurs:
+    - domaine: security
+      severite: critique
+      risque: >-
+        Aucune analyse automatisée dans le pipeline — ni secret detection, ni SAST,
+        ni scan de dépendances ou d'image ; `npm ci --no-audit` désactive même le
+        contrôle par défaut. La règle projet désigne pourtant la CI comme filet de
+        sécurité, et aucun hook pre-commit n'est installé : il n'y a aucun filet.
+    - domaine: observability
+      severite: critique
+      risque: >-
+        Aucune remontée d'erreur runtime et aucune sonde entre deux déploiements.
+        Le seul canal de détection d'une régression en production est le
+        signalement humain ; le MTTD est indéterminé.
+    - domaine: compliance
+      severite: critique
+      risque: >-
+        12,6 Mo de dépendances tierces (lit BSD-3, marked/mermaid/shiki MIT)
+        redistribuées via git et npm avec les notices de copyright supprimées à la
+        minification, sans NOTICE ni THIRD_PARTY — manquement objectif aux
+        licences, trivial à corriger.
+    - domaine: performance-frontend
+      severite: risque
+      risque: >-
+        shiki.js (9,2 Mo, toutes grammaires) et mermaid.min.js (3,3 Mo) sont
+        versionnés et publiés ; aucun budget de taille ne surveille cette dérive.
+  recommandations:
+    - priorite: 1
+      effort: faible
+      domaine: security
+      action: >-
+        Inclure les templates GitLab Secret-Detection et Dependency-Scanning dans
+        le stage `check`, retirer `--no-audit` (ou ajouter `npm audit --audit-level=high`),
+        et installer le hook pre-commit gitleaks prescrit par
+        .claude/rules/shared/pre-commit-secret-detection.md via core.hooksPath.
+    - priorite: 2
+      effort: faible
+      domaine: compliance
+      action: >-
+        Faire émettre à build-vendor.mjs un en-tête de licence préservé
+        (esbuild --legal-comments=inline) et générer un THIRD_PARTY.md ajouté au
+        champ `files` de package.json. Aligner site/package.json sur MIT.
+    - priorite: 3
+      effort: faible
+      domaine: observability
+      action: >-
+        Poser une sonde externe d'uptime avec alerte sur https://rikiki.tordu-jardin.fr/
+        et ajouter un pipeline planifié rejouant check + smoke-test, pour ne plus
+        dépendre du prochain commit comme signal de rupture.
+    - priorite: 4
+      effort: moyen
+      domaine: performance-frontend
+      action: >-
+        Restreindre le build shiki aux langages et thèmes réellement utilisés
+        (createHighlighterCore + imports granulaires) et poser une porte de taille
+        sur dist/ dans le stage check.
+    - priorite: 5
+      effort: eleve
+      domaine: architecture / testing
+      action: >-
+        Extraire la machine à états de navigation et la logique de stages de
+        deck-root.ts (1 335 LOC) vers shared/, puis les couvrir en vitest et
+        activer la mesure de couverture avec un seuil à cliquet. Chantier unique
+        qui répond simultanément au constat d'architecture et à celui de testing.
+  suite_a_donner_forge:
+    - >-
+      Installer le pack de skills audit-* (absent de cet environnement) ou
+      retirer ces domaines du contrat de run : le run a dû être conduit par
+      analyse directe, sans les grilles attendues. Voir meta.methode.
