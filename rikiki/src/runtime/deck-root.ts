@@ -18,6 +18,7 @@ import {
   supportsTwoD,
 } from '../domain/deck-outline.js';
 import { publishDeepLink, readDeepLink } from '../application/deep-link.js';
+import { parseHash } from '../domain/deck-link.js';
 import { isMove, keyIntent, resolveMove } from '../application/keymap.js';
 import { type MouseMechanism, mouseEnabled } from '../application/mouse-nav.js';
 import { FIT, type Viewport, clampPan, isAtFit, panBy, zoomAt } from '../domain/viewport.js';
@@ -510,6 +511,17 @@ export class DeckRoot extends LitElement {
 
   private _resizeObserver: ResizeObserver | null = null;
 
+  /** A step the opening fragment asked for, held until the slide can hear it.
+   *
+   *  The components that carry steps are opt-in modules, and a module can
+   *  register AFTER the engine has read the fragment and applied the step. The
+   *  step reached a slide whose children were still plain elements with no
+   *  applyStep to call, so it landed on nothing and no second attempt was ever
+   *  made · every link into the middle of a build opened its neutral state,
+   *  which is the one thing such a link exists to avoid. */
+  private _pendingStep: number | null = null;
+  private _stepWatcher: MutationObserver | null = null;
+
   /* ── Slide zoom ───────────────────────────────────────────────── */
 
   /** Zoom is live only in the fixed canvas and outside overlays. */
@@ -720,6 +732,7 @@ export class DeckRoot extends LitElement {
     }
     this._resizeObserver?.disconnect();
     this._resizeObserver = null;
+    this._forgetPendingStep();
     window.removeEventListener('keydown', this._onKey);
     window.removeEventListener('hashchange', this._onHash);
     this.removeEventListener('pointerdown', this._onNavPointerDown);
@@ -991,12 +1004,58 @@ export class DeckRoot extends LitElement {
     if (samePosition(target, this._position) && !initial) return;
     this.current = target.slide;
     this.step = target.step;
+    if (initial) this._watchForLateSteps(target);
     if (!initial) {
       this._resetZoom(); // a deep-link to another slide starts at fit
       this._applyActive();
       this._applyStep();
       this._updateUI();
     }
+  }
+
+  /** Watch for a stepping component arriving late, and replay the step at it.
+   *
+   *  The trigger is the `data-steps` attribute a stepping component writes onto
+   *  its slide when it connects: that mutation IS the moment a component
+   *  capable of hearing a step appears. Watching it beats polling or waiting a
+   *  fixed time, and beats asking every component to reach back into the deck.
+   *
+   *  Armed only for a fragment that asks for a step, and disarmed at the first
+   *  move the reader makes · their navigation outranks the link they opened. */
+  private _watchForLateSteps(applied: DeckPosition): void {
+    const asked = parseHash(browserLocation.read(), this._has2DNav());
+    if (!asked || asked.step <= 0) return;
+    this._pendingStep = Math.max(asked.step, applied.step);
+    this._stepWatcher?.disconnect();
+    this._stepWatcher = new MutationObserver(() => this._replayPendingStep());
+    this._stepWatcher.observe(this, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['steps', 'data-steps'],
+    });
+  }
+
+  /** Replay the opening step now that something on the slide can receive it. */
+  private _replayPendingStep(): void {
+    const wanted = this._pendingStep;
+    if (wanted === null) return;
+    if (this._maxStepsFor(this.current) < wanted) return;
+    this._forgetPendingStep();
+    this.step = wanted;
+    // A component can publish its count before the engine has marked the slide
+    // active, and a step applied with no active slide is applied to nothing ·
+    // assert the active slide first, which is idempotent.
+    this._applyActive();
+    this._applyStep();
+    this._updateUI();
+    this._writeHash();
+  }
+
+  /** Stop waiting · the link was honoured, or the reader moved on themselves. */
+  private _forgetPendingStep(): void {
+    this._pendingStep = null;
+    this._stepWatcher?.disconnect();
+    this._stepWatcher = null;
   }
 
   private _writeHash(): void {
@@ -1156,6 +1215,7 @@ export class DeckRoot extends LitElement {
    *  One value, applied once, cannot come apart that way. */
   private _applyPosition(next: DeckPosition | null): void {
     if (next === null || samePosition(next, this._position)) return;
+    this._forgetPendingStep();
     if (next.slide === this.current) {
       this.step = next.step;
       this._applyStep();
