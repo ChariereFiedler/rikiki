@@ -1043,3 +1043,53 @@ Which to reach for: `spread` when the type size is right and only the rhythm is
 wrong; `fill` when the slide is genuinely under-filled and the text should be
 bigger. `deck-bento` remains the answer when the content wants a grid rather
 than a stack.
+
+---
+
+## 20 · Opt-in components
+
+Some components are **not** in `dist/index.js`. A deck that does not use them
+pays nothing for them · manifesto principle 3, light by default. Each is its own
+module, loaded next to the bundle:
+
+```html
+<script type="module" src="dist/index.js"></script>
+<script type="module" src="dist/deck-bar.js"></script>
+<script type="module" src="dist/deck-quote.js"></script>
+```
+
+`rikiki bundle` folds a loaded module into the single file like any other
+script, so a standalone deck keeps them and stays offline. Forget the `<script>`
+and the tag stays an unknown element: it renders its text content, logs nothing,
+and the rest of the deck is unaffected.
+
+| Tag | Purpose | Key attributes | Slots |
+|-----|---------|----------------|-------|
+| `deck-bar` | A proportion, drawn · one value against a total, or a stack of categories on one track | `value`, `total`, `label`, `tone` (`accent`/`ok`/`warn`/`danger`/`info`/`muted`), `segments` (`label:value:tone` triples separated by `\|`), `no-value`, `no-legend` | · |
+| `deck-quote` | Someone else's words, attributed · distinct from `deck-punch`, which is the speaker's own line | `author`, `author-role` (**not** `role`, which belongs to ARIA), `size` (`lead`/`big`/`mega`), `plain` (drop the accent rule), `on-dark`, `no-mark` | default = the quoted text |
+
+Tokens follow the usual per-component convention and every default routes to a
+semantic `--rik-*` token, so both shipped themes are covered:
+`--deck-bar-track`, `--deck-bar-height`, `--deck-bar-radius`, `--deck-bar-fill`,
+`--deck-bar-divider`, `--deck-bar-legend-color`, `--deck-bar-label-color`,
+`--deck-bar-value-color`; `--deck-quote-color`, `--deck-quote-size`,
+`--deck-quote-rule`, `--deck-quote-mark-color`, `--deck-quote-author-color`,
+`--deck-quote-role-color`, `--deck-quote-max-width`.
+
+```html
+<deck-bar value="160" total="538" label="Worth a second look"></deck-bar>
+
+<deck-bar
+  label="Four thousand findings"
+  segments="blocker:137:danger|major:921:warn|minor:1544:info|info:812:ok|noise:586:muted"
+></deck-bar>
+
+<deck-quote author="Marie Dupont" author-role="CTO, Acme">
+  We stopped arguing about the diff and started arguing about the design.
+</deck-quote>
+```
+
+A stacked bar's printed percentages always add to exactly 100 · the rounding
+drift is absorbed by the largest slice, where it is least visible. A bar given
+an explicit `total` keeps the honest figure instead: `160 / 538` reads 30% and
+leaves the rest of the track empty, which is the whole point of drawing it.

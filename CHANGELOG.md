@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Opt-in components, outside the default bundle.** `src/extras/` holds
+  components a deck loads on purpose, each its own module. The core stays at 34
+  registered elements and a deck that never uses them pays nothing.
+  `rikiki bundle` folds a loaded one into the single file like any other script,
+  so a standalone deck keeps it and stays offline.
+  - `deck-bar` · a proportion, drawn. One value against a total (`160 / 538`
+    leaves the rest of the track empty, which is the point), or a stack of
+    categories on one track with its legend. The printed percentages of a stack
+    always add to exactly 100; the rounding drift lands on the largest slice.
+  - `deck-quote` · someone else's words, attributed. Distinct from `deck-punch`,
+    which is the speaker's own line. The attribution attribute is `author-role`,
+    never `role`, which belongs to ARIA.
 - **Vertical distribution on content layouts.** A three-line slide left 62% of
   the canvas empty, with no way to use it short of switching to a bento grid.
   `deck-feature`, `deck-split` and `deck-takeaway` now take `spread`

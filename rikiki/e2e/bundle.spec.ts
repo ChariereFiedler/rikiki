@@ -104,3 +104,26 @@ test('a bundled shiki deck highlights offline', async ({ page }) => {
   expect(failed, `no request may fail · ${failed.join(', ')}`).toEqual([]);
   expect(requested, 'the Shiki highlighter must be inside the file').toEqual([]);
 });
+
+test('a bundled deck keeps its opt-in components and renders them offline', async ({ page }) => {
+  // The extras are separate modules loaded by their own <script> · the bundler
+  // must fold them in like any other, or a standalone deck loses them silently.
+  const file = bundle('decks/tests/extras.html', 'extras.html');
+  const { requested, failed } = await requestsFor(page, file);
+
+  expect(failed, `no request may fail · ${failed.join(', ')}`).toEqual([]);
+  expect(requested, 'nothing is fetched at runtime').toEqual([]);
+
+  const registered = await page.evaluate(() => ({
+    bar: customElements.get('deck-bar') !== undefined,
+    quote: customElements.get('deck-quote') !== undefined,
+  }));
+  expect(registered.bar, 'deck-bar survived the bundle').toBe(true);
+  expect(registered.quote, 'deck-quote survived the bundle').toBe(true);
+
+  // And it actually drew something, not just registered.
+  const drawn = await page.evaluate(
+    () => document.getElementById('bar-part')?.shadowRoot?.querySelectorAll('.seg').length ?? 0,
+  );
+  expect(drawn).toBe(1);
+});
