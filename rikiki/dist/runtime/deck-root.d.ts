@@ -230,6 +230,9 @@ export declare class DeckRoot extends LitElement {
     private _onAuxUp;
     private _onAuxClick;
     /** Group slides into chapters bounded by <deck-section> markers. */
+    /** The deck's shape as the navigation model sees it · rebuilt with the DOM
+     *  chapter list, and the only thing the decisions below read. */
+    private _outline;
     private _buildChapters;
     /** 2D navigation is opt-in via `nav="2d"` · it also needs the structure to
      *  make sense (2+ chapters, at least one with multiple slides). Without the
@@ -239,7 +242,6 @@ export declare class DeckRoot extends LitElement {
     private _mouseEnabled;
     /** Flat index → {chapter, intra-chapter index}. */
     private _coords;
-    private _flatFromCoords;
     /** True when the deck IS the page rather than a widget inside one.
      *
      *  A full-page deck owns the URL, the keyboard and the wheel · that is the
@@ -262,14 +264,29 @@ export declare class DeckRoot extends LitElement {
     /** Lazy-import the overview module the first time the user opens it. */
     private _renderOverviewIfActive;
     private _maxSteps;
-    /** The engine's own step count for the active slide · `steps`/`data-steps`
-     *  attribute, or a `deck-code[step-groups]` group count. Plugins extend this
-     *  through their `steps` hook (see _maxSteps). */
+    /** Step count for ANY slide · the navigation model asks about the slide it is
+     *  moving TO. Going back into the previous slide has to know that slide's
+     *  last step BEFORE the move, which is why this is not limited to `current`.
+     *  This is the `StepsOf` the domain takes. */
+    private _maxStepsFor;
+    /** The engine's own step count for a slide · `steps`/`data-steps` attribute,
+     *  or a `deck-code[step-groups]` group count. Plugins extend it through their
+     *  `steps` hook (see _maxStepsFor). */
     private _baseMaxSteps;
+    /** Where the deck is, as the navigation model sees it. */
+    private get _position();
+    /** Apply a whole position decided by the domain.
+     *
+     *  Slide AND step move together. The engine used to set them in two
+     *  statements, so a plugin that DEFERS navigation (a View Transition) ran the
+     *  second one against the old slide and the deferred move then reset the step
+     *  to 0 · going back into a slide landed on step 0 instead of its last step.
+     *  One value, applied once, cannot come apart that way. */
+    private _applyPosition;
+    private _moveTo;
     private _advance;
     private _back;
     private _goTo;
-    private _goToNow;
     private _goToCoords;
     private _applyActive;
     private _applyStep;

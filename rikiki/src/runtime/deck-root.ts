@@ -9,6 +9,23 @@
 import { LitElement, html, css, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { isOpaqueColor } from './color.js';
+import {
+  type DeckOutline,
+  type DeckPosition,
+  EMPTY_OUTLINE,
+  coordsOf,
+  outlineOf,
+  supportsTwoD,
+} from '../domain/deck-outline.js';
+import { formatHash, parseHash } from '../domain/deck-link.js';
+import {
+  advance as advanceFrom,
+  back as backFrom,
+  clampPosition,
+  goToCoords as goToCoordsIn,
+  goToSlide as goToSlideIn,
+  samePosition,
+} from '../domain/navigation.js';
 
 type Slide = HTMLElement & {
   applyStep?: (step: number) => void;
@@ -883,7 +900,12 @@ export class DeckRoot extends LitElement {
   };
 
   /** Group slides into chapters bounded by <deck-section> markers. */
+  /** The deck's shape as the navigation model sees it · rebuilt with the DOM
+   *  chapter list, and the only thing the decisions below read. */
+  private _outline: DeckOutline = EMPTY_OUTLINE;
+
   private _buildChapters(): void {
+    this._outline = outlineOf(this.slides.map((s) => s.tagName?.toLowerCase() ?? ''));
     this.chapters = [];
     let current: Chapter | null = null;
     this.slides.forEach((slide, i) => {
@@ -902,11 +924,7 @@ export class DeckRoot extends LitElement {
    *  opt-in, arrows stay linear so a sectioned deck doesn't surprise the author
    *  by remapping ← / → to chapter jumps. */
   private _has2DNav(): boolean {
-    return (
-      this.nav === '2d' &&
-      this.chapters.length > 1 &&
-      this.chapters.some((c) => c.slides.length > 1)
-    );
+    return supportsTwoD(this._outline, this.nav === '2d');
   }
 
   private _mouseEnabled(kind: 'click' | 'wheel' | 'arrows' | 'aux'): boolean {
@@ -918,21 +936,8 @@ export class DeckRoot extends LitElement {
 
   /** Flat index → {chapter, intra-chapter index}. */
   private _coords(flatIdx: number): { c: number; i: number } {
-    for (let c = 0; c < this.chapters.length; c++) {
-      const chap = this.chapters[c]!;
-      const local = flatIdx - chap.startIdx;
-      if (local >= 0 && local < chap.slides.length) return { c, i: local };
-    }
-    return { c: 0, i: 0 };
-  }
-
-  private _flatFromCoords(c: number, i: number): number {
-    // Clamp an out-of-range chapter to the last one rather than snapping back
-    // to slide 0 · a deep link to a coordinate that no longer exists (e.g. a
-    // chapter removed while iterating) should land on the nearest valid slide.
-    const chap = this.chapters[Math.max(0, Math.min(this.chapters.length - 1, c))];
-    if (!chap) return 0;
-    return chap.startIdx + Math.max(0, Math.min(chap.slides.length - 1, i));
+    const { chapter, index } = coordsOf(this._outline, flatIdx);
+    return { c: chapter, i: index };
   }
 
   /** True when the deck IS the page rather than a widget inside one.
@@ -960,33 +965,29 @@ export class DeckRoot extends LitElement {
   private _readHash(initial: boolean): void {
     // Symmetric to _writeHash · `#section-3` is the host's anchor, not slide 3.
     if (!this._isFullPage()) return;
-    const h = location.hash;
-    const m2D = h.match(/^#(\d+)\.(\d+)(?:s(\d+))?$/);
-    const m1D = h.match(/^#(\d+)(?:\.(\d+))?$/);
+    const link = parseHash(location.hash, this._has2DNav());
+    if (!link) return;
 
-    let target = this.current;
-    let stepTarget = this.step;
+    const asked =
+      link.kind === 'coords'
+        ? goToCoordsIn(this._outline, link.coords, this._maxStepsFor)
+        : goToSlideIn(this._outline, link.slide, this._maxStepsFor);
+    if (!asked) return;
 
-    if (this._has2DNav() && m2D) {
-      const c = parseInt(m2D[1]!, 10) - 1;
-      const i = parseInt(m2D[2]!, 10) - 1;
-      target = this._flatFromCoords(Math.max(0, c), Math.max(0, i));
-      stepTarget = m2D[3] ? parseInt(m2D[3], 10) : 0;
-    } else if (m1D) {
-      target = parseInt(m1D[1]!, 10) - 1;
-      stepTarget = m1D[2] ? parseInt(m1D[2], 10) : 0;
-    } else {
-      return;
-    }
+    // On a COLD load the plugins have not computed their step counts yet, so the
+    // model would clamp a deep link to step 0 and lose it. Keep the asked-for
+    // step until a count exists; once it does, clamp as usual (a link to a click
+    // that no longer exists settles on the last available one).
+    const maxStep = this._maxStepsFor(asked.slide);
+    const target =
+      maxStep > 0
+        ? clampPosition(this._outline, { slide: asked.slide, step: link.step }, this._maxStepsFor)
+        : { slide: asked.slide, step: Math.max(0, link.step) };
+    if (!target) return;
 
-    if (target === this.current && stepTarget === this.step && !initial) return;
-    this.current = Math.max(0, Math.min(this.slides.length - 1, target));
-    // Clamp the step to the slide's range · a deep link to a click that no
-    // longer exists (e.g. a bullet removed while iterating) settles on the last
-    // available step instead of over-stepping. Skip the upper clamp when the
-    // count is still 0 (plugins may not have computed it yet on cold load).
-    const maxStep = this._maxSteps();
-    this.step = maxStep > 0 ? Math.max(0, Math.min(maxStep, stepTarget)) : Math.max(0, stepTarget);
+    if (samePosition(target, this._position) && !initial) return;
+    this.current = target.slide;
+    this.step = target.step;
     if (!initial) {
       this._resetZoom(); // a deep-link to another slide starts at fit
       this._applyActive();
@@ -999,7 +1000,13 @@ export class DeckRoot extends LitElement {
     // An embedded deck must not overwrite the host's anchor · navigating a
     // widget is not a navigation of the page it sits in.
     if (!this._isFullPage()) return;
-    const h = `#${this.current + 1}${this.step > 0 ? `.${this.step}` : ''}`;
+    const twoD = this._has2DNav();
+    const h = formatHash(this._position, {
+      twoD,
+      // The write side used to emit the linear form even in 2D, so `#3.1` was
+      // written for "slide 3, step 1" and read back as "chapter 3, slide 1".
+      coords: twoD ? coordsOf(this._outline, this.current) : undefined,
+    });
     if (location.hash === h) return;
     try {
       history.replaceState(null, '', h);
@@ -1178,21 +1185,29 @@ export class DeckRoot extends LitElement {
   }
 
   private _maxSteps(): number {
-    let n = this._baseMaxSteps();
-    const slide = this.slides[this.current];
+    return this._maxStepsFor(this.current);
+  }
+
+  /** Step count for ANY slide · the navigation model asks about the slide it is
+   *  moving TO. Going back into the previous slide has to know that slide's
+   *  last step BEFORE the move, which is why this is not limited to `current`.
+   *  This is the `StepsOf` the domain takes. */
+  private _maxStepsFor = (index: number): number => {
+    let n = this._baseMaxSteps(index);
+    const slide = this.slides[index];
     if (slide) {
       for (const p of this._plugins) {
         if (p.steps) n = Math.max(n, p.steps(slide, this._context()));
       }
     }
     return n;
-  }
+  };
 
-  /** The engine's own step count for the active slide · `steps`/`data-steps`
-   *  attribute, or a `deck-code[step-groups]` group count. Plugins extend this
-   *  through their `steps` hook (see _maxSteps). */
-  private _baseMaxSteps(): number {
-    const s = this.slides[this.current];
+  /** The engine's own step count for a slide · `steps`/`data-steps` attribute,
+   *  or a `deck-code[step-groups]` group count. Plugins extend it through their
+   *  `steps` hook (see _maxStepsFor). */
+  private _baseMaxSteps(index: number): number {
+    const s = this.slides[index];
     if (!s) return 0;
     const direct = parseInt(s.getAttribute('steps') || s.dataset?.['steps'] || '0', 10);
     if (direct > 0) return direct;
@@ -1207,66 +1222,63 @@ export class DeckRoot extends LitElement {
     return 0;
   }
 
-  private _advance(): void {
-    const max = this._maxSteps();
-    if (this.step < max) {
-      this.step++;
-      this._applyStep();
-      this._updateUI();
-      this._writeHash();
-    } else if (this.current < this.slides.length - 1) {
-      this._goTo(this.current + 1);
-    } else if (this.loop) {
-      this._goTo(0);
-    }
+  /** Where the deck is, as the navigation model sees it. */
+  private get _position(): DeckPosition {
+    return { slide: this.current, step: this.step };
   }
 
-  private _back(): void {
-    if (this.step > 0) {
-      this.step--;
+  /** Apply a whole position decided by the domain.
+   *
+   *  Slide AND step move together. The engine used to set them in two
+   *  statements, so a plugin that DEFERS navigation (a View Transition) ran the
+   *  second one against the old slide and the deferred move then reset the step
+   *  to 0 · going back into a slide landed on step 0 instead of its last step.
+   *  One value, applied once, cannot come apart that way. */
+  private _applyPosition(next: DeckPosition | null): void {
+    if (next === null || samePosition(next, this._position)) return;
+    if (next.slide === this.current) {
+      this.step = next.step;
       this._applyStep();
       this._updateUI();
       this._writeHash();
-    } else if (this.current > 0) {
-      this._goTo(this.current - 1);
-      this.step = this._maxSteps();
-      this._applyStep();
-      this._updateUI();
-      this._writeHash();
-    } else if (this.loop) {
-      this._goTo(this.slides.length - 1);
-      this.step = this._maxSteps();
-      this._applyStep();
-      this._updateUI();
-      this._writeHash();
+      return;
     }
-  }
-
-  private _goTo(idx: number): void {
-    // A plugin may own navigation (e.g. wrap it in a View Transition for cross
-    // slide morphs) · it receives the real navigation as `proceed`. Only the
-    // first plugin with a navigate hook owns it; otherwise navigate normally.
+    // A plugin may own cross-slide navigation · it receives the real move as
+    // `proceed`, which carries the complete target position.
     const nav = this._plugins.find((p) => p.navigate);
-    if (nav?.navigate?.(idx, this._context(), () => this._goToNow(idx))) return;
-    this._goToNow(idx);
+    const proceed = () => this._moveTo(next);
+    if (nav?.navigate?.(next.slide, this._context(), proceed)) return;
+    proceed();
   }
 
-  private _goToNow(idx: number): void {
+  private _moveTo(next: DeckPosition): void {
     this._resetZoom(); // each slide starts at fit
-    this.current = Math.max(0, Math.min(this.slides.length - 1, idx));
-    this.step = 0;
+    this.current = next.slide;
+    this.step = next.step;
     this._applyActive();
     this._applyStep();
     this._updateUI();
     this._writeHash();
   }
 
+  private _advance(): void {
+    this._applyPosition(
+      advanceFrom(this._outline, { loop: this.loop }, this._position, this._maxStepsFor),
+    );
+  }
+
+  private _back(): void {
+    this._applyPosition(
+      backFrom(this._outline, { loop: this.loop }, this._position, this._maxStepsFor),
+    );
+  }
+
+  private _goTo(idx: number): void {
+    this._applyPosition(goToSlideIn(this._outline, idx, this._maxStepsFor));
+  }
+
   private _goToCoords(c: number, i: number): void {
-    const clampedC = Math.max(0, Math.min(this.chapters.length - 1, c));
-    const chap = this.chapters[clampedC];
-    if (!chap) return;
-    const clampedI = Math.max(0, Math.min(chap.slides.length - 1, i));
-    this._goTo(this._flatFromCoords(clampedC, clampedI));
+    this._applyPosition(goToCoordsIn(this._outline, { chapter: c, index: i }, this._maxStepsFor));
   }
 
   private _applyActive(): void {
