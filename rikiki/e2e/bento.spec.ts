@@ -134,3 +134,26 @@ test('a ragged csv keeps every row aligned with its header', async ({ page }) =>
   expect(table.head, 'header columns parsed').toBe(3);
   expect(table.widths, 'every body row matches the header width').toEqual([3, 3, 3]);
 });
+
+test('cell align moves content horizontally and justify moves it vertically', async ({ page }) => {
+  // Pins the axis each attribute drives · a deck-cell is a column flex box, so
+  // align maps to align-items (horizontal) and justify to justify-content
+  // (vertical). The shipped showcase deck once had these swapped.
+  const deck = createDeckPage(page);
+  await deck.goto(`${DECK}#5`);
+
+  const axes = await page.evaluate(() => {
+    const read = (id: string) => {
+      const el = document.getElementById(id);
+      if (!el) return null;
+      const s = getComputedStyle(el);
+      return { align: s.alignItems, justify: s.justifyContent };
+    };
+    return { bottom: read('cell-bottom'), right: read('cell-right') };
+  });
+
+  expect(axes.bottom, 'justify=end drives justify-content').toMatchObject({
+    justify: 'flex-end',
+  });
+  expect(axes.right, 'align=end drives align-items').toMatchObject({ align: 'flex-end' });
+});
