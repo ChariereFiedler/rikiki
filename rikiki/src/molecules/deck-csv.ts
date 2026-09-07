@@ -58,6 +58,29 @@ export class DeckCsv extends LitElement {
       text-align: left;
       vertical-align: top;
     }
+    tr[data-mark] > td {
+      background: var(--deck-csv-mark-bg, var(--rik-status-info__bg, var(--rik-surface-tint)));
+      color: var(--deck-csv-mark-color, var(--rik-text-default));
+      font-weight: 700;
+    }
+    td[data-mark],
+    th[data-mark] {
+      background: var(--deck-csv-mark-bg, var(--rik-status-info__bg, var(--rik-surface-tint)));
+      font-weight: 700;
+    }
+    /* Revealed rows keep their space · a table that grows row by row makes the
+       whole slide jump under the audience. */
+    tr[data-pending] {
+      visibility: hidden;
+    }
+    @media print {
+      /* No steps on paper, and the marks are content. */
+      tr[data-pending] { visibility: visible; }
+      tr[data-mark] > td, td[data-mark], th[data-mark] {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
     th {
       background: var(--deck-csv-header-bg, var(--rik-surface-tint));
       color: var(--rik-text-default);
@@ -71,6 +94,19 @@ export class DeckCsv extends LitElement {
   @property({ type: Number, attribute: 'fit-min' }) fitMin?: number;
   @property({ type: Number, attribute: 'fit-max' }) fitMax?: number;
 
+  /** 1-based body rows to emphasise · `2` or `2 5`. A table with no hierarchy
+   *  is unreadable at projection distance. */
+  @property({ type: String, attribute: 'highlight-rows' }) highlightRows?: string;
+
+  /** 1-based columns to emphasise · same grammar. */
+  @property({ type: String, attribute: 'highlight-cols' }) highlightCols?: string;
+
+  /** Reveal body rows one per step instead of showing the whole table. */
+  @property({ type: Boolean, reflect: true }) reveal = false;
+
+  /** Current step, set by deck-root on every step change. */
+  @state() private step = 0;
+
   @state() private rows: string[][] = [];
 
   private fitter = new FitController(this, {
@@ -82,6 +118,36 @@ export class DeckCsv extends LitElement {
   override connectedCallback() {
     super.connectedCallback();
     this.parse();
+    this._publishSteps();
+  }
+
+  /** One step per body row when revealing · published on the host slide, which
+   *  is where the engine reads the count from. Never lowers an author's own. */
+  private _publishSteps(): void {
+    if (!this.reveal) return;
+    let slide: Element | null = this;
+    while (slide?.parentElement && slide.parentElement.tagName.toLowerCase() !== 'deck-root') {
+      slide = slide.parentElement;
+    }
+    if (!slide?.parentElement) return;
+    const needed = Math.max(0, this.rows.length - (this.noHeader ? 0 : 1));
+    const declared = Number(slide.getAttribute('steps') ?? slide.getAttribute('data-steps') ?? '0');
+    if (needed > declared) slide.setAttribute('data-steps', String(needed));
+  }
+
+  /** Called by deck-root on every step change. */
+  applyStep(step: number): void {
+    this.step = step;
+  }
+
+  /** 1-based indices from a space-separated attribute. */
+  private _marked(raw: string | undefined): Set<number> {
+    return new Set(
+      (raw ?? '')
+        .split(/[\s,]+/)
+        .map((n) => Number.parseInt(n, 10))
+        .filter((n) => Number.isFinite(n) && n > 0),
+    );
   }
 
   override updated() {
@@ -120,21 +186,26 @@ export class DeckCsv extends LitElement {
     if (this.rows.length === 0) return html``;
     const header = this.noHeader ? null : this.rows[0];
     const body = this.noHeader ? this.rows : this.rows.slice(1);
+    const rows = this._marked(this.highlightRows);
+    const cols = this._marked(this.highlightCols);
     return html`
       <table part="table">
         ${
           header
             ? html`<thead>
               <tr>
-                ${header.map((cell) => html`<th>${cell}</th>`)}
+                ${header.map((cell, c) => html`<th ?data-mark=${cols.has(c + 1)}>${cell}</th>`)}
               </tr>
             </thead>`
             : ''
         }
         <tbody>
           ${body.map(
-            (r) => html`<tr>
-              ${r.map((cell) => html`<td>${cell}</td>`)}
+            (r, i) => html`<tr
+              ?data-mark=${rows.has(i + 1)}
+              ?data-pending=${this.reveal && i + 1 > this.step}
+            >
+              ${r.map((cell, c) => html`<td ?data-mark=${cols.has(c + 1)}>${cell}</td>`)}
             </tr>`,
           )}
         </tbody>

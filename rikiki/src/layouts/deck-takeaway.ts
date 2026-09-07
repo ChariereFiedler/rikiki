@@ -49,7 +49,9 @@ export class DeckTakeaway extends LitElement {
        height to the blocks themselves (put a deck-fit inside and its text
        grows into it). See src/shared/slide-fill.ts.
        No backticks in here · this sits inside a css template literal. */
-    .body { justify-content: var(--_spread, flex-start); }
+    /* A per-slide spread attribute wins; without one the theme default applies
+       (--rik-slide-spread), and without that the historical top stack. */
+    .body { justify-content: var(--_spread, var(--rik-slide-spread, flex-start)); }
     :host([fill]) .body > ::slotted(*) { flex: 1 1 0; min-height: 0; }
     :host([fill]) .body { justify-content: stretch; }
   `,

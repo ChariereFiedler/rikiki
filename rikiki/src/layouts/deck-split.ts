@@ -54,9 +54,44 @@ export class DeckSplit extends LitElement {
        height to the blocks themselves (put a deck-fit inside and its text
        grows into it). See src/shared/slide-fill.ts.
        No backticks in here · this sits inside a css template literal. */
-    .body { justify-content: var(--_spread, flex-start); }
+    /* A per-slide spread attribute wins; without one the theme default applies
+       (--rik-slide-spread), and without that the historical top stack. */
+    .body { justify-content: var(--_spread, var(--rik-slide-spread, flex-start)); }
     :host([fill]) .body > ::slotted(*) { flex: 1 1 0; min-height: 0; }
     :host([fill]) .body { justify-content: stretch; }
+
+    /* Directed comparison · a before/after has a reading direction, a pivot in
+       the middle and, often, a side that wins. Tokens only, both themes.
+         --deck-split-pivot-color / -size / -bg
+         --deck-split-winner-ring / -width                                  */
+    .pivot {
+      align-self: center;
+      justify-self: center;
+      display: grid;
+      place-items: center;
+      font-family: var(--rik-font-display, var(--rik-font-sans));
+      font-size: var(--deck-split-pivot-size, var(--rik-font-size-big));
+      font-weight: 900;
+      line-height: 1;
+      color: var(--deck-split-pivot-color, var(--rik-accent));
+      background: var(--deck-split-pivot-bg, transparent);
+      padding-inline: var(--rik-space-2);
+      flex: none;
+    }
+    :host([pivot]) .body {
+      grid-template-columns: 1fr auto 1fr;
+    }
+    /* The winning side is marked, not shouted · a ring in the accent colour. */
+    :host([winner='left']) .col:first-of-type,
+    :host([winner='right']) .col:last-of-type {
+      outline: var(--deck-split-winner-width, 3px) solid
+        var(--deck-split-winner-ring, var(--rik-accent));
+      outline-offset: var(--rik-space-2);
+      border-radius: var(--rik-radius-md);
+    }
+    @media print {
+      :host([winner]) .col { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
   `,
   ];
 
@@ -85,6 +120,13 @@ export class DeckSplit extends LitElement {
    *  around them · pair with a `<deck-fit>` child to grow its text into it. */
   @property({ type: Boolean, reflect: true }) fill = false;
 
+  /** Symbol or word between the two columns · turns a neutral split into a
+   *  directed comparison. Two columns only; ignored in the three-column form. */
+  @property({ type: String, reflect: true }) pivot?: string;
+
+  /** Which side carries the accent · `left` or `right`, or absent for neither. */
+  @property({ type: String, reflect: true }) winner?: 'left' | 'right';
+
   override willUpdate(): void {
     // The style follows the ATTRIBUTE everywhere in this library, so reflect
     // both and write the resolved value as a custom property.
@@ -108,6 +150,7 @@ export class DeckSplit extends LitElement {
         `
             : html`
           <div class="col" part="col"><slot name="left"></slot></div>
+          ${this.pivot ? html`<span class="pivot" part="pivot" aria-hidden="true">${this.pivot}</span>` : ''}
           <div class="col" part="col"><slot name="right"></slot></div>
         `
         }

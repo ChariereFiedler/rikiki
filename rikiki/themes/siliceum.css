@@ -129,6 +129,11 @@
   --rik-decor-lime:                   var(--rik-palette-lime-500);
   --rik-decor-canary:                 var(--rik-palette-canary-500);
 
+  /* Default vertical distribution of a slide body · a per-slide `spread`
+     attribute overrides it. Density is usually a per-slide judgement, which is
+     why this is a theme default and not a deck-level attribute. */
+  --rik-slide-spread:                 flex-start;
+
   /* Text-grade tone companions · the plain tones are surface/decoration colors
      and several of them sit under WCAG AA on the page. Anything that renders
      TEXT in a tone (deck-punch, deck-stat) must route here instead.

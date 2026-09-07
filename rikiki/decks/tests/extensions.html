@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · extended core components</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+</head>
+<body>
+<!-- Four extensions of components that already existed · adding an attribute
+     rather than a second element that would duplicate the vocabulary. -->
+<deck-root no-hint no-arrows>
+
+  <deck-feature id="flow" eyebrow="chain">
+    <h1 slot="title">A chain across the width</h1>
+    <deck-step-list id="steps-row" direction="row">
+      <deck-step n="1" note="raw">Collect</deck-step>
+      <deck-step n="2" note="rules">Analyse</deck-step>
+      <deck-step n="3" note="verdict">Decide</deck-step>
+      <deck-step n="4" note="ship">Act</deck-step>
+    </deck-step-list>
+  </deck-feature>
+
+  <deck-split id="versus" pivot="→" winner="right" eyebrow="before / after">
+    <h1 slot="title">Directed comparison</h1>
+    <deck-card slot="left"><h3>Before</h3><p>Four hours of manual review.</p></deck-card>
+    <deck-card slot="right"><h3>After</h3><p>Twelve minutes, same coverage.</p></deck-card>
+  </deck-split>
+
+  <deck-feature id="table" eyebrow="data">
+    <h1 slot="title">A table with a point of view</h1>
+    <deck-csv id="csv-marked" highlight-rows="2" highlight-cols="3">
+      Region, Users, Plan
+      EMEA, 12 040, Pro
+      APAC, 9 310, Pro
+      AMER, 18 220, Ent
+    </deck-csv>
+  </deck-feature>
+
+  <deck-feature id="revealed" eyebrow="data">
+    <h1 slot="title">Revealed row by row</h1>
+    <deck-csv id="csv-reveal" reveal>
+      Region, Users
+      EMEA, 12 040
+      APAC, 9 310
+      AMER, 18 220
+    </deck-csv>
+  </deck-feature>
+
+  <deck-feature id="kpis" eyebrow="numbers">
+    <h1 slot="title">Several figures, one family</h1>
+    <deck-grid cols="3" gap="5">
+      <deck-stat id="kpi-1" compact num="34">components</deck-stat>
+      <deck-stat id="kpi-2" compact num="23 KB">gzip</deck-stat>
+      <deck-stat id="kpi-3" compact num="3">engines</deck-stat>
+    </deck-grid>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

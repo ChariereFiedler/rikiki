@@ -29,5 +29,8 @@ export const SPREAD = new Map<string, string>([
  *  the layout it was meant to change. */
 export function spreadValue(raw: string | null | undefined): string {
   const key = (raw ?? '').trim().toLowerCase();
-  return SPREAD.get(key) ?? 'flex-start';
+  // Absent, unknown, or the explicit word `theme` · defer to the theme default
+  // (--rik-slide-spread), which the layouts read behind this value.
+  if (key === '' || key === 'theme') return '';
+  return SPREAD.get(key) ?? '';
 }

@@ -3,7 +3,7 @@
 //
 // Pure. No DOM, no Lit, no globals. See docs/design/adr-001-deck-navigation-domain.md.
 //
-// Every verb answers one question — "where does the deck go from here?" — with
+// Every verb answers one question · "where does the deck go from here?" · with
 // a COMPLETE position, or null for "this does nothing". Returning a whole
 // position is what keeps slide and step from ever disagreeing: the caller
 // applies one value, so there is no window in which they are out of sync.

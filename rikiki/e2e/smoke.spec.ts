@@ -18,6 +18,7 @@ const DECKS = [
   '/rikiki/decks/tests/bento.html',
   '/rikiki/decks/tests/fill.html',
   '/rikiki/decks/tests/extras.html',
+  '/rikiki/decks/tests/extensions.html',
   '/rikiki/decks/tests/extras-optin.html',
   '/rikiki/decks/tests/morph-back.html',
   // The public examples · served in production from site/public symlinks, and

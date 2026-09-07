@@ -251,7 +251,7 @@ Direct children of `<deck-root>`. Each is one slide.
 | `deck-tier-list` | Tier ladder | · | `deck-tier`, `deck-tier-arrow` children |
 | `deck-tier` | One tier row | `name`, `speed`, `severity` (`muted`/`warn`/`ok`/`hot`), `hot` | default = description text |
 | `deck-tier-arrow` | Separator note between tiers | · | default = text |
-| `deck-step-list` | Numbered step ladder | · | `deck-step` children |
+| `deck-step-list` | Numbered step ladder | `direction` (`column` default, `row` for a chain across the width), `no-connectors` | `deck-step` children |
 | `deck-step` | One step row | `n`, `note` | default = label |
 | `deck-shortcut-list` | Shortcut grid | `cols` (column count, e.g. `1`), `col-gap` (1..6) | `deck-shortcut` children |
 | `deck-shortcut` | One keyboard-shortcut row | `keys` (space-separated), `label`, `note`, `tone` (`accent`/`ok`) | default = note |
@@ -260,7 +260,7 @@ Direct children of `<deck-root>`. Each is one slide.
 | `deck-grid` | CSS grid helper | `cols` (1..12 or template), `rows`, `gap` (1..6 or CSS), `align`, `justify`, `fill` | children |
 | `deck-cell` | Bento grid item · a `container-type: size` box so child `cqw`/`cqh` type scales against the cell, not the slide. A slotted `img`/`svg`/`video` auto-fits the cell (object-fit contain); a slotted `table` fills the width | `span` (`"CxR"`, e.g. `2x1`, or a bare column count), `col`/`row` (per-axis override · integer → `span N`, else raw line syntax), `tone` (`info`/`warn`/`ok`/`danger`), `plain` (drop the card chrome), `flat` (keep the surface but drop the border), `align` (**horizontal**: `start`/`center`/`end`/`stretch`), `justify` (**vertical**: `start`/`center`/`end`/`between`) | default (`<h3>` + body, or any block) |
 | `deck-fit` | Shrink slotted content to fit its box by font-size (for non-`deck-punch` text content · not for images, which scale geometrically) | `min` (rem, default 1), `max` (rem, default 12) | default = any content |
-| `deck-csv` | Render inline CSV as a styled table (cells are trimmed) | `delimiter` (default `,`), `no-header` (first row is data), `fit` (shrink the table to fit the cell), `fit-min`/`fit-max` (rem bounds, default 0.6/2) | default = raw CSV text |
+| `deck-csv` | Render inline CSV as a styled table (cells are trimmed) | `delimiter` (default `,`), `no-header` (first row is data), `fit` (shrink the table to fit the cell), `fit-min`/`fit-max` (rem bounds, default 0.6/2), `highlight-rows` / `highlight-cols` (1-based, space-separated), `reveal` (one body row per step) | default = raw CSV text |
 
 ---
 
@@ -330,7 +330,7 @@ async function installShiki(opts?: {
   it never patches the component's internals · see *Writing a plugin* below.
 - **Trade-off:** the vendored Shiki bundle is large (every grammar + theme, JS
   engine, no wasm). That is why it is opt-in and lazy · the core bundle stays
-  ~40 KB gzip.
+  ~41 KB gzip.
 
 ---
 
@@ -1066,6 +1066,8 @@ and the rest of the deck is unaffected.
 | Tag | Purpose | Key attributes | Slots |
 |-----|---------|----------------|-------|
 | `deck-bar` | A proportion, drawn · one value against a total, or a stack of categories on one track | `value`, `total`, `label`, `tone` (`accent`/`ok`/`warn`/`danger`/`info`/`muted`), `segments` (`label:value:tone` triples separated by `\|`), `no-value`, `no-legend` | · |
+| `deck-annotate` | A screenshot the speaker can point at · numbered markers positioned in percent, revealed one per step through the engine's own step mechanism | `src`, `alt`, `marks` (`x,y,label` triples separated by `\|`, coordinates in percent), `all-at-once`, `no-legend` | · |
+| `deck-agenda` | The running order and where the talk is · reads the deck's own chapter structure, so adding a `deck-section` grows a line | `no-numbers`, `no-jump` | · |
 | `deck-quote` | Someone else's words, attributed · distinct from `deck-punch`, which is the speaker's own line | `author`, `author-role` (**not** `role`, which belongs to ARIA), `size` (`lead`/`big`/`mega`), `plain` (drop the accent rule), `on-dark`, `no-mark` | default = the quoted text |
 
 Tokens follow the usual per-component convention and every default routes to a
@@ -1074,7 +1076,27 @@ semantic `--rik-*` token, so both shipped themes are covered:
 `--deck-bar-divider`, `--deck-bar-legend-color`, `--deck-bar-label-color`,
 `--deck-bar-value-color`; `--deck-quote-color`, `--deck-quote-size`,
 `--deck-quote-rule`, `--deck-quote-mark-color`, `--deck-quote-author-color`,
-`--deck-quote-role-color`, `--deck-quote-max-width`.
+`--deck-quote-role-color`, `--deck-quote-max-width`;
+`--deck-annotate-mark-bg`, `--deck-annotate-mark-color`, `--deck-annotate-mark-size`,
+`--deck-annotate-mark-ring`, `--deck-annotate-radius`, `--deck-annotate-legend-color`;
+`--deck-agenda-current-color`, `--deck-agenda-done-color`, `--deck-agenda-rule`,
+`--deck-agenda-marker`, `--deck-agenda-size`, `--deck-agenda-gap`.
+
+```html
+<deck-annotate
+  src="dashboard.png"
+  alt="The ops dashboard"
+  marks="20,30,Queue depth|55,60,Latency spike|82,25,Retries"
+></deck-annotate>
+
+<deck-agenda></deck-agenda>
+```
+
+`deck-annotate` publishes one step per marker onto its slide, so the reveal
+works with the arrow keys like any other step · no plugin, no configuration. On
+paper every marker prints. `deck-agenda` marks the chapter in progress with
+`aria-current` and each line is a real button, so a reader can tab to a chapter
+and jump.
 
 ```html
 <deck-bar value="160" total="538" label="Worth a second look"></deck-bar>
@@ -1093,3 +1115,105 @@ A stacked bar's printed percentages always add to exactly 100 · the rounding
 drift is absorbed by the largest slice, where it is least visible. A bar given
 an explicit `total` keeps the honest figure instead: `160 / 538` reads 30% and
 leaves the rest of the track empty, which is the whole point of drawing it.
+
+---
+
+## 21 · Comparison, chains, tables and density
+
+Four knobs added to components that already existed, chosen over four new
+elements that would have duplicated a vocabulary the project already has.
+
+**A directed comparison** · `deck-split` takes `pivot` (a symbol or word between
+the two columns) and `winner` (`left` or `right`, which rings that side in the
+accent colour). A neutral split stays neutral: both are absent by default.
+
+```html
+<deck-split pivot="→" winner="right">
+  <h1 slot="title">Before and after</h1>
+  <deck-card slot="left"><h3>Before</h3><p>Four hours of manual review.</p></deck-card>
+  <deck-card slot="right"><h3>After</h3><p>Twelve minutes, same coverage.</p></deck-card>
+</deck-split>
+```
+
+**A chain across the width** · `deck-step-list direction="row"` lays the steps
+side by side with a connector between them. `no-connectors` drops the rules.
+
+**A table with a point of view** · `deck-csv` takes `highlight-rows` and
+`highlight-cols` (1-based, space-separated) and `reveal`, which shows one body
+row per step. Hidden rows keep their space, so the slide never jumps under the
+audience. A revealing table publishes the step count it needs onto its slide.
+
+**A row of figures** · `deck-stat compact` drops the scale so three or four sit
+together in a `deck-grid` and read as one family, instead of each claiming the
+slide.
+
+### Default density
+
+`spread` and `fill` (§19) are per-slide, because density is a per-slide
+judgement. When a whole deck wants a different default, set it once in the theme
+rather than on every slide:
+
+```css
+:root { --rik-slide-spread: space-between; }
+```
+
+A per-slide `spread` still wins, and `spread="theme"` says "use the default"
+explicitly.
+
+---
+
+## 22 · Recipes for things that are NOT components
+
+Three requests deliberately answered by composition. Each is a layout problem,
+not a missing element, and a component would freeze one arrangement.
+
+**A checklist of what works and what does not**
+
+```html
+<deck-grid cols="2" gap="5">
+  <deck-card color="green">
+    <h3><deck-badge type="ok">Yes</deck-badge> Reviewed in CI</h3>
+    <p>Every merge request, no exception.</p>
+  </deck-card>
+  <deck-card color="red">
+    <h3><deck-badge type="bad">No</deck-badge> Reviewed on the branch</h3>
+    <p>Only when someone remembers.</p>
+  </deck-card>
+</deck-grid>
+```
+
+**Several figures side by side**
+
+```html
+<deck-grid cols="3" gap="5">
+  <deck-stat compact num="34">components</deck-stat>
+  <deck-stat compact num="23 KB">gzip</deck-stat>
+  <deck-stat compact num="3">engines</deck-stat>
+</deck-grid>
+```
+
+**A pull quote inside a dense slide** · a `deck-punch` in one column of a split,
+or a `deck-quote` (§20) when the words belong to someone else.
+
+```html
+<deck-split cols="2-1">
+  <deck-md slot="left">The long explanation…</deck-md>
+  <deck-punch slot="right" tone="accent" fit>The one line that matters.</deck-punch>
+</deck-split>
+```
+
+---
+
+## 23 · The slide budget
+
+Two ways a slide fails a room, and what the suite does about each.
+
+**Too full is a defect.** The engine never lets content overflow: every slide
+shell and every cell carries `overflow: hidden`, so an over-filled slide
+silently loses its last lines and nobody in the room knows.
+`e2e/slide-budget.spec.ts` walks every shipped deck slide by slide and fails
+when a clipping box loses more than a few pixels of content.
+
+**Too empty is a judgement.** A section title is meant to be sparse. The same
+spec measures how much of the canvas each slide uses and attaches the report to
+the run, without failing · the numbers are advice, and §19 is the answer.
