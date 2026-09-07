@@ -8,10 +8,29 @@
 // Used by both `rikiki bundle <deck.html>` and `rikiki init --standalone`.
 // ════════════════════════════════════════════════════════════════
 
-import { rolldown } from 'rolldown';
 import { readFileSync, existsSync, writeFileSync, rmSync, mkdtempSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
+
+// rolldown is an OPTIONAL peer dependency · it weighs ~55 MB of native bindings
+// and is only ever needed by `rikiki bundle` / `rikiki init --standalone`.
+// A consumer who only loads dist/index.js must not pay for it, so it is
+// imported on first use and its absence is reported, never swallowed.
+let rolldownFn = null;
+async function loadRolldown() {
+  if (rolldownFn) return rolldownFn;
+  try {
+    ({ rolldown: rolldownFn } = await import('rolldown'));
+  } catch (cause) {
+    throw new Error(
+      'rikiki bundle needs rolldown, which is an optional peer dependency.\n' +
+        '  Install it next to rikiki-deck:  npm i -D rolldown\n' +
+        '  (it is optional so that decks which only load the runtime do not pull ~55 MB of native bindings)',
+      { cause },
+    );
+  }
+  return rolldownFn;
+}
 
 // A literal `</script>` inside the bundled JS (deck-presenter builds popup HTML
 // at runtime) would close the inline <script> early · the backslash is a no-op
@@ -47,6 +66,7 @@ function resolveRef(ref, baseDir, pkgRoot) {
 
 /** Bundle a JS entry file to one ESM string (lazy imports folded in). */
 async function bundleEntry(absEntry, { minify = true } = {}) {
+  const rolldown = await loadRolldown();
   const bundle = await rolldown({ input: absEntry, logLevel: 'silent' });
   const { output } = await bundle.generate({ format: 'esm', codeSplitting: false, minify });
   await bundle.close?.();
