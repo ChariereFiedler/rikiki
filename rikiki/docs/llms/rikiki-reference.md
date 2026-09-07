@@ -893,3 +893,18 @@ slide to the second.
   (or component `--deck-*-…` tokens on one host). Do not hardcode colors.
 - Move detail into **`<deck-notes>`** rather than crowding the slide.
 - Only use tags, attributes, and tokens listed in this document.
+
+---
+
+## 15 · Trust model
+
+- **Deck content is trusted.** `deck-md` renders raw HTML from the markdown you
+  write, on purpose. That is the contract: a deck is a page its author
+  publishes. There is no `sanitize` attribute and none is planned.
+- **Derived text is not.** A renderer error message quotes the source that broke
+  it, so it is escaped before display. Never assume an error string is inert.
+- **mermaid runs at `strict`.** HTML in diagram labels is encoded and
+  click-bound scripts are refused. There is no permissive opt-in.
+- **Never render untrusted markdown or diagram source.** If the content comes
+  from a form, an API or a CMS field a stranger can edit, sanitise it before it
+  reaches `<deck-md>`. rikiki is a presentation engine, not a sandbox.
