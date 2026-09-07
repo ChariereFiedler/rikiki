@@ -68,19 +68,42 @@ export class DeckSplit extends LitElement {
        the middle and, often, a side that wins. Tokens only, both themes.
          --deck-split-pivot-color / -size / -bg
          --deck-split-winner-ring / -width                                  */
+    /* The pivot is the seam · the one place on a comparison slide where two
+       things genuinely touch, which is the only thing rule 4 of ADR-002 lets a
+       line be. It used to be a lone accent word floating at mid-height,
+       attached to nothing and reading as a stray glyph between two columns.
+       It is a full-height rule now, with the word riding on it. */
     .pivot {
-      align-self: center;
+      align-self: stretch;
       justify-self: center;
       display: grid;
       place-items: center;
+      position: relative;
+      padding-inline: var(--rik-space-3);
+      flex: none;
+    }
+    .pivot::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: var(--deck-split-pivot-rule-width, 4px);
+      transform: translateX(-50%);
+      background: var(--deck-split-pivot-rule, var(--rik-accent));
+      border-radius: var(--rik-radius-pill);
+    }
+    /* The word breaks the rule rather than sitting beside it · a chip in the
+       slide's own surface, so the seam reads as one drawing. */
+    .pivot-word {
+      position: relative;
       font-family: var(--rik-font-display, var(--rik-font-sans));
       font-size: var(--deck-split-pivot-size, var(--rik-font-size-big));
       font-weight: 900;
       line-height: 1;
       color: var(--deck-split-pivot-color, var(--rik-accent));
-      background: var(--deck-split-pivot-bg, transparent);
-      padding-inline: var(--rik-space-2);
-      flex: none;
+      background: var(--deck-split-pivot-bg, var(--rik-surface-page));
+      padding-block: var(--rik-space-2);
     }
     :host([pivot]) .body {
       grid-template-columns: 1fr auto 1fr;
@@ -156,7 +179,7 @@ export class DeckSplit extends LitElement {
         `
             : html`
           <div class="col" part="col"><slot name="left"></slot></div>
-          ${this.pivot ? html`<span class="pivot" part="pivot" aria-hidden="true">${this.pivot}</span>` : ''}
+          ${this.pivot ? html`<span class="pivot" part="pivot" aria-hidden="true"><span class="pivot-word" part="pivot-word">${this.pivot}</span></span>` : ''}
           <div class="col" part="col"><slot name="right"></slot></div>
         `
         }
