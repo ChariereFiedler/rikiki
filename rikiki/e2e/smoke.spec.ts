@@ -16,7 +16,12 @@ const DECKS = [
   '/rikiki/decks/tests/per-slide-fluid.html',
   '/rikiki/decks/tests/zoom.html',
   '/rikiki/decks/tests/bento.html',
+  // The public examples · served in production from site/public symlinks, and
+  // previously covered by nothing at all.
   '/examples/rikiki-tour/index.html',
+  '/examples/sample/index.html',
+  '/examples/stress/index.html',
+  '/examples/bento/index.html',
 ];
 
 // Resource 404s (favicon, optional CDN assets) are not JS failures · the smoke

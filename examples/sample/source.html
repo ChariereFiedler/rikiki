@@ -54,6 +54,19 @@
     </deck-card>
   </deck-split>
 
+  <deck-bento eyebrow="Layout" cols="3" rows="2" gap="3">
+    <h1 slot="title">Cells share the space</h1>
+    <deck-cell span="2x1" align="center" justify="center">
+      <deck-punch fit tone="accent">Text shrinks to fit its cell</deck-punch>
+    </deck-cell>
+    <deck-cell span="1x2" tone="info">
+      <h3>Tall</h3>
+      <p>A 1×2 cell spanning both rows.</p>
+    </deck-cell>
+    <deck-cell tone="ok"><h3>Bento</h3><p>Multi-row, multi-column.</p></deck-cell>
+    <deck-cell tone="warn"><h3>Adaptive</h3><p>cqw/cqh type, per cell.</p></deck-cell>
+  </deck-bento>
+
   <deck-section num="02">
     <h1>Numbers</h1>
   </deck-section>

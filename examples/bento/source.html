@@ -1,0 +1,303 @@
+<!doctype html>
+<!--
+  Rikiki · bento + adaptive text · feature showcase
+  Authoring view · run
+    node rikiki/bundle.mjs examples/bento/source.html examples/bento/index.html
+  to produce a single-file shareable copy.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rikiki · bento showcase</title>
+<link rel="stylesheet" href="../../rikiki/themes/rikiki.css">
+<script type="module" src="../../rikiki/dist/index.js"></script>
+<script type="module">
+  import { installClickStages } from '../../rikiki/dist/click-stages.js';
+  installClickStages();
+</script>
+</head>
+<body>
+<deck-root transition="slide">
+
+  <!-- ── Cover ─────────────────────────────────────────────────── -->
+  <deck-cover brand="rikiki · bento" speaker="Showcase" duration="every case">
+    <h1>Bento layouts &<br><span class="accent">adaptive text</span></h1>
+    <p class="sub">Cells share a grid · text adapts to the space it gets.</p>
+  </deck-cover>
+
+  <deck-section num="01">
+    <h1>The grid</h1>
+  </deck-section>
+
+  <!-- ── Basic grid · plain cells · fluid display text ──────────── -->
+  <deck-bento eyebrow="cols=2 rows=2" cols="2" rows="2" gap="3">
+    <h1 slot="title">A 2×2 grid, four equal cells</h1>
+    <deck-cell align="center" justify="center"><deck-punch size="display">One</deck-punch></deck-cell>
+    <deck-cell align="center" justify="center"><deck-punch size="display">Two</deck-punch></deck-cell>
+    <deck-cell align="center" justify="center"><deck-punch size="display">Three</deck-punch></deck-cell>
+    <deck-cell align="center" justify="center"><deck-punch size="display">Four</deck-punch></deck-cell>
+  </deck-bento>
+
+  <!-- ── Spans · 2x1 hero, 1x2 side, singles ────────────────────── -->
+  <deck-bento eyebrow="span" cols="3" rows="2" gap="3">
+    <h1 slot="title">Spans · cells of different sizes</h1>
+    <deck-cell span="2x1" align="center" justify="center" tone="info">
+      <deck-punch fit>span="2x1" · two columns, one row</deck-punch>
+    </deck-cell>
+    <deck-cell span="1x2" align="center" justify="center" tone="warn">
+      <deck-punch fit>span="1x2"</deck-punch>
+    </deck-cell>
+    <deck-cell align="center" justify="center"><deck-punch fit>1×1</deck-punch></deck-cell>
+    <deck-cell align="center" justify="center"><deck-punch fit>1×1</deck-punch></deck-cell>
+  </deck-bento>
+
+  <!-- ── Explicit col/row + asymmetric template ─────────────────── -->
+  <deck-bento eyebrow='cols="1fr 2fr"' cols="1fr 2fr" rows="2" gap="3">
+    <h1 slot="title">Asymmetric tracks + per-axis override</h1>
+    <deck-cell row="2" align="center" justify="center" tone="ok">
+      <deck-punch fit>row="2" · this cell spans both rows of the narrow column</deck-punch>
+    </deck-cell>
+    <deck-cell align="center" justify="center"><deck-punch fit>wide · top</deck-punch></deck-cell>
+    <deck-cell align="center" justify="center"><deck-punch fit>wide · bottom</deck-punch></deck-cell>
+  </deck-bento>
+
+  <deck-section num="02">
+    <h1>Cell styling</h1>
+  </deck-section>
+
+  <!-- ── Tone variants ──────────────────────────────────────────── -->
+  <deck-bento eyebrow="tone" cols="4" gap="3">
+    <h1 slot="title">Status tones</h1>
+    <deck-cell tone="info"><h3>info</h3><p>Neutral highlight.</p></deck-cell>
+    <deck-cell tone="ok"><h3>ok</h3><p>Success / positive.</p></deck-cell>
+    <deck-cell tone="warn"><h3>warn</h3><p>Caution.</p></deck-cell>
+    <deck-cell tone="danger"><h3>danger</h3><p>Problem / risk.</p></deck-cell>
+  </deck-bento>
+
+  <!-- ── plain vs card chrome ───────────────────────────────────── -->
+  <deck-bento eyebrow="plain" cols="2" gap="4">
+    <h1 slot="title">Card chrome, or plain</h1>
+    <deck-cell>
+      <h3>Default cell</h3>
+      <p>Surface, border, radius and padding · the bento "card" look.</p>
+    </deck-cell>
+    <deck-cell plain>
+      <h3>plain cell</h3>
+      <p>No chrome · still a size container, so child cqw/cqh type and
+        <code>fit</code> keep working. Use it to group content without a box.</p>
+    </deck-cell>
+  </deck-bento>
+
+  <!-- ── align / justify per cell ───────────────────────────────── -->
+  <deck-bento eyebrow="align · justify" cols="3" rows="2" gap="3">
+    <h1 slot="title">Content placement inside a cell</h1>
+    <deck-cell align="start"   justify="start"><h3>start / start</h3></deck-cell>
+    <deck-cell align="center"  justify="center"><h3>center / center</h3></deck-cell>
+    <deck-cell align="end"     justify="end"><h3>end / end</h3></deck-cell>
+    <deck-cell align="stretch" justify="between">
+      <h3>stretch · between</h3>
+      <p>Top and bottom pushed apart.</p>
+    </deck-cell>
+    <deck-cell align="center" justify="center" tone="info"><deck-punch fit>centered fit</deck-punch></deck-cell>
+    <deck-cell justify="end" align="center" tone="ok"><h3>bottom-aligned</h3></deck-cell>
+  </deck-bento>
+
+  <deck-section num="03">
+    <h1>Adaptive text</h1>
+  </deck-section>
+
+  <!-- ── fit vs fluid · same long line ──────────────────────────── -->
+  <deck-bento eyebrow="fit vs fluid" cols="2" gap="4">
+    <h1 slot="title">Two ways to scale text</h1>
+    <deck-cell align="center" justify="center" tone="info">
+      <deck-kicker>size="display" · pure CSS (cqw)</deck-kicker>
+      <deck-punch size="display">Scales with the cell width, may clip if too long</deck-punch>
+    </deck-cell>
+    <deck-cell align="center" justify="center" tone="ok">
+      <deck-kicker>fit · JS measure</deck-kicker>
+      <deck-punch fit>Shrinks until it fits · never overflows, whatever the length</deck-punch>
+    </deck-cell>
+  </deck-bento>
+
+  <!-- ── fit · short vs long in identical cells ─────────────────── -->
+  <deck-bento eyebrow="fit · any length" cols="3" gap="3">
+    <h1 slot="title">Same cell, different lengths</h1>
+    <deck-cell align="center" justify="center"><deck-punch fit>Hi</deck-punch></deck-cell>
+    <deck-cell align="center" justify="center"><deck-punch fit>A medium line here</deck-punch></deck-cell>
+    <deck-cell align="center" justify="center"><deck-punch fit>A much longer sentence that has to shrink a lot to fit the very same box</deck-punch></deck-cell>
+  </deck-bento>
+
+  <!-- ── fit-min / fit-max bounds ───────────────────────────────── -->
+  <deck-bento eyebrow="fit-min · fit-max" cols="2" gap="4">
+    <h1 slot="title">Clamp the fit range</h1>
+    <deck-cell align="center" justify="center" tone="warn">
+      <deck-kicker>fit-max="3" · capped small</deck-kicker>
+      <deck-punch fit fit-max="3">Short text, but capped at 3rem so it never gets huge</deck-punch>
+    </deck-cell>
+    <deck-cell align="center" justify="center" tone="info">
+      <deck-kicker>fit-min="2" · floored</deck-kicker>
+      <deck-punch fit fit-min="2">A long line that would shrink below 2rem is clamped to the floor and clipped instead</deck-punch>
+    </deck-cell>
+  </deck-bento>
+
+  <!-- ── deck-fit · arbitrary content ───────────────────────────── -->
+  <deck-bento eyebrow="deck-fit" cols="2" gap="4">
+    <h1 slot="title">Fit any content, not just a punch</h1>
+    <deck-cell tone="ok">
+      <h3>A fitted list</h3>
+      <deck-fit max="4">
+        <ul>
+          <li>Wrap any markup in deck-fit</li>
+          <li>It shrinks to fit the cell</li>
+          <li>Lists, paragraphs, tables…</li>
+          <li>Bounded by min / max rem</li>
+        </ul>
+      </deck-fit>
+    </deck-cell>
+    <deck-cell tone="info" align="center" justify="center">
+      <deck-fit>
+        <p style="text-align:center">A block of prose that <strong>auto-sizes</strong>
+          to whatever room the cell offers, growing on a wide slide and shrinking
+          on a tight one.</p>
+      </deck-fit>
+    </deck-cell>
+  </deck-bento>
+
+  <deck-section num="04">
+    <h1>Media &amp; data</h1>
+  </deck-section>
+
+  <!-- ── SVG / image auto-fit (geometric containment) ───────────── -->
+  <deck-bento eyebrow="svg · img" cols="2" gap="4">
+    <h1 slot="title">SVG and images fit their cell</h1>
+    <deck-cell tone="info">
+      <h3>Inline SVG</h3>
+      <svg viewBox="0 0 200 120" role="img" aria-label="trend">
+        <rect width="200" height="120" rx="8" fill="rgba(255,255,255,0.5)"/>
+        <polyline points="10,100 60,55 110,75 190,20" fill="none"
+          stroke="var(--rik-accent)" stroke-width="5" stroke-linecap="round"/>
+      </svg>
+    </deck-cell>
+    <deck-cell>
+      <h3>Raster image · object-fit: contain</h3>
+      <img alt="demo"
+        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 260'%3E%3Crect width='400' height='260' fill='%23f07020'/%3E%3Ccircle cx='200' cy='130' r='70' fill='white'/%3E%3C/svg%3E">
+    </deck-cell>
+  </deck-bento>
+
+  <!-- ── deck-csv · tabular data ────────────────────────────────── -->
+  <deck-bento eyebrow="deck-csv" cols="2" gap="4">
+    <h1 slot="title">Drop CSV, get a table</h1>
+    <deck-cell tone="ok">
+      <h3>Header row + body</h3>
+      <deck-csv>
+        Metric, Q2, Q3
+        p95 latency, 1.8s, 1.2s
+        error rate, 0.5%, 0.3%
+        uptime, 99.9%, 99.98%
+      </deck-csv>
+    </deck-cell>
+    <deck-cell tone="info">
+      <h3>A dense table · deck-csv fit shrinks it</h3>
+      <deck-csv fit delimiter=";">
+        Region; Users; Growth; Plan; Owner
+        EMEA; 12 040; +8%; Pro; A. Dupont
+        APAC; 9 310; +14%; Pro; L. Chen
+        AMER; 18 220; +5%; Ent; J. Smith
+        LATAM; 4 105; +22%; Pro; M. Rossi
+        MENA; 2 870; +31%; Starter; K. Haddad
+        SSA; 1 560; +44%; Starter; N. Okoro
+        OCE; 3 240; +6%; Ent; P. Walker
+      </deck-csv>
+    </deck-cell>
+  </deck-bento>
+
+  <!-- ── Markdown authoring · ::: cards (whole slide in markdown) ── -->
+  <deck-feature>
+    <deck-md>
+# You won't write it all yourself
+
+A real project pulls in a window lib, a formatter, a test framework.
+The question is **how** they arrive · every answer is a trade-off:
+
+::: cards cols=3
+:: warn | Reproducibility
+same versions on every machine, every CI run
+:: warn | Build cost
+source you compile vs prebuilt you link
+:: warn | Control
+who owns the version, the flags, the patches
+:::
+    </deck-md>
+  </deck-feature>
+
+  <deck-section num="05">
+    <h1>Real content</h1>
+  </deck-section>
+
+  <!-- ── Rich components inside cells ───────────────────────────── -->
+  <deck-bento eyebrow="composition" cols="3" rows="2" gap="3">
+    <h1 slot="title">Cells hold any component</h1>
+    <deck-cell span="1x2" tone="info">
+      <h3>Markdown</h3>
+      <deck-md>
+        Cells accept **rich** content:
+
+        - `deck-md`
+        - `deck-stat`
+        - `deck-code`
+
+        and they all share the grid.
+      </deck-md>
+    </deck-cell>
+    <deck-cell align="center" justify="center">
+      <deck-stat num="92%" tone="green">
+        <h3 slot="claim">faster</h3>
+        cold start
+      </deck-stat>
+    </deck-cell>
+    <deck-cell align="center" justify="center" tone="ok">
+      <deck-punch fit tone="accent">Bento</deck-punch>
+    </deck-cell>
+    <deck-cell span="2x1">
+      <h3>Code</h3>
+      <deck-code lang="html" nested>&lt;deck-cell span="2x1"&gt;…&lt;/deck-cell&gt;</deck-code>
+    </deck-cell>
+  </deck-bento>
+
+  <!-- ── Dashboard · dense real-world bento ─────────────────────── -->
+  <deck-bento eyebrow="dashboard" cols="4" rows="2" gap="3">
+    <h1 slot="title">A metrics dashboard</h1>
+    <deck-cell span="2x1" tone="info" align="center" justify="center">
+      <deck-punch fit fit-max="5">Q3 release health</deck-punch>
+    </deck-cell>
+    <deck-cell align="center" justify="center"><deck-stat num="1.2s" tone="green"><h3 slot="claim">p95</h3>latency</deck-stat></deck-cell>
+    <deck-cell align="center" justify="center"><deck-stat num="0.3%" tone="orange"><h3 slot="claim">error</h3>rate</deck-stat></deck-cell>
+    <deck-cell tone="ok"><h3>Uptime</h3><p>99.98% this quarter.</p></deck-cell>
+    <deck-cell tone="warn"><h3>Backlog</h3><p>14 open · 3 blocking.</p></deck-cell>
+    <deck-cell span="2x1" align="center" justify="center"><deck-punch fit>All green · ship it</deck-punch></deck-cell>
+  </deck-bento>
+
+  <!-- ── Reveals · fit recomputes on each step ──────────────────── -->
+  <deck-bento eyebrow="click-stages" cols="3" gap="3">
+    <h1 slot="title">Revealed cells refit when shown</h1>
+    <deck-cell align="center" justify="center" tone="info" data-click data-anim="scale">
+      <deck-punch fit>Step one appears…</deck-punch>
+    </deck-cell>
+    <deck-cell align="center" justify="center" tone="ok" data-click data-anim="scale">
+      <deck-punch fit>…then a longer step two that fits on reveal…</deck-punch>
+    </deck-cell>
+    <deck-cell align="center" justify="center" tone="warn" data-click data-anim="scale">
+      <deck-punch fit>…and three</deck-punch>
+    </deck-cell>
+  </deck-bento>
+
+  <deck-takeaway kicker="Bento">
+    <p class="display on-dark">Real layouts. Text that fits.</p>
+    <p class="caption on-dark">deck-bento · deck-cell · deck-fit · deck-punch fit</p>
+  </deck-takeaway>
+
+</deck-root>
+</body>
+</html>
