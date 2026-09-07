@@ -80,7 +80,9 @@
   /* Text */
   --rik-text-default:                 var(--rik-palette-ink-900);
   --rik-text-default--muted:          var(--rik-palette-ink-700);
-  --rik-text-default--faint:          var(--rik-palette-ink-500);
+  /* Text-grade · ink-500 measured 4.30:1 on the page, under AA body text.
+     Measured, not eyeballed · scripts/theme-contrast.test.mjs re-checks it. */
+  --rik-text-default--faint:          #75706c;
   --rik-text-inverse:                 var(--rik-palette-night-100);
   --rik-text-inverse--muted:          rgba(232, 228, 240, 0.72);
   --rik-text-inverse--faint:          rgba(232, 228, 240, 0.55);
@@ -96,7 +98,8 @@
   --rik-accent--soft:                 var(--rik-palette-mango-100);
   --rik-accent--faint:                var(--rik-palette-mango-50);
   --rik-accent--strong:               var(--rik-palette-mango-700);
-  --rik-accent__on:                   var(--rik-palette-paper-0);
+  /* Dark on accent · paper-0 on mango-500 measured 2.98:1. ink-900 gives 5.09. */
+  --rik-accent__on:                   var(--rik-palette-ink-900);
 
   /* Status · success */
   --rik-status-success:               var(--rik-palette-helico-500);

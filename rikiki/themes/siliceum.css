@@ -70,7 +70,8 @@
 
   --rik-text-default:                 var(--rik-palette-ink-900);
   --rik-text-default--muted:          var(--rik-palette-ink-700);
-  --rik-text-default--faint:          var(--rik-palette-ink-500);
+  /* Text-grade · ink-500 measured 4.35:1 on the page, under AA body text. */
+  --rik-text-default--faint:          #727272;
   --rik-text-inverse:                 #ffffff;
   --rik-text-inverse--muted:          rgba(255, 255, 255, 0.70);
   --rik-text-inverse--faint:          rgba(255, 255, 255, 0.55);
@@ -116,7 +117,8 @@
   --rik-focus-ring--width:            2px;
   --rik-focus-ring--offset:           2px;
 
-  --rik-link:                         var(--rik-accent--strong);
+  /* accent--strong measured 3.56:1 on the page · under AA for body text. */
+  --rik-link:                         #916d00;
   --rik-link--hover:                  var(--rik-accent);
   --rik-link--visited:                var(--rik-palette-orchid-500);
 
