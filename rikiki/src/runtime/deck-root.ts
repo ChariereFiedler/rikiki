@@ -661,6 +661,13 @@ export class DeckRoot extends LitElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
+    // Focusable when embedded · the keyboard is scoped to focus there, so the
+    // deck needs a way to receive it. A full-page deck needs no tab stop.
+    if (!this.hasAttribute('tabindex') && typeof document !== 'undefined') {
+      queueMicrotask(() => {
+        if (!this._isFullPage() && !this.hasAttribute('tabindex')) this.tabIndex = 0;
+      });
+    }
     DeckRoot._injectGlobals();
     // firstUpdated installs the runtime on the initial connect only · restore
     // it when the element is re-attached after a disconnect teardown.
@@ -823,6 +830,9 @@ export class DeckRoot extends LitElement {
   }
 
   private _onWheel = (e: WheelEvent): void => {
+    // An embedded deck lets the wheel through · the reader is scrolling the
+    // page the deck sits in, not flipping slides. Zoom gestures still apply.
+    if (!this._isFullPage() && !e.ctrlKey && !e.metaKey && this._zoom <= 1) return;
     // Ctrl/⌘ + wheel (and trackpad pinch, which fires ctrlKey wheel events) is a
     // zoom gesture: magnify the slide around the cursor. When zoom is disabled
     // (no-zoom / fluid / overlay) let the browser handle its own zoom instead.
@@ -922,11 +932,31 @@ export class DeckRoot extends LitElement {
     return chap.startIdx + Math.max(0, Math.min(chap.slides.length - 1, i));
   }
 
+  /** True when the deck IS the page rather than a widget inside one.
+   *
+   *  A full-page deck owns the URL, the keyboard and the wheel · that is the
+   *  whole point. An embedded deck owns none of them by default: the host put
+   *  the anchor in the URL, the host's reader is using the arrow keys to read
+   *  the host's page, and the wheel over a widget scrolls the page it sits in. */
+  private _isFullPage(): boolean {
+    return typeof document !== 'undefined' && this.parentElement === document.body;
+  }
+
+  /** Does a key press belong to this deck right now? Always, when the deck is
+   *  the page · only while focus is inside it, when it is embedded. */
+  private _ownsKeyboard(): boolean {
+    if (this._isFullPage()) return true;
+    const active = document.activeElement;
+    return active === this || (active !== null && this.contains(active));
+  }
+
   private _onHash = (): void => {
     this._readHash(false);
   };
 
   private _readHash(initial: boolean): void {
+    // Symmetric to _writeHash · `#section-3` is the host's anchor, not slide 3.
+    if (!this._isFullPage()) return;
     const h = location.hash;
     const m2D = h.match(/^#(\d+)\.(\d+)(?:s(\d+))?$/);
     const m1D = h.match(/^#(\d+)(?:\.(\d+))?$/);
@@ -963,6 +993,9 @@ export class DeckRoot extends LitElement {
   }
 
   private _writeHash(): void {
+    // An embedded deck must not overwrite the host's anchor · navigating a
+    // widget is not a navigation of the page it sits in.
+    if (!this._isFullPage()) return;
     const h = `#${this.current + 1}${this.step > 0 ? `.${this.step}` : ''}`;
     if (location.hash === h) return;
     try {
@@ -976,6 +1009,7 @@ export class DeckRoot extends LitElement {
   }
 
   private _onKey = (e: KeyboardEvent): void => {
+    if (!this._ownsKeyboard()) return;
     if (e.target && (e.target as HTMLElement).matches?.('input,textarea,[contenteditable]')) return;
 
     // Any user keyboard input resets the autoplay countdown.

@@ -82,3 +82,92 @@ test('toggling fluid off at runtime restores the zoom-to-fit canvas', async ({ p
   expect(restored.w / restored.h, 'stage returns to 16:9').toBeCloseTo(1920 / 1080, 1);
   expect(deck.consoleErrors).toEqual([]);
 });
+
+// The host page owns its own look · importing a rikiki theme is not permission
+// to restyle the document around the deck. Each assertion below matches a
+// declaration in the fixture's own <style> block.
+test('a rikiki theme does not restyle the host page', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(EMBED);
+
+  const host = await page.evaluate(() => {
+    const body = getComputedStyle(document.body);
+    const title = getComputedStyle(document.getElementById('host-title')!);
+    const accent = getComputedStyle(document.getElementById('host-accent')!);
+    const box = getComputedStyle(document.getElementById('host-box')!);
+    return {
+      margin: body.marginTop,
+      font: body.fontFamily,
+      background: body.backgroundColor,
+      color: body.color,
+      titleMargin: title.marginBottom,
+      accentColor: accent.color,
+      boxSizing: box.boxSizing,
+      boxWidth: box.width,
+    };
+  });
+
+  expect(host.margin, 'the host keeps its body margin').toBe('24px');
+  expect(host.font, 'the host keeps its font').toContain('Georgia');
+  expect(host.background, 'the host keeps its background').toBe('rgb(240, 230, 220)');
+  expect(host.color, 'the host keeps its text color').toBe('rgb(20, 40, 60)');
+  expect(host.titleMargin, 'the host keeps its heading margins').toBe('32px');
+  expect(host.accentColor, 'the theme does not hijack a generic .accent class').toBe(
+    'rgb(10, 120, 90)',
+  );
+  expect(host.boxSizing, 'the host keeps its box-sizing').toBe('content-box');
+  expect(host.boxWidth, 'content-box means the width excludes the padding').toBe('200px');
+});
+
+test('an embedded deck does not take the host page keyboard or URL', async ({ page }) => {
+  // Arrow keys belong to the host until the reader focuses the deck, and the
+  // deck must not rewrite an anchor the host page put in the URL.
+  const deck = createDeckPage(page);
+  await page.goto(`${EMBED}#host-title`);
+  await expect(page.locator('deck-root > [active]')).toHaveCount(1);
+
+  const firstHash = await page.evaluate(() => location.hash);
+  expect(firstHash, 'the host anchor survives the deck booting').toBe('#host-title');
+
+  // Focus is on the host page · the deck must not move.
+  await page.locator('#host-title').click();
+  const before = await page.evaluate(
+    () => document.querySelector('deck-root')?.getAttribute('current') ?? '0',
+  );
+  await page.keyboard.press('ArrowRight');
+  const after = await page.evaluate(
+    () => document.querySelector('deck-root')?.getAttribute('current') ?? '0',
+  );
+  expect(after, 'the deck ignores arrow keys while the host page has focus').toBe(before);
+  expect(await page.evaluate(() => location.hash), 'the URL is untouched').toBe('#host-title');
+});
+
+test('an embedded deck navigates once it is focused', async ({ page }) => {
+  // The flip side · scoping the keyboard must not make the deck unusable.
+  const deck = createDeckPage(page);
+  await deck.goto(EMBED);
+
+  await page.evaluate(() => (document.querySelector('deck-root') as HTMLElement).focus());
+  await page.keyboard.press('ArrowRight');
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const slides = Array.from(document.querySelectorAll('deck-root > *'));
+        return slides.findIndex((s) => s.hasAttribute('active'));
+      }),
+    )
+    .toBe(1);
+});
+
+test('an embedded deck lets the host page scroll under the pointer', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(EMBED);
+
+  const box = await page.locator('#deck-box').boundingBox();
+  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  await page.mouse.wheel(0, 400);
+
+  await expect
+    .poll(() => page.evaluate(() => window.scrollY))
+    .toBeGreaterThan(0);
+});

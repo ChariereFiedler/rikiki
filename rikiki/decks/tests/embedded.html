@@ -4,11 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>rikiki · embedded harness</title>
+<style>
+  /* The host page's OWN styling · importing a rikiki theme must not silently
+     replace any of this. Each declaration is asserted in e2e/embed.spec.ts. */
+  body { margin: 24px; font-family: Georgia, serif; background: rgb(240, 230, 220); color: rgb(20, 40, 60); }
+  #host-title { margin-bottom: 32px; }
+  .accent { color: rgb(10, 120, 90); }
+  #host-box { box-sizing: content-box; width: 200px; padding: 10px; }
+</style>
 <link rel="stylesheet" href="../../themes/rikiki.css">
 <script type="module" src="../../dist/index.js"></script>
 </head>
 <body>
 <h1 id="host-title">Host page</h1>
+<p class="accent" id="host-accent">A host paragraph using its own .accent class.</p>
+<div id="host-box">content-box on the host</div>
 <p>A deck embedded in a regular, scrollable page · the deck must not touch
 the page's scroll or rem baseline.</p>
 <div id="deck-box" style="width: 800px; height: 450px">
