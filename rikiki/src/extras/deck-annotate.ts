@@ -40,11 +40,17 @@ export class DeckAnnotate extends LitElement {
       min-height: 0;
       font-family: var(--rik-font-sans);
     }
+    /* The image fills its box and object-fit contain letterboxes it inside, so
+       the PAINTED area is smaller than the element. Markers are positioned
+       against that painted area, published as --img-* by _measure(). Pure CSS
+       cannot express it: sizing a fit-content box from an image that is itself
+       max-width 100% is cyclic, and resolves to the full available width, which
+       stretches the picture and puts every marker in the wrong place. */
     .frame {
       position: relative;
       flex: 1 1 auto;
       min-height: 0;
-      display: flex;
+      line-height: 0;
     }
     img {
       display: block;
@@ -52,15 +58,25 @@ export class DeckAnnotate extends LitElement {
       height: 100%;
       object-fit: contain;
       object-position: center;
+    }
+    /* The frame around the PICTURE, not around the element box · drawn from the
+       same measurement the markers use, so the two never disagree. */
+    .edge {
+      position: absolute;
+      left: var(--img-x, 0%);
+      top: var(--img-y, 0%);
+      width: calc(var(--img-w, 1) * 100%);
+      height: calc(var(--img-h, 1) * 100%);
       border-radius: var(--deck-annotate-radius, var(--rik-radius-md));
       border: 1px solid var(--deck-annotate-border, var(--rik-border-default));
+      pointer-events: none;
     }
     .mark {
       position: absolute;
-      /* The pair is the whole placement · a percentage of the frame, so it
-         holds at any projected size. */
-      left: var(--mx);
-      top: var(--my);
+      /* Anchored to the painted picture, not to the element box · --img-* is
+         the letterboxed rectangle, --mx and --my the author percentages. */
+      left: calc(var(--img-x, 0%) + var(--mx) * var(--img-w, 1));
+      top: calc(var(--img-y, 0%) + var(--my) * var(--img-h, 1));
       transform: translate(-50%, -50%);
       width: var(--deck-annotate-mark-size, 2.2rem);
       height: var(--deck-annotate-mark-size, 2.2rem);
@@ -163,6 +179,47 @@ export class DeckAnnotate extends LitElement {
     this._step = step;
   }
 
+  private _ro?: ResizeObserver;
+
+  override firstUpdated(): void {
+    // The painted rectangle moves with the box · remeasure on resize, and once
+    // the image has decoded (naturalWidth is 0 before that).
+    this._ro = new ResizeObserver(() => this._measure());
+    const frame = this.renderRoot.querySelector('.frame');
+    if (frame) this._ro.observe(frame);
+    const img = this.renderRoot.querySelector('img');
+    img?.addEventListener('load', this._measure, { once: false });
+    this._measure();
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    // Paired with firstUpdated · a deck that re-renders a slide would otherwise
+    // leave one observer per pass.
+    this._ro?.disconnect();
+    this._ro = undefined;
+  }
+
+  /** Publish the letterboxed picture rectangle as percentages of the frame. */
+  private _measure = (): void => {
+    const frame = this.renderRoot.querySelector('.frame') as HTMLElement | null;
+    const img = this.renderRoot.querySelector('img') as HTMLImageElement | null;
+    // naturalWidth is 0 until the image has decoded · measuring then would
+    // publish a ratio of zero and pile every marker in one corner.
+    if (!frame || !img?.naturalWidth || !img.naturalHeight) return;
+    const box = frame.getBoundingClientRect();
+    if (!box.width || !box.height) return;
+
+    const ratio = img.naturalWidth / img.naturalHeight;
+    const boxRatio = box.width / box.height;
+    const w = ratio > boxRatio ? 1 : (box.height * ratio) / box.width;
+    const h = ratio > boxRatio ? box.width / ratio / box.height : 1;
+    frame.style.setProperty('--img-w', String(w));
+    frame.style.setProperty('--img-h', String(h));
+    frame.style.setProperty('--img-x', `${((1 - w) / 2) * 100}%`);
+    frame.style.setProperty('--img-y', `${((1 - h) / 2) * 100}%`);
+  };
+
   override render() {
     const marks = this._marks;
     const shown = this.allAtOnce ? marks.length : visibleCount(marks.length, this._step);
@@ -170,6 +227,7 @@ export class DeckAnnotate extends LitElement {
     return html`
       <div class="frame" part="frame">
         ${this.src ? html`<img src=${this.src} alt=${this.alt} part="image" />` : ''}
+        ${this.src ? html`<span class="edge" part="edge" aria-hidden="true"></span>` : ''}
         ${marks.map(
           (m) => html`<span
             class="mark"

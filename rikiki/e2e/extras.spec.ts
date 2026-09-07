@@ -149,16 +149,20 @@ test('annotation marks are placed by percentage and revealed one per step', asyn
   await page.keyboard.press('ArrowRight');
   await expect.poll(visible).toBe(2);
 
-  // The placement is a percentage of the frame, not a pixel offset.
+  // The placement is a percentage of the PAINTED PICTURE, not of the element
+  // box · an image letterboxed inside its box would otherwise shift every mark.
   const placed = await page.evaluate(() => {
-    const shadow = document.getElementById('shot')?.shadowRoot;
-    const frame = shadow?.querySelector('.frame') as HTMLElement;
-    const mark = shadow?.querySelector('.mark') as HTMLElement;
-    const f = frame.getBoundingClientRect();
-    const m = mark.getBoundingClientRect();
-    return Math.round(((m.left + m.width / 2 - f.left) / f.width) * 100);
+    const shadow = document.getElementById('shot')!.shadowRoot!;
+    const el = shadow.querySelector('img') as HTMLImageElement;
+    const box = el.getBoundingClientRect();
+    const ratio = el.naturalWidth / el.naturalHeight;
+    const boxRatio = box.width / box.height;
+    const w = ratio > boxRatio ? box.width : box.height * ratio;
+    const left = box.left + (box.width - w) / 2;
+    const m = (shadow.querySelector('.mark') as HTMLElement).getBoundingClientRect();
+    return Math.round(((m.left + m.width / 2 - left) / w) * 100);
   });
-  expect(placed, 'the first mark sits at 20% of the frame').toBeGreaterThan(17);
+  expect(placed, 'the first mark sits at 20% of the picture').toBeGreaterThan(17);
   expect(placed).toBeLessThan(23);
 });
 
@@ -208,4 +212,42 @@ test('an agenda entry is a real button that jumps to its chapter', async ({ page
       }),
     )
     .toBe(0);
+});
+
+test('a marker sits on the image, not on the letterbox beside it', async ({ page }) => {
+  // The frame used to take the full width while the picture was centred inside
+  // it, so a marker at 20% landed on the empty margin · a marker in the wrong
+  // place is worse than a missing one, because the room believes it.
+  const deck = createDeckPage(page);
+  await deck.goto(`${DECK}#4`);
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowRight');
+
+  const inside = await page.evaluate(() => {
+    const shadow = document.getElementById('shot')!.shadowRoot!;
+    const el = shadow.querySelector('img')!;
+    const box = el.getBoundingClientRect();
+    // The PAINTED area, not the element box · an image whose intrinsic ratio
+    // differs from its box is letterboxed inside it, and a marker placed
+    // against the box would sit on the empty margin.
+    const ratio = el.naturalWidth / el.naturalHeight;
+    const boxRatio = box.width / box.height;
+    const w = ratio > boxRatio ? box.width : box.height * ratio;
+    const h = ratio > boxRatio ? box.width / ratio : box.height;
+    const img = {
+      left: box.left + (box.width - w) / 2,
+      right: box.left + (box.width + w) / 2,
+      top: box.top + (box.height - h) / 2,
+      bottom: box.top + (box.height + h) / 2,
+    };
+    return [...shadow.querySelectorAll('.mark')].map((m) => {
+      const r = (m as HTMLElement).getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      return cx >= img.left && cx <= img.right && cy >= img.top && cy <= img.bottom;
+    });
+  });
+
+  expect(inside, 'every marker lands on the screenshot').toEqual([true, true, true]);
 });

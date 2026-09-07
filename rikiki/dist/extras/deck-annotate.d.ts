@@ -22,6 +22,11 @@ export declare class DeckAnnotate extends LitElement {
     /** Called by deck-root on every step change · it walks the active slide and
      *  invokes this on each descendant that has it. No listener to clean up. */
     applyStep(step: number): void;
+    private _ro?;
+    firstUpdated(): void;
+    disconnectedCallback(): void;
+    /** Publish the letterboxed picture rectangle as percentages of the frame. */
+    private _measure;
     render(): import("lit-html").TemplateResult<1>;
 }
 declare global {
