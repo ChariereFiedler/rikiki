@@ -131,9 +131,88 @@ const layouts: Component[] = [
 </deck-photo>`,
     tokens: ['--deck-photo-overlay-color', '--deck-photo-text-color', '--deck-photo-text-muted', '--deck-photo-content-max-width', '--deck-photo-padding-x', '--deck-photo-padding-y'],
   },
+  {
+    tag: 'deck-bento',
+    summary: 'Bento grid slide · cells share a multi-row, multi-column canvas.',
+    attrs: [
+      { name: 'eyebrow', type: 'string' },
+      { name: 'cols',    type: '1..12 | template', note: 'default 2' },
+      { name: 'rows',    type: '1..12 | template', note: 'default 1 full-height row' },
+      { name: 'gap',     type: '1..6 | CSS length', note: 'default 3' },
+      { name: 'align',   type: 'start | center | end | stretch', note: 'align-items on every cell' },
+      { name: 'justify', type: 'start | center | end | stretch', note: 'justify-items on every cell' },
+    ],
+    slots: [
+      { name: 'title', note: 'Slide title (<h1>)' },
+      { name: '(default)', note: 'deck-cell children' },
+    ],
+    example: `<deck-bento eyebrow="Layout" cols="3" rows="2">
+  <h1 slot="title">Cells share the space</h1>
+  <deck-cell span="2x1"><h3>Wide</h3></deck-cell>
+  <deck-cell span="1x2" tone="info"><h3>Tall</h3></deck-cell>
+  <deck-cell tone="ok"><h3>A</h3></deck-cell>
+  <deck-cell tone="warn"><h3>B</h3></deck-cell>
+</deck-bento>`,
+    tokens: ['--deck-bento-gap'],
+  },
 ];
 
 const atoms: Component[] = [
+  {
+    tag: 'deck-cell',
+    summary: 'Bento grid item · a size container, so child cqw/cqh type scales against the cell.',
+    attrs: [
+      { name: 'span',    type: '"CxR" | column count', note: 'e.g. 2x1' },
+      { name: 'col',     type: 'integer | line syntax', note: 'per-axis override' },
+      { name: 'row',     type: 'integer | line syntax', note: 'per-axis override' },
+      { name: 'tone',    type: 'info | warn | ok | danger' },
+      { name: 'plain',   type: 'boolean', note: 'drop the card chrome' },
+      { name: 'flat',    type: 'boolean', note: 'keep the surface, drop the border' },
+      { name: 'align',   type: 'start | center | end | stretch', note: 'HORIZONTAL · align-items' },
+      { name: 'justify', type: 'start | center | end | between', note: 'VERTICAL · justify-content' },
+    ],
+    example: `<deck-cell span="2x1" tone="ok" justify="end">
+  <h3>Bottom-aligned</h3>
+</deck-cell>`,
+    tokens: ['--deck-cell-bg', '--deck-cell-border', '--deck-cell-radius', '--deck-cell-padding-x', '--deck-cell-padding-y', '--deck-cell-gap'],
+  },
+  {
+    tag: 'deck-csv',
+    summary: 'Inline CSV rendered as a styled table · cells are trimmed.',
+    attrs: [
+      { name: 'delimiter', type: 'string', note: 'default ","' },
+      { name: 'no-header', type: 'boolean', note: 'first row is data' },
+      { name: 'fit',       type: 'boolean', note: 'shrink the table to fit its box' },
+      { name: 'fit-min',   type: 'rem', note: 'default 0.6' },
+      { name: 'fit-max',   type: 'rem', note: 'default 2' },
+    ],
+    example: `<deck-csv delimiter=";" fit>
+  Region; Users; Plan
+  EMEA; 12 040; Pro
+  APAC; 9 310; Pro
+</deck-csv>`,
+    tokens: ['--deck-csv-border', '--deck-csv-header-bg', '--deck-csv-padding-x', '--deck-csv-padding-y'],
+  },
+  {
+    tag: 'deck-fit',
+    summary: 'Shrink slotted text to fit its box by font-size · not for images.',
+    attrs: [
+      { name: 'min', type: 'rem', note: 'default 1' },
+      { name: 'max', type: 'rem', note: 'default 12' },
+    ],
+    example: `<deck-fit max="6">
+  A line that shrinks until it fits its cell.
+</deck-fit>`,
+  },
+  {
+    tag: 'deck-tier-arrow',
+    summary: 'Separator note between two tiers of a deck-tier-list.',
+    example: `<deck-tier-list>
+  <deck-tier label="S">Ships today</deck-tier>
+  <deck-tier-arrow>after ~6 runs</deck-tier-arrow>
+  <deck-tier label="A">Ships next</deck-tier>
+</deck-tier-list>`,
+  },
   {
     tag: 'deck-code',
     summary: 'Code block with light syntax highlighting · js, ts, html, css.',
@@ -201,7 +280,7 @@ const atoms: Component[] = [
       { name: '(default)', note: 'One line of body text' },
     ],
     example: `<deck-stat num="01" tone="orange">
-  <h3 slot="claim">Open index.html</h3>
+  <h3 slot="claim">Serve a folder</h3>
   No build, no toolchain.
 </deck-stat>`,
     tokens: ['--deck-stat-color', '--deck-stat-num-size', '--deck-stat-num-weight', '--deck-stat-claim-color', '--deck-stat-body-color', '--deck-stat-border-width', '--deck-stat-padding-x', '--deck-stat-padding-y', '--deck-stat-gap'],
@@ -352,11 +431,11 @@ const atoms: Component[] = [
 <Docs
   title="Component library"
   eyebrow="Reference"
-  description="Every <deck-*> element · attributes, slots, tokens, live preview. 26 components total, but you'll only meet five on day one."
+  description="Every <deck-*> element · attributes, slots, tokens, live preview. 34 components total, but you'll only meet five on day one."
 >
 
 <h2 id="mental-model">Mental model · which one do I need?</h2>
-<p>The 30 components fit in five buckets. Use this as a triage map.</p>
+<p>The 34 components fit in five buckets. Use this as a triage map.</p>
 <ul>
   <li>
     <strong>Layouts (7)</strong> · the slide's overall shape ·
@@ -405,7 +484,7 @@ const atoms: Component[] = [
 
 
 <p>
-  Rikiki ships <strong>7 layouts</strong> and <strong>23 building blocks</strong>. The
+  This catalogue details <strong>8 layouts</strong> and <strong>21 building blocks</strong>. The
   layouts define a slide's overall structure; the atoms fill the slots. Both
   groups follow the same design-token contract · override
   <code>--deck-&lt;tag&gt;-*</code> on the host to retheme a single instance,

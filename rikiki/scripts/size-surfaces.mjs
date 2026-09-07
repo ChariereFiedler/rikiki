@@ -199,6 +199,8 @@ export const PLUGIN_SURFACES = [
   { label: 'deck-transition row', module: 'deck-transition' },
   { label: 'deck-presenter row', module: 'deck-presenter' },
   { label: 'click-stages row', module: 'click-stages' },
+  { label: 'deck-overview row', module: 'deck-overview' },
+  { label: 'deck-help row', module: 'deck-help' },
 ];
 
 export const PLUGINS_PAGE = at('site/src/pages/docs/plugins.astro');
