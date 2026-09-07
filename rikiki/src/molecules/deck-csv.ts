@@ -58,15 +58,25 @@ export class DeckCsv extends LitElement {
       text-align: left;
       vertical-align: top;
     }
+    /* The marked row is a band, not a tint · the light themes ship no pale
+       surface that reads at projection distance (raised and tint both sit
+       under a delta E of 5 against the page), so the one row that matters
+       takes the inverse surface. */
     tr[data-mark] > td {
-      background: var(--deck-csv-mark-bg, var(--rik-status-info__bg, var(--rik-surface-tint)));
-      color: var(--deck-csv-mark-color, var(--rik-text-default));
+      background: var(--deck-csv-mark-bg, var(--rik-surface-inverse));
+      color: var(--deck-csv-mark-color, var(--rik-text-inverse));
+      border-color: var(--deck-csv-mark-bg, var(--rik-surface-inverse));
       font-weight: 700;
     }
+    /* The marked column carries colour and weight, never a second fill · two
+       overlapping tints leave a table with no hierarchy at all. */
     td[data-mark],
     th[data-mark] {
-      background: var(--deck-csv-mark-bg, var(--rik-status-info__bg, var(--rik-surface-tint)));
+      color: var(--deck-csv-mark-col-color, var(--rik-accent__text));
       font-weight: 700;
+    }
+    tr[data-mark] > td[data-mark] {
+      color: var(--deck-csv-mark-col-on-mark, var(--rik-accent));
     }
     /* Revealed rows keep their space · a table that grows row by row makes the
        whole slide jump under the audience. */
@@ -81,10 +91,15 @@ export class DeckCsv extends LitElement {
         print-color-adjust: exact;
       }
     }
+    /* The header is told apart by weight and a rule, not by a band · the tint
+       it used to carry measures a delta E of 3 against the page, which is to
+       say the band was there and nobody could see it, while the text on it sat
+       at 2.8:1. A rule costs nothing and reads across the room. */
     th {
-      background: var(--deck-csv-header-bg, var(--rik-surface-tint));
+      background: var(--deck-csv-header-bg, transparent);
       color: var(--rik-text-default);
       font-weight: 700;
+      border-bottom: 2px solid var(--deck-csv-header-rule, var(--rik-accent));
     }
   `;
 

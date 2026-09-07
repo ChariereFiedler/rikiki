@@ -41,7 +41,7 @@ export class DeckStepList extends LitElement {
       width: var(--deck-step-list-gap, var(--rik-space-4));
       height: var(--deck-step-list-arrow, 2px);
       transform: translateY(-50%);
-      background: var(--deck-step-list-connector, var(--rik-border-default));
+      background: var(--deck-step-list-connector, var(--rik-border-default)) /* thin */;
     }
   `;
 
