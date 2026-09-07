@@ -24,8 +24,22 @@ function sourcesIn(dir) {
     .filter((f) => !f.endsWith('.test.ts'));
 }
 
+const APPLICATION_DIR = resolve(PKG_DIR, 'src/application');
+
 const domainFiles = sourcesIn(DOMAIN_DIR);
+const applicationFiles = sourcesIn(APPLICATION_DIR);
 const rel = (f) => relative(PKG_DIR, f);
+
+const importsOf = (file) =>
+  [...readFileSync(file, 'utf8').matchAll(/^\s*import\s[^;]*?from\s+['"]([^'"]+)['"]/gm)].map(
+    (m) => m[1],
+  );
+
+const codeOf = (file) =>
+  readFileSync(file, 'utf8')
+    // Comments may name a global freely · it is the code that must not use one.
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|\s)\/\/[^\n]*/g, '');
 
 /** Globals a browser provides · a domain file that touches one has stopped
  *  being testable without a browser, which is the whole point of the layer. */
@@ -54,29 +68,19 @@ describe('the navigation domain stays pure', () => {
   });
 
   it.each(domainFiles)('%s imports no framework', (file) => {
-    const src = readFileSync(file, 'utf8');
-    const imports = [...src.matchAll(/^\s*import\s[^;]*?from\s+['"]([^'"]+)['"]/gm)].map(
-      (m) => m[1],
-    );
-    const framework = imports.filter((s) => !s.startsWith('.'));
+    const framework = importsOf(file).filter((s) => !s.startsWith('.'));
     expect(framework, `${rel(file)} imports ${framework.join(', ')}`).toEqual([]);
   });
 
   it.each(domainFiles)('%s imports nothing from an outer layer', (file) => {
-    const src = readFileSync(file, 'utf8');
-    const imports = [...src.matchAll(/^\s*import\s[^;]*?from\s+['"]([^'"]+)['"]/gm)].map(
-      (m) => m[1],
+    const outward = importsOf(file).filter((s) =>
+      [...OUTWARD, 'application'].some((dir) => s.includes(`/${dir}/`)),
     );
-    const outward = imports.filter((s) => OUTWARD.some((dir) => s.includes(`/${dir}/`)));
     expect(outward, `${rel(file)} reaches outward: ${outward.join(', ')}`).toEqual([]);
   });
 
   it.each(domainFiles)('%s touches no browser global', (file) => {
-    const src = readFileSync(file, 'utf8')
-      // Comments may name them freely · it is the code that must not use them.
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .replace(/(^|\s)\/\/[^\n]*/g, '');
-    const used = BROWSER_GLOBALS.filter((g) => new RegExp(`\\b${g}\\b`).test(src));
+    const used = BROWSER_GLOBALS.filter((g) => new RegExp(`\\b${g}\\b`).test(codeOf(file)));
     expect(used, `${rel(file)} uses ${used.join(', ')}`).toEqual([]);
   });
 
@@ -100,3 +104,28 @@ function existsSyncSafe(path) {
     return false;
   }
 }
+
+describe('the application layer orchestrates without reaching for the browser', () => {
+  it('has source files to check', () => {
+    expect(applicationFiles.length, 'src/application is not empty').toBeGreaterThan(0);
+  });
+
+  it.each(applicationFiles)('%s imports no framework', (file) => {
+    const framework = importsOf(file).filter((s) => !s.startsWith('.'));
+    expect(framework, `${rel(file)} imports ${framework.join(', ')}`).toEqual([]);
+  });
+
+  it.each(applicationFiles)('%s imports nothing from an outer layer', (file) => {
+    // It may depend on the domain · that is the direction. Not on the engine,
+    // not on the adapters that implement its own ports.
+    const outward = importsOf(file).filter((s) => OUTWARD.some((dir) => s.includes(`/${dir}/`)));
+    expect(outward, `${rel(file)} reaches outward: ${outward.join(', ')}`).toEqual([]);
+  });
+
+  it.each(applicationFiles)('%s touches no browser global', (file) => {
+    // The URL, timers and events arrive through ports · that is what makes
+    // these rules testable with a plain object instead of a browser.
+    const used = BROWSER_GLOBALS.filter((g) => new RegExp(`\\b${g}\\b`).test(codeOf(file)));
+    expect(used, `${rel(file)} uses ${used.join(', ')}`).toEqual([]);
+  });
+});

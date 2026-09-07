@@ -253,6 +253,8 @@ export declare class DeckRoot extends LitElement {
      *  the page · only while focus is inside it, when it is embedded. */
     private _ownsKeyboard;
     private _onHash;
+    /** What the deep-link use case needs to know about this deck right now. */
+    private _linkContext;
     private _readHash;
     private _writeHash;
     private _onKey;
