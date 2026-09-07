@@ -1,5 +1,5 @@
-var H="rik-presenter",R=new URL("./index.js",import.meta.url).href,l=null,p=null,u=null,f=null,h=!1;async function I(){if(f)return f;let e=window.getScreenDetails;if(!e)return null;try{return f=await e.call(window),f}catch{return null}}var g=1280,y=720;function C(e){return{left:Math.round(e.availLeft+(e.availWidth-g)/2),top:Math.round(e.availTop+(e.availHeight-y)/2)}}function M(e){let{left:n,top:r}=C(e);return`popup=yes,width=${g},height=${y},left=${n},top=${r}`}function T(e,n){let{left:r,top:t}=C(n);e.resizeTo(g,y),e.moveTo(r,t)}function S(e,n){e.requestFullscreen?.({screen:n}).then(()=>{if(!u?.has(e)){document.exitFullscreen?.().catch(()=>{});return}h=!0}).catch(()=>{})}function P(){document.fullscreenElement||(h=!1)}function B(){document.removeEventListener("fullscreenchange",P),h&&document.fullscreenElement&&document.exitFullscreen?.().catch(()=>{}),h=!1}function v(e){l?.close(),l=null,p?.close(),p=null,u?.delete(e),e.presenterActive=!1,B()}function D(e){let n=Array.from(e.children).filter(i=>i.tagName.toLowerCase().startsWith("deck-")),r=n.findIndex(i=>i.hasAttribute("active")),t=n[r]??null,d=n[r+1]??null,b=(t?.querySelector("deck-notes")?.textContent??"").trim(),o=document.querySelector('link[rel="stylesheet"][href*="rikiki"], link[rel="stylesheet"][href*="tokens"], link[rel="stylesheet"][href*="theme"]')?.href??"",a=Array.from(document.querySelectorAll("style")).map(i=>i.textContent??"").join(`
-`),m=document.querySelector('script[type="module"][data-rikiki-bundle]')?.textContent??"";return{current:r+1,total:n.length,slideHtml:t?.outerHTML??"",nextHtml:d?.outerHTML??null,notes:b,themeHref:o,inlineStyles:a,bundleHref:R,bundleInline:m}}function E(e){p&&p.postMessage({type:"state",state:D(e)})}var W=e=>`<!doctype html>
+var H="rik-presenter",R=new URL("./index.js",import.meta.url).href,a=null,p=null,u=null,f=null,h=!1;async function I(){if(f)return f;let e=window.getScreenDetails;if(!e)return null;try{return f=await e.call(window),f}catch{return null}}var g=1280,y=720;function C(e){return{left:Math.round(e.availLeft+(e.availWidth-g)/2),top:Math.round(e.availTop+(e.availHeight-y)/2)}}function M(e){let{left:n,top:r}=C(e);return`popup=yes,width=${g},height=${y},left=${n},top=${r}`}function T(e,n){let{left:r,top:t}=C(n);e.resizeTo(g,y),e.moveTo(r,t)}function S(e,n){e.requestFullscreen?.({screen:n}).then(()=>{if(!u?.has(e)){document.exitFullscreen?.().catch(()=>{});return}h=!0}).catch(()=>{})}function P(){document.fullscreenElement||(h=!1)}function B(){document.removeEventListener("fullscreenchange",P),h&&document.fullscreenElement&&document.exitFullscreen?.().catch(()=>{}),h=!1}function v(e){a?.close(),a=null,p?.close(),p=null,u?.delete(e),e.presenterActive=!1,B()}function D(e){let n=Array.from(e.children).filter(i=>i.tagName.toLowerCase().startsWith("deck-")),r=n.findIndex(i=>i.hasAttribute("active")),t=n[r]??null,d=n[r+1]??null,b=(t?.querySelector("deck-notes")?.textContent??"").trim(),o=document.querySelector('link[rel="stylesheet"][href*="rikiki"], link[rel="stylesheet"][href*="tokens"], link[rel="stylesheet"][href*="theme"]')?.href??"",l=Array.from(document.querySelectorAll("style")).map(i=>i.textContent??"").join(`
+`),m=document.querySelector('script[type="module"][data-rikiki-bundle]')?.textContent??"";return{current:r+1,total:n.length,slideHtml:t?.outerHTML??"",nextHtml:d?.outerHTML??null,notes:b,themeHref:o,inlineStyles:l,bundleHref:R,bundleInline:m}}function E(e){p&&p.postMessage({type:"state",state:D(e)})}var N=e=>`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -10,14 +10,29 @@ ${e.themeHref?`<link rel="stylesheet" href="${e.themeHref}">`:""}
   .grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    grid-template-rows: 1fr auto;
+    /* Next is sized to its 16:9 content (top-right); notes fill the rest of the
+       right column; current spans the full left height. Avoids the dead bands a
+       full-height narrow Next pane left around a small 16:9 thumbnail. */
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas:
+      "current next"
+      "current notes"
+      "footer  footer";
     gap: clamp(8px, 1.5vw, 16px);
     padding: clamp(8px, 1.5vw, 16px);
     height: 100vh;
     box-sizing: border-box;
   }
+  #current { grid-area: current; }
+  #next { grid-area: next; }
+  #notes-panel { grid-area: notes; }
+  #footer { grid-area: footer; }
   @media (max-width: 1000px) {
-    .grid { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr auto auto; }
+    .grid {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto 1fr auto;
+      grid-template-areas: "current" "next" "notes" "footer";
+    }
   }
   .panel {
     background: #1e2840;
@@ -36,16 +51,24 @@ ${e.themeHref?`<link rel="stylesheet" href="${e.themeHref}">`:""}
     background: #161c2e;
   }
   .panel .body { flex: 1; min-height: 0; padding: 16px; overflow: hidden; border-radius: 8px; }
-  /* Preview panes center a 16:9 box so the thumbnail matches the projection
-     geometry regardless of the pane/window shape (issue #5) \xB7 the size
+  /* Current centers a 16:9 box in its (tall) pane so the thumbnail matches the
+     projection geometry regardless of pane shape (issue #5) \xB7 the size
      container lets the iframe size against the pane in cq units. */
-  #current .body, #next .body { display: grid; place-items: center; container-type: size; }
+  #current .body { display: grid; place-items: center; container-type: size; }
   .panel iframe { border: 0; background: #0f1422; display: block; }
-  #current-frame, #next-frame {
+  #current-frame {
     aspect-ratio: 16 / 9;
     width: min(100cqw, calc(100cqh * 16 / 9));
     height: auto;
     max-width: 100%;
+  }
+  /* Next sizes its 16:9 box from the column width (its pane row is auto), so
+     the panel hugs the thumbnail instead of stretching full-height. */
+  #next-frame {
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    height: auto;
+    display: block;
   }
   #notes { font-size: 17px; line-height: 1.6; white-space: pre-wrap; padding: 20px; overflow: auto; color: #e8e4f0; }
   #notes:empty::before { content: 'No notes for this slide.'; color: rgba(232,228,240,0.4); font-style: italic; }
@@ -84,7 +107,7 @@ ${e.themeHref?`<link rel="stylesheet" href="${e.themeHref}">`:""}
     <header>Next</header>
     <div class="body"><iframe id="next-frame" srcdoc=""></iframe></div>
   </section>
-  <section class="panel" id="notes-panel" style="grid-column: 1 / -1;">
+  <section class="panel" id="notes-panel">
     <header>Speaker notes</header>
     <div id="notes" class="body"></div>
   </section>
@@ -217,4 +240,4 @@ ${e.themeHref?`<link rel="stylesheet" href="${e.themeHref}">`:""}
   channel.postMessage({ type: 'hello' });
 <\/script>
 </body>
-</html>`;function F(e,n){let r=document.elementFromPoint(e,n);for(;r?.shadowRoot;){let t=r.shadowRoot.elementFromPoint(e,n);if(!t||t===r)break;r=t}return r}function $(e,n,r){for(let t=e;t;t=t.parentElement){let d=getComputedStyle(t);if(r!==0&&t.scrollHeight>t.clientHeight&&/auto|scroll/.test(d.overflowY)||n!==0&&t.scrollWidth>t.clientWidth&&/auto|scroll/.test(d.overflowX))return t}return null}function N(e,n,r){let t=e.getBoundingClientRect();return{x:t.left+n*t.width,y:t.top+r*t.height}}function L(e,n){let{x:r,y:t}=N(e,n.x??.5,n.y??.5);return{x:r,y:t,target:F(r,t)??e}}function A(e){let n=(e??"all").trim();return n==="none"?"none":n===""||n==="all"?"wheel arrows aux":n.split(/\s+/).filter(r=>r!=="click").join(" ")||"none"}function O(e){if(u=u??new WeakSet,u.has(e)){v(e);return}u.add(e);let n=e.mouseNav;p=new BroadcastChannel(H),e.addEventListener("slide-change",()=>E(e)),p.addEventListener("message",s=>{let o=s.data;if(o?.type==="key"&&o.key)window.dispatchEvent(new KeyboardEvent("keydown",{key:o.key,shiftKey:!!o.shift,bubbles:!0}));else if(o?.type==="click"){let{x:a,y:m,target:i}=L(e,o),c={bubbles:!0,composed:!0,cancelable:!0,clientX:a,clientY:m,view:window,shiftKey:!!o.shift};i.dispatchEvent(new PointerEvent("pointerdown",{...c,pointerId:1,isPrimary:!0})),i.dispatchEvent(new PointerEvent("pointerup",{...c,pointerId:1,isPrimary:!0})),i.dispatchEvent(new MouseEvent("click",c))}else if(o?.type==="wheel"){let{x:a,y:m,target:i}=L(e,o),c=o.dx??0,k=o.dy??0,x=$(i,c,k);x?x.scrollBy({left:c,top:k}):i.dispatchEvent(new WheelEvent("wheel",{bubbles:!0,composed:!0,cancelable:!0,clientX:a,clientY:m,deltaX:c,deltaY:k,view:window}))}else o?.type==="config"&&typeof o.advanceOnClick=="boolean"?e.mouseNav=o.advanceOnClick?n:A(n):o?.type==="hello"&&E(e)});let r=f,t=r?.screens.find(s=>s!==r.currentScreen)??null;t?S(e,t):I().then(s=>{if(!s)return;let o=s.screens.find(a=>a!==s.currentScreen);o&&S(e,o),l&&s.currentScreen&&T(l,s.currentScreen)});let d=D(e),w=r?.currentScreen?M(r.currentScreen):`popup=yes,width=${g},height=${y}`;if(l=window.open("","rikiki-presenter",w),!l){console.warn("[rikiki/presenter] popup was blocked \xB7 allow popups for this site"),v(e);return}l.document.open(),l.document.write(W(d)),l.document.close(),e.presenterActive=!0,document.addEventListener("fullscreenchange",P);let b=setInterval(()=>{l?.closed&&(clearInterval(b),v(e))},1e3)}export{O as installPresenter};
+</html>`;function W(e,n){let r=document.elementFromPoint(e,n);for(;r?.shadowRoot;){let t=r.shadowRoot.elementFromPoint(e,n);if(!t||t===r)break;r=t}return r}function F(e,n,r){for(let t=e;t;t=t.parentElement){let d=getComputedStyle(t);if(r!==0&&t.scrollHeight>t.clientHeight&&/auto|scroll/.test(d.overflowY)||n!==0&&t.scrollWidth>t.clientWidth&&/auto|scroll/.test(d.overflowX))return t}return null}function $(e,n,r){let t=e.getBoundingClientRect();return{x:t.left+n*t.width,y:t.top+r*t.height}}function L(e,n){let{x:r,y:t}=$(e,n.x??.5,n.y??.5);return{x:r,y:t,target:W(r,t)??e}}function A(e){let n=(e??"all").trim();return n==="none"?"none":n===""||n==="all"?"wheel arrows aux":n.split(/\s+/).filter(r=>r!=="click").join(" ")||"none"}function O(e){if(u=u??new WeakSet,u.has(e)){v(e);return}u.add(e);let n=e.mouseNav;p=new BroadcastChannel(H),e.addEventListener("slide-change",()=>E(e)),p.addEventListener("message",s=>{let o=s.data;if(o?.type==="key"&&o.key)window.dispatchEvent(new KeyboardEvent("keydown",{key:o.key,shiftKey:!!o.shift,bubbles:!0}));else if(o?.type==="click"){let{x:l,y:m,target:i}=L(e,o),c={bubbles:!0,composed:!0,cancelable:!0,clientX:l,clientY:m,view:window,shiftKey:!!o.shift};i.dispatchEvent(new PointerEvent("pointerdown",{...c,pointerId:1,isPrimary:!0})),i.dispatchEvent(new PointerEvent("pointerup",{...c,pointerId:1,isPrimary:!0})),i.dispatchEvent(new MouseEvent("click",c))}else if(o?.type==="wheel"){let{x:l,y:m,target:i}=L(e,o),c=o.dx??0,k=o.dy??0,x=F(i,c,k);x?x.scrollBy({left:c,top:k}):i.dispatchEvent(new WheelEvent("wheel",{bubbles:!0,composed:!0,cancelable:!0,clientX:l,clientY:m,deltaX:c,deltaY:k,view:window}))}else o?.type==="config"&&typeof o.advanceOnClick=="boolean"?e.mouseNav=o.advanceOnClick?n:A(n):o?.type==="hello"&&E(e)});let r=f,t=r?.screens.find(s=>s!==r.currentScreen)??null;t?S(e,t):I().then(s=>{if(!s)return;let o=s.screens.find(l=>l!==s.currentScreen);o&&S(e,o),a&&s.currentScreen&&T(a,s.currentScreen)});let d=D(e),w=r?.currentScreen?M(r.currentScreen):`popup=yes,width=${g},height=${y}`;if(a=window.open("","rikiki-presenter",w),!a){console.warn("[rikiki/presenter] popup was blocked \xB7 allow popups for this site"),v(e);return}a.document.open(),a.document.write(N(d)),a.document.close(),e.presenterActive=!0,document.addEventListener("fullscreenchange",P);let b=setInterval(()=>{a?.closed&&(clearInterval(b),v(e))},1e3)}export{O as installPresenter};

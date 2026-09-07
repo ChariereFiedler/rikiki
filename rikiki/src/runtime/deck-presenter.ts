@@ -225,14 +225,29 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${initial.themeHref}">` : ''
   .grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    grid-template-rows: 1fr auto;
+    /* Next is sized to its 16:9 content (top-right); notes fill the rest of the
+       right column; current spans the full left height. Avoids the dead bands a
+       full-height narrow Next pane left around a small 16:9 thumbnail. */
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas:
+      "current next"
+      "current notes"
+      "footer  footer";
     gap: clamp(8px, 1.5vw, 16px);
     padding: clamp(8px, 1.5vw, 16px);
     height: 100vh;
     box-sizing: border-box;
   }
+  #current { grid-area: current; }
+  #next { grid-area: next; }
+  #notes-panel { grid-area: notes; }
+  #footer { grid-area: footer; }
   @media (max-width: 1000px) {
-    .grid { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr auto auto; }
+    .grid {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto 1fr auto;
+      grid-template-areas: "current" "next" "notes" "footer";
+    }
   }
   .panel {
     background: #1e2840;
@@ -251,16 +266,24 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${initial.themeHref}">` : ''
     background: #161c2e;
   }
   .panel .body { flex: 1; min-height: 0; padding: 16px; overflow: hidden; border-radius: 8px; }
-  /* Preview panes center a 16:9 box so the thumbnail matches the projection
-     geometry regardless of the pane/window shape (issue #5) · the size
+  /* Current centers a 16:9 box in its (tall) pane so the thumbnail matches the
+     projection geometry regardless of pane shape (issue #5) · the size
      container lets the iframe size against the pane in cq units. */
-  #current .body, #next .body { display: grid; place-items: center; container-type: size; }
+  #current .body { display: grid; place-items: center; container-type: size; }
   .panel iframe { border: 0; background: #0f1422; display: block; }
-  #current-frame, #next-frame {
+  #current-frame {
     aspect-ratio: 16 / 9;
     width: min(100cqw, calc(100cqh * 16 / 9));
     height: auto;
     max-width: 100%;
+  }
+  /* Next sizes its 16:9 box from the column width (its pane row is auto), so
+     the panel hugs the thumbnail instead of stretching full-height. */
+  #next-frame {
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    height: auto;
+    display: block;
   }
   #notes { font-size: 17px; line-height: 1.6; white-space: pre-wrap; padding: 20px; overflow: auto; color: #e8e4f0; }
   #notes:empty::before { content: 'No notes for this slide.'; color: rgba(232,228,240,0.4); font-style: italic; }
@@ -299,7 +322,7 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${initial.themeHref}">` : ''
     <header>Next</header>
     <div class="body"><iframe id="next-frame" srcdoc=""></iframe></div>
   </section>
-  <section class="panel" id="notes-panel" style="grid-column: 1 / -1;">
+  <section class="panel" id="notes-panel">
     <header>Speaker notes</header>
     <div id="notes" class="body"></div>
   </section>
