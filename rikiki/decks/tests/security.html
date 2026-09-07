@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · security fixture</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script>
+  // Any payload that runs sets this flag · the specs assert it stays false for
+  // derived text, and true only where the trusted-author contract says so.
+  window.__rikXss = [];
+</script>
+</head>
+<body>
+<!-- Security fixture · pins the trust model of SECURITY.md.
+     · deck content is HTML the deck author publishes → trusted, renders as-is
+     · text DERIVED from that content (a library error message) → untrusted,
+       must reach an innerHTML sink escaped
+     Never add a payload here without a matching assertion in e2e/security.spec.ts.
+     Write derived-text payloads with entities: a raw tag is authored markup,
+     which the trust model allows on purpose, and would prove nothing. -->
+<deck-root>
+
+  <deck-cover brand="security" speaker="fixture">
+    <h1>Security <span class="accent">fixture</span></h1>
+  </deck-cover>
+
+  <!-- Mermaid cannot detect a diagram type here, so it throws
+       UnknownDiagramError and folds this very source into the message. That
+       message is author-reachable text, not authored markup. -->
+  <deck-feature>
+    <h1 slot="title">Mermaid error sink</h1>
+    <deck-mermaid id="mmd-payload">
+      &lt;img src=nope onerror="window.__rikXss.push('mermaid-error')"&gt;
+    </deck-mermaid>
+  </deck-feature>
+
+  <!-- The documented trusted-author contract: raw HTML in markdown renders.
+       This slide exists so a future change to that contract goes red. -->
+  <deck-feature>
+    <h1 slot="title">Markdown stays trusted</h1>
+    <deck-md id="md-trusted">
+# Author HTML renders
+
+<em id="md-raw-html">raw</em> HTML is part of the deck source.
+    </deck-md>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

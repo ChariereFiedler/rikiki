@@ -7,6 +7,7 @@
 
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { escapeHtml } from '../shared/escape-html.js';
 
 interface MermaidLib {
   initialize(opts: Record<string, unknown>): void;
@@ -45,7 +46,10 @@ async function ensureMermaid(): Promise<void> {
       edgeLabelBackground: '#111',
     },
     flowchart: { curve: 'basis', htmlLabels: true, padding: 12 },
-    securityLevel: 'loose',
+    // 'strict' is mermaid's own secure default · it encodes HTML in labels and
+    // refuses click-bound scripts. 'loose' let a diagram inject markup into the
+    // deck, which no diagram needs to do.
+    securityLevel: 'strict',
   });
   mermaidReady = true;
 }
@@ -116,8 +120,12 @@ export class DeckMermaid extends LitElement {
       this.rendered = true;
     } catch (e: unknown) {
       console.error('Mermaid render error', e);
+      // Mermaid folds the offending source into the error text (for instance
+      // UnknownDiagramError), so this message is author-reachable and must be
+      // escaped before it reaches the innerHTML sink below · and again in the
+      // overview thumbnail, which re-injects `renderedSvg` into a second tree.
       const msg = e instanceof Error ? e.message : String(e);
-      this._svg = `<pre style="color:#f87171">${msg}</pre>`;
+      this._svg = `<pre style="color:#f87171">${escapeHtml(msg)}</pre>`;
     }
   }
 
