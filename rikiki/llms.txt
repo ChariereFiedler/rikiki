@@ -1,6 +1,6 @@
 # Rikiki
 
-> Rikiki is a tiny (~38 KB gzip) Lit Web Components framework for technical
+> Rikiki is a tiny (~39 KB gzip) Lit Web Components framework for technical
 > presentations and product carousels. A deck is plain HTML: load a theme
 > stylesheet, then the component bundle, then write a `<deck-root>` wrapping
 > `deck-*` slide elements. No build step to author or run a deck.

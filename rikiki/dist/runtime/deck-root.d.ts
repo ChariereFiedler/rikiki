@@ -200,6 +200,9 @@ export declare class DeckRoot extends LitElement {
      *  `@page` cannot read a custom property, so the rule is written from JS every
      *  time the canvas changes. Without it the browser prints A4 and crops a 16:9
      *  slide down its right edge · the exact symptom the FAQ promised away. */
+    /** What a screen reader hears on a slide change · position first, because
+     *  that is the part a listener cannot get any other way. */
+    private _liveLabel;
     private _applyPageSize;
     private static _injectGlobals;
     connectedCallback(): void;

@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Trust model, stated and tested.** `SECURITY.md` and the shipped LLM
   reference now spell out the line: deck content is the author's code and renders
   as written; text *derived* from it is escaped. Frozen by `e2e/security.spec.ts`.
+- **Accessibility baseline, tested.** An Axe pass over the reference decks
+  (`e2e/a11y.spec.ts`) plus targeted keyboard assertions. The keyboard hint chips
+  were `<kbd>` elements with click handlers, unreachable by keyboard; the
+  overview grid was `<div>` cells, so it could not be opened, walked or used at
+  all without a mouse. Both are real buttons now, with accessible names, a
+  visible focus ring and arrow-key movement. A polite live region announces each
+  slide change.
+- **Three browser engines.** Firefox and WebKit join Chromium in Playwright and
+  pass the full base contract. They skip only what is genuinely Chromium-only:
+  PDF printing and the presenter's multi-screen APIs.
 - **Print and PDF export.** A deck now carries a real print stylesheet: one
   slide per page at the deck's own canvas size (A4 cropped a 16:9 slide),
   backgrounds kept, navigation chrome dropped, click-stages printed once fully
@@ -36,6 +46,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   in both the slide and the overview thumbnail. mermaid now also runs at its
   `strict` security level, and the presenter escapes the theme URL and the
   inlined stylesheet it writes into its popup.
+- **Four contrast failures Axe found.** The cover's meta labels used a
+  decoration-grade alpha (2.43:1), the eyebrow badge put white on mango
+  (2.98:1), the faint text token sat at 4.30:1, and siliceum's link colour at
+  3.56:1. All four now clear AA, without inventing a new brand hue.
 - **Status tones failing WCAG.** `deck-punch` and `deck-stat` rendered text in
   surface-grade tones · `ok` sat at 2.15:1 on the rikiki theme. Both now route to
   text-grade token companions that clear the large-text threshold on both themes.

@@ -330,7 +330,7 @@ async function installShiki(opts?: {
   it never patches the component's internals · see *Writing a plugin* below.
 - **Trade-off:** the vendored Shiki bundle is large (every grammar + theme, JS
   engine, no wasm). That is why it is opt-in and lazy · the core bundle stays
-  ~38 KB gzip.
+  ~39 KB gzip.
 
 ---
 
