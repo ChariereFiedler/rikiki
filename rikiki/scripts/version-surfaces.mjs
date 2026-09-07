@@ -42,6 +42,11 @@ export function compareSemver(a, b) {
 // Each `find` is a global RegExp with one capture group per occurrence.
 export const EXACT = [
   {
+    file: resolve(REPO_ROOT, 'site/src/pages/docs/getting-started.astro'),
+    label: 'CDN install snippet (pinned specifier)',
+    find: /rikiki-deck@(\d+\.\d+\.\d+)\//g,
+  },
+  {
     file: resolve(PKG_DIR, 'package-lock.json'),
     label: 'package-lock.json version fields',
     // the two top-level "rikiki-deck" entries (root + packages[""]); never deps

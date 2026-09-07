@@ -17,7 +17,7 @@ The framework is opinionated:
 
 ## Reference
 
-- [Full LLM reference](docs/llms/rikiki-reference.md): the single source of truth · every tag, attribute, slot, design token, plugin, and recipe in one file. Read this first.
+- [Full LLM reference](docs/llms/rikiki-reference.md) (served at `/rikiki/docs/llms/rikiki-reference.md`): the single source of truth · every tag, attribute, slot, design token, plugin, and recipe in one file. Read this first.
 - [README](README.md): human overview, common patterns, build/theming notes.
 - [starter.html](starter.html): the minimal copy-paste deck skeleton.
 

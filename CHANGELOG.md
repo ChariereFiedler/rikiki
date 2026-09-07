@@ -6,6 +6,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Bento grid slides.** `<deck-bento>` lays out `<deck-cell>` children on a
+  multi-row, multi-column canvas · cells take a `span` (`2x1`), a `tone`, and
+  per-axis `col`/`row` overrides. Each cell is a size container, so `cqw`/`cqh`
+  type scales against the cell rather than the slide. `<deck-csv>` renders inline
+  CSV as a styled table and `<deck-fit>` shrinks slotted text to its box.
+- **Trust model, stated and tested.** `SECURITY.md` and the shipped LLM
+  reference now spell out the line: deck content is the author's code and renders
+  as written; text *derived* from it is escaped. Frozen by `e2e/security.spec.ts`.
+- **Size, component-count and packaging contracts.** Every published figure is
+  measured from the artifacts it describes (`scripts/size.test.mjs`,
+  `scripts/component.test.mjs`) and the install cost is asserted
+  (`scripts/packaging.test.mjs`). A page that drifts fails the build.
+
+### Fixed
+- **XSS through a mermaid error message.** mermaid folds the offending source
+  into `UnknownDiagramError`, and that text reached an `innerHTML` sink unescaped
+  in both the slide and the overview thumbnail. mermaid now also runs at its
+  `strict` security level, and the presenter escapes the theme URL and the
+  inlined stylesheet it writes into its popup.
+- **Status tones failing WCAG.** `deck-punch` and `deck-stat` rendered text in
+  surface-grade tones · `ok` sat at 2.15:1 on the rikiki theme. Both now route to
+  text-grade token companions that clear the large-text threshold on both themes.
+- **CSV data loss.** A quoted empty field dropped the whole row, a lone `\r` never
+  terminated a row, a multi-character delimiter was ignored, and a row shorter
+  than the header rendered an invalid table.
+- **`deck-cell` alignment axes.** `align` is horizontal and `justify` vertical
+  (the cell is a column flex box) · documented, pinned by a test, and corrected
+  in the showcase deck, which had them swapped.
+
+### Changed
+- **`rolldown` is no longer a production dependency.** It serves the CLI only and
+  weighed ~55 MB of native bindings on every install · it is now an optional peer
+  loaded on first use, with an actionable message when it is missing.
+  `engines.node` is declared (`^20.19.0 || >=22.12.0`).
+- **Release tags run the same gates as `main`.** A tag pipeline previously ran
+  `publish-npm` alone · no typecheck, no lint, no browser suite, no `dist/` drift
+  guard. It now waits on all three check jobs and refuses a tag that disagrees
+  with `package.json`.
+- **Published sizes corrected.** The headline figure was `~14 KB gzip` for a
+  runtime that costs 38 KB gzip once Lit and marked are counted. Every occurrence
+  now states the measured initial load.
+- **The site build no longer downloads anything.** The post-build step that
+  fetched `marked` and `mermaid` from jsdelivr on every deploy, overwriting the
+  pinned vendored artifacts, is gone · its reason to exist disappeared when the
+  bundle started vendoring its dependencies locally.
+
+
 ## [0.6.0] - 2026-06-19
 ### Added
 - **Slide zoom.** Ctrl/⌘ + wheel, trackpad pinch and `+`/`-`/`0` magnify the
