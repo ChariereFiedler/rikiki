@@ -25,6 +25,7 @@ const DECKS = [
   // The public examples · served in production from site/public symlinks, and
   // previously covered by nothing at all.
   '/examples/rikiki-tour/index.html',
+  '/examples/showcase/index.html',
   '/examples/sample/index.html',
   '/examples/stress/index.html',
   '/examples/bento/index.html',
