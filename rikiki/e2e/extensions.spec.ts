@@ -50,15 +50,20 @@ test('deck-split places a pivot and accents the winning side', async ({ page }) 
   expect(pivot?.text, 'the pivot symbol is rendered').toBe('→');
   expect(pivot?.hidden, 'a decorative arrow is not read aloud').toBe('true');
 
-  const outlines = await page.evaluate(() => {
+  const rules = await page.evaluate(() => {
     const shadow = document.getElementById('versus')?.shadowRoot;
-    return [...(shadow?.querySelectorAll('.col') ?? [])].map(
-      (c) => getComputedStyle(c).outlineStyle,
-    );
+    return [...(shadow?.querySelectorAll('.col') ?? [])].map((c) => ({
+      width: getComputedStyle(c).borderTopWidth,
+      color: getComputedStyle(c).borderTopColor,
+    }));
   });
-  // winner="right" · the last column carries the ring, the first does not.
-  expect(outlines[0]).toBe('none');
-  expect(outlines[outlines.length - 1]).toBe('solid');
+  // winner="right" · both columns carry a rule, and the winning one carries it
+  // in the accent colour. A ring would draw a box, which this design avoids.
+  const first = rules[0]!;
+  const last = rules[rules.length - 1]!;
+  expect(first.width, 'both sides get a rule').not.toBe('0px');
+  expect(last.width).not.toBe('0px');
+  expect(last.color, 'the winning rule differs from the neutral one').not.toBe(first.color);
 });
 
 test('deck-csv marks the row and the column it is told to', async ({ page }) => {

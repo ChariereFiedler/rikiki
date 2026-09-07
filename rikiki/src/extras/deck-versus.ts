@@ -13,59 +13,64 @@
 
 import { LitElement, css, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { signature } from './signature.js';
 
 @customElement('deck-versus')
 export class DeckVersus extends LitElement {
   /* Customization tokens:
        --deck-versus-gap / --deck-versus-pivot-color / --deck-versus-pivot-size
-       --deck-versus-side-bg / --deck-versus-side-radius / --deck-versus-padding
-       --deck-versus-winner-ring / --deck-versus-loser-opacity               */
-  static override styles = css`
+       --deck-versus-rule / --deck-versus-winner-rule / --deck-versus-loser-color */
+  static override styles = [
+    signature,
+    css`
     :host {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
-      align-items: stretch;
-      gap: var(--deck-versus-gap, var(--rik-space-4));
+      align-items: start;
+      gap: var(--deck-versus-gap, var(--rik-space-5));
       font-family: var(--rik-font-sans);
     }
     :host(:not([pivot])) {
       grid-template-columns: 1fr 1fr;
     }
+    /* No tile. A side is a rule and the type under it · the same device the
+       rest of the extras use. Two filled rectangles carry no hierarchy at ten
+       metres and turn a comparison into a pair of grey blocks. */
     .side {
-      background: var(--deck-versus-side-bg, var(--rik-surface-raised));
-      border-radius: var(--deck-versus-side-radius, var(--rik-radius-md));
-      padding: var(--deck-versus-padding, var(--rik-space-4));
       min-width: 0;
-      transition: opacity 0.2s ease;
+      padding-top: var(--rik-space-3);
+      border-top: var(--rik-extras-rule-width, 3px) solid
+        var(--deck-versus-rule, var(--rik-text-default--faint));
+      transition: border-color 0.2s ease, color 0.2s ease;
     }
-    @media (prefers-reduced-motion: reduce) {
-      .side { transition: none; }
-    }
-    /* The losing side recedes rather than the winning one shouting · a room
-       reads the difference either way, and shouting ages badly on a slide. */
-    :host([winner='right']) .side.left,
-    :host([winner='left']) .side.right {
-      opacity: var(--deck-versus-loser-opacity, 0.55);
-    }
+    /* The winner is marked by its rule and by full-strength type. The loser
+       recedes in COLOUR, not behind an opacity that greys its own heading. */
     :host([winner='left']) .side.left,
     :host([winner='right']) .side.right {
-      outline: 3px solid var(--deck-versus-winner-ring, var(--rik-accent));
-      outline-offset: 2px;
+      border-top-color: var(--deck-versus-winner-rule, var(--rik-accent));
     }
+    :host([winner='right']) .side.left,
+    :host([winner='left']) .side.right {
+      color: var(--deck-versus-loser-color, var(--rik-text-default--faint));
+    }
+    :host([winner='right']) .side.left ::slotted(*),
+    :host([winner='left']) .side.right ::slotted(*) {
+      color: inherit;
+    }
+    /* The pivot sits on the rule line, in the metadata voice · a word between
+       two columns, not a badge floating in the middle of the slide. */
     .pivot {
-      align-self: center;
-      font-family: var(--rik-font-display, var(--rik-font-sans));
-      font-size: var(--deck-versus-pivot-size, var(--rik-font-size-h2));
-      font-weight: 900;
-      line-height: 1;
+      align-self: start;
+      padding-top: var(--rik-space-3);
       color: var(--deck-versus-pivot-color, var(--rik-accent__text));
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      font-size: var(--deck-versus-pivot-size, var(--rik-font-size-sm));
+      letter-spacing: 0.16em;
     }
     @media print {
       .side { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     }
-  `;
+  `,
+  ];
 
   /** Symbol or word between the two sides · omit for a plain two-up. */
   @property({ type: String, reflect: true }) pivot?: string;
@@ -76,7 +81,7 @@ export class DeckVersus extends LitElement {
   override render() {
     return html`
       <div class="side left" part="left"><slot name="left"></slot></div>
-      ${this.pivot ? html`<span class="pivot" part="pivot" aria-hidden="true">${this.pivot}</span>` : ''}
+      ${this.pivot ? html`<span class="pivot meta" part="pivot" aria-hidden="true">${this.pivot}</span>` : ''}
       <div class="side right" part="right"><slot name="right"></slot></div>
     `;
   }

@@ -103,6 +103,22 @@
     </deck-table>
   </deck-feature>
 
+  <deck-feature id="s-arch" eyebrow="architecture" fill>
+    <h1 slot="title">Blocks, groups and lanes</h1>
+    <deck-graph id="arch">
+      <deck-lane at="4,40" label="edge"></deck-lane>
+      <deck-lane at="52,44" label="platform"></deck-lane>
+      <deck-group at="46,50,50,44" label="vpc · eu-west-3"></deck-group>
+      <deck-node id="a-client" at="10,22" boxed icon="user" label="Client" note="browser"></deck-node>
+      <deck-node id="a-cdn" at="32,22" boxed icon="cloud" label="CDN" note="edge cache"></deck-node>
+      <deck-node id="a-api" at="58,68" boxed tone="accent" icon="code" label="API" note="node 24"></deck-node>
+      <deck-node id="a-db" at="82,68" boxed icon="database" label="Store" note="postgres"></deck-node>
+      <deck-edge from="a-client" to="a-cdn" label="https"></deck-edge>
+      <deck-edge from="a-cdn" to="a-api" label="origin"></deck-edge>
+      <deck-edge from="a-api" to="a-db" label="sql" arrow="both"></deck-edge>
+    </deck-graph>
+  </deck-feature>
+
   <deck-feature id="s-graph" eyebrow="architecture" fill>
     <h1 slot="title">Graph</h1>
     <deck-graph id="gr" reveal>

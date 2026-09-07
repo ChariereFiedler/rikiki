@@ -81,13 +81,15 @@ export class DeckSplit extends LitElement {
     :host([pivot]) .body {
       grid-template-columns: 1fr auto 1fr;
     }
-    /* The winning side is marked, not shouted · a ring in the accent colour. */
+    /* The winning side is marked by a rule above it, not by a ring around it ·
+       an outline draws a box, and a box is what this design avoids. */
+    :host([winner]) .col {
+      padding-top: var(--rik-space-3);
+      border-top: var(--deck-split-winner-width, 3px) solid var(--rik-text-default--faint);
+    }
     :host([winner='left']) .col:first-of-type,
     :host([winner='right']) .col:last-of-type {
-      outline: var(--deck-split-winner-width, 3px) solid
-        var(--deck-split-winner-ring, var(--rik-accent));
-      outline-offset: var(--rik-space-2);
-      border-radius: var(--rik-radius-md);
+      border-top-color: var(--deck-split-winner-ring, var(--rik-accent));
     }
     @media print {
       :host([winner]) .col { -webkit-print-color-adjust: exact; print-color-adjust: exact; }

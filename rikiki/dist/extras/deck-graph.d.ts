@@ -30,6 +30,28 @@ export declare class DeckNode extends LitElement {
     label?: string;
     /** A mono micro-label under the name · a protocol, a count, a latency. */
     note?: string;
+    /** Draw the node as a filled block rather than type under a rule. */
+    boxed: boolean;
+    /** Fill colour of a boxed node. */
+    tone?: 'accent' | 'ok' | 'warn' | 'danger';
+    /** A glyph above the label · needs dist/deck-icon.js loaded too. */
+    icon?: string;
+    render(): import("lit-html").TemplateResult<1>;
+}
+export declare class DeckGroup extends LitElement {
+    static styles: import("lit").CSSResult[];
+    /** `x,y,width,height` in percent of the drawing area. */
+    at?: string;
+    label?: string;
+    /** A solid outline instead of the dashed default. */
+    solid: boolean;
+    render(): import("lit-html").TemplateResult<1>;
+}
+export declare class DeckLane extends LitElement {
+    static styles: import("lit").CSSResult[];
+    /** `top,height` in percent of the drawing area. */
+    at?: string;
+    label?: string;
     render(): import("lit-html").TemplateResult<1>;
 }
 export declare class DeckEdge extends LitElement {
@@ -45,5 +67,7 @@ declare global {
         'deck-graph': DeckGraph;
         'deck-node': DeckNode;
         'deck-edge': DeckEdge;
+        'deck-group': DeckGroup;
+        'deck-lane': DeckLane;
     }
 }

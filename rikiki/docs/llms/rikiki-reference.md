@@ -1074,7 +1074,7 @@ and the rest of the deck is unaffected.
 | `deck-versus` | A directed comparison as a BLOCK inside a slide (`deck-split` covers the case where the comparison is the whole slide) | `pivot`, `winner` (`left`/`right`) | `left`, `right` |
 | `deck-flow` / `deck-flow-step` | A chain across the width · numbered stages under an accent rule | flow: `cols`, `reveal` · stage: `label`, `note` | stage default = extra content |
 | `deck-timeline` / `deck-milestone` | A trajectory in time, on an axis | timeline: `direction` (`row`/`column`), `reveal` · milestone: `date`, `label`, `note`, `tone` | · |
-| `deck-graph` / `deck-node` / `deck-edge` | Nodes and edges · the primitive behind every boxes-and-arrows slide | graph: `layout` (`free`/`row`/`column`), `reveal` · node: `at` (`x,y` in percent), `label`, `note` · edge: `from`, `to`, `label`, `dashed` | node default = extra content |
+| `deck-graph` / `deck-node` / `deck-edge` / `deck-group` / `deck-lane` | Nodes, edges, regions and bands · the primitive behind every boxes-and-arrows slide | graph: `layout` (`free`/`row`/`column`), `reveal` · node: `at` (`x,y` in percent), `label`, `note`, `boxed`, `tone`, `icon` · edge: `from`, `to`, `label`, `dashed`, `arrow` (`end` default / `start` / `both` / `none`) · group: `at` (`x,y,w,h`), `label`, `solid` · lane: `at` (`top,height`), `label` | node default = extra content |
 | `deck-table` | A hand-authored table with the hierarchy `deck-csv` has · the table stays in your light DOM, so its cells may carry markup | `highlight-rows`, `highlight-cols`, `reveal` | default = your `<table>` |
 | `deck-annotate` | A screenshot the speaker can point at · numbered markers positioned in percent, revealed one per step through the engine's own step mechanism | `src`, `alt`, `marks` (`x,y,label` triples separated by `\|`, coordinates in percent), `all-at-once`, `no-legend` | · |
 | `deck-agenda` | The running order and where the talk is · reads the deck's own chapter structure, so adding a `deck-section` grows a line | `no-numbers`, `no-jump` | · |
@@ -1099,7 +1099,8 @@ semantic `--rik-*` token, so both shipped themes are covered:
 `--deck-versus-winner-ring`, `--deck-versus-loser-opacity`, `--deck-versus-pivot-color`;
 `--deck-flow-gap`, `--deck-flow-step-accent`;
 `--deck-timeline-axis`, `--deck-milestone-dot`;
-`--deck-graph-edge`, `--deck-graph-edge-width`, `--deck-graph-ratio`, `--deck-node-rule`;
+`--deck-graph-edge`, `--deck-graph-edge-width`, `--deck-graph-ratio`, `--deck-node-rule`,
+`--deck-node-bg`, `--deck-group-border`, `--deck-lane-rule`;
 `--deck-table-mark-bg`.
 
 Three of them are shared and change every component here at once:
@@ -1119,6 +1120,21 @@ important. See `src/extras/signature.ts`.
 does not hide: at step 0 the whole chain, span or diagram is visible and
 neutral, because its shape is half the message. `deck-annotate` is the
 exception and shows nothing at step 0 · there the screenshot must speak first.
+
+A block is `boxed`. The theme's raised surface measures 1.10 against the page,
+which is invisible on a projector, so a node that must READ as a block uses the
+inverse surface: dark on light is the one high-contrast ground this palette has.
+`tone` fills it with an accent or a status colour instead.
+
+```html
+<deck-graph>
+  <deck-lane at="4,40" label="edge"></deck-lane>
+  <deck-group at="46,50,50,44" label="vpc · eu-west-3"></deck-group>
+  <deck-node id="cdn" at="32,22" boxed icon="cloud" label="CDN" note="edge cache"></deck-node>
+  <deck-node id="api" at="58,68" boxed tone="accent" icon="code" label="API"></deck-node>
+  <deck-edge from="cdn" to="api" label="origin"></deck-edge>
+</deck-graph>
+```
 
 ```html
 <deck-graph layout="row">

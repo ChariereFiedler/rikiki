@@ -24,6 +24,8 @@ export declare class DeckFlowStep extends LitElement {
     /** Position in the chain, written by deck-flow · the reader counts stages,
      *  and a number does that better than four identical icons. */
     index?: string;
+    /** Drop the block and set the stage as type under a rule. */
+    plain: boolean;
     render(): import("lit-html").TemplateResult<1>;
 }
 declare global {

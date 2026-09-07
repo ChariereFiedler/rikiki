@@ -90,12 +90,30 @@ async function bundleInlineModule(code, resolveDir, pkgRoot, opts) {
   }
 }
 
+/** Modules the deck loads through its own <script src>, by basename.
+ *
+ *  An opt-in component (src/extras/**) is loaded that way AND is now found by
+ *  the tag scan below, because it has a dist/<tag>.js like any other. Including
+ *  it twice registers the custom element twice, which throws
+ *  NotSupportedError and leaves the rest of that module unevaluated. */
+function explicitlyLoaded(html) {
+  const names = new Set();
+  for (const m of html.matchAll(/<script\b[^>]*\bsrc\s*=\s*["']([^"']+)["'][^>]*>/gi)) {
+    const file = m[1].split('/').pop() ?? '';
+    if (file.endsWith('.js')) names.add(file.slice(0, -3));
+  }
+  return names;
+}
+
 /** Scan the deck for the <deck-*> components it actually uses · so the bundle
- *  carries only those (+ deck-root, + forced includes), not all 28 elements. */
+ *  carries only those (+ deck-root, + forced includes), not every element. */
 function scanComponents(html, pkgRoot, include = []) {
   const tags = new Set(['deck-root', ...include]);
   for (const m of html.matchAll(/<(deck-[a-z0-9-]+)[\s/>]/gi)) tags.add(m[1].toLowerCase());
-  return [...tags].filter((t) => existsSync(resolve(pkgRoot, 'dist', `${t}.js`)));
+  const already = explicitlyLoaded(html);
+  return [...tags]
+    .filter((t) => !already.has(t))
+    .filter((t) => existsSync(resolve(pkgRoot, 'dist', `${t}.js`)));
 }
 
 /** Build the curated component bundle · one side-effect import per used tag. */
