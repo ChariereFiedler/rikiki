@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { contrastRatio, parseColor } from '../src/shared/contrast.js';
 import { createDeckPage } from './pages/deck.page';
 
 // Four extensions of components that already existed. Each was chosen over a
@@ -140,4 +141,34 @@ test('deck-stat compact drops the scale without changing the family', async ({ p
 
   expect(sizes.every((s) => s > 0), 'the figures render').toBe(true);
   expect(new Set(sizes).size, 'a row of compact stats shares one scale').toBe(1);
+});
+
+test('the emphasised table row is actually visible against the page', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto('/rikiki/decks/tests/extras-more.html#9');
+
+  const colors = await page.evaluate(() => {
+    const cell = document.querySelector('table[data-rik-table] tr[data-mark] > td');
+    const slide = document.querySelector('deck-root > [active]');
+    if (!cell || !slide) return null;
+    return {
+      mark: getComputedStyle(cell).backgroundColor,
+      page: getComputedStyle(document.documentElement).backgroundColor,
+      text: getComputedStyle(cell).color,
+    };
+  });
+
+  expect(colors, 'the marked row is painted').not.toBeNull();
+  const mark = parseColor(colors!.mark);
+  const surface = parseColor(colors!.page);
+  const text = parseColor(colors!.text);
+  expect(mark && surface && text, 'every colour resolves').toBeTruthy();
+
+  // The defect this replaces: the emphasis was a pale tint, measured at 2.81
+  // against the page · at projection distance the marked row did not read as
+  // marked at all. The light theme has no raised surface that does (the raised
+  // token itself sits at 1.10), so the emphasis is the inverse surface.
+  expect(contrastRatio(mark!, surface!)).toBeGreaterThanOrEqual(3);
+  // And the row still has to be readable once it is filled.
+  expect(contrastRatio(text!, mark!)).toBeGreaterThanOrEqual(4.5);
 });

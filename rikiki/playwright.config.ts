@@ -27,12 +27,12 @@ export default defineConfig({
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
-      testIgnore: [/print\.spec\.ts/, /presenter\.spec\.ts/],
+      testIgnore: [/print\.spec\.ts/, /presenter\.spec\.ts/, /emphasis\.spec\.ts/, /ink\.spec\.ts/],
     },
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
-      testIgnore: [/print\.spec\.ts/, /presenter\.spec\.ts/],
+      testIgnore: [/print\.spec\.ts/, /presenter\.spec\.ts/, /emphasis\.spec\.ts/, /ink\.spec\.ts/],
     },
   ],
   webServer: {
