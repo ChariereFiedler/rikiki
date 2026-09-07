@@ -19,6 +19,29 @@ export const slideShell = css`
     color: var(--rik-text-default);
   }
   :host([active]) { display: flex; }
+
+  /* Print · every slide is shown and becomes exactly one page.
+     On screen a slide is an absolutely-positioned layer inside a scaled stage;
+     on paper it is a block the size of the deck's own canvas, so the layout an
+     author composed is the layout that prints. The page box itself is set by
+     the @page rule deck-root injects from the same canvas variables. */
+  @media print {
+    :host {
+      display: flex;
+      position: relative;
+      inset: auto;
+      width: calc(var(--deck-canvas-w, 1920) * 1px);
+      height: calc(var(--deck-canvas-h, 1080) * 1px);
+      break-inside: avoid;
+      break-after: page;
+      /* Slide backgrounds are content, not decoration · without this the page
+         prints white and every tinted layout loses its meaning. */
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    /* No trailing blank page after the last slide. */
+    :host(:last-child) { break-after: auto; }
+  }
 `;
 
 // Typographie de base

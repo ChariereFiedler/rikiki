@@ -195,6 +195,12 @@ export declare class DeckRoot extends LitElement {
      *  slide · it comes last so it wins the equal-specificity tie with the
      *  `:not([fluid])` rule. The `height:100%` pair backs the 100% `:host`
      *  sizing. */
+    /** Size the printed page from the deck's own canvas.
+     *
+     *  `@page` cannot read a custom property, so the rule is written from JS every
+     *  time the canvas changes. Without it the browser prints A4 and crops a 16:9
+     *  slide down its right edge · the exact symptom the FAQ promised away. */
+    private _applyPageSize;
     private static _injectGlobals;
     connectedCallback(): void;
     disconnectedCallback(): void;

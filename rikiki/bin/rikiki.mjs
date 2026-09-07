@@ -4,7 +4,8 @@
 //
 //   rikiki init --standalone [name.html] [--title "…"] [--theme rikiki|siliceum]
 //                            [--with-mermaid] [--with-shiki] [--no-fonts]
-//   rikiki bundle <deck.html> [out.html|-] [--no-fonts]
+//   rikiki bundle <deck.html> [out.html|-] [--with-mermaid] [--with-shiki] [--no-fonts]
+//   rikiki export <deck.html> [--output deck.pdf]
 //   rikiki skills [--dir <path>] [--force]
 //
 // `init --standalone` generates a self-contained, share-anywhere deck with no
@@ -20,6 +21,7 @@ import { fileURLToPath } from 'node:url';
 import { inlineDeck } from './lib/inline.mjs';
 import { starterHtml } from './lib/starter.mjs';
 import { formatExternal, scanExternal } from './lib/scan-external.mjs';
+import { exportPdf } from './lib/export-pdf.mjs';
 
 const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -27,6 +29,7 @@ const HELP = `rikiki · self-contained slide decks
 
   rikiki init --standalone [name.html] [options]   generate a new single-file deck
   rikiki bundle <deck.html> [out.html|-] [options]  fold an existing deck into one file
+  rikiki export <deck.html> [--output deck.pdf]     render the deck to PDF, one slide per page
   rikiki skills [--dir <path>] [--force]            install the Claude Code skills into a project
 
 Options:
@@ -34,6 +37,7 @@ Options:
   --theme rikiki|siliceum   theme · siliceum inlines its local fonts (default: rikiki)
   --with-mermaid       inline the mermaid runtime (+~3 MB)
   --with-shiki         inline the Shiki highlighter (+~9 MB)
+  --output, -o <file>  PDF path (export · default <deck>.pdf)
   --no-fonts           drop fonts instead of inlining them (smaller, system fonts)
   --all                bundle every component (skip the used-only curation)
   --include a,b        force-include components used only from JS
@@ -190,6 +194,43 @@ async function cmdInit(argv) {
   if (!ok) process.exit(1);
 }
 
+async function cmdExport(argv) {
+  const { values, positionals } = parseArgs({
+    args: argv,
+    allowPositionals: true,
+    options: { output: { type: 'string', short: 'o' } },
+  });
+  const input = positionals[0];
+  if (!input) {
+    console.error('rikiki export · missing <deck.html>\n\n' + HELP);
+    process.exit(1);
+  }
+  const inputPath = resolve(process.cwd(), input);
+  if (!existsSync(inputPath) || !statSync(inputPath).isFile()) {
+    console.error('rikiki export · input not found: ' + inputPath);
+    process.exit(1);
+  }
+  const outputPath = resolve(
+    process.cwd(),
+    values.output ?? positionals[1] ?? basename(inputPath, '.html') + '.pdf',
+  );
+
+  let result;
+  try {
+    result = await exportPdf(inputPath, outputPath);
+  } catch (e) {
+    console.error('rikiki export · ' + (e instanceof Error ? e.message : String(e)));
+    process.exit(1);
+  }
+  // A missing asset means a page printed without something the author put
+  // there · reporting it beats handing over a silently incomplete PDF.
+  if (result.missing.length) {
+    console.error('rikiki export · WARNING · the deck could not load:');
+    for (const url of [...new Set(result.missing)].slice(0, 10)) console.error('    · ' + url);
+  }
+  console.error(`rikiki · wrote ${outputPath} · ${result.pages} pages`);
+}
+
 async function cmdBundle(argv) {
   const { values, positionals } = parseArgs({
     args: argv,
@@ -259,6 +300,7 @@ const [cmd, ...rest] = process.argv.slice(2);
 try {
   if (cmd === 'init') await cmdInit(rest);
   else if (cmd === 'bundle') await cmdBundle(rest);
+  else if (cmd === 'export') await cmdExport(rest);
   else if (cmd === 'skills') cmdSkills(rest);
   else if (!cmd || cmd === '-h' || cmd === '--help' || cmd === 'help') { console.log(HELP); }
   else { console.error('rikiki · unknown command: ' + cmd + '\n\n' + HELP); process.exit(1); }

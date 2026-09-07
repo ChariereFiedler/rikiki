@@ -10,7 +10,7 @@ const items = [
   },
   {
     q: 'Can I print my deck to PDF?',
-    a: 'Yes, from the browser. Chromium with print-backgrounds on gives the cleanest result. There is no separate CLI. Slides are plain HTML, so the browser print pipeline handles it.',
+    a: 'Yes, two ways. From the browser, print with backgrounds on: the deck carries its own print stylesheet, so every slide becomes one page at the deck\u2019s canvas size, chrome hidden. Or run <code>rikiki export deck.html --output deck.pdf</code>, which drives a headless Chromium and waits for fonts and diagrams first. The CLI needs Playwright, an optional peer dependency.',
   },
   {
     q: 'Is there a presenter mode with notes?',
