@@ -2,8 +2,8 @@
   "name": "rikiki-monorepo",
   "version": "0.1.0",
   "private": true,
-  "description": "Wrapper for the tordu-jardin static-site CI template · the real build lives in site/. See .gitlab-ci.yml for the BUILD_CMD override.",
+  "description": "Wrapper for the tordu-jardin static-site CI template \u00b7 the real build lives in site/. See .gitlab-ci.yml for the BUILD_CMD override.",
   "scripts": {
-    "build": "cd site && npm ci && npm run build && node ../scripts/post-build-inline-lit.mjs"
+    "build": "cd site && npm ci && npm run build"
   }
 }
