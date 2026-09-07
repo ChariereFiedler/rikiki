@@ -92,35 +92,6 @@ export class DeckRoot extends LitElement {
       height: 100%;
       transform: none;
     }
-    /* Print · the deck stops being a viewport-sized stage and becomes a stack
-       of canvas-sized pages. The zoom-to-fit transform, the scroll lock and the
-       overlay chrome all belong to the screen, not to paper. Each slide sets its
-       own page break (see slideShell in shared-styles.ts). */
-    @media print {
-      :host {
-        display: block;
-        position: static;
-        height: auto;
-        overflow: visible;
-        background: none;
-      }
-      #stage {
-        display: block;
-        width: auto;
-        height: auto;
-        transform: none;
-        container-type: normal;
-      }
-      #counter,
-      #progress,
-      #nav-arrows,
-      #kb-hint,
-      #step-dots,
-      #blank {
-        display: none;
-      }
-    }
-
     /* While magnified beyond fit (slide zoom), the deck is grab-to-pan. */
     :host([data-zoomed]) { cursor: grab; }
     :host([data-zoomed][data-panning]) { cursor: grabbing; }
@@ -228,6 +199,38 @@ export class DeckRoot extends LitElement {
     }
     #blank[data-tone="black"] { background: #000; }
     #blank[data-tone="white"] { background: #fff; }
+
+    /* LAST on purpose · these rules override on-screen ones of equal (ID)
+       specificity, and a media query adds none. Declared earlier, they lost the
+       cascade and the chrome printed anyway. */
+    /* Print · the deck stops being a viewport-sized stage and becomes a stack
+       of canvas-sized pages. The zoom-to-fit transform, the scroll lock and the
+       overlay chrome all belong to the screen, not to paper. Each slide sets its
+       own page break (see slideShell in shared-styles.ts). */
+    @media print {
+      :host {
+        display: block;
+        position: static;
+        height: auto;
+        overflow: visible;
+        background: none;
+      }
+      #stage {
+        display: block;
+        width: auto;
+        height: auto;
+        transform: none;
+        container-type: normal;
+      }
+      #counter,
+      #progress,
+      #nav-arrows,
+      #kb-hint,
+      #step-dots,
+      #blank {
+        display: none;
+      }
+    }
   `;
 
   @state() current = 0;

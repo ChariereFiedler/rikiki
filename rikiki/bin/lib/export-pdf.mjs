@@ -131,7 +131,18 @@ export async function exportPdf(deckPath, outputPath, { timeoutMs = 30_000 } = {
       await Promise.all(diagrams.map((d) => d.whenRendered ?? Promise.resolve()));
     });
 
-    await page.pdf({ path: outputPath, printBackground: true, preferCSSPageSize: true });
+    await page.pdf({
+      path: outputPath,
+      printBackground: true,
+      preferCSSPageSize: true,
+      // A bookmark per slide title · without an outline a reader has no way to
+      // jump around, and several viewers fall back to a continuous scroll with
+      // no page stops at all.
+      outline: true,
+      // Tagged output carries the reading order and the headings · it is what
+      // makes the outline above meaningful, and what a screen reader needs.
+      tagged: true,
+    });
     const pages = await page.evaluate(
       () =>
         document.querySelectorAll('deck-root > *:not(script):not(style):not(template)').length,
