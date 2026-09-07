@@ -134,10 +134,18 @@ arrive at. Both are removed instead. Numbering survives in exactly two
 components, `deck-flow` and `deck-agenda`, because those two genuinely are
 sequences; it is removed everywhere else.
 
-## Out of scope, and why it is worth raising
+## The eyebrow, decided separately
 
 `deck-feature` and its siblings print an `eyebrow` above the title on every
-slide of every deck. It is the same all-caps tag rule 3 removes, and it is the
-single most visible piece of template chrome in the screenshots. Changing it
-touches every deck the project ships, including the examples and the site, so it
-is a separate decision rather than something to fold in here.
+slide of every deck, and it was a filled pill holding tracked-out small caps ·
+two of the plainest marks of a generated page, stacked, and a coloured smudge at
+projection distance. It was raised as a separate decision because it lives in
+core layouts rather than in the opt-in set, and the answer was to restyle it,
+not to remove it.
+
+It now renders as a short accent-coloured line in sentence case. No API changes,
+so no deck is rewritten, and `--deck-eyebrow-bg` and its siblings still bring
+the badge back for a deck that wants one. Rule 3 is bent rather than applied:
+the eyebrow is a label above content, but the slot is used by every deck the
+project ships and removing it would be a breaking change made for a stylistic
+reason. Making it legible is the proportionate move.
