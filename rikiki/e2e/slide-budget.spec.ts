@@ -43,17 +43,29 @@ async function measureActive(page: import('@playwright/test').Page): Promise<Sli
     const box = slide.getBoundingClientRect();
     if (box.height === 0) return null;
 
-    /** Every box that clips inside this slide · the shell, its shadow body, and
-     *  any nested component that hides its own overflow. */
-    const clippers: HTMLElement[] = [slide];
-    const shadowBody = slide.shadowRoot?.querySelector('.body') as HTMLElement | null;
-    if (shadowBody) clippers.push(shadowBody);
-    for (const el of slide.querySelectorAll<HTMLElement>('*')) {
-      const overflow = getComputedStyle(el).overflow;
-      if (overflow === 'hidden' || overflow === 'clip') clippers.push(el);
-      const inner = el.shadowRoot?.querySelector('.body, .grid, table') as HTMLElement | null;
-      if (inner) clippers.push(inner);
-    }
+    /** Every box that clips inside this slide, light DOM and shadow alike.
+     *
+     *  Found by asking each element what its overflow is, rather than by
+     *  listing the class names that happened to clip when this was written.
+     *  The list was `.body, .grid, table`, so deck-split's own `.col` — which
+     *  clips, and which is where a column of cards actually loses its last
+     *  card's padding — was never looked at, and a shipped slide overflowed
+     *  under a green run. A list of selectors is a guess about the future;
+     *  the computed style is the answer. */
+    const clippers: HTMLElement[] = [];
+    const seen = new Set<HTMLElement>();
+    const collect = (root: HTMLElement | ShadowRoot) => {
+      for (const el of root.querySelectorAll<HTMLElement>('*')) {
+        if (seen.has(el)) continue;
+        seen.add(el);
+        const overflow = getComputedStyle(el).overflow;
+        if (overflow === 'hidden' || overflow === 'clip') clippers.push(el);
+        if (el.shadowRoot) collect(el.shadowRoot);
+      }
+    };
+    clippers.push(slide);
+    if (slide.shadowRoot) collect(slide.shadowRoot);
+    collect(slide);
 
     let clippedX = 0;
     let clippedY = 0;
@@ -62,6 +74,7 @@ async function measureActive(page: import('@playwright/test').Page): Promise<Sli
       clippedY = Math.max(clippedY, el.scrollHeight - el.clientHeight);
     }
 
+    const shadowBody = (slide.shadowRoot?.querySelector('.body') ?? null) as HTMLElement | null;
     const body = shadowBody ?? slide;
     return {
       index,
