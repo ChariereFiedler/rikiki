@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · two decks in one document</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+</head>
+<body>
+<!-- Two embedded decks · pins whether one document can carry more than one.
+     Neither is a direct child of <body>, so neither owns the page. -->
+<h1>Two decks</h1>
+<div style="width: 640px; height: 360px">
+  <deck-root id="deck-a" no-hint no-arrows>
+    <deck-section title="A1"></deck-section>
+    <deck-section title="A2"></deck-section>
+    <deck-section title="A3"></deck-section>
+  </deck-root>
+</div>
+<div style="width: 480px; height: 270px">
+  <deck-root id="deck-b" no-hint no-arrows width="1600" height="900">
+    <deck-section title="B1"></deck-section>
+    <deck-section title="B2"></deck-section>
+  </deck-root>
+</div>
+</body>
+</html>
