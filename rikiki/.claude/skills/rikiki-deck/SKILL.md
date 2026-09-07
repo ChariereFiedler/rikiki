@@ -16,6 +16,31 @@ Read the full component + attribute reference first:
 for every tag, attribute, slot, and design token. Do not invent tags,
 attributes, or tokens — use only what the reference lists.
 
+## What a good slide is, before how to wire one
+
+This skill used to describe only the wiring, and decks wired correctly from it
+were rejected in a room three times. The reference now carries the composition
+rules as §14; read that section before writing slides, not just the tables.
+
+The short version, because it decides most of the work:
+
+- **A slide is read at ten metres for forty seconds.** Area, size, position,
+  one saturated colour and empty space survive that. Hairlines, small type,
+  letter spacing and pale tints do not.
+- **One loud thing per slide.** The statement is more than twice the reading
+  size · the theme enforces it, and a title at 1.5x is why a deck looks flat.
+- **One filled area at most**, carrying whatever the content marks. On these
+  themes a pale tint is invisible in a room; real emphasis is the inverse
+  surface.
+- **Left, ragged right.** Never centre one column inside a row of columns.
+- **A slide that fills a fifth of the canvas is not finished.** Use `spread`
+  when the rhythm is wrong and `fill` when the type is too small (§19). If it
+  needs a third size to fit, it is two slides · `<deck-notes>` and stepped
+  reveals take the rest.
+- **`<deck-point>` for a bento item made of words, `<deck-cell>` for one that
+  holds something measured** (fit-to-cell text, a diagram, an image). A row of
+  points shares its baselines; a row of cells takes a share of the slide.
+
 ## Workflow
 
 1. **Skeleton** — start from the head + `<deck-root>` shape in `starter.html`

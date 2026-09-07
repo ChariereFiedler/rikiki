@@ -932,6 +932,71 @@ slide to the second.
 
 ## 14 · Authoring rules for LLMs
 
+Everything above this section says what you MAY write. This one says what makes
+the result worth projecting, because the two are not the same question and
+decks assembled correctly from the tables above have been rejected in a room.
+
+### 14.1 · What the slide is
+
+A slide is read from three to ten metres, for about forty seconds, while
+someone talks over it, and then again as a thumbnail in the overview grid and
+as a page in a PDF. What survives that trip is **area, size, position, one
+saturated colour and empty space**. What does not survive is a hairline, type
+under about twenty pixels on the wall, letter spacing, small caps, a
+low-contrast tint, and anything that has to be compared against something else
+to be understood. Compose from the first list. See
+`docs/design/adr-002-extras-visual-direction.md`.
+
+### 14.2 · The five rules
+
+1. **One loud thing.** A slide has one statement. Everything else on it is
+   quiet. Two loud things means the eye picks the wrong one.
+2. **Two sizes, and the gap between them is the design.** A statement and a
+   reading size, nothing in between. The theme sets the statement at more than
+   twice the reading size on purpose · a title at 1.5x reads as body text in
+   bold, which is the single most common reason a deck looks flat.
+3. **One mass at most.** One filled area per slide, carrying whatever the
+   content actually marks. Nothing marked means nothing filled. On these themes
+   a pale tint is invisible in a room; real emphasis is the inverse surface.
+4. **A line only where two things would otherwise touch.** A table header, a
+   timeline axis, an edge in a diagram. Never as decoration or as a signature.
+5. **Left, ragged right.** The vertical edge down the left is what makes a
+   glance cheap. Centre a whole slide if you mean to; never centre a column
+   inside a row of columns, because it breaks that edge.
+
+### 14.3 · Filling the canvas
+
+Most rejected slides put their content in the top fifth and leave the rest
+white. That is almost never a component problem · it is a deck that never asked
+for a distribution. `spread` and `fill` (§19) are the answer, and the choice
+between them is: `spread` when the type size is right and only the rhythm is
+wrong, `fill` when the slide is genuinely under-filled and the text should grow
+into it (pair it with `<deck-fit>`).
+
+Prefer cutting to shrinking. If a slide needs a third type size or a smaller
+body to fit, it is two slides. `<deck-notes>` takes what does not fit, and a
+stepped reveal (§7) is the medium's own way of showing a lot without crowding.
+
+### 14.4 · Rows of items
+
+Reach for **`<deck-point>`** when a bento item holds words, and **`<deck-cell>`**
+when it holds something that must be measured to its box · fit-to-cell text, a
+diagram, an image.
+
+The difference is not cosmetic. A row of `deck-point` is as tall as its tallest
+point, and a row made only of points (same number of children each, no spans,
+no declared `rows`) shares the grid's bands, so a title that wraps to a second
+line does not drag its own body text below its neighbours'. A row of
+`deck-cell` takes a share of the slide instead, so a cell that carries a surface
+will show a box taller than its text. Mixing them in one row is allowed and
+costs the shared bands.
+
+Whichever you use, do not reach for `plain` to remove the gutter · it keeps the
+gutter on purpose, so a painted item and a plain one start their text on the
+same edge.
+
+### 14.5 · Mechanics
+
 - **Never nest `<deck-root>`.** One per document.
 - **Load theme CSS before `dist/index.js`.**
 - Every direct child of `<deck-root>` is one slide; keep **one focal idea per
