@@ -18,6 +18,7 @@ const DECKS = [
   '/rikiki/decks/tests/bento.html',
   '/rikiki/decks/tests/fill.html',
   '/rikiki/decks/tests/extras.html',
+  '/rikiki/decks/tests/extras-more.html',
   '/rikiki/decks/tests/extensions.html',
   '/rikiki/decks/tests/extras-optin.html',
   '/rikiki/decks/tests/morph-back.html',
