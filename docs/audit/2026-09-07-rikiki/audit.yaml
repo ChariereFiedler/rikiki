@@ -1,0 +1,60 @@
+# Audit d'industrialisation — rikiki
+# Fichier lu par le cockpit via l'API forge. Ne pas déplacer.
+date: 2026-09-07
+projet: rikiki
+commit: HEAD
+status: in-progress
+
+meta:
+  methode: >-
+    Les skills audit-* (audit-architecture, audit-ci-cd, audit-compliance,
+    audit-industrialisation, audit-observability, audit-performance-frontend,
+    audit-quality, audit-security, audit-testing) ne sont PAS installées dans
+    cet environnement (absentes de .claude/skills/ et de ~/.claude/skills/).
+    Chaque domaine est donc couvert par analyse directe en lecture seule.
+  skills_disponibles_utilisees: []
+  score_echelle: "0-100 (100 = état de l'art industrialisé)"
+
+domaines:
+  architecture:
+    status: pending
+    score: null
+    constats: []
+  ci-cd:
+    status: pending
+    score: null
+    constats: []
+  compliance:
+    status: pending
+    score: null
+    constats: []
+  industrialisation:
+    status: pending
+    score: null
+    constats: []
+  observability:
+    status: pending
+    score: null
+    constats: []
+  performance-frontend:
+    status: pending
+    score: null
+    constats: []
+  quality:
+    status: pending
+    score: null
+    constats: []
+  security:
+    status: pending
+    score: null
+    constats: []
+  testing:
+    status: pending
+    score: null
+    constats: []
+
+synthese:
+  score_global: null
+  points_forts: []
+  risques_majeurs: []
+  recommandations: []
