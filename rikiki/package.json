@@ -1,8 +1,8 @@
 {
   "name": "rikiki-deck",
   "version": "0.6.0",
-  "description": "A tiny Lit Web Components framework for technical presentations · zero-build for consumers, TypeScript for contributors.",
-  "author": "Cédric Chariere Fiedler <chariere.fiedler.cedric@gmail.com>",
+  "description": "A tiny Lit Web Components framework for technical presentations \u00b7 zero-build for consumers, TypeScript for contributors.",
+  "author": "C\u00e9dric Chariere Fiedler <chariere.fiedler.cedric@gmail.com>",
   "homepage": "https://rikiki.tordu-jardin.fr",
   "repository": {
     "type": "git",
@@ -66,12 +66,14 @@
     "lit": "^3.3.3",
     "marked": "^12.0.2",
     "mermaid": "^10.9.6",
+    "rolldown": "^1.1.1",
     "shiki": "^1.24.0",
     "typescript": "^5.6.0",
     "vitest": "^2.1.0"
   },
   "peerDependencies": {
-    "lit": "^3.3.3"
+    "lit": "^3.3.3",
+    "rolldown": "^1.1.1"
   },
   "keywords": [
     "lit",
@@ -82,7 +84,12 @@
     "rikiki"
   ],
   "license": "MIT",
-  "dependencies": {
-    "rolldown": "^1.1.1"
+  "peerDependenciesMeta": {
+    "rolldown": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
   }
 }
