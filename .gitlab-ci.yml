@@ -87,6 +87,9 @@ e2e:
     paths:
       - rikiki/node_modules/
   before_script:
+    # poppler reads the PDFs e2e/print.spec.ts produces · without it the print
+    # contract would silently go untested in CI.
+    - apt-get update -qq && apt-get install -y -qq poppler-utils
     - cd rikiki
     - npm ci --prefer-offline --no-audit
   script:

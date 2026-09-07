@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Trust model, stated and tested.** `SECURITY.md` and the shipped LLM
   reference now spell out the line: deck content is the author's code and renders
   as written; text *derived* from it is escaped. Frozen by `e2e/security.spec.ts`.
+- **Print and PDF export.** A deck now carries a real print stylesheet: one
+  slide per page at the deck's own canvas size (A4 cropped a 16:9 slide),
+  backgrounds kept, navigation chrome dropped, click-stages printed once fully
+  revealed. `rikiki export deck.html --output deck.pdf` drives a headless
+  Chromium, waits for fonts and mermaid diagrams, and reports any asset it could
+  not load. Playwright is an optional peer dependency.
+- **`rikiki bundle --with-mermaid` / `--with-shiki`.** The flags existed on
+  `init` only, so a bundled mermaid deck fetched `./vendor/mermaid.min.js` at
+  runtime and rendered an empty diagram offline, with exit code 0. The command
+  now folds the runtime in, or fails and names it.
 - **Size, component-count and packaging contracts.** Every published figure is
   measured from the artifacts it describes (`scripts/size.test.mjs`,
   `scripts/component.test.mjs`) and the install cost is asserted
@@ -37,6 +47,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   in the showcase deck, which had them swapped.
 
 ### Changed
+- **Print promises are now backed by tests.** `e2e/print.spec.ts` reads the
+  produced PDF back with poppler: page count, page geometry, text on every page,
+  no chrome, and a rasterised check that the backgrounds printed.
 - **`rolldown` is no longer a production dependency.** It serves the CLI only and
   weighed ~55 MB of native bindings on every install · it is now an optional peer
   loaded on first use, with an actionable message when it is missing.
