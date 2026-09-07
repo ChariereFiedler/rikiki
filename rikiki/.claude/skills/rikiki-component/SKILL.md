@@ -58,6 +58,10 @@ declare global {
    `--deck-thing-*` tokens that default to a `--rik-*` value. Never hardcode
    colors. Use `part=` on structural nodes so authors can `::part()` them, and
    container-query units (`cqw`/`cqh`) for type that scales with the slide.
+   What the component should LOOK like is a separate question with its own
+   skill: load `frontend-design` then `rikiki-visual-design` before deciding a
+   surface, a scale or a layout rhythm. Token discipline is not taste, and this
+   list only covers the former.
 3. **Register** by adding `import './<bucket>/deck-thing.js';` to `src/index.ts`
    in the matching bucket section (note the `.js` extension — these are ESM
    specifiers resolved post-build).
