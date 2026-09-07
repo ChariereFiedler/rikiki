@@ -17,10 +17,12 @@ export class DeckFeature extends LitElement {
     ...slideBase,
     css`
     :host { justify-content: flex-start; }
+    /* No justify-content here · slideShell owns the vertical distribution now,
+       and it is declared before this block, so repeating the default here would
+       win the cascade and make spread inert. */
     .body {
       flex: 1; min-height: 0;
       display: flex; flex-direction: column;
-      justify-content: flex-start;
       gap: var(--rik-space-3);
       overflow: hidden;
     }
@@ -31,20 +33,6 @@ export class DeckFeature extends LitElement {
     ::slotted(svg),
     ::slotted(.hero-main) { max-height: 100%; flex: 0 1 auto; }
 
-    /* Vertical distribution · see src/shared/slide-fill.ts.
-       The body already owns the height left under the title. What it does with
-       the leftover is the whole difference between a composed slide and one
-       that hangs from the top with a hole under it. The default is still that
-       hole, and changing it is the open question e2e/balance.spec.ts exists to
-       answer · measured, because the obvious replacement (centre the body in
-       the leftover) detaches the block and reads worse than the hole.
-       The default no longer comes from a theme file: a vertical distribution
-       is structure, and a theme carries values. A deck may still set
-       --rik-slide-spread at :root, and a per-slide spread attribute wins.
-       No backticks in here · this sits inside a css template literal. */
-    .body { justify-content: var(--_spread, var(--rik-slide-spread, flex-start)); }
-    :host([fill]) .body > ::slotted(*) { flex: 1 1 0; min-height: 0; }
-    :host([fill]) .body { justify-content: stretch; }
   `,
   ];
 
