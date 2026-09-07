@@ -40,3 +40,6 @@ Thumbs.db
 docs/chardon/
 rikiki/-dbg-deck.html
 rikiki/-e2e-deck.html
+
+# Contact sheets · generated for looking at, never committed
+.shots*/
