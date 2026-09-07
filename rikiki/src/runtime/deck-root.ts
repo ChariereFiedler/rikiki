@@ -17,11 +17,11 @@ import {
   outlineOf,
   supportsTwoD,
 } from '../domain/deck-outline.js';
-import { formatHash, parseHash } from '../domain/deck-link.js';
+import { publishDeepLink, readDeepLink } from '../application/deep-link.js';
+import { browserLocation } from '../infrastructure/browser-location.js';
 import {
   advance as advanceFrom,
   back as backFrom,
-  clampPosition,
   goToCoords as goToCoordsIn,
   goToSlide as goToSlideIn,
   samePosition,
@@ -962,29 +962,20 @@ export class DeckRoot extends LitElement {
     this._readHash(false);
   };
 
+  /** What the deep-link use case needs to know about this deck right now. */
+  private _linkContext() {
+    return {
+      outline: this._outline,
+      twoD: this._has2DNav(),
+      stepsOf: this._maxStepsFor,
+      // An embedded deck does not own the fragment · the host put it there.
+      ownsUrl: this._isFullPage(),
+    };
+  }
+
   private _readHash(initial: boolean): void {
-    // Symmetric to _writeHash · `#section-3` is the host's anchor, not slide 3.
-    if (!this._isFullPage()) return;
-    const link = parseHash(location.hash, this._has2DNav());
-    if (!link) return;
-
-    const asked =
-      link.kind === 'coords'
-        ? goToCoordsIn(this._outline, link.coords, this._maxStepsFor)
-        : goToSlideIn(this._outline, link.slide, this._maxStepsFor);
-    if (!asked) return;
-
-    // On a COLD load the plugins have not computed their step counts yet, so the
-    // model would clamp a deep link to step 0 and lose it. Keep the asked-for
-    // step until a count exists; once it does, clamp as usual (a link to a click
-    // that no longer exists settles on the last available one).
-    const maxStep = this._maxStepsFor(asked.slide);
-    const target =
-      maxStep > 0
-        ? clampPosition(this._outline, { slide: asked.slide, step: link.step }, this._maxStepsFor)
-        : { slide: asked.slide, step: Math.max(0, link.step) };
+    const target = readDeepLink(browserLocation, this._linkContext(), initial);
     if (!target) return;
-
     if (samePosition(target, this._position) && !initial) return;
     this.current = target.slide;
     this.step = target.step;
@@ -997,25 +988,7 @@ export class DeckRoot extends LitElement {
   }
 
   private _writeHash(): void {
-    // An embedded deck must not overwrite the host's anchor · navigating a
-    // widget is not a navigation of the page it sits in.
-    if (!this._isFullPage()) return;
-    const twoD = this._has2DNav();
-    const h = formatHash(this._position, {
-      twoD,
-      // The write side used to emit the linear form even in 2D, so `#3.1` was
-      // written for "slide 3, step 1" and read back as "chapter 3, slide 1".
-      coords: twoD ? coordsOf(this._outline, this.current) : undefined,
-    });
-    if (location.hash === h) return;
-    try {
-      history.replaceState(null, '', h);
-    } catch {
-      // srcdoc / sandboxed iframes have an opaque origin · replaceState to a
-      // real URL throws SecurityError. The slide already updated visually, so
-      // the deck still navigates · deep-linking is just unavailable when the
-      // deck is embedded this way (preview thumbnails on the rikiki site).
-    }
+    publishDeepLink(browserLocation, this._position, this._linkContext());
   }
 
   private _onKey = (e: KeyboardEvent): void => {
