@@ -44,13 +44,17 @@ export class DeckTakeaway extends LitElement {
       color: var(--deck-takeaway-caption-color, var(--rik-text-inverse--faint));
     }
 
-    /* Vertical distribution · both opt-in, both no-ops when absent.
-       spread shares the leftover height between the blocks; fill gives that
-       height to the blocks themselves (put a deck-fit inside and its text
-       grows into it). See src/shared/slide-fill.ts.
+    /* Vertical distribution · see src/shared/slide-fill.ts.
+       The body already owns the height left under the title. What it does with
+       the leftover is the whole difference between a composed slide and one
+       that hangs from the top with a hole under it. The default is still that
+       hole, and changing it is the open question e2e/balance.spec.ts exists to
+       answer · measured, because the obvious replacement (centre the body in
+       the leftover) detaches the block and reads worse than the hole.
+       The default no longer comes from a theme file: a vertical distribution
+       is structure, and a theme carries values. A deck may still set
+       --rik-slide-spread at :root, and a per-slide spread attribute wins.
        No backticks in here · this sits inside a css template literal. */
-    /* A per-slide spread attribute wins; without one the theme default applies
-       (--rik-slide-spread), and without that the historical top stack. */
     .body { justify-content: var(--_spread, var(--rik-slide-spread, flex-start)); }
     :host([fill]) .body > ::slotted(*) { flex: 1 1 0; min-height: 0; }
     :host([fill]) .body { justify-content: stretch; }

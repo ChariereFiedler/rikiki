@@ -64,6 +64,11 @@ export class DeckCell extends LitElement {
       min-height: 0;
       overflow: hidden;
       box-sizing: border-box;
+      /* A size container, and it costs more than the cqw/cqh it buys · see the
+         two fixme cases in e2e/balance.spec.ts. Reporting no height of its own
+         is also what keeps the fit controller from resizing the text, the text
+         from resizing the row and the row from resizing the cell, so it is not
+         removable on its own. */
       container-type: size;
       padding: var(--deck-cell-padding-y, var(--rik-space-3)) var(--deck-cell-padding-x, var(--rik-space-4));
       background: var(--deck-cell-bg, var(--rik-surface-raised--strong));
@@ -79,12 +84,17 @@ export class DeckCell extends LitElement {
     :host([tone="ok"])     { background: var(--deck-cell-bg, var(--rik-status-success__bg)); border-color: var(--deck-cell-border, var(--rik-status-success__border)); }
     :host([tone="danger"]) { background: var(--deck-cell-bg, var(--rik-status-danger__bg));  border-color: var(--deck-cell-border, var(--rik-status-danger__border)); }
     /* Bare item · no chrome, just a positioned grid cell that still scopes
-       container queries for its children. */
+       container queries for its children.
+       It keeps the padding and the border WIDTH, and only stops painting them.
+       A plain cell used to drop both, which meant the one cell in a row that
+       carried a surface started its text a gutter further in than its plain
+       neighbours · and the vertical edge a reader scans down, the whole reason
+       this library sets ragged-right text, broke between two columns saying
+       the same kind of thing. Measured by e2e/balance.spec.ts. */
     :host([plain]) {
       background: none;
-      border: none;
+      border-color: transparent;
       border-radius: 0;
-      padding: 0;
     }
     /* Surfaced but borderless · keeps the fill, radius and padding, drops the
        outline · the soft-card bento look. Works with tone too. */
