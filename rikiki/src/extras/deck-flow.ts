@@ -110,19 +110,37 @@ export class DeckFlowStep extends LitElement {
       gap: var(--rik-space-2);
       font-family: var(--rik-font-sans);
       min-width: 0;
-      /* No tile. The step is a column of type under a rule · what separates it
-         from its neighbour is space and the rule above it, not a grey box. */
-      padding-top: var(--rik-space-2);
+      /* A real block. The theme's raised surface measures 1.10 against the
+         page, which is invisible on a projector · the inverse surface is the
+         one high-contrast ground this palette has, and dark blocks on a light
+         field give the chain the presence bare type did not. */
+      background: var(--deck-flow-step-bg, var(--rik-surface-inverse));
+      color: var(--deck-flow-step-color, var(--rik-text-inverse));
+      border-radius: var(--deck-flow-step-radius, var(--rik-radius-md));
+      padding: var(--deck-flow-step-padding, var(--rik-space-4));
       transition: opacity 0.2s ease;
+    }
+    /* Bare · type under a rule, for a chain that must not compete with the
+       rest of the slide. */
+    :host([plain]) {
+      background: none;
+      color: inherit;
+      padding: var(--rik-space-2) 0 0;
+      border-radius: 0;
     }
     /* The rule spans the step and thickens when it is the one being discussed:
        one device, two states, no second colour and no fill. */
+    /* The rule sits INSIDE the block and reads against it · one device, two
+       grounds, which is what makes plain and boxed feel like one component. */
     .rule {
       width: 100%;
-      /* Same reason as the graph edges · a border-grade tone disappears on a
-         projector. The neutral state is faint TEXT, not a hairline. */
-      background: var(--rik-text-default--faint);
-      transition: background 0.2s ease, height 0.2s ease;
+      background: currentColor;
+      opacity: 0.35;
+      transition: background 0.2s ease, height 0.2s ease, opacity 0.2s ease;
+    }
+    :host([done]) .rule,
+    :host([active]) .rule {
+      opacity: 1;
     }
     :host([done]) .rule {
       background: var(--deck-flow-step-accent, var(--rik-accent));
@@ -131,7 +149,15 @@ export class DeckFlowStep extends LitElement {
       background: var(--deck-flow-step-accent, var(--rik-accent));
       height: calc(var(--rik-extras-rule-width, 3px) * 2);
     }
+    /* Not yet · an outline, not a grey slab. Fading a dark block just turns it
+       into a flat grey rectangle, which reads as broken rather than pending. */
     :host([pending]) {
+      background: none;
+      color: var(--rik-text-default--faint);
+      box-shadow: inset 0 0 0 1px currentColor;
+    }
+    :host([plain][pending]) {
+      box-shadow: none;
       opacity: var(--deck-flow-step-pending-opacity, 0.35);
     }
     .head {
@@ -139,21 +165,27 @@ export class DeckFlowStep extends LitElement {
       align-items: baseline;
       gap: var(--rik-space-2);
     }
-    :host([active]) .index {
-      color: var(--deck-flow-step-accent, var(--rik-accent__text));
-    }
     .label {
       font-size: var(--rik-font-size-lead);
       font-weight: 700;
       line-height: 1.15;
-      color: var(--deck-flow-step-label-color, var(--rik-text-default));
+      color: var(--deck-flow-step-label-color, inherit);
       text-wrap: balance;
     }
     .note {
       font-size: var(--rik-font-size-sm);
-      color: var(--deck-flow-step-note-color, var(--rik-text-default--faint));
+      color: var(--deck-flow-step-note-color, inherit);
+      opacity: 0.72;
       line-height: 1.35;
       max-width: 28ch;
+    }
+    .index {
+      color: inherit;
+      opacity: 0.6;
+    }
+    :host([active]) .index {
+      color: var(--deck-flow-step-accent, var(--rik-accent));
+      opacity: 1;
     }
     @media print {
       :host { opacity: 1; }
@@ -168,6 +200,9 @@ export class DeckFlowStep extends LitElement {
   /** Position in the chain, written by deck-flow · the reader counts stages,
    *  and a number does that better than four identical icons. */
   @property({ type: String, reflect: true }) index?: string;
+
+  /** Drop the block and set the stage as type under a rule. */
+  @property({ type: Boolean, reflect: true }) plain = false;
 
   override render() {
     return html`

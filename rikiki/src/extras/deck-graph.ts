@@ -79,7 +79,7 @@ export class DeckGraph extends LitElement {
     .edge[data-pending] {
       opacity: 0.2;
     }
-    .arrow {
+    .head {
       fill: var(--deck-graph-edge, var(--rik-text-default--faint));
     }
     .edge-label {
@@ -164,6 +164,27 @@ export class DeckGraph extends LitElement {
       node.dataset['x'] = String(p.x);
       node.dataset['y'] = String(p.y);
     });
+
+    // Regions and bands · four numbers and two, both in percent, both written
+    // by the author for the same reason the nodes are.
+    for (const group of this.querySelectorAll<HTMLElement>('deck-group')) {
+      const [x = 0, y = 0, w = 20, h = 20] = (group.getAttribute('at') ?? '')
+        .split(',')
+        .map((n) => Number(n.trim()))
+        .map((n) => (Number.isFinite(n) ? n : 0));
+      group.style.setProperty('--gx', `${x}%`);
+      group.style.setProperty('--gy', `${y}%`);
+      group.style.setProperty('--gw', `${w}%`);
+      group.style.setProperty('--gh', `${h}%`);
+    }
+    for (const lane of this.querySelectorAll<HTMLElement>('deck-lane')) {
+      const [y = 0, h = 25] = (lane.getAttribute('at') ?? '')
+        .split(',')
+        .map((n) => Number(n.trim()))
+        .map((n) => (Number.isFinite(n) ? n : 0));
+      lane.style.setProperty('--ly', `${y}%`);
+      lane.style.setProperty('--lh', `${h}%`);
+    }
     this._tick++;
   }
 
@@ -201,12 +222,28 @@ export class DeckGraph extends LitElement {
 
     return html`
       <svg viewBox="0 0 ${w || 1} ${h || 1}" aria-hidden="true">
+        <defs>
+          <marker
+            id="arrow"
+            viewBox="0 0 10 10"
+            refX="9"
+            refY="5"
+            markerWidth="6"
+            markerHeight="6"
+            orient="auto-start-reverse"
+          >
+            <path class="head" d="M0 0 L10 5 L0 10 z" />
+          </marker>
+        </defs>
         ${edges.map(({ edge, geom }) => {
           if (!geom || !w) return '';
           const p = px(geom);
           // `svg` and not `html` · a nested html`` fragment is parsed in the
           // HTML namespace, so its <line> becomes an unknown element that is
           // never painted. It reports the right coordinates and draws nothing.
+          // The arrow is the direction · a line with no head reads as a
+          // relation, and most of these diagrams describe a flow.
+          const arrow = (edge.getAttribute('arrow') ?? 'end').toLowerCase();
           return svg`<line
             class="edge"
             ?data-dashed=${edge.hasAttribute('dashed')}
@@ -214,6 +251,8 @@ export class DeckGraph extends LitElement {
             y1=${p.y1}
             x2=${p.x2}
             y2=${p.y2}
+            marker-end=${arrow === 'end' || arrow === 'both' ? 'url(#arrow)' : ''}
+            marker-start=${arrow === 'start' || arrow === 'both' ? 'url(#arrow)' : ''}
           />`;
         })}
       </svg>
@@ -255,12 +294,57 @@ export class DeckNode extends LitElement {
     :host([pending]) {
       opacity: var(--deck-node-pending-opacity, 0.25);
     }
-    /* The signature again · a rule, not a box. The node is its label plus the
-       accent bar under it, so a graph reads as type on a field of lines. */
+    /* Bare · the node is type plus a rule, so the graph reads as words on a
+       field of lines. */
     .rule {
       width: 100%;
-      background: var(--deck-node-rule, var(--rik-border-strong, var(--rik-text-default)));
+      background: var(--deck-node-rule, var(--rik-text-default));
       transition: background 0.2s ease, height 0.2s ease;
+    }
+    /* Boxed · a real block. The theme's raised surface measures 1.10 against
+       the page, which is invisible at projection distance, so a block that
+       must READ as a block uses the inverse surface. Dark on light is the one
+       high-contrast device this palette actually has. */
+    :host([boxed]) {
+      background: var(--deck-node-bg, var(--rik-surface-inverse));
+      color: var(--deck-node-boxed-color, var(--rik-text-inverse));
+      padding: var(--rik-space-3) var(--rik-space-4);
+      border-radius: var(--rik-radius-md);
+      max-width: var(--deck-node-size, 18ch);
+    }
+    :host([boxed]) .label,
+    :host([boxed]) .meta {
+      background: none;
+      color: inherit;
+    }
+    :host([boxed]) .meta {
+      opacity: 0.72;
+    }
+    :host([boxed]) .rule {
+      display: none;
+    }
+    :host([boxed][tone='accent']) {
+      background: var(--rik-accent);
+      color: var(--rik-accent__on);
+    }
+    :host([boxed][tone='ok']) {
+      background: var(--rik-status-success__text);
+      color: var(--rik-surface-page);
+    }
+    :host([boxed][tone='warn']) {
+      background: var(--rik-status-warn__text);
+      color: var(--rik-surface-page);
+    }
+    :host([boxed][tone='danger']) {
+      background: var(--rik-status-danger__text);
+      color: var(--rik-surface-page);
+    }
+    :host([boxed][active]) {
+      outline: var(--rik-extras-rule-width, 3px) solid var(--rik-accent);
+      outline-offset: 3px;
+    }
+    deck-icon {
+      margin-bottom: var(--rik-space-1);
     }
     :host([active]) .rule {
       background: var(--rik-accent);
@@ -288,13 +372,116 @@ export class DeckNode extends LitElement {
   /** A mono micro-label under the name · a protocol, a count, a latency. */
   @property({ type: String }) note?: string;
 
+  /** Draw the node as a filled block rather than type under a rule. */
+  @property({ type: Boolean, reflect: true }) boxed = false;
+
+  /** Fill colour of a boxed node. */
+  @property({ type: String, reflect: true }) tone?: 'accent' | 'ok' | 'warn' | 'danger';
+
+  /** A glyph above the label · needs dist/deck-icon.js loaded too. */
+  @property({ type: String }) icon?: string;
+
   override render() {
     return html`
+      ${this.icon ? html`<deck-icon name=${this.icon} size="md"></deck-icon>` : ''}
       <span class="label" part="label">${this.label ?? ''}</span>
       <span class="rule" part="rule"></span>
       ${this.note ? html`<span class="meta">${this.note}</span>` : ''}
       <slot></slot>
     `;
+  }
+}
+
+@customElement('deck-group')
+export class DeckGroup extends LitElement {
+  /* A named region behind a set of nodes · "everything in this dotted box runs
+     in the VPC". Placed like a node, in percentages, because the author knows
+     where their nodes are and a solver does not.
+
+     Customization tokens:
+       --deck-group-border / --deck-group-bg / --deck-group-label-color        */
+  static override styles = [
+    signature,
+    css`
+    :host {
+      position: absolute;
+      left: var(--gx, 0%);
+      top: var(--gy, 0%);
+      width: var(--gw, 20%);
+      height: var(--gh, 20%);
+      border: 2px dashed var(--deck-group-border, var(--rik-text-default--faint));
+      border-radius: var(--rik-radius-md);
+      background: var(--deck-group-bg, transparent);
+      /* Behind the nodes, and never in the way of a click. */
+      z-index: 0;
+      pointer-events: none;
+    }
+    .meta {
+      position: absolute;
+      top: 0;
+      left: var(--rik-space-3);
+      transform: translateY(-50%);
+      background: var(--rik-surface-page);
+      padding-inline: var(--rik-space-2);
+      color: var(--deck-group-label-color, var(--rik-text-default--faint));
+      white-space: nowrap;
+    }
+    :host([solid]) {
+      border-style: solid;
+    }
+  `,
+  ];
+
+  /** `x,y,width,height` in percent of the drawing area. */
+  @property({ type: String }) at?: string;
+
+  @property({ type: String }) label?: string;
+
+  /** A solid outline instead of the dashed default. */
+  @property({ type: Boolean, reflect: true }) solid = false;
+
+  override render() {
+    return html`${this.label ? html`<span class="meta">${this.label}</span>` : ''}`;
+  }
+}
+
+@customElement('deck-lane')
+export class DeckLane extends LitElement {
+  /* A titled band across the diagram · the swimlane of a sequence, the tier of
+     an architecture. Horizontal by default, because that is how a deck reads.
+
+     Customization tokens:
+       --deck-lane-rule / --deck-lane-bg / --deck-lane-label-color             */
+  static override styles = [
+    signature,
+    css`
+    :host {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: var(--ly, 0%);
+      height: var(--lh, 25%);
+      border-top: 1px solid var(--deck-lane-rule, var(--rik-text-default--faint));
+      background: var(--deck-lane-bg, transparent);
+      z-index: 0;
+      pointer-events: none;
+    }
+    .meta {
+      position: absolute;
+      top: var(--rik-space-1);
+      left: 0;
+      color: var(--deck-lane-label-color, var(--rik-text-default--faint));
+    }
+  `,
+  ];
+
+  /** `top,height` in percent of the drawing area. */
+  @property({ type: String }) at?: string;
+
+  @property({ type: String }) label?: string;
+
+  override render() {
+    return html`${this.label ? html`<span class="meta">${this.label}</span>` : ''}`;
   }
 }
 
@@ -321,5 +508,7 @@ declare global {
     'deck-graph': DeckGraph;
     'deck-node': DeckNode;
     'deck-edge': DeckEdge;
+    'deck-group': DeckGroup;
+    'deck-lane': DeckLane;
   }
 }

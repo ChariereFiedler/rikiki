@@ -24,12 +24,14 @@ export function iconNamesIn(html) {
 
 /** The JSON payload of the icon set inside a bundle, or null when absent. */
 export function findIconData(js) {
-  // Match the literal the module emits · a single-quoted JSON object.
-  const re = /'(\{"[a-z-]+":"M[^']*\})'/;
+  // The literal the module emits, in whichever quote style survived the
+  // minifier · rolldown rewrites the single-quoted string as a template
+  // literal, and a regex that only knew about quotes silently found nothing.
+  const re = /(['"`])(\{"[a-z-]+":"M(?:(?!\1)[\s\S])*\})\1/;
   const m = re.exec(js);
   if (!m) return null;
   try {
-    return { raw: m[1], index: m.index + 1, set: JSON.parse(m[1]) };
+    return { raw: m[2], index: m.index + 1, quote: m[1], set: JSON.parse(m[2]) };
   } catch {
     return null;
   }
@@ -60,7 +62,11 @@ export function pruneIcons(js, html) {
   for (const name of Object.keys(found.set)) {
     if (used.has(name)) kept[name] = found.set[name];
   }
-  const replacement = JSON.stringify(kept).replace(/'/g, "\\'");
+  // Escape whichever quote character wraps it, so the swap is valid in place.
+  const replacement = JSON.stringify(kept).replace(
+    new RegExp(`\\${found.quote}`, 'g'),
+    `\\${found.quote}`,
+  );
   if (replacement.length >= found.raw.length) {
     return { js, pruned: false, reason: 'nothing to drop' };
   }

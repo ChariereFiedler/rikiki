@@ -6,6 +6,23 @@ import { createDeckPage } from './pages/deck.page';
 // named, and that the author's percentages are what places everything.
 const DECK = '/rikiki/decks/tests/extras-more.html';
 
+/** Open the slide that CONTAINS an element, by id · a deep link by number
+ *  breaks the moment a slide is inserted before it, which it just did. */
+async function gotoSlideWith(page: import('@playwright/test').Page, id: string) {
+  const deck = createDeckPage(page);
+  await deck.goto(DECK);
+  const index = await page.evaluate((target) => {
+    const slides = [...document.querySelectorAll('deck-root > *')];
+    return slides.findIndex((s) => s.querySelector(`#${CSS.escape(target)}`)) + 1;
+  }, id);
+  expect(index, `no slide contains #${id}`).toBeGreaterThan(0);
+  await page.goto(`${DECK}#${index}`);
+  await expect(page.locator('deck-root > [active]')).toHaveCount(1);
+  await page.evaluate(
+    () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
+  );
+}
+
 /** Painted edge segments, in element pixels. */
 async function edges(page: import('@playwright/test').Page, id: string) {
   return page.evaluate((graphId) => {
@@ -24,8 +41,7 @@ async function edges(page: import('@playwright/test').Page, id: string) {
 }
 
 test('every edge is a painted SVG line, not an unknown element', async ({ page }) => {
-  const deck = createDeckPage(page);
-  await deck.goto(`${DECK}#10`);
+  await gotoSlideWith(page, 'gr');
 
   const drawn = await edges(page, 'gr');
   expect(drawn, 'one line per deck-edge').toHaveLength(4);
@@ -36,8 +52,7 @@ test('every edge is a painted SVG line, not an unknown element', async ({ page }
 });
 
 test('an edge connects the two nodes it names', async ({ page }) => {
-  const deck = createDeckPage(page);
-  await deck.goto(`${DECK}#10`);
+  await gotoSlideWith(page, 'gr');
 
   const geometry = await page.evaluate(() => {
     const graph = document.getElementById('gr')!;
@@ -66,15 +81,13 @@ test('an edge connects the two nodes it names', async ({ page }) => {
 });
 
 test('a dashed edge is dashed, and only that one', async ({ page }) => {
-  const deck = createDeckPage(page);
-  await deck.goto(`${DECK}#10`);
+  await gotoSlideWith(page, 'gr');
   const drawn = await edges(page, 'gr');
   expect(drawn.filter((e) => e.dashed)).toHaveLength(1);
 });
 
 test('the author percentages place the nodes', async ({ page }) => {
-  const deck = createDeckPage(page);
-  await deck.goto(`${DECK}#10`);
+  await gotoSlideWith(page, 'gr');
 
   const placed = await page.evaluate(() => {
     const graph = document.getElementById('gr')!;
@@ -88,8 +101,7 @@ test('the author percentages place the nodes', async ({ page }) => {
 });
 
 test('the row layout spaces the nodes evenly and ignores any stale position', async ({ page }) => {
-  const deck = createDeckPage(page);
-  await deck.goto(`${DECK}#11`);
+  await gotoSlideWith(page, 'gr-row');
 
   const xs = await page.evaluate(() => {
     const graph = document.getElementById('gr-row')!;
@@ -106,8 +118,7 @@ test('the row layout spaces the nodes evenly and ignores any stale position', as
 test('walking the graph emphasises rather than hides', async ({ page }) => {
   // Step 0 must show the whole diagram · the shape of the architecture is half
   // the message, and hiding it behind five clicks tells the room nothing.
-  const deck = createDeckPage(page);
-  await deck.goto(`${DECK}#10`);
+  await gotoSlideWith(page, 'gr');
 
   const pending = () =>
     page.evaluate(

@@ -101,6 +101,11 @@ async function measure(
 
 for (const deck of DECKS) {
   test(`no slide of ${deck} loses content to clipping`, async ({ page }) => {
+    // This one legitimately navigates once per slide and waits for the fit
+    // controllers each time · a twenty-slide deck on WebKit runs past the
+    // default budget. Slow, not flaky: raising the budget is the honest fix,
+    // and a retry would only hide the cost.
+    test.slow();
     const deckPage = createDeckPage(page);
     await deckPage.goto(deck);
     const slides = await measure(page, deck);
