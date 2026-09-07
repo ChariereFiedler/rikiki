@@ -271,6 +271,16 @@
   --rik-slide-padding-x:              4rem;
   --rik-title-block:                  4.5rem;
 
+  /* Slide-title voice · the four values the two shipped themes disagreed on,
+     each of them written twice in a light-DOM rule the other theme copied and
+     edited. A theme carries VALUES; the rule that consumes them is written
+     once. scripts/theme-parity.test.mjs keeps the two files structurally
+     identical so the next divergence cannot be silent. */
+  --rik-title-weight:                 800;
+  --rik-title-tracking:               -0.025em;
+  --rik-title-leading:                1.1;
+  --rik-rule-weight:                  4px;
+
   /* Code surface + syntax (BEM elements under "code") */
   --rik-code__bg:                     #0f0f10;
   --rik-code__border:                 #232325;
@@ -360,13 +370,13 @@ deck-split > h1,
 deck-root deck-feature-cards > h1 {
   font-family: var(--rik-font-display);
   font-size: var(--rik-font-size-h1);
-  font-weight: 800;
+  font-weight: var(--rik-title-weight);
   color: var(--rik-text-default);
-  letter-spacing: -0.025em;
-  line-height: 1.1;
+  letter-spacing: var(--rik-title-tracking);
+  line-height: var(--rik-title-leading);
   margin-bottom: var(--rik-space-4);
   padding-bottom: var(--rik-space-2);
-  border-bottom: 4px solid var(--rik-accent);
+  border-bottom: var(--rik-rule-weight) solid var(--rik-accent);
   display: inline-block;
   align-self: flex-start;
 }

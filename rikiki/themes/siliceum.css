@@ -234,6 +234,16 @@
   --rik-slide-padding-x:              4rem;
   --rik-title-block:                  4.5rem;
 
+  /* Slide-title voice · the four values the two shipped themes disagreed on,
+     each of them written twice in a light-DOM rule the other theme copied and
+     edited. A theme carries VALUES; the rule that consumes them is written
+     once. scripts/theme-parity.test.mjs keeps the two files structurally
+     identical so the next divergence cannot be silent. */
+  --rik-title-weight:                 700;
+  --rik-title-tracking:               -0.018em;
+  --rik-title-leading:                1.15;
+  --rik-rule-weight:                  2px;
+
   --rik-code__bg:                     #0f0f10;
   --rik-code__border:                 #232325;
   --rik-code__text:                   #f4f4f5;
@@ -291,18 +301,19 @@ deck-root .accent-lime { color: var(--rik-decor-lime); }
 
 deck-root .sub {
   font-size: var(--rik-font-size-h2);
-  color: var(--rik-text-inverse--faint);
+  color: var(--rik-text-inverse--muted);
   line-height: 1.45;
   max-width: 60ch;
 }
 deck-root .display {
+  font-family: var(--rik-font-display);
   font-size: clamp(3rem, 7cqw, 5.5rem);
   font-weight: 900;
   line-height: 1.05;
   letter-spacing: -0.03em;
 }
 deck-root .display.danger { color: var(--rik-status-danger); }
-deck-root .caption.on-dark { color: var(--rik-text-inverse--faint); font-size: var(--rik-font-size-lead); }
+deck-root .caption.on-dark { color: var(--rik-text-inverse--muted); font-size: var(--rik-font-size-lead); }
 deck-root .lead {
   font-size: var(--rik-font-size-lead);
   color: var(--rik-text-default--faint);
@@ -315,17 +326,18 @@ deck-split > h1,
 deck-root deck-feature-cards > h1 {
   font-family: var(--rik-font-display);
   font-size: var(--rik-font-size-h1);
-  font-weight: 700;
+  font-weight: var(--rik-title-weight);
   color: var(--rik-text-default);
-  letter-spacing: -0.018em;
-  line-height: 1.15;
+  letter-spacing: var(--rik-title-tracking);
+  line-height: var(--rik-title-leading);
   margin-bottom: var(--rik-space-4);
   padding-bottom: var(--rik-space-2);
-  border-bottom: 2px solid var(--rik-accent);
+  border-bottom: var(--rik-rule-weight) solid var(--rik-accent);
   display: inline-block;
   align-self: flex-start;
 }
 deck-root deck-cover > h1 {
+  font-family: var(--rik-font-display);
   font-size: clamp(3.6rem, 9cqw, 8.5rem);
   font-weight: 900;
   color: var(--rik-text-inverse);
@@ -334,6 +346,7 @@ deck-root deck-cover > h1 {
   margin-bottom: var(--rik-space-4);
 }
 deck-root deck-section > h1 {
+  font-family: var(--rik-font-display);
   font-size: var(--rik-font-size-section);
   font-weight: 900;
   color: var(--rik-accent);
@@ -343,7 +356,7 @@ deck-root deck-section > h1 {
   text-align: center;
 }
 deck-root deck-section > h1 em {
-  color: var(--rik-text-inverse--faint);
+  color: var(--rik-text-inverse--muted);
   font-style: normal;
   font-weight: 700;
 }
@@ -351,7 +364,7 @@ deck-root deck-section > h1 em {
 deck-root deck-cover > .sub, deck-root deck-cover > p.sub {
   display: block;
   font-size: var(--rik-font-size-h2);
-  color: var(--rik-text-inverse--faint);
+  color: var(--rik-text-inverse--muted);
   margin-bottom: var(--rik-space-6);
   max-width: 60ch;
   line-height: 1.45;
