@@ -18,16 +18,55 @@
 
 import { expect, test } from '@playwright/test';
 import { createDeckPage } from './pages/deck.page';
+import { readRegions } from './support/regions';
 import { settled } from './support/settle';
 
-const DECKS = ['/rikiki/decks/tests/extras-more.html', '/rikiki/decks/tests/fill.html'];
+/* Measured in the SLIDE's frame of reference, and widened past the two
+   fixtures it used to look at. Both changes are the same fix: this file used to
+   clip to `.body ?? active`, and `.body` exists in three layouts out of eight,
+   so five slides were measured against a different origin and denominator from
+   the other three and none of the numbers were comparable. */
+const DECKS = [
+  '/rikiki/decks/tests/extras-more.html',
+  '/rikiki/decks/tests/fill.html',
+  '/rikiki/decks/tests/demo.html',
+  '/examples/rikiki-tour/index.html',
+  '/examples/showcase/index.html',
+];
+
+/* deck-root paints its own chrome over the slide · the counter, the arrows, the
+   keyboard hint and the progress bar. On a slide at 3% ink that chrome is a
+   large share of what a pixel reader sees and it all sits at the bottom, which
+   drags the centroid down by more than the layout ever could. Three attributes
+   and one public token remove it for the duration of the measurement. */
+const NO_CHROME = 'deck-root { --deck-root-progress-height: 0px; }';
+async function hideChrome(page: import('@playwright/test').Page) {
+  await page.evaluate(() => {
+    const root = document.querySelector('deck-root');
+    root?.setAttribute('no-hint', '');
+    root?.setAttribute('no-arrows', '');
+    root?.setAttribute('no-counter', '');
+  });
+  await page.addStyleTag({ content: NO_CHROME });
+}
 
 interface SlideInk {
   index: number;
   id: string;
+  tag: string;
   spread: string;
-  /** Vertical centre of mass of the ink, 0 at the top and 1 at the bottom. */
+  /** Bottom of the head as a fraction of slide height · null when there is no
+   *  head, which is itself the fact that decides the composition regime. */
+  shoulder: number | null;
+  /** Vertical centre of mass of the ink, as a fraction of SLIDE height · the
+   *  one number that is comparable between layouts. */
   centroid: number;
+  /** The same centre of mass, as a fraction of the FIELD · what `spread`
+   *  actually governs, and therefore what a layout can be held to. */
+  inField: number | null;
+  /** How much of the field the ink spans · the density, derived and never
+   *  declared. */
+  density: number | null;
   /** Share of the slide box the ink covers. */
   coverage: number;
 }
@@ -91,10 +130,13 @@ async function measureInk(
 }
 
 for (const deck of DECKS) {
-  test(`ink lands where the layout promised on ${deck.split('/').pop()}`, async ({ page }) => {
+  // Two of these decks are called index.html · name the test by the folder.
+  const label = deck.split('/').filter(Boolean).slice(-2).join('/');
+  test(`ink lands where the layout promised on ${label}`, async ({ page }) => {
     test.slow(); // one screenshot per slide · slow, not flaky
     const deckPage = createDeckPage(page);
     await deckPage.goto(deck);
+    await hideChrome(page);
 
     const slides = await page.evaluate(() =>
       [...document.querySelectorAll('deck-root > *')]
@@ -106,9 +148,7 @@ for (const deck of DECKS) {
         })),
     );
 
-    const page_background = await page.evaluate(
-      () => getComputedStyle(document.body).backgroundColor,
-    );
+
     const report: SlideInk[] = [];
     const failures: string[] = [];
 
@@ -119,34 +159,64 @@ for (const deck of DECKS) {
       await page.waitForFunction((i) => location.hash.startsWith(`#${i}`), slide.index);
       await settled(page);
 
-      // Measure the region `spread` actually governs · the shadow body, not
-      // the whole slide. The title block always sits at the top, so including
-      // it would drag every centroid upwards and turn the promise into one no
-      // centred layout could keep.
-      const clip = await page.evaluate(() => {
-        const active = document.querySelector('deck-root > [active]');
-        if (!active) return null;
-        const body = active.shadowRoot?.querySelector('.body') ?? active;
-        const r = body.getBoundingClientRect();
-        return { x: r.x, y: r.y, width: r.width, height: r.height };
+      // Measure the SLIDE. It is the rectangle the room sees and the only
+      // frame of reference the eight layouts share · the head is then removed
+      // arithmetically rather than by cropping, so a layout with no head is
+      // still comparable to one that has one.
+      const regions = await readRegions(page);
+      /* Clip to the FIELD. Clipping to the whole slide would measure the head
+         too, and the head is a large mass anchored at the top, so it dominates
+         the centroid and says nothing about the composition. The old code
+         clipped to `.body` for this reason and was right to; what it lacked was
+         a field that exists in all eight layouts. */
+      const field = regions.field ?? regions.slide;
+      const shot = await page.screenshot({
+        clip: { x: field.left, y: field.top, width: field.width, height: field.height },
       });
-      expect(clip, `slide ${slide.index} has no measurable body`).not.toBeNull();
-      const shot = await page.screenshot({ clip: clip! });
       const ink = await measureInk(page, shot.toString('base64'));
-      report.push({ ...slide, centroid: ink.centroid, coverage: ink.coverage });
 
-      // Anti-vacuity · if the dominant colour is not the page, the screenshot
-      // is not of the slide and every number above is meaningless.
-      expect(ink.dominant, `slide ${slide.index} does not look like a deck slide`).toBe(
-        page_background,
-      );
+      /* Two readings from one measurement. `inField` is what `spread` governs
+         and what a layout can be held to. `centroid` converts the same point
+         into the slide's frame, which is the only one comparable between
+         layouts and the only one the room actually sees. */
+      const inField = ink.centroid;
+      const centroid = (field.top + ink.centroid * field.height - regions.slide.top) / regions.slide.height;
+      const density = field.height > 0 ? field.height / regions.slide.height : null;
+
+      report.push({
+        ...slide,
+        tag: regions.tag,
+        shoulder: regions.shoulder,
+        centroid,
+        inField,
+        density,
+        coverage: ink.coverage,
+      });
+
+      /* Anti-vacuity, restated · the point of this guard is that a screenshot
+         of nothing must not report success.
+         It used to assert the dominant colour was the page surface, which
+         worked while the clip was the whole slide. Clipped to the field, that
+         assertion is wrong rather than strict: a dense slide whose field is
+         mostly a dark code block has a dominant colour that is content, and a
+         cover is dark by construction. The invariant is structural instead ·
+         the box was measured from the live DOM and must sit inside the slide,
+         and the strip must be neither blank nor uniform. */
+      expect(
+        field.top >= regions.slide.top - 1 && field.bottom <= regions.slide.bottom + 1,
+        `slide ${slide.index} has a field outside its own slide`,
+      ).toBe(true);
+      expect(ink.coverage, `slide ${slide.index} fills its whole field`).toBeLessThan(1);
       expect(ink.coverage, `slide ${slide.index} is blank`).toBeGreaterThan(0);
 
-      // The only judgement made here, and it is the layout's own.
-      if (slide.spread === 'center' && (ink.centroid < 1 / 3 || ink.centroid > 2 / 3)) {
+      // The only judgement made here, and it is the layout's own · asked in
+      // the FIELD's frame, because that is the box `spread` governs. Asking it
+      // of the slide would hold a centred body to a promise the head makes it
+      // impossible to keep.
+      if (slide.spread === 'center' && inField !== null && (inField < 1 / 3 || inField > 2 / 3)) {
         failures.push(
-          `slide ${slide.index} (${slide.id}) asks for spread="center" but its ink ` +
-            `centres at ${(ink.centroid * 100).toFixed(0)}% of the slide height`,
+          `slide ${slide.index} (${slide.id}, ${regions.tag}) asks for spread="center" but its ` +
+            `ink centres at ${(inField * 100).toFixed(0)}% of its field`,
         );
       }
     }
