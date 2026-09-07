@@ -53,6 +53,10 @@ export class DeckFlow extends LitElement {
     const steps = [...this.querySelectorAll('deck-flow-step')];
     steps.forEach((el, i) => {
       el.setAttribute('index', String(i + 1));
+      // The last stage has nothing to point at · a connector there would be an
+      // arrow into the margin.
+      el.toggleAttribute('last', i === steps.length - 1);
+      el.toggleAttribute('linked', !this.noConnectors);
     });
     const declared = Number.parseInt(this.cols ?? '', 10);
     const count =
@@ -108,9 +112,16 @@ export class DeckFlowStep extends LitElement {
         flex-direction: column;
         gap: var(--rik-space-1);
         min-width: 0;
+        position: relative;
         padding: var(--rik-space-3) var(--rik-space-4);
         border-radius: var(--rik-radius-sm);
-        transition: background 0.2s ease, color 0.2s ease;
+        /* A stage is a shape, not a paragraph in a row of paragraphs. The
+           stroke is thick on purpose · a hairline is the one thing this
+           medium is documented not to carry, so an outline is only worth
+           drawing at a width the back of the room can see. */
+        border: var(--deck-flow-step-outline-width, 4px) solid
+          var(--deck-flow-step-outline, var(--rik-accent));
+        transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
       }
       /* ONE mass in the chain, and it is the stage being discussed. Every
          stage used to be a dark block, which is the card kit wearing another
@@ -123,10 +134,48 @@ export class DeckFlowStep extends LitElement {
       :host([active][plain]) .label {
         color: var(--deck-flow-step-accent, var(--rik-accent__text));
       }
-      /* Not yet · quiet, not outlined and not greyed out. An outline is a
-         second device for a state that only needs less presence. */
+      /* Not yet · the stroke stays, because it is the shape of the stage and
+         the shape does not change; only its presence does. */
       :host([pending]) {
         color: var(--rik-text-default--faint);
+        border-color: var(--deck-flow-step-pending-outline, var(--rik-text-default--faint));
+      }
+      /* The connector · the chain has to read as a chain, and the arrow is
+         what says which way it runs. Drawn from the stage rather than from the
+         parent because ::slotted() cannot reach a pseudo-element, and sized in
+         the same stroke as the outline so the two read as one drawing. */
+      .link {
+        position: absolute;
+        left: 100%;
+        top: 50%;
+        width: var(--deck-flow-gap, var(--rik-space-5));
+        height: var(--deck-flow-step-outline-width, 4px);
+        transform: translateY(-50%);
+        background: var(--deck-flow-link, var(--rik-accent));
+        pointer-events: none;
+      }
+      /* The head · two strokes of the same width, met at the point. */
+      .link::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 50%;
+        width: 0.8rem;
+        height: 0.8rem;
+        border-top: var(--deck-flow-step-outline-width, 4px) solid
+          var(--deck-flow-link, var(--rik-accent));
+        border-right: var(--deck-flow-step-outline-width, 4px) solid
+          var(--deck-flow-link, var(--rik-accent));
+        transform: translate(0, -50%) rotate(45deg);
+        transform-origin: center;
+      }
+      /* A stage not yet reached is quieter, not absent · the border grade is
+         a hair from the page colour and would delete the shape rather than
+         calm it. scripts/theme-contrast.test.mjs measures this. */
+      :host([pending]) .link,
+      :host([pending]) .link::after {
+        background: var(--rik-text-default--faint);
+        border-color: var(--rik-text-default--faint);
       }
       .head {
         display: flex;
@@ -171,6 +220,13 @@ export class DeckFlowStep extends LitElement {
    *  only stops the active stage from taking the block. */
   @property({ type: Boolean, reflect: true }) plain = false;
 
+  /** Last in the chain · written by deck-flow. Nothing to point at. */
+  @property({ type: Boolean, reflect: true }) last = false;
+
+  /** Draw the connector to the next stage · written by deck-flow from its own
+   *  no-connectors attribute, which declared the option and drew nothing. */
+  @property({ type: Boolean, reflect: true }) linked = false;
+
   override render() {
     return html`
       <span class="head">
@@ -179,6 +235,7 @@ export class DeckFlowStep extends LitElement {
       </span>
       ${this.note ? html`<span class="note reading" part="note">${this.note}</span>` : ''}
       <slot></slot>
+      ${this.linked && !this.last ? html`<span class="link" part="link"></span>` : ''}
     `;
   }
 }

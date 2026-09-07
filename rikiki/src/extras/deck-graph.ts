@@ -65,8 +65,12 @@ export class DeckGraph extends LitElement {
       /* A text-grade token, not a border one · --rik-border-default is a hair
          away from the page colour and a line drawn in it is invisible on a
          projector, which is the only screen that matters here. */
-      stroke: var(--deck-graph-edge, var(--rik-text-default--faint));
-      stroke-width: var(--deck-graph-edge-width, 2);
+      /* Thick, and in the reading grade rather than the faint one. Two
+         pixels of a colour a hair from the page is a hairline in a tint · the
+         two things this medium is documented not to carry, drawn together.
+         An edge is the message of a boxes-and-arrows slide, not its scaffold. */
+      stroke: var(--deck-graph-edge, var(--rik-text-default--muted));
+      stroke-width: var(--deck-graph-edge-width, 4);
       stroke-linecap: round;
       transition: stroke 0.2s ease, opacity 0.2s ease;
     }
@@ -80,14 +84,14 @@ export class DeckGraph extends LitElement {
       opacity: 0.2;
     }
     .head {
-      fill: var(--deck-graph-edge, var(--rik-text-default--faint));
+      fill: var(--deck-graph-edge, var(--rik-text-default--muted));
     }
     /* A drawing annotates itself · an edge carries a short name. Plain sans at
        a smaller size, not a tracked-out mono tag: the convention comes from
        technical drawings, the mono uppercase came from nowhere. */
     .tag {
       font-family: var(--rik-font-sans);
-      font-size: 0.75em;
+      font-size: var(--deck-graph-tag-size, 0.95em);
       line-height: 1.2;
     }
     .edge-label {
@@ -236,8 +240,8 @@ export class DeckGraph extends LitElement {
             viewBox="0 0 10 10"
             refX="9"
             refY="5"
-            markerWidth="6"
-            markerHeight="6"
+            markerWidth="5"
+            markerHeight="5"
             orient="auto-start-reverse"
           >
             <path class="head" d="M0 0 L10 5 L0 10 z" />
@@ -350,7 +354,7 @@ export class DeckNode extends LitElement {
       color: var(--deck-node-active-color, var(--rik-accent__text));
     }
     .note {
-      font-size: 0.8em;
+      font-size: var(--deck-node-note-size, 0.95em);
       line-height: 1.25;
       color: var(--deck-node-note-color, var(--rik-text-default--muted));
       opacity: 0.85;
@@ -426,7 +430,7 @@ export class DeckGroup extends LitElement {
        from nowhere. */
     .tag {
       font-family: var(--rik-font-sans);
-      font-size: 0.75em;
+      font-size: var(--deck-graph-tag-size, 0.95em);
       line-height: 1.2;
     }
     .tag {
@@ -485,7 +489,7 @@ export class DeckLane extends LitElement {
        from nowhere. */
     .tag {
       font-family: var(--rik-font-sans);
-      font-size: 0.75em;
+      font-size: var(--deck-graph-tag-size, 0.95em);
       line-height: 1.2;
     }
     .tag {
