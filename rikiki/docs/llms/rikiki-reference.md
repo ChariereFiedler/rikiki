@@ -235,6 +235,14 @@ Direct children of `<deck-root>`. Each is one slide.
 | `deck-takeaway` | Centered punchline, dark | `kicker` | default (e.g. `p.display`, `p.caption`, a `deck-callout`) |
 | `deck-bento` | Bento grid slide · multi-row/column cells share the space | `eyebrow`, `cols` (1..12 or template, default 2), `rows` (1..12 or template, default 1 full-height row), `gap` (1..6 or CSS, default 3), `align`, `justify` | `title` (`<h1>`), default (`deck-cell` children) |
 
+`eyebrow` renders as a short accent-coloured line above the title, in sentence
+case. Write it as a word or two, the way you would say it · "numbers", not
+"NUMBERS". It used to render as a filled pill holding tracked-out small caps,
+which is unreadable at projection distance and is one of the plainest marks of a
+generated page (ADR-002). The tokens are unchanged, so a deck that wants the
+badge back sets `--deck-eyebrow-bg`, `--deck-eyebrow-color`,
+`--deck-eyebrow-radius` and `--deck-eyebrow-padding-x` / `-y`.
+
 ---
 
 ## 5 · Molecules (composed containers)

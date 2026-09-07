@@ -82,16 +82,20 @@ export const helpers = css`
   /* Eyebrow pill · customizable per slide-host via:
        --deck-eyebrow-bg / --deck-eyebrow-color
        --deck-eyebrow-padding-x / --deck-eyebrow-padding-y / --deck-eyebrow-radius */
+  /* The eyebrow · a word that says where in the talk you are.
+     It used to be a pill: an accent-filled badge holding tracked-out small
+     caps, which stacks two of the plainest marks of a generated page and, at
+     projection distance, is a coloured smudge nobody reads. Written plainly it
+     costs one line and can actually be read. The tokens still work · a deck
+     that set --deck-eyebrow-bg gets its badge back. See ADR-002. */
   .lbl {
     display: inline-block;
-    padding: var(--deck-eyebrow-padding-y, 4px) var(--deck-eyebrow-padding-x, 12px);
-    background: var(--deck-eyebrow-bg, var(--rik-accent));
-    color: var(--deck-eyebrow-color, var(--rik-accent__on, var(--rik-surface-inverse)));
-    border-radius: var(--deck-eyebrow-radius, var(--rik-radius-pill));
-    font-size: var(--rik-font-size-xs);
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    padding: var(--deck-eyebrow-padding-y, 0) var(--deck-eyebrow-padding-x, 0);
+    background: var(--deck-eyebrow-bg, transparent);
+    color: var(--deck-eyebrow-color, var(--rik-accent__text));
+    border-radius: var(--deck-eyebrow-radius, 0);
+    font-size: var(--rik-font-size-body);
+    font-weight: 600;
     margin-bottom: var(--rik-space-1);
     align-self: flex-start;
   }
