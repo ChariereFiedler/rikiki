@@ -13,12 +13,14 @@ variables:
   IMAGE_NAME: 'rikiki'
   NODE_VERSION: '24'
   # BUILD_CMD defaults to `npm run build` (template default) · the root
-  # package.json's "build" script handles the cd-into-site dance AND the
-  # post-step that swaps in the standalone Lit bundle (see
-  # scripts/post-build-inline-lit.mjs). Override it here and the post-step
-  # gets bypassed · we learned this the hard way.
+  # package.json's "build" script handles the cd-into-site dance. The old
+  # post-step that swapped in the standalone Lit bundle is gone: dist/index.js
+  # vendors its dependencies locally and no longer reaches any CDN.
   BUILD_OUTPUT: 'site/dist'
-  SPA_FALLBACK: 'true'
+  # The site is statically generated, one file per route · an SPA fallback would
+  # answer 200 with the homepage for every missing path, which makes every HTTP
+  # check in smoke-test pass whatever is deployed.
+  SPA_FALLBACK: 'false'
   # Base images pinned by sha256. Light supply-chain hygiene · a tag
   # refresh upstream no longer silently shifts the build under our feet.
   # Bump by hand when needed (run `docker pull <image>` to see the new
@@ -49,6 +51,7 @@ lint:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
 
 # Quality gate for the published npm package (the site job above only covers
 # site/). Typecheck, lint (biome) and the consistency test suite. Runs in the
@@ -70,6 +73,7 @@ package-check:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
 
 # Render net · loads every fixture deck in a real browser and asserts the
 # engine upgrades, slides render, navigation works and content has no JS errors.
@@ -101,6 +105,7 @@ e2e:
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
 
 # Override the template's build-image job · the shared runner now selects
 # the `docker-container` buildx driver by default, which does not load the
@@ -162,8 +167,8 @@ build-image:
 
 # Smoke test · after Portainer recreates the stack, hit the public URL
 # from outside and assert the routes we care about respond 200, plus a
-# content-level check that the bundle no longer references jsdelivr for
-# marked (CSP-killer regression we've already hit once). Failure here
+# content-level check that the bundle vendors its dependencies locally and
+# reaches no CDN (CSP-killer regression we've already hit once). Failure here
 # is the cue to roll back · the deploy is already live at this point.
 smoke-test:
   stage: deploy
@@ -192,11 +197,18 @@ smoke-test:
       check "/docs/components/"                "200"
       check "/rikiki/dist/index.js"            "200"
       check "/rikiki/dist/vendor/marked.js"    "200"
-      if curl -sk --max-time 10 "${SITE_URL}/rikiki/dist/index.js" | grep -q 'cdn\.jsdelivr\.net/npm/marked'; then
-        echo "FAIL · index.js still imports marked from cdn.jsdelivr.net"
+      # The deployed bundle must import its vendored chunks relatively and reach
+      # no CDN at all. Both halves are asserted: a missing relative import would
+      # make the "no jsdelivr" half pass on an empty file.
+      body=$(curl -sk --max-time 10 "${SITE_URL}/rikiki/dist/index.js")
+      if echo "$body" | grep -q 'cdn\.jsdelivr\.net'; then
+        echo "FAIL · index.js reaches cdn.jsdelivr.net"
+        fail=1
+      elif ! echo "$body" | grep -q './vendor/marked.js'; then
+        echo "FAIL · index.js does not import ./vendor/marked.js · is this the right bundle?"
         fail=1
       else
-        echo "OK   · index.js · marked URL rewritten"
+        echo "OK   · index.js · vendored locally, no CDN"
       fi
       exit $fail
   rules:
@@ -212,12 +224,25 @@ smoke-test:
 publish-npm:
   stage: release
   image: ${NODE_IMAGE}
+  # A tag pipeline used to run this job alone · typecheck, lint, unit tests,
+  # the dist/ drift guard and the browser suite were all skipped, so a tag on a
+  # red commit published anyway. Every gate main runs, a tag now runs too.
+  needs: [lint, package-check, e2e]
   before_script:
     - cd rikiki
     - npm ci --prefer-offline --no-audit
   script:
     - |
       [ -z "$NPM_TOKEN" ] && echo "ERROR: NPM_TOKEN is not set (CI/CD Variables, masked)." && exit 1
+    - |
+      # npm publishes package.json's version, not the tag · a mismatch would
+      # ship something nobody asked for under a tag that says otherwise.
+      manifest=$(node -p "require('./package.json').version")
+      if [ "v$manifest" != "$CI_COMMIT_TAG" ]; then
+        echo "ERROR: tag $CI_COMMIT_TAG does not match package.json version $manifest"
+        exit 1
+      fi
+      echo "OK · tag matches package.json version $manifest"
     - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
     - npm publish --access public
   rules:
