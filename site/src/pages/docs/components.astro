@@ -144,14 +144,14 @@ const layouts: Component[] = [
     ],
     slots: [
       { name: 'title', note: 'Slide title (<h1>)' },
-      { name: '(default)', note: 'deck-cell children' },
+      { name: '(default)', note: 'deck-point children for words, deck-cell for anything measured' },
     ],
     example: `<deck-bento eyebrow="Layout" cols="3" rows="2">
   <h1 slot="title">Cells share the space</h1>
-  <deck-cell span="2x1"><h3>Wide</h3></deck-cell>
+  <deck-cell span="2x1"><deck-punch fit>Measured</deck-punch></deck-cell>
   <deck-cell span="1x2" tone="info"><h3>Tall</h3></deck-cell>
-  <deck-cell tone="ok"><h3>A</h3></deck-cell>
-  <deck-cell tone="warn"><h3>B</h3></deck-cell>
+  <deck-point tone="ok"><h3>A</h3><p>Sized by its words.</p></deck-point>
+  <deck-point tone="warn"><h3>B</h3><p>And lined up with A.</p></deck-point>
 </deck-bento>`,
     tokens: ['--deck-bento-gap'],
   },
@@ -431,11 +431,11 @@ const atoms: Component[] = [
 <Docs
   title="Component library"
   eyebrow="Reference"
-  description="Every <deck-*> element · attributes, slots, tokens, live preview. 34 components total, but you'll only meet five on day one."
+  description="Every <deck-*> element · attributes, slots, tokens, live preview. 35 components total, but you'll only meet five on day one."
 >
 
 <h2 id="mental-model">Mental model · which one do I need?</h2>
-<p>The 34 components fit in five buckets. Use this as a triage map.</p>
+<p>The 35 components fit in five buckets. Use this as a triage map.</p>
 <ul>
   <li>
     <strong>Layouts (7)</strong> · the slide's overall shape ·

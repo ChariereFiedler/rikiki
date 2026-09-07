@@ -55,6 +55,14 @@ export class DeckBento extends LitElement {
         min-height: 0;
         min-width: 0;
       }
+      /* A banded grid's rows are sized by the points in them, and an auto row
+         still absorbs the grid's free space unless told not to · without this
+         the bands stretch and hugging buys nothing. Only in this mode: an
+         explicit rows attribute is a share of the slide, and a share still
+         fills. */
+      :host([banded]) .grid {
+        align-content: start;
+      }
     `,
   ];
 
@@ -65,12 +73,54 @@ export class DeckBento extends LitElement {
   @property({ type: String }) align?: DeckBentoAlign;
   @property({ type: String }) justify?: DeckBentoAlign;
 
+  /**
+   * Line a row of points up band by band.
+   *
+   * A row of items is a row of independent flows, so a title that wraps to a
+   * second line pushes its own body text below its neighbours' and nothing in
+   * the row shares a baseline. Giving the grid one band per child position and
+   * letting each point borrow those bands makes every first child share a row,
+   * every second child the next, and so on.
+   *
+   * Only a row of deck-point, and only one the author did not shape. A
+   * deck-cell is a size container, which reports no height for a band to be
+   * sized from and makes subgrid compute to none, so a row holding one is left
+   * alone rather than half-aligned. So is a row whose items claim their own
+   * span, or whose bento declares its own rows, because bands would fight that.
+   * Uneven items are left alone too · sharing bands there would mean inventing
+   * empty ones, and an invented band is a gap nobody asked for.
+   *
+   * Returns the band count, or 0 when this bento is not such a row.
+   */
+  private _bandCount(): number {
+    if (this.rows) return 0;
+    const items = [...this.children].filter((el) => el.tagName.startsWith('DECK-'));
+    const points = items.filter((el) => el.tagName === 'DECK-POINT');
+    if (points.length < 2 || points.length !== items.length) return 0;
+    if (
+      points.some((p) => p.hasAttribute('span') || p.hasAttribute('col') || p.hasAttribute('row'))
+    )
+      return 0;
+    const counts = points.map((p) => p.childElementCount);
+    if (new Set(counts).size !== 1) return 0;
+    return counts[0] ?? 0;
+  }
+
   override updated() {
     const cols = expandTracks(this.cols);
     const rows = expandTracks(this.rows);
     const gap = expandGap(this.gap);
+    const bands = this._bandCount();
+    for (const item of this.children) {
+      if (item.tagName !== 'DECK-POINT') continue;
+      if (bands > 0) item.setAttribute('banded', String(bands));
+      else item.removeAttribute('banded');
+    }
+    this.toggleAttribute('banded', bands > 0);
     if (cols) this.style.setProperty('--_cols', cols);
-    if (rows) this.style.setProperty('--_rows', rows);
+    if (bands > 0) this.style.setProperty('--_rows', `repeat(${bands}, minmax(0, auto))`);
+    else if (rows) this.style.setProperty('--_rows', rows);
+    else this.style.removeProperty('--_rows');
     if (gap) this.style.setProperty('--_gap', gap);
     if (this.align) this.style.setProperty('--_align', this.align);
     if (this.justify) this.style.setProperty('--_justify', this.justify);

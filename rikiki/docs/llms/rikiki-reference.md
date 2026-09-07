@@ -233,7 +233,7 @@ Direct children of `<deck-root>`. Each is one slide.
 | `deck-feature-cards` | Hero focal block + two detail cards under it | `eyebrow` | `title`, `lead`, default (hero block), `left`, `right` |
 | `deck-photo` | Full-bleed image slide, content on overlay | `src` (required), `position` (CSS `object-position`, default `center`), `darken` (0..1 overlay alpha, default `0.35`), `align` (top/center/bottom, default center), `text-align` (left/center/right, default left) | default slot: any content; style slotted children with `.sub`/`.kicker` classes (these are **CSS classes**, not named slots) |
 | `deck-takeaway` | Centered punchline, dark | `kicker` | default (e.g. `p.display`, `p.caption`, a `deck-callout`) |
-| `deck-bento` | Bento grid slide · multi-row/column cells share the space | `eyebrow`, `cols` (1..12 or template, default 2), `rows` (1..12 or template, default 1 full-height row), `gap` (1..6 or CSS, default 3), `align`, `justify` | `title` (`<h1>`), default (`deck-cell` children) |
+| `deck-bento` | Bento grid slide · multi-row/column cells share the space | `eyebrow`, `cols` (1..12 or template, default 2), `rows` (1..12 or template, default 1 full-height row), `gap` (1..6 or CSS, default 3), `align`, `justify` | `title` (`<h1>`), default (`deck-point` / `deck-cell` children) |
 
 `eyebrow` renders as a short accent-coloured line above the title, in sentence
 case. Write it as a word or two, the way you would say it · "numbers", not
@@ -266,7 +266,8 @@ badge back sets `--deck-eyebrow-bg`, `--deck-eyebrow-color`,
 | `deck-kbd` | Inline key chip | `tone` (`accent`/`ok`) | default = key text |
 | `deck-stack` | Flex stack helper | `gap` (1..6), `direction` (`row`/`column`), `align` (`start`/`center`/`end`/`stretch`), `justify` (`start`/`center`/`end`/`between`/`around`), `fill` (grow to fill the cross axis) | children |
 | `deck-grid` | CSS grid helper | `cols` (1..12 or template), `rows`, `gap` (1..6 or CSS), `align`, `justify`, `fill` | children |
-| `deck-cell` | Bento grid item · a `container-type: size` box so child `cqw`/`cqh` type scales against the cell, not the slide. A slotted `img`/`svg`/`video` auto-fits the cell (object-fit contain); a slotted `table` fills the width | `span` (`"CxR"`, e.g. `2x1`, or a bare column count), `col`/`row` (per-axis override · integer → `span N`, else raw line syntax), `tone` (`info`/`warn`/`ok`/`danger`), `plain` (drop the card chrome), `flat` (keep the surface but drop the border), `align` (**horizontal**: `start`/`center`/`end`/`stretch`), `justify` (**vertical**: `start`/`center`/`end`/`between`) | default (`<h3>` + body, or any block) |
+| `deck-cell` | Bento grid item, sized BY THE GRID · a `container-type: size` box so child `cqw`/`cqh` type scales against the cell, not the slide. A slotted `img`/`svg`/`video` auto-fits the cell (object-fit contain); a slotted `table` fills the width | `span` (`"CxR"`, e.g. `2x1`, or a bare column count), `col`/`row` (per-axis override · integer → `span N`, else raw line syntax), `tone` (`info`/`warn`/`ok`/`danger`), `plain` (drop the card chrome), `flat` (keep the surface but drop the border), `align` (**horizontal**: `start`/`center`/`end`/`stretch`), `justify` (**vertical**: `start`/`center`/`end`/`between`) | default (`<h3>` + body, or any block) |
+| `deck-point` | Bento grid item, sized BY ITS CONTENT · one point of a bento, for words. Not a size container, so a row of points is as tall as the tallest one and a painted point shows no hole under its text; a row made only of points, all with the same number of children and none claiming a span, shares the grid's rows, so a title that wraps to a second line no longer drags its own body text below its neighbours'. Reach for `deck-point` for words and `deck-cell` for anything measured (fit-to-cell text, a diagram, an image) | `span`, `col`/`row`, `tone` (`info`/`warn`/`ok`/`danger`), `plain` (stop painting the chrome · the gutter stays, so the reading edge survives), `flat`, `align` (**horizontal**) · no `justify`, a point has no leftover height to distribute | default (`<h3>` + body) |
 | `deck-fit` | Shrink slotted content to fit its box by font-size (for non-`deck-punch` text content · not for images, which scale geometrically) | `min` (rem, default 1), `max` (rem, default 12) | default = any content |
 | `deck-csv` | Render inline CSV as a styled table (cells are trimmed) | `delimiter` (default `,`), `no-header` (first row is data), `fit` (shrink the table to fit the cell), `fit-min`/`fit-max` (rem bounds, default 0.6/2), `highlight-rows` / `highlight-cols` (1-based, space-separated), `reveal` (one body row per step) | default = raw CSV text |
 
@@ -338,7 +339,7 @@ async function installShiki(opts?: {
   it never patches the component's internals · see *Writing a plugin* below.
 - **Trade-off:** the vendored Shiki bundle is large (every grammar + theme, JS
   engine, no wasm). That is why it is opt-in and lazy · the core bundle stays
-  ~41 KB gzip.
+  ~42 KB gzip.
 
 ---
 

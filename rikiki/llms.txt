@@ -1,6 +1,6 @@
 # Rikiki
 
-> Rikiki is a tiny (~41 KB gzip) Lit Web Components framework for technical
+> Rikiki is a tiny (~42 KB gzip) Lit Web Components framework for technical
 > presentations and product carousels. A deck is plain HTML: load a theme
 > stylesheet, then the component bundle, then write a `<deck-root>` wrapping
 > `deck-*` slide elements. No build step to author or run a deck.
@@ -25,8 +25,8 @@ The framework is opinionated:
 
 Authoring tags fall into four buckets (see the reference for the exhaustive attribute/slot tables):
 
-- **Layouts (slide-level, direct children of `<deck-root>`)**: `<deck-cover>` · `<deck-section>` · `<deck-feature>` · `<deck-split>` · `<deck-feature-cards>` · `<deck-photo>` · `<deck-takeaway>`
-- **Molecules (composed containers)**: `<deck-callout>` · `<deck-card>` · `<deck-md>` · `<deck-mermaid>` · `<deck-stat>` · `<deck-metric-list>` / `<deck-metric>` · `<deck-tier-list>` / `<deck-tier>` / `<deck-tier-arrow>` · `<deck-step-list>` / `<deck-step>` · `<deck-shortcut-list>` / `<deck-shortcut>` / `<deck-kbd>` · `<deck-stack>` · `<deck-grid>`
+- **Layouts (slide-level, direct children of `<deck-root>`)**: `<deck-cover>` · `<deck-section>` · `<deck-feature>` · `<deck-split>` · `<deck-feature-cards>` · `<deck-photo>` · `<deck-takeaway>` · `<deck-bento>`
+- **Molecules (composed containers)**: `<deck-callout>` · `<deck-card>` · `<deck-md>` · `<deck-mermaid>` · `<deck-stat>` · `<deck-metric-list>` / `<deck-metric>` · `<deck-tier-list>` / `<deck-tier>` / `<deck-tier-arrow>` · `<deck-step-list>` / `<deck-step>` · `<deck-shortcut-list>` / `<deck-shortcut>` / `<deck-kbd>` · `<deck-stack>` · `<deck-grid>` · `<deck-point>` / `<deck-cell>` / `<deck-fit>` / `<deck-csv>` (the bento family · reach for `<deck-point>` when a bento item holds words, and `<deck-cell>` when it holds something measured such as fit-to-cell text, a diagram or an image)
 - **Atoms (primitives)**: `<deck-badge>` · `<deck-kicker>` · `<deck-punch>` · `<deck-code>`
 - **Runtime (authoring touchpoints)**: `<deck-root>` (navigation host) · `<deck-notes>` (speaker notes, read by the presenter window)
 
