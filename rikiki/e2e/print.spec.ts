@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -106,6 +106,39 @@ test('navigation chrome is not printed', async ({ page }) => {
   expect(text).not.toMatch(/^\s*\d+\s*\/\s*\d+\s*$/m);
 });
 
+test('every piece of on-screen chrome is hidden under print media', async ({ page }) => {
+  // The text check above missed the keyboard chips and the nav arrows, which
+  // carry no extractable text · they printed in the corners of every deck.
+  // Asking the browser directly is the assertion that actually holds.
+  await page.goto('/rikiki/decks/tests/demo.html');
+  await expect(page.locator('deck-root > [active]')).toHaveCount(1);
+  await page.emulateMedia({ media: 'print' });
+
+  const shown = await page.evaluate(() => {
+    const shadow = document.querySelector('deck-root')?.shadowRoot;
+    if (!shadow) return ['no shadow root'];
+    const ids = ['counter', 'progress', 'nav-arrows', 'kb-hint', 'step-dots'];
+    return ids
+      .map((id) => ({ id, el: shadow.getElementById(id) }))
+      .filter(({ el }) => el && getComputedStyle(el).display !== 'none')
+      .map(({ id }) => id);
+  });
+  expect(shown, `still visible on paper: ${shown.join(', ')}`).toEqual([]);
+});
+
+test('the printed stage drops the zoom-to-fit transform', async ({ page }) => {
+  // A stage still scaled to the viewport would print one shrunken slide.
+  await page.goto('/rikiki/decks/tests/demo.html');
+  await expect(page.locator('deck-root > [active]')).toHaveCount(1);
+  await page.emulateMedia({ media: 'print' });
+
+  const stage = await page.evaluate(() => {
+    const el = document.querySelector('deck-root')?.shadowRoot?.getElementById('stage');
+    return el ? getComputedStyle(el).transform : null;
+  });
+  expect(stage, 'the stage is unscaled on paper').toBe('none');
+});
+
 test('a deck with click stages prints each slide once', async ({ page }) => {
   // Steps are reveals inside one slide · printing every step would multiply
   // pages. The contract: one page per slide, fully revealed.
@@ -190,4 +223,23 @@ test('rikiki export renders the deck to a PDF from the command line', async () =
 
   const text = execFileSync('pdftotext', [out, '-'], { encoding: 'utf8' });
   expect(text.trim().length, 'the exported PDF carries text').toBeGreaterThan(100);
+});
+
+test('the exported PDF is navigable · real pages, an outline and a tagged tree', async () => {
+  // A viewer can only offer page-by-page navigation if the file carries it.
+  // Scroll behaviour itself belongs to the viewer, but the page breaks, the
+  // bookmark outline and the tag tree are ours to ship.
+  const out = join(workDir, 'outline.pdf');
+  execFileSync(
+    process.execPath,
+    ['bin/rikiki.mjs', 'export', 'decks/tests/demo.html', '--output', out],
+    { cwd: PKG_DIR, encoding: 'utf8', stdio: 'pipe' },
+  );
+
+  const info = execFileSync('pdfinfo', [out], { encoding: 'utf8' });
+  expect(info, 'the PDF is tagged, so the outline means something').toMatch(/Tagged:\s+yes/);
+  expect(Number(/Pages:\s+(\d+)/.exec(info)?.[1])).toBeGreaterThan(3);
+
+  const raw = readFileSync(out);
+  expect(raw.includes('/Outlines'), 'the PDF carries a bookmark outline').toBe(true);
 });

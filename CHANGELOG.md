@@ -36,7 +36,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Three browser engines.** Firefox and WebKit join Chromium in Playwright and
   pass the full base contract. They skip only what is genuinely Chromium-only:
   PDF printing and the presenter's multi-screen APIs.
-- **Print and PDF export.** A deck now carries a real print stylesheet: one
+- **Print and PDF export.** (fixed twice: the print rules were declared before
+  the on-screen ones they override, at equal ID specificity, so the keyboard
+  chips and the nav arrows printed in the corners anyway; and the export now
+  carries a bookmark outline and a tag tree, so a viewer can navigate it page by
+  page.) A deck now carries a real print stylesheet: one
   slide per page at the deck's own canvas size (A4 cropped a 16:9 slide),
   backgrounds kept, navigation chrome dropped, click-stages printed once fully
   revealed. `rikiki export deck.html --output deck.pdf` drives a headless
