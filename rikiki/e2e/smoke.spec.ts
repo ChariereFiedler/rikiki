@@ -16,6 +16,7 @@ const DECKS = [
   '/rikiki/decks/tests/per-slide-fluid.html',
   '/rikiki/decks/tests/zoom.html',
   '/rikiki/decks/tests/bento.html',
+  '/rikiki/decks/tests/fill.html',
   // The public examples · served in production from site/public symlinks, and
   // previously covered by nothing at all.
   '/examples/rikiki-tour/index.html',
