@@ -94,9 +94,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   in the showcase deck, which had them swapped.
 
 ### Changed
-- **The navigation rules moved into a domain model** (`src/domain/`) that runs
-  without a browser: slide and step position, chapter outline, 2D coordinates,
-  loop, deep-link grammar. `deck-root` now asks it where to go and applies the
+- **The engine's rules moved out of the component.** A domain layer
+  (`src/domain/`) holds the slide/step position, the chapter outline, the 2D
+  coordinates, the loop, the deep-link grammar and the zoom/pan arithmetic; an
+  application layer (`src/application/`) holds the deep-link use case, the
+  keyboard map and the `mouse-nav` selection; one adapter
+  (`src/infrastructure/`) owns the URL. 165 of these run without a browser, so
+  "what does ArrowUp do in a 2D deck at the top of a chapter?" and "can the
+  reader drag the slide off screen at 4x?" are unit tests now. `deck-root` now asks it where to go and applies the
   answer. The layering and its five gates are recorded in
   `docs/design/adr-001-deck-navigation-domain.md`, and the dependency direction
   is enforced by `scripts/architecture.test.mjs` rather than by convention. No

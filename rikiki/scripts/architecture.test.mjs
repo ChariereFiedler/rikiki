@@ -134,3 +134,50 @@ describe('the application layer orchestrates without reaching for the browser', 
     expect(used, `${rel(file)} uses ${used.join(', ')}`).toEqual([]);
   });
 });
+
+describe('the edge delegates instead of deciding', () => {
+  const EDGE = resolve(PKG_DIR, 'src/runtime/deck-root.ts');
+  const edge = readFileSync(EDGE, 'utf8');
+
+  it('asks the domain and the application where to go', () => {
+    // If these imports disappear, a rule has moved back into the component.
+    expect(edge, 'the edge uses the navigation model').toMatch(/from '\.\.\/domain\//);
+    expect(edge, 'the edge uses the application layer').toMatch(/from '\.\.\/application\//);
+  });
+
+  it('holds no deep-link grammar of its own', () => {
+    // The two hash grammars live in domain/deck-link.ts. A regex here would be
+    // a second, silently diverging copy · which is how the 2D write/read
+    // mismatch survived for so long.
+    expect(codeOf(EDGE)).not.toMatch(/\/\^#\(\\d/);
+  });
+
+  it('holds no slide-index clamping of its own', () => {
+    // Clamping into range is an invariant of the model, not a detail the
+    // component re-implements at each call site.
+    expect(codeOf(EDGE)).not.toMatch(/Math\.min\(this\.slides\.length/);
+    expect(codeOf(EDGE)).not.toMatch(/this\.slides\.length - 1, /);
+  });
+
+  it('holds no zoom or pan arithmetic of its own', () => {
+    expect(codeOf(EDGE), 'pan clamping lives in domain/viewport.ts').not.toMatch(
+      /Math\.max\(-max[XY]/,
+    );
+  });
+});
+
+describe('adapters implement ports, they do not own rules', () => {
+  const INFRA_DIR = resolve(PKG_DIR, 'src/infrastructure');
+  const infraFiles = sourcesIn(INFRA_DIR);
+
+  it('has source files to check', () => {
+    expect(infraFiles.length).toBeGreaterThan(0);
+  });
+
+  it.each(infraFiles)('%s depends only on the layers above it', (file) => {
+    const outward = importsOf(file).filter((s) =>
+      ['runtime', 'layouts', 'atoms', 'molecules', 'plugins'].some((d) => s.includes(`/${d}/`)),
+    );
+    expect(outward, `${rel(file)} reaches into the engine: ${outward.join(', ')}`).toEqual([]);
+  });
+});

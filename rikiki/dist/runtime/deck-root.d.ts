@@ -159,6 +159,13 @@ export declare class DeckRoot extends LitElement {
     private _applyZoom;
     /** Keep the pan within bounds so the magnified stage always covers the
      *  viewport (no gaps); at fit (zoom 1) it forces re-centring. */
+    /** The three fields above, as the viewport model sees them. */
+    private get _view();
+    private set _view(value);
+    /** The logical canvas and the box it is shown in · the two measurements the
+     *  arithmetic in src/domain/viewport.ts needs, and the only DOM it involves. */
+    private get _canvas();
+    private get _box();
     private _clampPan;
     /** Zoom by a factor, keeping the point at viewport (cx, cy) fixed. */
     private _zoomAt;
