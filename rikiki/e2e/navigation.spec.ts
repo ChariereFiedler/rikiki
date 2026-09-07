@@ -68,6 +68,22 @@ test('hash deep-links to a slide and clamps out-of-range links', async ({ page }
   await expectActiveIndex(deck, last);
 });
 
+test('a deep link to a step lands on that step, not on step 0', async ({ page }) => {
+  const deck = createDeckPage(page);
+
+  // The step count of a slide is published by the component on it, and an
+  // opt-in component is a separate module that can register AFTER the engine
+  // has read the fragment. The link was clamped against a count of zero and
+  // silently landed on step 0, so every shared link into the middle of a build
+  // opened the slide neutral · the one thing a deep link exists to avoid.
+  await deck.goto('/rikiki/decks/tests/extras-more.html#7.2');
+
+  await expect
+    .poll(() => page.evaluate(() => document.querySelector('deck-flow-step[active]')?.id ?? null))
+    .toBe('fs-2');
+  expect(await page.evaluate(() => location.hash)).toBe('#7.2');
+});
+
 test('plain wheel navigates; ctrl+wheel is claimed for slide zoom', async ({ page }) => {
   const deck = createDeckPage(page);
   await deck.goto(DEMO);
