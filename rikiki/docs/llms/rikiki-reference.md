@@ -258,7 +258,7 @@ Direct children of `<deck-root>`. Each is one slide.
 | `deck-kbd` | Inline key chip | `tone` (`accent`/`ok`) | default = key text |
 | `deck-stack` | Flex stack helper | `gap` (1..6), `direction` (`row`/`column`), `align` (`start`/`center`/`end`/`stretch`), `justify` (`start`/`center`/`end`/`between`/`around`), `fill` (grow to fill the cross axis) | children |
 | `deck-grid` | CSS grid helper | `cols` (1..12 or template), `rows`, `gap` (1..6 or CSS), `align`, `justify`, `fill` | children |
-| `deck-cell` | Bento grid item · a `container-type: size` box so child `cqw`/`cqh` type scales against the cell, not the slide. A slotted `img`/`svg`/`video` auto-fits the cell (object-fit contain); a slotted `table` fills the width | `span` (`"CxR"`, e.g. `2x1`, or a bare column count), `col`/`row` (per-axis override · integer → `span N`, else raw line syntax), `tone` (`info`/`warn`/`ok`/`danger`), `plain` (drop the card chrome), `flat` (keep the surface but drop the border), `align`/`justify` | default (`<h3>` + body, or any block) |
+| `deck-cell` | Bento grid item · a `container-type: size` box so child `cqw`/`cqh` type scales against the cell, not the slide. A slotted `img`/`svg`/`video` auto-fits the cell (object-fit contain); a slotted `table` fills the width | `span` (`"CxR"`, e.g. `2x1`, or a bare column count), `col`/`row` (per-axis override · integer → `span N`, else raw line syntax), `tone` (`info`/`warn`/`ok`/`danger`), `plain` (drop the card chrome), `flat` (keep the surface but drop the border), `align` (**horizontal**: `start`/`center`/`end`/`stretch`), `justify` (**vertical**: `start`/`center`/`end`/`between`) | default (`<h3>` + body, or any block) |
 | `deck-fit` | Shrink slotted content to fit its box by font-size (for non-`deck-punch` text content · not for images, which scale geometrically) | `min` (rem, default 1), `max` (rem, default 12) | default = any content |
 | `deck-csv` | Render inline CSV as a styled table (cells are trimmed) | `delimiter` (default `,`), `no-header` (first row is data), `fit` (shrink the table to fit the cell), `fit-min`/`fit-max` (rem bounds, default 0.6/2) | default = raw CSV text |
 
@@ -689,6 +689,11 @@ them freely. Assume the deck head loads the theme then `dist/index.js` (§2).
 ```
 
 ### Bento layout (adaptive cells + fit-to-box text)
+
+A `deck-cell` stacks its children in a column, so its two alignment knobs run
+on the axes their names do not suggest: **`align` moves content left/right**,
+**`justify` moves it up/down**. To push a cell's content to the bottom, write
+`justify="end"`, not `align="end"`.
 
 Cells share a multi-row/column grid via `span`. Each `deck-cell` is a size
 container, so `cqw`/`cqh` type (and `<deck-punch fit>`) adapts to the cell it

@@ -31,6 +31,11 @@ import { parseSpan, toTrack } from '../shared/grid-tracks.js';
 export type DeckCellAlign = 'start' | 'center' | 'end' | 'stretch';
 export type DeckCellJustify = 'start' | 'center' | 'end' | 'between';
 
+// A cell lays its children out in a COLUMN, so the two knobs map to the axes a
+// reader does not expect from their names:
+//   align   -> align-items      -> HORIZONTAL (left / right / centre / stretch)
+//   justify -> justify-content  -> VERTICAL   (top / bottom / centre / between)
+// Pinned by e2e/bento.spec.ts · the showcase deck got this backwards once.
 const ALIGN: Record<DeckCellAlign, string> = {
   start: 'flex-start',
   center: 'center',
