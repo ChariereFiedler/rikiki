@@ -106,9 +106,11 @@ describe('the CLI reports a missing optional peer instead of crashing', () => {
   });
 
   it('still bundles a deck when rolldown is present', () => {
+    // bento has no heavy plugin · demo.html would (correctly) exit 1 without
+    // --with-mermaid, which is the bundler contract, not a packaging failure.
     const out = execFileSync(
       process.execPath,
-      ['bin/rikiki.mjs', 'bundle', 'decks/tests/demo.html', '-'],
+      ['bin/rikiki.mjs', 'bundle', 'decks/tests/bento.html', '-'],
       { cwd: PKG_DIR, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
     );
     expect(out).toContain('<deck-root');

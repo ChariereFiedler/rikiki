@@ -5,7 +5,7 @@ import { defineConfig } from 'vitest/config';
 // — excluded here so vitest never tries to load a Playwright spec.
 export default defineConfig({
   test: {
-    include: ['scripts/**/*.test.mjs', 'src/**/*.test.ts'],
+    include: ['scripts/**/*.test.mjs', 'bin/**/*.test.mjs', 'src/**/*.test.ts'],
     exclude: ['e2e/**', 'node_modules/**', 'dist/**'],
     environment: 'node',
   },

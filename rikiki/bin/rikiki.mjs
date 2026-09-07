@@ -19,6 +19,7 @@ import { resolve, dirname, basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { inlineDeck } from './lib/inline.mjs';
 import { starterHtml } from './lib/starter.mjs';
+import { formatExternal, scanExternal } from './lib/scan-external.mjs';
 
 const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -65,16 +66,81 @@ const SHARED_OPTIONS = {
   'no-fonts': { type: 'boolean', default: false },
 };
 
-/** Warn if anything external slipped through. */
-function warnExternal(html) {
-  const hits = [...html.matchAll(/\b(?:https?:)?\/\/[^\s"')]+/g)]
-    .map((m) => m[0])
-    .filter((u) => !u.startsWith('//W') && /cdn|googleapis|gstatic|unpkg|jsdelivr|esm\.sh|fonts\./.test(u));
-  if (hits.length) {
-    console.error('rikiki · WARNING · external references remain:');
-    [...new Set(hits)].slice(0, 5).forEach((u) => console.error('    · ' + u));
+// References that appear in a bundle but are provably never fetched from it.
+// Each one needs a reason, and the offline e2e test is what actually proves it.
+const INERT_IN_BUNDLE = new Map([
+  [
+    './index.js',
+    'deck-presenter computes it as a fallback bundle href · a bundled deck always ' +
+      'takes the inline branch instead (bundleInline is non-empty)',
+  ],
+]);
+
+/** Report anything a "self-contained" file could still fetch at runtime.
+ *  Returns true when the file really reaches for nothing.
+ *
+ *  `inlined` names the heavy runtimes folded into this file. Their loaders keep
+ *  a `new URL('./vendor/…')` in the code, but that branch is dead once the
+ *  global is already set · which is exactly what inlining does. */
+function checkSelfContained(html, inlined = {}) {
+  const dead = new Map(INERT_IN_BUNDLE);
+  if (inlined.mermaid) {
+    dead.set(
+      './vendor/mermaid.min.js',
+      'the mermaid UMD is inlined above and sets window.mermaid, so the loader ' +
+        'returns before it builds this URL',
+    );
   }
-  return hits.length === 0;
+  if (inlined.shiki) {
+    dead.set(
+      './vendor/shiki.js',
+      'the Shiki highlighter is inlined above and registered on globalThis',
+    );
+  }
+  const hits = scanExternal(html);
+  const real = hits.filter((h) => !dead.has(h.ref));
+  const inert = hits.filter((h) => dead.has(h.ref));
+
+  for (const h of inert) {
+    console.error(`rikiki · note · ${h.ref} stays in the file but is never fetched`);
+    console.error(`         (${dead.get(h.ref)})`);
+  }
+  if (real.length === 0) return true;
+
+  console.error('rikiki · ERROR · the bundle is NOT self-contained · it still fetches:');
+  console.error(formatExternal(real));
+  const wantsMermaid = real.some((h) => h.ref.includes('mermaid'));
+  const wantsShiki = real.some((h) => h.ref.includes('shiki'));
+  if (wantsMermaid) console.error('  → this deck uses <deck-mermaid> · re-run with --with-mermaid');
+  if (wantsShiki) console.error('  → this deck uses Shiki · re-run with --with-shiki');
+  return false;
+}
+
+/** Inject the heavy vendor runtimes the inliner then folds into the file.
+ *  mermaid's UMD sets window.mermaid, so deck-mermaid skips its network load. */
+function injectVendors(html, { withMermaid, withShiki }) {
+  // Shiki goes FIRST · it publishes globalThis.__rikikiShiki from a module, and
+  // modules run in document order, so a deck whose own <script> calls
+  // installShiki() must not be reached before the global exists.
+  const first = withShiki
+    ? `<script type="module">\n` +
+      `import { createHighlighter } from '${PKG_ROOT}/dist/vendor/shiki.js';\n` +
+      `globalThis.__rikikiShiki = createHighlighter;\n` +
+      `</script>\n`
+    : '';
+  // mermaid goes LAST · it is a classic script, so it runs during parsing, well
+  // before any module, wherever it sits. Keeping it after the deck's own markup
+  // also keeps the inliner's asset passes away from its 3 MB of minified JS.
+  const last = withMermaid
+    ? `<script src="${PKG_ROOT}/dist/vendor/mermaid.min.js"></script>\n`
+    : '';
+  if (!first && !last) return html;
+
+  let out = html;
+  const headOpen = out.match(/<head\b[^>]*>/i);
+  if (first) out = headOpen ? out.replace(headOpen[0], headOpen[0] + '\n' + first) : first + out;
+  if (last) out = out.includes('</head>') ? out.replace('</head>', last + '</head>') : out + last;
+  return out;
 }
 
 function writeOut(html, outputPath) {
@@ -115,14 +181,24 @@ async function cmdInit(argv) {
   });
   const inlined = await inlineDeck({ html, baseDir: PKG_ROOT, pkgRoot: PKG_ROOT, ...inlineOpts(values) });
   writeOut(inlined, outputPath);
-  if (outputPath !== '-') warnExternal(inlined);
+  // Same contract as `bundle` · a starter that would 404 offline is not a
+  // starter, so the exit code says so.
+  const ok = checkSelfContained(inlined, {
+    mermaid: values['with-mermaid'],
+    shiki: values['with-shiki'],
+  });
+  if (!ok) process.exit(1);
 }
 
 async function cmdBundle(argv) {
   const { values, positionals } = parseArgs({
     args: argv,
     allowPositionals: true,
-    options: { ...SHARED_OPTIONS },
+    options: {
+      'with-mermaid': { type: 'boolean', default: false },
+      'with-shiki': { type: 'boolean', default: false },
+      ...SHARED_OPTIONS,
+    },
   });
   const input = positionals[0];
   if (!input) { console.error('rikiki bundle · missing <deck.html>\n\n' + HELP); process.exit(1); }
@@ -135,10 +211,19 @@ async function cmdBundle(argv) {
     : outArg ? resolve(process.cwd(), outArg)
     : join(dirname(inputPath), basename(inputPath, '.html') + '.bundle.html');
 
-  const html = readFileSync(inputPath, 'utf8');
+  const html = injectVendors(readFileSync(inputPath, 'utf8'), {
+    withMermaid: values['with-mermaid'],
+    withShiki: values['with-shiki'],
+  });
   const inlined = await inlineDeck({ html, baseDir: dirname(inputPath), pkgRoot: PKG_ROOT, ...inlineOpts(values) });
   writeOut(inlined, outputPath);
-  if (outputPath !== '-') warnExternal(inlined);
+  // A bundle that still fetches is a broken deliverable, not a warning · the
+  // exit code is the only thing a CI job or a script can act on.
+  const ok = checkSelfContained(inlined, {
+    mermaid: values['with-mermaid'],
+    shiki: values['with-shiki'],
+  });
+  if (!ok) process.exit(1);
 }
 
 // Consumer-facing skills shipped in the npm tarball. `rikiki-component` and

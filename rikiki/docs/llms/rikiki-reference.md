@@ -913,3 +913,33 @@ slide to the second.
 - **Never render untrusted markdown or diagram source.** If the content comes
   from a form, an API or a CMS field a stranger can edit, sanitise it before it
   reaches `<deck-md>`. rikiki is a presentation engine, not a sandbox.
+
+---
+
+## 16 · The three ways a deck runs
+
+Pick one deliberately · they make different promises.
+
+**Served** · the folder as you wrote it. HTML, CSS and JS stay separate files,
+so editing a slide needs no build. ES modules mean it needs a **static HTTP
+server**, not a double-click: `python3 -m http.server`, `npx serve`, anything.
+Offline once every asset is local.
+
+**Standalone** · one HTML file, produced by `rikiki bundle deck.html out.html`.
+Opens straight from `file://`, so it survives a USB stick, an email attachment
+and an archive. Nothing is fetched at runtime: scripts, styles, fonts and images
+are all inside. The presenter works from it too.
+
+- A deck using `<deck-mermaid>` needs `--with-mermaid` (+~3 MB).
+- A deck using Shiki needs `--with-shiki` (+~9 MB).
+- Without the flag the command **fails** and names the missing runtime · it will
+  not hand you a file that renders an empty diagram offline.
+- `rikiki init --standalone` produces a starter with the same guarantees.
+
+**CDN** · two `<script>`/`<link>` tags from jsdelivr. Zero install, but the deck
+fetches the framework every time it runs, so it needs the network and is **not**
+an archival format. Always pin a version.
+
+The self-containment of a standalone file is enforced, not assumed:
+`e2e/bundle.spec.ts` writes each bundle outside the repository, opens it over
+`file://`, and fails if the page issues a single request beyond itself.
