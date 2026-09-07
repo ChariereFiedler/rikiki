@@ -39,7 +39,7 @@ export class DeckVersus extends LitElement {
     .side {
       min-width: 0;
       padding-top: var(--rik-space-3);
-      border-top: var(--rik-extras-rule-width, 3px) solid
+      border-top: var(--deck-versus-rule-width, 3px) solid
         var(--deck-versus-rule, var(--rik-text-default--faint));
       transition: border-color 0.2s ease, color 0.2s ease;
     }
@@ -57,14 +57,14 @@ export class DeckVersus extends LitElement {
     :host([winner='left']) .side.right ::slotted(*) {
       color: inherit;
     }
-    /* The pivot sits on the rule line, in the metadata voice · a word between
-       two columns, not a badge floating in the middle of the slide. */
+    /* The pivot is the word between the two columns · written plainly, at
+       reading size. It used to be tracked out in the metadata voice, which
+       made a three-letter word into a piece of chrome. */
     .pivot {
       align-self: start;
       padding-top: var(--rik-space-3);
-      color: var(--deck-versus-pivot-color, var(--rik-accent__text));
-      font-size: var(--deck-versus-pivot-size, var(--rik-font-size-sm));
-      letter-spacing: 0.16em;
+      color: var(--deck-versus-pivot-color, var(--rik-text-default--muted));
+      font-size: var(--deck-versus-pivot-size, var(--rik-font-size-body));
     }
     @media print {
       .side { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -81,7 +81,7 @@ export class DeckVersus extends LitElement {
   override render() {
     return html`
       <div class="side left" part="left"><slot name="left"></slot></div>
-      ${this.pivot ? html`<span class="pivot meta" part="pivot" aria-hidden="true">${this.pivot}</span>` : ''}
+      ${this.pivot ? html`<span class="pivot reading" part="pivot" aria-hidden="true">${this.pivot}</span>` : ''}
       <div class="side right" part="right"><slot name="right"></slot></div>
     `;
   }

@@ -6,6 +6,11 @@
 <title>Rikiki · the docs</title>
 <link id="theme-link" rel="stylesheet" href="../../rikiki/tokens.css">
 <script type="module" src="../../rikiki/dist/index.js"></script>
+<!-- Opt-in components · not in the default bundle, loaded one file each. -->
+<script type="module" src="../../rikiki/dist/deck-kpi-grid.js"></script>
+<script type="module" src="../../rikiki/dist/deck-flow.js"></script>
+<script type="module" src="../../rikiki/dist/deck-graph.js"></script>
+<script type="module" src="../../rikiki/dist/deck-icon.js"></script>
 <script>
   // Live theme switch · used by the clickable cards on the Themes slide.
   // Choice is persisted in localStorage so a reload keeps it.
@@ -362,6 +367,39 @@
     &lt;/body&gt;
     &lt;/html&gt;
   </deck-code>
+</deck-feature>
+
+<!-- ════════════════════════════════════════════════════════════════
+     16b · The opt-in components · one mass, two sizes
+     ════════════════════════════════════════════════════════════════ -->
+<deck-feature eyebrow="Opt-in" spread="center">
+  <h1 slot="title">Components you load on purpose</h1>
+  <deck-kpi-grid cols="3">
+    <deck-kpi value="34" label="components in the default bundle"></deck-kpi>
+    <deck-kpi value="14" label="more, one script tag each" tone="accent"></deck-kpi>
+    <deck-kpi value="0" label="network calls at runtime" note="a bundled deck runs from a memory stick"></deck-kpi>
+  </deck-kpi-grid>
+</deck-feature>
+
+<deck-feature eyebrow="Opt-in" spread="center" data-steps="3">
+  <h1 slot="title">A chain marks the stage you are on</h1>
+  <deck-flow cols="4" reveal>
+    <deck-flow-step label="Write" note="one HTML file"></deck-flow-step>
+    <deck-flow-step label="Preview" note="open it"></deck-flow-step>
+    <deck-flow-step label="Bundle" note="one command"></deck-flow-step>
+    <deck-flow-step label="Present" note="offline"></deck-flow-step>
+  </deck-flow>
+</deck-feature>
+
+<deck-feature eyebrow="Opt-in" fill>
+  <h1 slot="title">A diagram is markup, not an image</h1>
+  <deck-graph>
+    <deck-node id="tour-src" at="12,50" boxed icon="document" label="index.html" note="your source"></deck-node>
+    <deck-node id="tour-cli" at="46,50" boxed tone="accent" icon="code" label="rikiki bundle" note="one command"></deck-node>
+    <deck-node id="tour-out" at="82,50" boxed icon="cloud" label="deck.html" note="one file, offline"></deck-node>
+    <deck-edge from="tour-src" to="tour-cli" label="reads"></deck-edge>
+    <deck-edge from="tour-cli" to="tour-out" label="writes"></deck-edge>
+  </deck-graph>
 </deck-feature>
 
 <!-- ════════════════════════════════════════════════════════════════

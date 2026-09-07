@@ -19,13 +19,19 @@ import { ICONS } from '../shared/icon-set.js';
 export class DeckChecklist extends LitElement {
   /* Customization tokens:
        --deck-checklist-gap    space between items
-       --deck-checklist-cols   column count (overrides the cols attribute)  */
+       --deck-checklist-cols   column count (overrides the cols attribute)
+       --deck-checklist-rule   the hairline above each item                */
   static override styles = css`
     :host {
       display: grid;
       grid-template-columns: repeat(var(--deck-checklist-cols, var(--_cols, 1)), minmax(0, 1fr));
-      gap: var(--deck-checklist-gap, var(--rik-space-3));
+      gap: 0 var(--deck-checklist-gap, var(--rik-space-6));
       align-content: start;
+    }
+    /* A hairline above every item · the list reads as one block, and two
+       columns share a baseline grid instead of drifting apart. */
+    ::slotted(deck-check) {
+      border-top: 1px solid var(--deck-checklist-rule, var(--rik-border-default));
     }
   `;
 
@@ -54,23 +60,32 @@ export class DeckCheck extends LitElement {
   static override styles = css`
     :host {
       display: flex;
-      align-items: start;
-      gap: var(--deck-check-gap, var(--rik-space-2));
+      align-items: baseline;
+      gap: var(--deck-check-gap, var(--rik-space-3));
+      padding: var(--deck-check-padding, var(--rik-space-3)) 0;
       font-family: var(--rik-font-sans);
       font-size: var(--rik-font-size-lead);
       line-height: 1.35;
       color: var(--deck-check-color, var(--rik-text-default));
     }
+    /* The marker is a glyph on the page, not a glyph parked in a tinted
+       square · the shape carries the meaning, the tile carried none. */
     .mark {
       flex: none;
-      width: var(--deck-check-size, 1.5em);
-      height: var(--deck-check-size, 1.5em);
-      /* The shape differs too, not only the colour · a red and a green disc are
-         the same disc to a colour-blind reader at the back of a room. */
+      width: var(--deck-check-size, 1.1em);
+      height: var(--deck-check-size, 1.1em);
+      align-self: center;
       color: var(--deck-check-yes, var(--rik-status-success__text));
     }
+    /* The shape differs too, not only the colour · a red and a green disc are
+       the same disc to a colour-blind reader at the back of a room. */
     :host([no]) .mark {
       color: var(--deck-check-no, var(--rik-status-danger__text));
+    }
+    /* What does not hold is stated, not shouted · the weight drops instead of
+       the row turning into a red block. */
+    :host([no]) [part='label'] {
+      color: var(--deck-check-no-color, var(--rik-text-default--muted));
     }
     svg {
       width: 100%;

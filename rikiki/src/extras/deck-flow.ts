@@ -15,7 +15,7 @@
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, css, html } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { signature } from './signature.js';
 
 @customElement('deck-flow')
@@ -47,13 +47,13 @@ export class DeckFlow extends LitElement {
    *  tells the audience nothing while they wait. */
   @property({ type: Boolean, reflect: true }) reveal = false;
 
-  @state() private _step = 0;
-
   override willUpdate(): void {
-    // Number the stages · the sequence is carried by the index and the rule,
-    // not by an arrow drawn between two tiles.
+    // Number the stages · a chain genuinely is a sequence, which is what makes
+    // the figure information rather than ornament.
     const steps = [...this.querySelectorAll('deck-flow-step')];
-    steps.forEach((el, i) => el.setAttribute('index', String(i + 1).padStart(2, '0')));
+    steps.forEach((el, i) => {
+      el.setAttribute('index', String(i + 1));
+    });
     const declared = Number.parseInt(this.cols ?? '', 10);
     const count =
       Number.isFinite(declared) && declared >= 1 && declared <= 8
@@ -79,7 +79,6 @@ export class DeckFlow extends LitElement {
 
   /** Called by deck-root on every step change. */
   applyStep(step: number): void {
-    this._step = step;
     if (!this.reveal) return;
     this.querySelectorAll('deck-flow-step').forEach((el, i) => {
       el.toggleAttribute('done', step > 0 && i + 1 < step);
@@ -104,94 +103,61 @@ export class DeckFlowStep extends LitElement {
   static override styles = [
     signature,
     css`
-    :host {
-      display: flex;
-      flex-direction: column;
-      gap: var(--rik-space-2);
-      font-family: var(--rik-font-sans);
-      min-width: 0;
-      /* A real block. The theme's raised surface measures 1.10 against the
-         page, which is invisible on a projector · the inverse surface is the
-         one high-contrast ground this palette has, and dark blocks on a light
-         field give the chain the presence bare type did not. */
-      background: var(--deck-flow-step-bg, var(--rik-surface-inverse));
-      color: var(--deck-flow-step-color, var(--rik-text-inverse));
-      border-radius: var(--deck-flow-step-radius, var(--rik-radius-md));
-      padding: var(--deck-flow-step-padding, var(--rik-space-4));
-      transition: opacity 0.2s ease;
-    }
-    /* Bare · type under a rule, for a chain that must not compete with the
-       rest of the slide. */
-    :host([plain]) {
-      background: none;
-      color: inherit;
-      padding: var(--rik-space-2) 0 0;
-      border-radius: 0;
-    }
-    /* The rule spans the step and thickens when it is the one being discussed:
-       one device, two states, no second colour and no fill. */
-    /* The rule sits INSIDE the block and reads against it · one device, two
-       grounds, which is what makes plain and boxed feel like one component. */
-    .rule {
-      width: 100%;
-      background: currentColor;
-      opacity: 0.35;
-      transition: background 0.2s ease, height 0.2s ease, opacity 0.2s ease;
-    }
-    :host([done]) .rule,
-    :host([active]) .rule {
-      opacity: 1;
-    }
-    :host([done]) .rule {
-      background: var(--deck-flow-step-accent, var(--rik-accent));
-    }
-    :host([active]) .rule {
-      background: var(--deck-flow-step-accent, var(--rik-accent));
-      height: calc(var(--rik-extras-rule-width, 3px) * 2);
-    }
-    /* Not yet · an outline, not a grey slab. Fading a dark block just turns it
-       into a flat grey rectangle, which reads as broken rather than pending. */
-    :host([pending]) {
-      background: none;
-      color: var(--rik-text-default--faint);
-      box-shadow: inset 0 0 0 1px currentColor;
-    }
-    :host([plain][pending]) {
-      box-shadow: none;
-      opacity: var(--deck-flow-step-pending-opacity, 0.35);
-    }
-    .head {
-      display: flex;
-      align-items: baseline;
-      gap: var(--rik-space-2);
-    }
-    .label {
-      font-size: var(--rik-font-size-lead);
-      font-weight: 700;
-      line-height: 1.15;
-      color: var(--deck-flow-step-label-color, inherit);
-      text-wrap: balance;
-    }
-    .note {
-      font-size: var(--rik-font-size-sm);
-      color: var(--deck-flow-step-note-color, inherit);
-      opacity: 0.72;
-      line-height: 1.35;
-      max-width: 28ch;
-    }
-    .index {
-      color: inherit;
-      opacity: 0.6;
-    }
-    :host([active]) .index {
-      color: var(--deck-flow-step-accent, var(--rik-accent));
-      opacity: 1;
-    }
-    @media print {
-      :host { opacity: 1; }
-      .rule { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    }
-  `,
+      :host {
+        display: flex;
+        flex-direction: column;
+        gap: var(--rik-space-1);
+        min-width: 0;
+        padding: var(--rik-space-3) var(--rik-space-4);
+        border-radius: var(--rik-radius-sm);
+        transition: background 0.2s ease, color 0.2s ease;
+      }
+      /* ONE mass in the chain, and it is the stage being discussed. Every
+         stage used to be a dark block, which is the card kit wearing another
+         colour: four identical slabs carry no hierarchy, so the eye has
+         nothing to land on and the speaker has nothing to point at. */
+      :host([active]:not([plain])) {
+        background: var(--deck-flow-step-bg, var(--rik-surface-inverse));
+        color: var(--deck-flow-step-color, var(--rik-text-inverse));
+      }
+      :host([active][plain]) .label {
+        color: var(--deck-flow-step-accent, var(--rik-accent__text));
+      }
+      /* Not yet · quiet, not outlined and not greyed out. An outline is a
+         second device for a state that only needs less presence. */
+      :host([pending]) {
+        color: var(--rik-text-default--faint);
+      }
+      .head {
+        display: flex;
+        align-items: baseline;
+        gap: var(--rik-space-2);
+      }
+      /* A chain IS a sequence, so it is numbered · one of only two components
+         here that earn a number. Written as a figure, not as a zero-padded
+         mono tag, which numbers nothing better and reads as machine output. */
+      .index {
+        flex: none;
+        font-variant-numeric: tabular-nums;
+        opacity: 0.55;
+      }
+      :host([active]) .index {
+        opacity: 1;
+      }
+      .label {
+        font-weight: 600;
+        color: var(--deck-flow-step-label-color, inherit);
+        text-wrap: balance;
+      }
+      .note {
+        color: var(--deck-flow-step-note-color, inherit);
+        opacity: 0.7;
+        max-width: 28ch;
+      }
+      @media print {
+        :host { opacity: 1; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      }
+    `,
   ];
 
   @property({ type: String }) label?: string;
@@ -201,17 +167,17 @@ export class DeckFlowStep extends LitElement {
    *  and a number does that better than four identical icons. */
   @property({ type: String, reflect: true }) index?: string;
 
-  /** Drop the block and set the stage as type under a rule. */
+  /** Kept for decks that set it · the chain is now plain by default, so this
+   *  only stops the active stage from taking the block. */
   @property({ type: Boolean, reflect: true }) plain = false;
 
   override render() {
     return html`
-      <span class="rule" part="rule"></span>
       <span class="head">
-        ${this.index ? html`<span class="meta index">${this.index}</span>` : ''}
-        ${this.label ? html`<span class="label" part="label">${this.label}</span>` : ''}
+        ${this.index ? html`<span class="index reading" part="index">${this.index}</span>` : ''}
+        ${this.label ? html`<span class="label reading" part="label">${this.label}</span>` : ''}
       </span>
-      ${this.note ? html`<span class="note" part="note">${this.note}</span>` : ''}
+      ${this.note ? html`<span class="note reading" part="note">${this.note}</span>` : ''}
       <slot></slot>
     `;
   }

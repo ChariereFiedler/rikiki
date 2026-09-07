@@ -20,6 +20,13 @@
 import { LitElement, css, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
+/** Mark the columns the author asked for, on one row. */
+function markCells(row: HTMLTableRowElement, cols: Set<number>): void {
+  [...row.cells].forEach((cell, c) => {
+    cell.toggleAttribute('data-mark', cols.has(c + 1));
+  });
+}
+
 @customElement('deck-table')
 export class DeckTable extends LitElement {
   /* Customization tokens:
@@ -89,17 +96,19 @@ export class DeckTable extends LitElement {
     table?.setAttribute('data-rik-table', '');
     this._bodyRows.forEach((row, i) => {
       row.toggleAttribute('data-mark', rows.has(i + 1));
-      [...row.cells].forEach((cell, c) => cell.toggleAttribute('data-mark', cols.has(c + 1)));
+      markCells(row, cols);
     });
     for (const head of this.querySelectorAll<HTMLTableRowElement>('thead tr')) {
-      [...head.cells].forEach((cell, c) => cell.toggleAttribute('data-mark', cols.has(c + 1)));
+      markCells(head, cols);
     }
   }
 
   /** Called by deck-root on every step change. */
   applyStep(step: number): void {
     if (!this.reveal) return;
-    this._bodyRows.forEach((row, i) => row.toggleAttribute('data-pending', i + 1 > step));
+    this._bodyRows.forEach((row, i) => {
+      row.toggleAttribute('data-pending', i + 1 > step);
+    });
   }
 
   override render() {

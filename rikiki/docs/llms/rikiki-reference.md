@@ -638,6 +638,43 @@ path convention (see the §9 caveat about decks that use plain relative paths).
 Copy-paste patterns. Every tag/attribute used here is defined above · combine
 them freely. Assume the deck head loads the theme then `dist/index.js` (§2).
 
+### An opt-in component slide (§20)
+
+The opt-in components are not in `dist/index.js` · load the ones you use, one
+script tag each, after the core bundle. They follow the direction in §20: one
+filled area at most, two type sizes, no label above content.
+
+```html
+<script type="module" src="dist/index.js"></script>
+<script type="module" src="dist/deck-kpi-grid.js"></script>
+<script type="module" src="dist/deck-flow.js"></script>
+```
+
+```html
+<deck-feature eyebrow="Numbers" spread="center">
+  <h1 slot="title">Where the time went</h1>
+  <deck-kpi-grid cols="3">
+    <deck-kpi value="34" label="components in the default bundle"></deck-kpi>
+    <deck-kpi value="14" label="more, one script tag each" tone="accent"></deck-kpi>
+    <deck-kpi value="0" label="network calls at runtime" note="a bundled deck runs offline"></deck-kpi>
+  </deck-kpi-grid>
+</deck-feature>
+
+<deck-feature eyebrow="Chain" spread="center" data-steps="4">
+  <h1 slot="title">One stage at a time</h1>
+  <deck-flow cols="4" reveal>
+    <deck-flow-step label="Write" note="one HTML file"></deck-flow-step>
+    <deck-flow-step label="Preview" note="open it"></deck-flow-step>
+    <deck-flow-step label="Bundle" note="one command"></deck-flow-step>
+    <deck-flow-step label="Present" note="offline"></deck-flow-step>
+  </deck-flow>
+</deck-feature>
+```
+
+At step 0 the whole chain is visible and neutral · its shape is half the
+message. Each step then moves the block to the stage being discussed. A running
+version of both slides is in `examples/rikiki-tour/index.html`.
+
 ### Markdown + code feature slide
 
 ```html
@@ -1072,13 +1109,13 @@ and the rest of the deck is unaffected.
 | `deck-pull` | An excerpt lifted out of a dense slide · text wraps around it when floated | `side` (`full`/`left`/`right`) | default = the excerpt |
 | `deck-persona` | Who is speaking, or who the case study is about | `name`, `person-role` (**not** `role`), `org`, `context`, `src` (a portrait; initials stand in without one), `on-dark` | · |
 | `deck-versus` | A directed comparison as a BLOCK inside a slide (`deck-split` covers the case where the comparison is the whole slide) | `pivot`, `winner` (`left`/`right`) | `left`, `right` |
-| `deck-flow` / `deck-flow-step` | A chain across the width · numbered stages under an accent rule | flow: `cols`, `reveal` · stage: `label`, `note` | stage default = extra content |
+| `deck-flow` / `deck-flow-step` | A chain across the width · numbered stages, and only the active one takes the block | flow: `cols`, `reveal` · stage: `label`, `note` | stage default = extra content |
 | `deck-timeline` / `deck-milestone` | A trajectory in time, on an axis | timeline: `direction` (`row`/`column`), `reveal` · milestone: `date`, `label`, `note`, `tone` | · |
 | `deck-graph` / `deck-node` / `deck-edge` / `deck-group` / `deck-lane` | Nodes, edges, regions and bands · the primitive behind every boxes-and-arrows slide | graph: `layout` (`free`/`row`/`column`), `reveal` · node: `at` (`x,y` in percent), `label`, `note`, `boxed`, `tone`, `icon` · edge: `from`, `to`, `label`, `dashed`, `arrow` (`end` default / `start` / `both` / `none`) · group: `at` (`x,y,w,h`), `label`, `solid` · lane: `at` (`top,height`), `label` | node default = extra content |
 | `deck-table` | A hand-authored table with the hierarchy `deck-csv` has · the table stays in your light DOM, so its cells may carry markup | `highlight-rows`, `highlight-cols`, `reveal` | default = your `<table>` |
 | `deck-annotate` | A screenshot the speaker can point at · numbered markers positioned in percent, revealed one per step through the engine's own step mechanism | `src`, `alt`, `marks` (`x,y,label` triples separated by `\|`, coordinates in percent), `all-at-once`, `no-legend` | · |
 | `deck-agenda` | The running order and where the talk is · reads the deck's own chapter structure, so adding a `deck-section` grows a line | `no-numbers`, `no-jump` | · |
-| `deck-quote` | Someone else's words, attributed · distinct from `deck-punch`, which is the speaker's own line | `author`, `author-role` (**not** `role`, which belongs to ARIA), `size` (`lead`/`big`/`mega`), `plain` (drop the accent rule), `on-dark`, `no-mark` | default = the quoted text |
+| `deck-quote` | Someone else's words, attributed · distinct from `deck-punch`, which is the speaker's own line | `author`, `author-role` (**not** `role`, which belongs to ARIA), `size` (`lead`/`big`/`mega`), `plain` (drop the rule beside the quote), `on-dark`, `no-mark` | default = the quoted text |
 
 Tokens follow the usual per-component convention and every default routes to a
 semantic `--rik-*` token, so both shipped themes are covered:
@@ -1092,29 +1129,45 @@ semantic `--rik-*` token, so both shipped themes are covered:
 `--deck-agenda-current-color`, `--deck-agenda-done-color`, `--deck-agenda-rule`,
 `--deck-agenda-marker`, `--deck-agenda-size`, `--deck-agenda-gap`;
 `--deck-icon-size`, `--deck-icon-color`, `--deck-icon-stroke`;
-`--deck-check-yes`, `--deck-check-no`, `--deck-check-size`;
+`--deck-check-yes`, `--deck-check-no`, `--deck-check-size`,
+`--deck-check-no-color`, `--deck-checklist-rule`;
 `--deck-kpi-value-size`, `--deck-kpi-grid-cols`, `--deck-kpi-grid-rule`;
-`--deck-pull-rule`, `--deck-pull-size`, `--deck-pull-width`;
-`--deck-persona-avatar-size`, `--deck-persona-name-color`;
+`--deck-pull-rule`, `--deck-pull-size`, `--deck-pull-width`, `--deck-pull-font`;
+`--deck-persona-avatar-size`, `--deck-persona-name-color`,
+`--deck-persona-initials-color`, `--deck-persona-rule`;
 `--deck-versus-winner-ring`, `--deck-versus-loser-opacity`, `--deck-versus-pivot-color`;
 `--deck-flow-gap`, `--deck-flow-step-accent`;
 `--deck-timeline-axis`, `--deck-milestone-dot`;
 `--deck-graph-edge`, `--deck-graph-edge-width`, `--deck-graph-ratio`, `--deck-node-rule`,
 `--deck-node-bg`, `--deck-group-border`, `--deck-lane-rule`;
-`--deck-table-mark-bg`.
+`--deck-table-mark-bg`, `--deck-table-mark-color`, `--deck-table-col-color`,
+`--deck-table-col-on-mark`.
 
-Three of them are shared and change every component here at once:
-`--rik-extras-rule` (the accent bar), `--rik-extras-rule-width`,
-`--rik-extras-rule-length`.
+Five are shared and change every component here at once: `--rik-extras-mass`
+and `--rik-extras-mass-text` (the one filled area), `--rik-extras-statement` and
+`--rik-extras-reading` (the two sizes), and `--rik-extras-edge` (the load-bearing
+line).
 
 ### The look these share
 
-One direction, one signature, repeated: **an accent rule marks what matters, a
-mono uppercase micro-label carries the metadata, and structure comes from
-hairlines and space rather than from filled boxes.** That is deliberate. A row
-of identical tinted rectangles gives a projected slide no hierarchy at all ·
-everything reads as equally important, which is the same as nothing being
-important. See `src/extras/signature.ts`.
+One direction, four rules, repeated by every component here. They come from the
+medium rather than from a catalogue: a slide is read from three to ten metres in
+about forty seconds while someone talks over it, and at that distance area, size
+and position survive while hairlines, small caps, thin strokes and pale tints do
+not. See `src/extras/signature.ts` and `docs/design/adr-002-extras-visual-direction.md`.
+
+1. **One mass at most.** A single filled area per component, carrying whatever
+   the markup marks. Nothing marked means nothing filled.
+2. **Two sizes.** A statement size and a reading size, with nothing in between.
+   The absent third step is why no component here has a micro-label.
+3. **No label above content.** Context is written after the thing, at reading
+   size, in sentence case. No all-caps tag, no tracked-out eyebrow.
+4. **A line only where two things would otherwise touch.** A table header, a
+   timeline axis, a graph edge. Never as decoration.
+
+Numbers appear in exactly two components, `deck-flow` and `deck-agenda`, because
+those two genuinely are sequences. Numbering anything else labels an order the
+content does not have.
 
 `reveal` on `deck-flow`, `deck-timeline` and `deck-graph` **emphasises**, it
 does not hide: at step 0 the whole chain, span or diagram is visible and
@@ -1216,6 +1269,13 @@ side by side with a connector between them. `no-connectors` drops the rules.
 `highlight-cols` (1-based, space-separated) and `reveal`, which shows one body
 row per step. Hidden rows keep their space, so the slide never jumps under the
 audience. A revealing table publishes the step count it needs onto its slide.
+
+The marked row is a dark band and the marked column takes colour and weight ·
+one fill per table, never two overlapping tints. Both `deck-csv` and
+`deck-table` follow the same rule, and both are measured: a fill that a room
+cannot tell from the page fails `scripts/theme-contrast.test.mjs`. Knobs:
+`--deck-csv-mark-bg`, `--deck-csv-mark-color`, `--deck-csv-mark-col-color`,
+`--deck-csv-mark-col-on-mark`, `--deck-csv-header-bg`, `--deck-csv-header-rule`.
 
 **A row of figures** · `deck-stat compact` drops the scale so three or four sit
 together in a `deck-grid` and read as one family, instead of each claiming the

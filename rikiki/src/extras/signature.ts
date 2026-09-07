@@ -1,63 +1,80 @@
 // ════════════════════════════════════════════════════════════════
 // RIKIKI · the signature the opt-in components share
 //
-// DIRECTION · engineering editorial. The deck already commits to it: a heavy
-// display face for the statement, a mono micro-label for the metadata, and a
-// short accent rule under the title. The extras repeat that, and nothing else.
+// DIRECTION · one block, one scale. See docs/design/adr-002-extras-visual-
+// direction.md for how it was arrived at and what it replaced.
 //
-// THE SIGNATURE, in three parts, repeated by every component here:
-//   1. a short ACCENT RULE marks what matters (the active step, the winning
-//      side, the current chapter) · never a filled tile
-//   2. a MONO UPPERCASE micro-label carries metadata (a date, a unit, a note)
-//   3. STRUCTURE COMES FROM HAIRLINES AND SPACE, not from boxes
+// The subject is a slide projected in a room, read from three to ten metres in
+// about forty seconds while someone talks over it. That decides everything: at
+// that distance AREA, SIZE and POSITION survive, and hairlines, tracked-out
+// small caps, thin strokes and pale tints do not. The signature this replaces
+// was built entirely out of the second list, which is why the slides read as
+// weak however carefully they were tuned.
 //
-// What that rules out, on purpose · a filled rounded card behind every item, an
-// icon parked in a tinted square, a three-up grid of look-alike tiles. Those
-// read as a template, and at projection distance a row of identical grey
-// rectangles carries no hierarchy at all: everything is equally important,
-// which is the same as nothing being important.
+// THE FOUR RULES, repeated by every component here:
+//   1. ONE MASS at most · a single filled area, carrying whatever the markup
+//      marks. Nothing marked means no fill anywhere.
+//   2. TWO SIZES · statement and reading. There is no third step, which is what
+//      removes the mono micro-label from every component at once.
+//   3. NO LABEL ABOVE CONTENT · context is written after the thing, at reading
+//      size, in sentence case.
+//   4. A LINE ONLY WHERE TWO THINGS WOULD TOUCH · a table header, a timeline
+//      axis, a graph edge. Never as decoration.
+//
+// Note what is absent on purpose: no `.rule` accent bar, no `.meta` mono label,
+// no `.hair`. Removing them from here removes them from fourteen components,
+// which is the point.
 //
 // Every value is a token. No literal colour, no literal length.
 // ════════════════════════════════════════════════════════════════
 
 import { css } from 'lit';
 
-/** The three-part signature · imported by every component in src/extras/. */
+/** The shared signature · imported by every component in src/extras/. */
 export const signature = css`
-  /* 1 · The accent rule. A short bar, not a border around a box. It is the one
-     device that says "this one" across every component here. */
-  .rule {
-    display: block;
-    width: var(--rik-extras-rule-length, 2.5rem);
-    height: var(--rik-extras-rule-width, 3px);
-    background: var(--rik-extras-rule, var(--rik-accent));
-    flex: none;
+  /* 1 · The mass. The one filled area a component is allowed, and it exists
+     only where the markup marked something. Dark on light is the only
+     high-contrast device this palette has: the raised surface measures 1.10
+     against the page, the inverse surface 18.9. */
+  .mass {
+    background: var(--rik-extras-mass, var(--rik-surface-inverse));
+    color: var(--rik-extras-mass-text, var(--rik-text-inverse));
+    padding: var(--rik-space-3) var(--rik-space-4);
+    border-radius: var(--rik-radius-sm);
   }
 
-  /* 2 · The micro-label. Mono, uppercase, tracked out · the metadata voice. */
-  .meta {
-    font-family: var(--rik-font-mono, monospace);
-    font-size: var(--rik-font-size-xs);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--rik-text-default--faint);
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* 3 · The hairline. Structure without enclosure. */
-  .hair {
-    border: 0;
-    border-top: 1px solid var(--rik-border-default);
-    margin: 0;
-  }
-
-  /* The statement voice · a figure or a name, set in the display face. */
-  .display {
+  /* 2 · The two sizes. Statement carries the figure, the name, the answer.
+     Reading carries everything else. There is nothing in between, and adding
+     something in between is how the label tier grows back. */
+  .statement {
     font-family: var(--rik-font-display, var(--rik-font-sans));
-    font-weight: 900;
-    line-height: 1;
+    font-size: var(--rik-extras-statement, var(--rik-font-size-mega));
+    font-weight: 800;
+    line-height: 0.95;
     letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+  }
+  .reading {
+    font-family: var(--rik-font-sans);
+    font-size: var(--rik-extras-reading, var(--rik-font-size-body));
+    font-weight: 400;
+    line-height: 1.35;
+    /* Under 80 characters, so a glance can find the end of the line. */
+    max-width: 62ch;
+  }
+  /* The reading voice, stepped back · a second line of context that must not
+     compete with the first. Colour, never size, and never small caps. */
+  .quiet {
+    color: var(--rik-extras-quiet, var(--rik-text-default--muted));
+  }
+
+  /* 4 · The load-bearing line. Present because two things would otherwise
+     touch, absent everywhere else. */
+  .edge {
+    border: 0;
+    border-top: 1px solid var(--rik-extras-edge, var(--rik-border-default));
+    margin: 0;
   }
 
   /* Motion is one gesture, and it is optional. */
