@@ -84,7 +84,9 @@ export class DeckCover extends LitElement {
     .meta-item strong {
       display: block; font-size: var(--rik-font-size-xs); letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--deck-cover-faint, var(--rik-text-inverse--ghost));
+      /* --ghost is a decoration alpha (0.32) · on the dark cover it measured
+         2.43:1 behind these labels. Muted is the lightest text-grade step. */
+      color: var(--deck-cover-faint, var(--rik-text-inverse--muted));
       margin-bottom: 6px; font-weight: 700;
     }
     .meta-item span {

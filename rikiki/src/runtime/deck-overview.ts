@@ -180,6 +180,19 @@ const STYLES = `
     cursor: pointer;
     transition: border-color 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease, opacity 0.15s;
     box-shadow: var(--rik-elevation-1);
+    /* It is a <button> now · drop the UA chrome, keep the tile look. */
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    appearance: none;
+  }
+  /* The keyboard user must see where they are · without this the grid moves
+     focus invisibly. */
+  :host([overview]) .ov-cell:focus-visible {
+    outline: var(--rik-focus-ring--width, 2px) solid var(--rik-focus-ring, currentColor);
+    outline-offset: var(--rik-focus-ring--offset, 2px);
+    z-index: 2;
   }
   :host([overview]) .ov-cell:hover {
     transform: translateY(-2px) scale(1.015);
@@ -580,7 +593,10 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
         row.appendChild(conn);
       }
       const idx = chap.startIdx + j;
-      const cell = document.createElement('div');
+      // A button, not a div · the overview was unreachable by keyboard, and a
+      // screen reader announced nothing for a cell.
+      const cell = document.createElement('button');
+      cell.type = 'button';
       cell.className = 'ov-cell';
       cell.dataset['idx'] = String(idx);
       cell.dataset['search'] = slideSearchText(slide);
@@ -594,6 +610,15 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
       num.className = 'ov-cell-label';
       num.textContent = String(idx + 1);
       cell.appendChild(num);
+
+      // The visible label is just a number · the accessible name carries the
+      // slide's own text and says which one is current.
+      const summary = slideSearchText(slide).trim().slice(0, 80);
+      cell.setAttribute(
+        'aria-label',
+        `Slide ${idx + 1} of ${total}${summary ? ` · ${summary}` : ''}`,
+      );
+      if (idx === opts.currentIdx) cell.setAttribute('aria-current', 'true');
 
       cell.addEventListener('click', () => opts.onPick(idx));
       row.appendChild(cell);
@@ -677,10 +702,29 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
     });
   });
 
-  // Scroll the current slide into view on open.
+  // Scroll AND focus the current slide on open · scrolling alone leaves a
+  // keyboard user with nothing selected and no way into the grid.
   requestAnimationFrame(() => {
     const cur = grid!.querySelector<HTMLElement>('.ov-cell[data-current]');
-    if (cur) cur.scrollIntoView({ block: 'center' });
+    if (!cur) return;
+    cur.scrollIntoView({ block: 'center' });
+    cur.focus({ preventScroll: true });
+  });
+
+  // Arrow keys walk the visible cells · the grid is a list of buttons, so Tab
+  // works too, but arrows are what someone expects in a slide grid.
+  grid.addEventListener('keydown', (e) => {
+    const key = (e as KeyboardEvent).key;
+    if (key !== 'ArrowLeft' && key !== 'ArrowRight') return;
+    const visible = [...grid!.querySelectorAll<HTMLElement>('.ov-cell')].filter(
+      (c) => !c.dataset['filteredOut'],
+    );
+    const here = visible.indexOf(document.activeElement as HTMLElement);
+    if (here < 0) return;
+    e.preventDefault();
+    const next = visible[here + (key === 'ArrowRight' ? 1 : -1)];
+    next?.focus();
+    next?.scrollIntoView({ block: 'nearest' });
   });
 
   return () => {

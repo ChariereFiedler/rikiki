@@ -124,6 +124,17 @@ export class DeckRoot extends LitElement {
     /* While magnified beyond fit (slide zoom), the deck is grab-to-pan. */
     :host([data-zoomed]) { cursor: grab; }
     :host([data-zoomed][data-panning]) { cursor: grabbing; }
+    /* Announced, never seen · clip-rect rather than display:none, which would
+       drop the region out of the accessibility tree entirely. */
+    #live {
+      position: absolute;
+      width: 1px; height: 1px;
+      margin: -1px; padding: 0; border: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
     #progress {
       position: fixed; bottom: 0; left: 0;
       height: var(--deck-root-progress-height, 3px);
@@ -164,7 +175,9 @@ export class DeckRoot extends LitElement {
       cursor: help;
     }
     #kb-hint:hover { opacity: 1; }
-    #kb-hint kbd {
+    /* Chips are real buttons wearing a <kbd> look · they were <kbd> elements
+       with a click handler, which no keyboard could reach. */
+    #kb-hint button {
       background: var(--rik-surface-raised);
       border: 1px solid var(--rik-border-default);
       border-bottom: 2px solid var(--rik-border-default);
@@ -175,7 +188,12 @@ export class DeckRoot extends LitElement {
       min-width: 16px; text-align: center;
       cursor: pointer;
     }
-    #kb-hint kbd:hover { border-color: var(--rik-accent); }
+    #kb-hint button:hover { border-color: var(--rik-accent); }
+    #kb-hint button:focus-visible,
+    .nav-btn:focus-visible {
+      outline: var(--rik-focus-ring--width, 2px) solid var(--rik-focus-ring, currentColor);
+      outline-offset: var(--rik-focus-ring--offset, 2px);
+    }
     #kb-hint .sep { opacity: 0.4; }
 
     #nav-arrows {
@@ -598,6 +616,17 @@ export class DeckRoot extends LitElement {
    *  `@page` cannot read a custom property, so the rule is written from JS every
    *  time the canvas changes. Without it the browser prints A4 and crops a 16:9
    *  slide down its right edge · the exact symptom the FAQ promised away. */
+  /** What a screen reader hears on a slide change · position first, because
+   *  that is the part a listener cannot get any other way. */
+  private _liveLabel(): string {
+    const total = this.slides.length;
+    if (!total) return '';
+    const slide = this.slides[this.current];
+    const heading = slide?.querySelector('h1, [slot="title"]')?.textContent?.trim();
+    const position = `Slide ${this.current + 1} of ${total}`;
+    return heading ? `${position} · ${heading}` : position;
+  }
+
   private _applyPageSize(): void {
     if (typeof document === 'undefined') return;
     const id = 'rik-deck-page';
@@ -1322,21 +1351,21 @@ export class DeckRoot extends LitElement {
       const chap = this.chapters[c];
       return html`
         <div id="nav-arrows">
-          <button class="nav-btn" title="Previous chapter" ?disabled=${!this.loop && this.current === 0}
+          <button class="nav-btn" aria-label="Previous chapter" title="Previous chapter" ?disabled=${!this.loop && this.current === 0}
             @click=${() => (c > 0 ? this._goToCoords(c - 1, 0) : this._back())}>&lsaquo;</button>
-          <button class="nav-btn" title="Up" ?disabled=${i === 0}
+          <button class="nav-btn" aria-label="Previous slide in chapter" title="Up" ?disabled=${i === 0}
             @click=${() => this._goToCoords(c, i - 1)}>&uarr;</button>
-          <button class="nav-btn" title="Down" ?disabled=${!chap || i + 1 >= chap.slides.length}
+          <button class="nav-btn" aria-label="Next slide in chapter" title="Down" ?disabled=${!chap || i + 1 >= chap.slides.length}
             @click=${() => this._goToCoords(c, i + 1)}>&darr;</button>
-          <button class="nav-btn" title="Next chapter" ?disabled=${!this.loop && atEnd}
+          <button class="nav-btn" aria-label="Next chapter" title="Next chapter" ?disabled=${!this.loop && atEnd}
             @click=${() => (c + 1 < this.chapters.length ? this._goToCoords(c + 1, 0) : this._advance())}>&rsaquo;</button>
         </div>`;
     }
     return html`
       <div id="nav-arrows">
-        <button class="nav-btn" title="Previous" ?disabled=${!this.loop && atStart}
+        <button class="nav-btn" aria-label="Previous slide" title="Previous" ?disabled=${!this.loop && atStart}
           @click=${() => this._back()}>&lsaquo;</button>
-        <button class="nav-btn" title="Next" ?disabled=${!this.loop && atEnd}
+        <button class="nav-btn" aria-label="Next slide" title="Next" ?disabled=${!this.loop && atEnd}
           @click=${() => this._advance()}>&rsaquo;</button>
       </div>`;
   }
@@ -1344,6 +1373,7 @@ export class DeckRoot extends LitElement {
   override render(): unknown {
     return html`
       <div id="progress"></div>
+      <div id="live" aria-live="polite" aria-atomic="true">${this._liveLabel()}</div>
       <div id="counter" class=${this._counterHidden() ? 'hidden' : ''}></div>
       <div id="step-dots"></div>
       ${
@@ -1351,22 +1381,28 @@ export class DeckRoot extends LitElement {
           ? ''
           : html`
       <div id="kb-hint">
-        <kbd title="Previous" @click=${() => this._back()}>←</kbd
-        ><kbd title="Next" @click=${() => this._advance()}>→</kbd>
+        <button type="button" aria-label="Previous slide" title="Previous"
+          @click=${() => this._back()}>←</button
+        ><button type="button" aria-label="Next slide" title="Next"
+          @click=${() => this._advance()}>→</button>
         ${
           this._has2DNav()
-            ? html`<kbd title="Previous" @click=${() => this._back()}>↑</kbd
-            ><kbd title="Next" @click=${() => this._advance()}>↓</kbd>`
+            ? html`<button type="button" aria-label="Previous slide" title="Previous"
+              @click=${() => this._back()}>↑</button
+            ><button type="button" aria-label="Next slide" title="Next"
+              @click=${() => this._advance()}>↓</button>`
             : ''
         }
-        <span>·</span>
-        <kbd title="Overview" @click=${() => {
+        <span aria-hidden="true">·</span>
+        <button type="button" aria-label="Slide overview" title="Overview" @click=${() => {
           this.overview = !this.overview;
-        }}>O</kbd>
-        <span>·</span>
-        <kbd title="Presenter" @click=${() => void this._togglePresenter()}>P</kbd>
-        <span>·</span>
-        <kbd title="Help" @click=${() => void this._toggleHelp()}>?</kbd>
+        }}>O</button>
+        <span aria-hidden="true">·</span>
+        <button type="button" aria-label="Presenter window" title="Presenter"
+          @click=${() => void this._togglePresenter()}>P</button>
+        <span aria-hidden="true">·</span>
+        <button type="button" aria-label="Keyboard help" title="Help"
+          @click=${() => void this._toggleHelp()}>?</button>
       </div>`
       }
       ${this._navArrows()}
