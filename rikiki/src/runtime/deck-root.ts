@@ -18,6 +18,8 @@ import {
   supportsTwoD,
 } from '../domain/deck-outline.js';
 import { publishDeepLink, readDeepLink } from '../application/deep-link.js';
+import { isMove, keyIntent, resolveMove } from '../application/keymap.js';
+import { type MouseMechanism, mouseEnabled } from '../application/mouse-nav.js';
 import { browserLocation } from '../infrastructure/browser-location.js';
 import {
   advance as advanceFrom,
@@ -927,11 +929,8 @@ export class DeckRoot extends LitElement {
     return supportsTwoD(this._outline, this.nav === '2d');
   }
 
-  private _mouseEnabled(kind: 'click' | 'wheel' | 'arrows' | 'aux'): boolean {
-    const v = (this.mouseNav ?? 'all').trim();
-    if (v === 'none') return false;
-    if (v === '' || v === 'all') return true;
-    return v.split(/\s+/).includes(kind);
+  private _mouseEnabled(kind: MouseMechanism): boolean {
+    return mouseEnabled(this.mouseNav, kind);
   }
 
   /** Flat index → {chapter, intra-chapter index}. */
@@ -998,127 +997,62 @@ export class DeckRoot extends LitElement {
     // Any user keyboard input resets the autoplay countdown.
     this._restartAutoplay();
 
-    // Overview mode swallows most keys · only O / Esc / Enter exit it.
-    if (this.overview) {
-      if (e.key === 'Escape' || e.key === 'o' || e.key === 'O' || e.key === 'Enter') {
-        e.preventDefault();
+    // What the key MEANS is decided in src/application/keymap.ts, without a
+    // browser. This handler only carries the decision out.
+    const { intent, preventDefault } = keyIntent({
+      key: e.key,
+      overview: this.overview,
+      blanked: this.blank !== null,
+      zoomEnabled: this._zoomEnabled(),
+      zoomed: this._zoom > 1,
+      twoD: this._has2DNav(),
+    });
+    if (intent === 'none') return;
+    if (preventDefault) e.preventDefault();
+
+    if (isMove(intent)) {
+      this._applyPosition(
+        resolveMove(intent, this._outline, { loop: this.loop }, this._position, this._maxStepsFor),
+      );
+      return;
+    }
+
+    switch (intent) {
+      case 'close-overview':
         this.overview = false;
-      }
-      return;
-    }
-
-    // Black / white screen (PowerPoint-style clicker keys: B, W, period, comma)
-    if (this.blank) {
-      e.preventDefault();
-      this.blank = null;
-      return;
-    }
-    if (e.key === '.' || e.key === 'b' || e.key === 'B') {
-      e.preventDefault();
-      this.blank = 'black';
-      return;
-    }
-    if (e.key === ',' || e.key === 'w' || e.key === 'W') {
-      e.preventDefault();
-      this.blank = 'white';
-      return;
-    }
-
-    // Slide zoom · +/= zoom in, - zoom out (centred), 0 resets to fit.
-    if (this._zoomEnabled() && (e.key === '+' || e.key === '=' || e.key === '-')) {
-      e.preventDefault();
-      const rect = this.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const factor = e.key === '-' ? 1 / DeckRoot.ZOOM_STEP : DeckRoot.ZOOM_STEP;
-      this._zoomAt(factor, cx, cy);
-      return;
-    }
-    if (e.key === '0' && this._zoom > 1) {
-      e.preventDefault();
-      this._resetZoom();
-      return;
-    }
-
-    if (e.key === '?' || e.key === 'h' || e.key === 'H') {
-      void this._toggleHelp();
-      return;
-    }
-    if (e.key === 'Escape') {
-      void this._closeHelp();
-      return;
-    }
-    if (e.key === 'o' || e.key === 'O') {
-      e.preventDefault();
-      this.overview = true;
-      return;
-    }
-    if (e.key === 'p' || e.key === 'P') {
-      e.preventDefault();
-      void this._togglePresenter();
-      return;
-    }
-    if (e.key === 'Home') {
-      this._goTo(0);
-      return;
-    }
-    if (e.key === 'End') {
-      this._goTo(this.slides.length - 1);
-      return;
-    }
-    if (e.key === ' ' || e.key === 'PageDown') {
-      e.preventDefault();
-      this._advance();
-      return;
-    }
-    if (e.key === 'PageUp') {
-      e.preventDefault();
-      this._back();
-      return;
-    }
-
-    if (this._has2DNav()) {
-      // Two axes, both with linear fallback at edges:
-      //   ←/→ : previous/next chapter · falls back to linear at deck edges.
-      //   ↑/↓ : sub-slide within current chapter · falls back to linear at
-      //         chapter boundaries so holding ↓ walks the whole deck.
-      const { c, i } = this._coords(this.current);
-      if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        if (c + 1 < this.chapters.length) this._goToCoords(c + 1, 0);
-        else this._advance();
+        return;
+      case 'open-overview':
+        this.overview = true;
+        return;
+      case 'clear-blank':
+        this.blank = null;
+        return;
+      case 'blank-black':
+        this.blank = 'black';
+        return;
+      case 'blank-white':
+        this.blank = 'white';
+        return;
+      case 'zoom-in':
+      case 'zoom-out': {
+        // Keyboard zoom has no cursor, so it magnifies around the deck's centre.
+        const rect = this.getBoundingClientRect();
+        const factor = intent === 'zoom-out' ? 1 / DeckRoot.ZOOM_STEP : DeckRoot.ZOOM_STEP;
+        this._zoomAt(factor, rect.left + rect.width / 2, rect.top + rect.height / 2);
         return;
       }
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        if (c - 1 >= 0) this._goToCoords(c - 1, 0);
-        else this._back();
+      case 'zoom-reset':
+        this._resetZoom();
         return;
-      }
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        const chap = this.chapters[c];
-        if (chap && i + 1 < chap.slides.length) this._goToCoords(c, i + 1);
-        else this._advance();
+      case 'toggle-help':
+        void this._toggleHelp();
         return;
-      }
-      if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        if (i - 1 >= 0) this._goToCoords(c, i - 1);
-        else this._back();
+      case 'close-help':
+        void this._closeHelp();
         return;
-      }
-    } else {
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-        e.preventDefault();
-        this._advance();
+      case 'toggle-presenter':
+        void this._togglePresenter();
         return;
-      }
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-        e.preventDefault();
-        this._back();
-        return;
-      }
     }
   };
 

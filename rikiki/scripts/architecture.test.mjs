@@ -122,6 +122,11 @@ describe('the application layer orchestrates without reaching for the browser', 
     expect(outward, `${rel(file)} reaches outward: ${outward.join(', ')}`).toEqual([]);
   });
 
+  it.each(applicationFiles)('%s is covered by its own test file', (file) => {
+    const own = file.replace(/\.ts$/, '.test.ts');
+    expect(existsSyncSafe(own), `${rel(file)} has no test`).toBe(true);
+  });
+
   it.each(applicationFiles)('%s touches no browser global', (file) => {
     // The URL, timers and events arrive through ports · that is what makes
     // these rules testable with a plain object instead of a browser.
