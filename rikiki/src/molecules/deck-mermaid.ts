@@ -74,8 +74,20 @@ export class DeckMermaid extends LitElement {
       min-width: 0;
     }
     :host([compact]) { padding: var(--rik-space-2); }
-    .canvas { width: 100%; max-width: 100%; text-align: center; overflow: hidden; }
-    .canvas svg { width: 100% !important; height: auto !important; max-width: 100% !important; max-height: 60cqh; }
+    /* The canvas takes the host's content box so the diagram can be capped
+       against the room it actually has. Capping the SVG at 60cqh alone measures
+       the slide, not this box: a diagram beside a two-line title then drew
+       taller than the space left for it and the box clipped, which
+       \`rikiki check\` reports in pixels. */
+    .canvas {
+      width: 100%; max-width: 100%; height: 100%; min-height: 0;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center; overflow: hidden;
+    }
+    .canvas svg {
+      width: 100% !important; height: auto !important; max-width: 100% !important;
+      max-height: min(60cqh, 100%) !important;
+    }
     :host([compact]) .canvas { max-width: 60%; }
     :host([compact]) .canvas svg { max-height: 22cqh; }
   `;
