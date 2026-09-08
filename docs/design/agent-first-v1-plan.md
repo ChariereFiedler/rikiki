@@ -285,6 +285,9 @@ exécuté, jamais supposé vert.
 | 2026-09-08 | `npx playwright test` après le lot C | 511 passés, 19 ignorés, 3 min 6 |
 | 2026-09-08 | les 11 blocs HTML du guide, mesurés par `check` | aucun diagnostic |
 | 2026-09-08 | commandes du guide depuis le tarball | init, check, render, render --steps, export à 0 |
+| 2026-09-08 | `check` sur les six decks du dépôt | aucun défaut après corrections |
+| 2026-09-08 | `npx vitest run` après le lot D | 681 tests verts |
+| 2026-09-08 | `npx playwright test` après le lot D | 520 passés, 19 ignorés, 3 min 54 |
 
 ---
 
@@ -408,6 +411,37 @@ de slide, ce qui ignore le rembourrage de son propre hôte. Le plafond porte
 désormais sur la boîte réelle. C'est le premier cas où le gel des composants
 cède, et il cède sur un défaut démontré, comme prévu.
 
+### Lot D · cinq briefs, et une première exécution
+
+**Les cinq briefs sont versionnés** dans `docs/design/briefs/` : architecture
+technique, proposition commerciale, bilan chiffré, formation avec notes et
+étapes, contraintes de thème et de durée avec cas multilingue. Chacun liste les
+faits autorisés et rien d'autre ; un chiffre absent de la liste dans le deck
+produit fait échouer le brief. Le premier porte une demande de modification
+ciblée, le deuxième un contenu long à ne pas tronquer.
+
+**Le protocole dit ce qu'on consigne** : l'agent, ses instructions mot pour mot,
+chaque intervention humaine, la sortie de `check` avant et après. Une exécution
+conduite à la main se consigne comme telle et ne se présente jamais comme
+autonome.
+
+**Une exécution du brief 5 est consignée**, avec sa limite écrite en tête : elle
+a été menée dans la session de développement, par l'agent qui venait d'écrire le
+guide. Elle éprouve le parcours, elle ne mesure pas ce qu'obtiendrait un agent
+extérieur. Cette mesure reste à faire.
+
+**Elle a trouvé un défaut que rien ne voyait.** Le deck écrivait
+`<deck-metric label="…">` alors que le libellé vient du contenu : l'attribut
+était ignoré en silence, `check` était vert, et seule l'image montrait un
+nombre sans rien à côté. D'où un nouveau diagnostic, `UNKNOWN_ATTRIBUTE`, qui
+compare les attributs posés à ce que l'élément observe **et** à ce sur quoi sa
+feuille de style sélectionne — un attribut peut n'agir qu'en CSS, ce que la
+première version ignorait au prix de trois faux positifs sur les decks du dépôt.
+
+**Il a immédiatement rapporté quatre défauts réels** : trois recettes du guide
+utilisant des attributs inexistants, et un exemple du dépôt promettant une
+flèche bidirectionnelle que le composant ne dessine pas.
+
 ## 7. Reste à faire
 
 **A3 (reste)** · documenter les trois modes et traiter la curation : un agent
@@ -426,7 +460,11 @@ vérifié à la main, pas encore par un test automatisé.
 **C5 (reste)** · les skills distribués pointent vers le guide, mais les règles
 utiles du skill visuel interne ne sont pas encore extraites.
 
-**Lots D à G** · non commencés.
+**D (reste)** · les quatre autres briefs ne sont pas exécutés, et aucune
+exécution par un agent extérieur au dépôt n'a eu lieu. C'est la limite
+principale du programme à ce stade.
+
+**Lots E à G** · non commencés.
 
 ### Constats mineurs traités
 
