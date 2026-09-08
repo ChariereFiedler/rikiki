@@ -49,7 +49,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   is assembled into a deck and measured by `rikiki check` in the test suite, so
   a renamed component breaks the docs before a reader does.
 
+- **`check` reports an attribute the element does not read.** `deck-metric`
+  takes its label from its content, so `label="Budget consumed"` was dropped in
+  silence and the slide rendered a number with nothing beside it. The new
+  `UNKNOWN_ATTRIBUTE` diagnostic compares what is written against what the
+  element observes *and* what its own stylesheet selects on, because an
+  attribute can act through CSS alone.
+
 ### Fixed
+- **Three recipes in the authoring guide used attributes their components
+  ignore**, and one example deck promised an arrow head that is not drawn.
+  Both found by the diagnostic above, on its first run.
+- **Text size is measured on the author's own text.** A component's chrome is
+  sized by the theme; telling an author to fix a span they never wrote fired on
+  three shipped decks and helped nobody.
 - **A diagram is capped against the box it sits in, not the slide.**
   `deck-mermaid` capped its SVG at 60% of the slide height, which ignores the
   padding of its own host: beside a two-line title the drawing outgrew the room
