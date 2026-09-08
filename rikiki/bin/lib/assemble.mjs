@@ -20,6 +20,7 @@
 // ════════════════════════════════════════════════════════════════
 
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, extname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { ExpectedError } from './cli-error.mjs';
@@ -67,8 +68,22 @@ async function loadConfig(absPath) {
       throw new ExpectedError(`assemble · ${absPath} is not valid JSON · ${cause.message}`);
     }
   }
-  const mod = await import(pathToFileURL(absPath).href);
-  return mod.default ?? mod;
+  try {
+    const mod = await import(pathToFileURL(absPath).href);
+    return mod.default ?? mod;
+  } catch (cause) {
+    // A `.js` file is read as CommonJS or as an ES module depending on the
+    // nearest package.json, and `npm init -y` writes "type": "commonjs". Both
+    // dialects are legitimate here; only the mismatch is worth a message.
+    if (cause?.code === 'ERR_REQUIRE_ESM' || cause instanceof SyntaxError) {
+      throw new ExpectedError(
+        `assemble · ${absPath} looks like an ES module, but the nearest package.json\n` +
+          '  does not declare "type": "module". Use `module.exports = {…}`, rename the\n' +
+          '  file to .mjs, or use a .json config.',
+      );
+    }
+    throw cause;
+  }
 }
 
 /** The default output path: the title, slugged, next to the config. */

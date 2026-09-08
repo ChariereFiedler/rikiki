@@ -40,6 +40,8 @@ const escapeScript = (js) => js.replace(/<\/script>/gi, '<\\/script>');
 
 const isExternal = (url) => /^(https?:)?\/\//i.test(url) || url.startsWith('//');
 
+const FONT_FILE = /\.(woff2?|ttf|otf|eot)(\?.*)?$/i;
+
 const MIME = {
   woff2: 'font/woff2', woff: 'font/woff', ttf: 'font/ttf', otf: 'font/otf',
   svg: 'image/svg+xml', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg',
@@ -152,11 +154,26 @@ function inlineCss(absCssPath, { noFonts } = {}, seen = new Set()) {
     return inlineCss(resolve(dir, href), { noFonts }, seen);
   });
 
+  // A font face whose source is about to disappear has to go with it: `src:
+  // none` is not valid CSS, and the browser drops the whole rule anyway. Better
+  // to leave a stylesheet that says what it means.
+  css = css.replace(/@font-face\s*\{[^}]*\}/g, (rule) => {
+    const sources = [...rule.matchAll(/url\(\s*['"]?([^'")]+)['"]?\s*\)/g)].map((m) => m[1]);
+    if (sources.length === 0) return rule;
+    const kept = sources.filter((ref) => {
+      if (ref.startsWith('data:')) return true;
+      if (isExternal(ref)) return false;
+      if (noFonts && FONT_FILE.test(ref)) return false;
+      return existsSync(resolve(dir, ref.split(/[?#]/)[0]));
+    });
+    return kept.length ? rule : '';
+  });
+
   // url(...) assets · inline local files as data URIs, blank external ones.
   css = css.replace(/url\(\s*['"]?([^'")]+)['"]?\s*\)/g, (m, ref) => {
     if (ref.startsWith('data:') || ref.startsWith('#')) return m;
     if (isExternal(ref)) return 'none';                    // no external fetch
-    if (noFonts && /\.(woff2?|ttf|otf|eot)(\?.*)?$/i.test(ref)) return 'none';
+    if (noFonts && FONT_FILE.test(ref)) return 'none';
     const assetPath = resolve(dir, ref.split(/[?#]/)[0]);
     if (!existsSync(assetPath)) return m;
     return `url(${dataUri(assetPath)})`;
