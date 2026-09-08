@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **`rikiki init` writes a deck you can edit, not only one you can ship.** The
+  default is now a source deck plus the runtime it loads, copied into `rikiki/`
+  beside it. It needs nothing but Node · the previous behaviour, a single
+  self-contained file, moved behind `--standalone` and still needs the optional
+  `rolldown` peer. `--force` is what overwrites an existing deck; without it the
+  command stops rather than replacing someone's work. mermaid and Shiki, ~12 MB
+  together, are copied only when the deck asks for them.
+- **`rikiki assemble` builds one deck from ordered partials.** The multi-file
+  assembler was documented for a year as `build/vite-deck.mjs`, a path `files`
+  never published: the instruction could not be followed from an install. It is
+  now a command of the CLI, with `-` for stdout, a title-derived default output,
+  a `lang` option, and a note on stderr when a configured href will not inline
+  at bundle time. Its `theme` and `bundle` default to the `rikiki/…` spelling
+  `init` writes, which is the one `bundle` rewrites.
+
+### Fixed
+- **A missing optional peer prints its remedy, not a stack trace.** The advice
+  to run `npm i -D rolldown` was buried under six lines of package internals.
+- **The published documents no longer send the reader to files they do not
+  ship.** The README opened on `cp starter.html my-deck.html`, and the shipped
+  skills pointed at `bundle.mjs`, `npm run deck` and `examples/rikiki-tour/` ·
+  none of which exist after `npm install`. A test now walks every published
+  document and fails on any citation of an unpublished path.
+- **The built site no longer carries the whole package.** `site/public/rikiki`
+  was a symlink to `rikiki/`, so a build copied the TypeScript sources, the
+  fixtures and 366 MB of node_modules into `dist/`: 400 MB published. A staging
+  script now copies seven named entries, and a post-build check fails on
+  node_modules, sources, development directories, build manifests or a site over
+  60 MB. The built site weighs 14.3 MB.
 - **Opt-in components, outside the default bundle.** `src/extras/` holds
   components a deck loads on purpose, each its own module. The core stays at 34
   registered elements and a deck that never uses them pays nothing.
