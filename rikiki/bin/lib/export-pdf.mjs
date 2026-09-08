@@ -15,6 +15,7 @@ import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
 import { dirname, extname, join, relative, resolve, sep } from 'node:path';
+import { ExpectedError } from './cli-error.mjs';
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -41,7 +42,7 @@ async function loadChromium() {
       // Try the next one · only the last failure is worth reporting.
     }
   }
-  throw new Error(
+  throw new ExpectedError(
     'rikiki export needs Playwright, which is an optional peer dependency.\n' +
       '  Install it next to rikiki-deck:  npm i -D playwright && npx playwright install chromium\n' +
       '  (it is optional so that decks which only run in your own browser do not\n' +
