@@ -9,7 +9,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { ExpectedError } from './cli-error.mjs';
-import { waitForStillFrame, withDeck } from './browser.mjs';
+import { SLIDE_TITLE_READER, waitForStillFrame, withDeck } from './browser.mjs';
 
 export const MANIFEST_SCHEMA = 1;
 
@@ -28,7 +28,8 @@ export function safeName(index, id) {
 }
 
 /** Read what the deck says about itself · one entry per slide, in order. */
-const readOutline = () => {
+const readOutline = (titleReader) => {
+  const titleOf = new Function('return ' + titleReader)();
   const root = document.querySelector('deck-root');
   if (!root) return [];
   return Array.from(root.children)
@@ -37,8 +38,7 @@ const readOutline = () => {
       index: i + 1,
       id: el.id || null,
       tag: el.tagName.toLowerCase(),
-      title:
-        el.querySelector('h1, [slot="title"]')?.textContent?.trim().replace(/\s+/g, ' ') || null,
+      title: titleOf(el),
     }));
 };
 
@@ -178,7 +178,7 @@ export async function renderDeck(deckPath, { outDir, slides, steps = false, widt
         );
       }
 
-      const outline = await page.evaluate(readOutline);
+      const outline = await page.evaluate(readOutline, SLIDE_TITLE_READER);
       const chosen = selectSlides(outline, slides);
       mkdirSync(outDir, { recursive: true });
 

@@ -119,6 +119,19 @@ export function deckLocation(deckPath) {
   return { rootDir, urlPath: relative(rootDir, abs).split(sep).join('/') };
 }
 
+/** The title of a slide, as a line of text.
+ *
+ *  Runs in the page. `textContent` alone joins across a `<br>`, which is how a
+ *  two-line title became "Clickstages" in a manifest whose whole job is to name
+ *  the slide you are looking at. */
+export const SLIDE_TITLE_READER = `(el) => {
+  const source = el.querySelector('h1, [slot="title"]');
+  if (!source) return null;
+  const copy = source.cloneNode(true);
+  for (const br of copy.querySelectorAll('br')) br.replaceWith(' ');
+  return copy.textContent.trim().replace(/\\s+/g, ' ') || null;
+}`;
+
 /** Wait until nothing is moving any more.
  *
  *  A reveal is a CSS transition, and a screenshot taken while it runs catches
