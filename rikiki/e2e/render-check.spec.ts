@@ -302,3 +302,25 @@ test.describe('check', () => {
     expect(run.stderr).not.toMatch(/ {4}at /);
   });
 });
+
+test.describe('what the report says about itself', () => {
+  test('reads a two-line title as one line of words', () => {
+    // textContent joins across a <br>, which turned "Click<br>stages" into
+    // "Clickstages" in a manifest whose whole job is to name a slide.
+    deck('broken-title', `<deck-section id="chap"><h1>Click<br>stages</h1></deck-section>`);
+    const run = cli(['render', 'broken-title.html', '--out', 'titled']);
+    expect(run.status, run.stderr).toBe(0);
+    const manifest = JSON.parse(readFileSync(join(workDir, 'titled/manifest.json'), 'utf8'));
+    expect(manifest.shots[0].title).toBe('Click stages');
+  });
+
+  test('does not call a clipped slide merely dense', () => {
+    // Both findings have the same cause · saying "nothing is cut yet" under a
+    // line that just counted the cut pixels contradicts it.
+    const lines = Array.from({ length: 40 }, (_, i) => `<p>Ligne ${i}.</p>`).join('');
+    deck('both', `<deck-feature id="full"><h1 slot="title">Full</h1>${lines}</deck-feature>`);
+    const r = report('both');
+    expect(codes(r)).toContain('CONTENT_CLIPPED');
+    expect(codes(r)).not.toContain('SLIDE_DENSE');
+  });
+});

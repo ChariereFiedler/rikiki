@@ -13,7 +13,7 @@
 
 import { basename } from 'node:path';
 import { readFileSync } from 'node:fs';
-import { withDeck } from './browser.mjs';
+import { SLIDE_TITLE_READER, withDeck } from './browser.mjs';
 import { scanExternal } from './scan-external.mjs';
 
 export const REPORT_SCHEMA = 1;
@@ -40,7 +40,8 @@ const diagnostic = (code, severity, message, extra = {}) => ({
 });
 
 /** Everything the page can tell us about itself, in one round trip. */
-const inspectPage = (limits) => {
+const inspectPage = ({ limits, titleReader }) => {
+  const titleOf = new Function('return ' + titleReader)();
   const root = document.querySelector('deck-root');
   const slides = root
     ? Array.from(root.children).filter((el) => el.tagName.toLowerCase().startsWith('deck-'))
@@ -149,7 +150,7 @@ const inspectPage = (limits) => {
       index: index + 1,
       id: slide.id || null,
       tag: slide.tagName.toLowerCase(),
-      title: slide.querySelector('h1, [slot="title"]')?.textContent?.trim().replace(/\s+/g, ' ') || null,
+      title: titleOf(slide),
       clipped,
       fillRatio: box.height ? Math.round((spanned / box.height) * 100) / 100 : 0,
       tiny: tiny.slice(0, 3),
@@ -236,7 +237,8 @@ function diagnose(page, source, limits) {
   // every box is raw HTML: the numbers would be real and meaningless.
   for (const slide of page.runtimeLoaded ? page.slides : []) {
     const where = { slide: slide.index, slideId: slide.id, slideTag: slide.tag };
-    if (slide.clipped && slide.clipped.pixels > limits.clipPx) {
+    const clippedHere = slide.clipped && slide.clipped.pixels > limits.clipPx;
+    if (clippedHere) {
       found.push(
         diagnostic('CONTENT_CLIPPED', SEVERITY.error, `content is cut off · ${slide.clipped.pixels}px do not fit`, {
           ...where,
@@ -246,7 +248,10 @@ function diagnose(page, source, limits) {
         }),
       );
     }
-    if (slide.fillRatio > limits.denseFillRatio) {
+    // Density is what you say about a slide that still fits. Once it is
+    // clipped, saying "nothing is cut yet" underneath contradicts the line
+    // above it.
+    if (!clippedHere && slide.fillRatio > limits.denseFillRatio) {
       found.push(
         diagnostic('SLIDE_DENSE', SEVERITY.warning, `the content spans ${Math.round(slide.fillRatio * 100)}% of the slide height`, {
           ...where,
@@ -293,8 +298,8 @@ export async function checkDeck(deckPath, { timeoutMs = 30_000, width = 1920, he
     deckPath,
     async ({ page, settled, missing, errors }) => {
       const observed = settled
-        ? await page.evaluate(inspectPage, limits)
-        : await page.evaluate(inspectPage, limits).catch(() => ({
+        ? await page.evaluate(inspectPage, { limits, titleReader: SLIDE_TITLE_READER })
+        : await page.evaluate(inspectPage, { limits, titleReader: SLIDE_TITLE_READER }).catch(() => ({
             hasRoot: false,
             runtimeLoaded: false,
             slides: [],
