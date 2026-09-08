@@ -41,7 +41,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   deck, error and missing-resource collection, a settle that waits on animations
   rather than on a clock, and both resources closed even when the command fails.
 
+- **A working guide ships with the package.** `docs/llms/rikiki-workflow.md` is
+  the short path from a brief to a file someone can present: an editorial
+  contract to fill in before writing, a plan whose lines each carry a message
+  and its evidence, nine compositions by intent, the render-and-check loop, the
+  order to try fixes in, and the three delivery shapes. Every HTML block in it
+  is assembled into a deck and measured by `rikiki check` in the test suite, so
+  a renamed component breaks the docs before a reader does.
+
 ### Fixed
+- **A diagram is capped against the box it sits in, not the slide.**
+  `deck-mermaid` capped its SVG at 60% of the slide height, which ignores the
+  padding of its own host: beside a two-line title the drawing outgrew the room
+  left for it and the box clipped. Found by checking a recipe in the new guide.
 - **The cover speaks the deck's language.** Its four meta labels were French
   whatever the document declared, so an English deck opened on "PRÉSENTÉ PAR"
   while every other word the engine writes was in English. They now follow the

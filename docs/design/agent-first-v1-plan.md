@@ -281,6 +281,10 @@ exécuté, jamais supposé vert.
 | 2026-09-08 | `npx vitest run` après le lot B | 680 tests verts, 37 fichiers |
 | 2026-09-08 | `npx playwright test` après le lot B | 463 passés, 19 ignorés, 3 min 6 |
 | 2026-09-08 | recette de render et check depuis le tarball | 8 invocations, codes 0, 1 et 2 conformes |
+| 2026-09-08 | `npx vitest run` après le lot C | 681 tests verts |
+| 2026-09-08 | `npx playwright test` après le lot C | 511 passés, 19 ignorés, 3 min 6 |
+| 2026-09-08 | les 11 blocs HTML du guide, mesurés par `check` | aucun diagnostic |
+| 2026-09-08 | commandes du guide depuis le tarball | init, check, render, render --steps, export à 0 |
 
 ---
 
@@ -378,6 +382,32 @@ réel est sorti de là : le gabarit de `init` écrivait `<deck-*>` dans sa prose
 que l'analyseur transformait en élément fantôme. Le gabarit échoue désormais à
 son propre diagnostic si cela revient.
 
+### Lot C · le workflow agent
+
+**C1, C2 et C4 · un guide portable, distribué avec le paquet.**
+`docs/llms/rikiki-workflow.md` porte les sept étapes, le contrat éditorial en
+huit lignes à consigner avant d'écrire, la règle de ne jamais inventer un
+chiffre ni une source, et la politique de correction ordonnée : couper la
+répétition, raccourcir, déplacer dans les notes, scinder, changer de
+composition, ajuster la typographie en dernier. Le guide dit aussi de modifier
+étroitement, en gardant les identifiants stables.
+
+**C3 · neuf recettes de composition.** Affirmation et preuve, comparaison,
+chiffre et interprétation, processus, code expliqué, architecture, évolution
+dans le temps, décision et compromis, conclusion. Chacune donne l'intention, la
+quantité qui tient, le rôle des notes, le cas de scission et une variante.
+
+**Les exemples sont vérifiés, pas relus.** Un test assemble chaque bloc HTML du
+guide en deck réel et le mesure avec `rikiki check`, la commande même que le
+guide recommande. Onze blocs, zéro diagnostic. Un composant renommé casse le
+test avant que la documentation ne mente.
+
+**Un défaut de composant est sorti de là.** La recette « architecture »
+débordait de 57 pixels : `deck-mermaid` plafonnait son SVG à 60 % de la hauteur
+de slide, ce qui ignore le rembourrage de son propre hôte. Le plafond porte
+désormais sur la boîte réelle. C'est le premier cas où le gel des composants
+cède, et il cède sur un défaut démontré, comme prévu.
+
 ## 7. Reste à faire
 
 **A3 (reste)** · documenter les trois modes et traiter la curation : un agent
@@ -393,7 +423,10 @@ contrôle mécanique plutôt qu'une consigne.
 **B4 (reste)** · le fonctionnement de `render` et `check` depuis le tarball est
 vérifié à la main, pas encore par un test automatisé.
 
-**Lots C à G** · non commencés.
+**C5 (reste)** · les skills distribués pointent vers le guide, mais les règles
+utiles du skill visuel interne ne sont pas encore extraites.
+
+**Lots D à G** · non commencés.
 
 ### Constats mineurs traités
 

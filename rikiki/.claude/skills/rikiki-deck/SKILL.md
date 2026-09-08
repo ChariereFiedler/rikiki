@@ -46,6 +46,13 @@ The short version, because it decides most of the work:
   holds something measured** (fit-to-cell text, a diagram, an image). A row of
   points shares its baselines; a row of cells takes a share of the slide.
 
+## Before the first slide
+
+Read `docs/llms/rikiki-workflow.md` in the installed package. It carries the
+editorial contract to fill in before writing, the nine compositions by intent
+with verified HTML, and the order to try fixes in when a slide is too full.
+This skill is the short form; that guide is the working one.
+
 ## Workflow
 
 1. **Skeleton** — run `npx rikiki init <name>.html`. It writes an editable deck

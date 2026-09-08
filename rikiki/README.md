@@ -45,6 +45,10 @@ npm package:
 
 - **[`llms.txt`](./llms.txt)** — concise capability map and entry points (the
   [llms.txt convention](https://llmstxt.org)).
+- **[`docs/llms/rikiki-workflow.md`](./docs/llms/rikiki-workflow.md)** — the
+  working guide: brief to plan to slides to checks to delivery, with nine
+  compositions by intent whose HTML is verified by the test suite. The one to
+  read first.
 - **[`docs/llms/rikiki-reference.md`](./docs/llms/rikiki-reference.md)** — every
   tag, attribute, slot, design token, plugin, and recipe in one file. Have the
   assistant read this first; tell it not to invent tags or tokens outside it.

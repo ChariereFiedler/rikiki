@@ -17,6 +17,10 @@ The framework is opinionated:
 
 ## Reference
 
+- [Working guide](docs/llms/rikiki-workflow.md): the short path from a brief to a
+  file someone can present · seven steps, an editorial contract, nine
+  compositions by intent with checked HTML, and the order to try fixes in. Start
+  here; it says when to open the reference.
 - [Full LLM reference](docs/llms/rikiki-reference.md) (served at `/rikiki/docs/llms/rikiki-reference.md`): the single source of truth · every tag, attribute, slot, design token, plugin, and recipe in one file. Read this first.
 - [README](README.md): human overview, common patterns, theming notes.
 - `npx rikiki init <name>.html`: writes a starter deck plus the runtime it loads, next to it. Nothing to copy by hand.
