@@ -2,12 +2,14 @@
 // ════════════════════════════════════════════════════════════════
 // rikiki CLI
 //
-//   rikiki init --standalone [name.html] [--title "…"] [--theme rikiki|siliceum]
-//                            [--with-mermaid] [--with-shiki] [--no-fonts]
+//   rikiki init [name.html] [--standalone] [--title "…"] [--theme rikiki|siliceum]
+//               [--with-mermaid] [--with-shiki] [--no-fonts] [--force]
 //   rikiki bundle <deck.html> [out.html|-] [--with-mermaid] [--with-shiki] [--no-fonts]
+//   rikiki assemble <deck.config.js> [out.html|-]
 //   rikiki export <deck.html> [--output deck.pdf]
 //   rikiki skills [--dir <path>] [--force]
 //
+// `init` writes an editable source deck plus the runtime it needs, next to it.
 // `init --standalone` generates a self-contained, share-anywhere deck with no
 // external links. `bundle` folds an existing deck into the same single file.
 // Both use the rolldown-powered inliner in lib/inline.mjs. `skills` installs the
@@ -23,18 +25,24 @@ import { starterHtml } from './lib/starter.mjs';
 import { formatExternal, scanExternal } from './lib/scan-external.mjs';
 import { pruneIcons } from './lib/prune-icons.mjs';
 import { exportPdf } from './lib/export-pdf.mjs';
+import { ExpectedError, formatCliError } from './lib/cli-error.mjs';
+import { assembleDeck } from './lib/assemble.mjs';
 
 const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 const HELP = `rikiki · self-contained slide decks
 
-  rikiki init --standalone [name.html] [options]   generate a new single-file deck
+  rikiki init [name.html] [options]                 write an editable deck + its runtime
+  rikiki init --standalone [name.html] [options]    generate a single self-contained file
+  rikiki assemble <deck.config.js> [out.html|-]     build one deck from ordered partials
   rikiki bundle <deck.html> [out.html|-] [options]  fold an existing deck into one file
   rikiki export <deck.html> [--output deck.pdf]     render the deck to PDF, one slide per page
   rikiki skills [--dir <path>] [--force]            install the Claude Code skills into a project
 
 Options:
   --title "…"          deck title (init)
+  --standalone         init: emit one self-contained file instead of a source deck
+  --force              init: overwrite an existing deck
   --theme rikiki|siliceum   theme · siliceum inlines its local fonts (default: rikiki)
   --with-mermaid       inline the mermaid runtime (+~3 MB)
   --with-shiki         inline the Shiki highlighter (+~9 MB)
@@ -155,12 +163,30 @@ function writeOut(html, outputPath) {
   console.error(`rikiki · wrote ${outputPath} · ${kb} KB`);
 }
 
+// The runtime a source deck loads from next to itself. `dist/vendor` also
+// holds lit and marked, which every deck needs · only the two heavy plugin
+// payloads (~12 MB) wait until a deck asks for them.
+const ASSET_DIR = 'rikiki';
+const RUNTIME_ASSETS = ['dist', 'tokens.css', 'themes', 'fonts'];
+const HEAVY_VENDORS = /[\\/]dist[\\/]vendor[\\/](mermaid\.min\.js|shiki\.js)$/;
+
+/** Copy the runtime next to the deck. */
+function copyRuntime(destRoot, { withVendor }) {
+  const skipVendor = (src) => withVendor || !HEAVY_VENDORS.test(src);
+  for (const asset of RUNTIME_ASSETS) {
+    const src = join(PKG_ROOT, asset);
+    if (!existsSync(src)) continue; // a trimmed install (e.g. no fonts) stays usable
+    cpSync(src, join(destRoot, asset), { recursive: true, filter: skipVendor });
+  }
+}
+
 async function cmdInit(argv) {
   const { values, positionals } = parseArgs({
     args: argv,
     allowPositionals: true,
     options: {
       standalone: { type: 'boolean', default: false },
+      force: { type: 'boolean', default: false },
       title: { type: 'string' },
       theme: { type: 'string', default: 'rikiki' },
       'with-mermaid': { type: 'boolean', default: false },
@@ -169,21 +195,42 @@ async function cmdInit(argv) {
     },
   });
 
-  // `init` only produces standalone single-file decks for now · accept the flag
-  // explicitly but don't require it (the whole point is the self-contained file).
-  if (!values.standalone) {
-    console.error('rikiki · init currently generates standalone single-file decks · assuming --standalone');
-  }
   const theme = values.theme === 'siliceum' ? 'siliceum' : 'rikiki';
   const name = positionals[0] || 'slides.html';
   const outputPath = name === '-' ? '-' : resolve(process.cwd(), name.endsWith('.html') ? name : name + '.html');
   const title = values.title || basename(name, '.html').replace(/[-_]/g, ' ') || 'My deck';
 
-  const html = starterHtml({
+  // Someone's deck is not ours to replace · the second `init` in a directory is
+  // far more often a mistake than an intent.
+  if (outputPath !== '-' && existsSync(outputPath) && !values.force) {
+    throw new ExpectedError(`init · ${name} already exists · pass --force to overwrite it`);
+  }
+
+  const starter = {
     title, theme,
     withMermaid: values['with-mermaid'],
     withShiki: values['with-shiki'],
-  });
+  };
+
+  // Default: a source deck. It needs nothing but Node, stays readable, and is
+  // what `bundle` later folds into a single file.
+  if (!values.standalone) {
+    const html = starterHtml({ ...starter, assetBase: ASSET_DIR + '/' });
+    if (outputPath === '-') {
+      console.error(`rikiki · note · run \`rikiki init <name>.html\` to also copy the runtime into ./${ASSET_DIR}/`);
+      writeOut(html, outputPath);
+      return;
+    }
+    copyRuntime(join(dirname(outputPath), ASSET_DIR), {
+      withVendor: values['with-mermaid'] || values['with-shiki'],
+    });
+    writeOut(html, outputPath);
+    console.error(`rikiki · runtime copied to ./${ASSET_DIR}/ · serve this folder over HTTP, ES modules do not load from file://`);
+    console.error(`rikiki · next · edit ${basename(outputPath)} · then \`rikiki bundle ${basename(outputPath)}\` for one shareable file`);
+    return;
+  }
+
+  const html = starterHtml(starter);
   const inlined = await inlineDeck({ html, baseDir: PKG_ROOT, pkgRoot: PKG_ROOT, ...inlineOpts(values) });
   writeOut(inlined, outputPath);
   // Same contract as `bundle` · a starter that would 404 offline is not a
@@ -193,6 +240,20 @@ async function cmdInit(argv) {
     shiki: values['with-shiki'],
   });
   if (!ok) process.exit(1);
+}
+
+async function cmdAssemble(argv) {
+  const { positionals } = parseArgs({ args: argv, allowPositionals: true, options: {} });
+  const config = positionals[0];
+  if (!config) throw new ExpectedError('assemble · missing <deck.config.{js,json}>\n\n' + HELP);
+
+  const { html, outputPath, slides, unbundleable } = await assembleDeck(config, positionals[1]);
+  for (const href of unbundleable) {
+    console.error(`rikiki · note · ${href} is not a \`rikiki/…\` path · it serves, but \`rikiki bundle\` will not inline it`);
+  }
+  if (!outputPath) { process.stdout.write(html); return; }
+  const kb = (Buffer.byteLength(html) / 1024).toFixed(0);
+  console.error(`rikiki · wrote ${outputPath} · ${slides} partial(s) · ${kb} KB`);
 }
 
 async function cmdExport(argv) {
@@ -317,12 +378,13 @@ function cmdSkills(argv) {
 const [cmd, ...rest] = process.argv.slice(2);
 try {
   if (cmd === 'init') await cmdInit(rest);
+  else if (cmd === 'assemble') await cmdAssemble(rest);
   else if (cmd === 'bundle') await cmdBundle(rest);
   else if (cmd === 'export') await cmdExport(rest);
   else if (cmd === 'skills') cmdSkills(rest);
   else if (!cmd || cmd === '-h' || cmd === '--help' || cmd === 'help') { console.log(HELP); }
   else { console.error('rikiki · unknown command: ' + cmd + '\n\n' + HELP); process.exit(1); }
 } catch (e) {
-  console.error('rikiki · error · ' + (e && e.stack || e));
+  console.error(formatCliError(e));
   process.exit(1);
 }

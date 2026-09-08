@@ -11,6 +11,7 @@
 import { readFileSync, existsSync, writeFileSync, rmSync, mkdtempSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { ExpectedError } from './cli-error.mjs';
 
 // rolldown is an OPTIONAL peer dependency · it weighs ~55 MB of native bindings
 // and is only ever needed by `rikiki bundle` / `rikiki init --standalone`.
@@ -22,7 +23,7 @@ async function loadRolldown() {
   try {
     ({ rolldown: rolldownFn } = await import('rolldown'));
   } catch (cause) {
-    throw new Error(
+    throw new ExpectedError(
       'rikiki bundle needs rolldown, which is an optional peer dependency.\n' +
         '  Install it next to rikiki-deck:  npm i -D rolldown\n' +
         '  (it is optional so that decks which only load the runtime do not pull ~55 MB of native bindings)',
@@ -57,10 +58,17 @@ function dataUri(absPath) {
  *  the deck, so a deck may use whichever path style it likes. */
 function resolveRef(ref, baseDir, pkgRoot) {
   const clean = ref.replace(/^\//, '').replace(/.*?rikiki\//, '');
-  const candidates = [
-    resolve(baseDir, ref),
-    /(?:^|\/)(dist|themes)\/|tokens\.css$/.test(ref) ? resolve(pkgRoot, clean) : null,
-  ].filter(Boolean);
+  const inPackage = /(?:^|\/)(dist|themes)\/|tokens\.css$/.test(ref)
+    ? resolve(pkgRoot, clean)
+    : null;
+  // A `rikiki/…` ref names a package asset. `rikiki init` copies those next to
+  // the deck so a browser can fetch them over HTTP, but that copy has no
+  // node_modules · bundling its entry would fail to resolve `lit`. The package
+  // is the source of truth for anything spelled that way; the copy is a mirror.
+  const namesPackageAsset = /(?:^|\/)rikiki\//.test(ref);
+  const candidates = (
+    namesPackageAsset ? [inPackage, resolve(baseDir, ref)] : [resolve(baseDir, ref), inPackage]
+  ).filter(Boolean);
   return candidates.find(existsSync) ?? candidates[0];
 }
 
