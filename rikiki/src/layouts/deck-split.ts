@@ -47,7 +47,6 @@ export class DeckSplit extends LitElement {
       gap: var(--_col-gap, var(--deck-split-col-gap, var(--rik-space-3)));
       overflow: hidden;
     }
-    .col.center { justify-content: center; }
 
 
     /* Directed comparison · a before/after has a reading direction, a pivot in

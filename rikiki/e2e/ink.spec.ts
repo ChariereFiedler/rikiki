@@ -209,15 +209,22 @@ for (const deck of DECKS) {
       expect(ink.coverage, `slide ${slide.index} fills its whole field`).toBeLessThan(1);
       expect(ink.coverage, `slide ${slide.index} is blank`).toBeGreaterThan(0);
 
-      // The only judgement made here, and it is the layout's own · asked in
-      // the FIELD's frame, because that is the box `spread` governs. Asking it
-      // of the slide would hold a centred body to a promise the head makes it
-      // impossible to keep.
-      if (slide.spread === 'center' && inField !== null && (inField < 1 / 3 || inField > 2 / 3)) {
-        failures.push(
-          `slide ${slide.index} (${slide.id}, ${regions.tag}) asks for spread="center" but its ` +
-            `ink centres at ${(inField * 100).toFixed(0)}% of its field`,
-        );
+      /* The only judgement made here, and it is the layout's own.
+         It asks where the FIELD sits inside the room it was given, not where
+         the ink sits inside the field. The second question cannot fail: the
+         field IS the union of the author's boxes, so its ink fills it and the
+         centroid lands mid-field whatever the layout did · which is how a
+         deck-split whose spread is inert kept passing this assertion. */
+      if (slide.spread === 'center' && regions.field && regions.available.height > 0) {
+        const centre =
+          (regions.field.top + regions.field.height / 2 - regions.available.top) /
+          regions.available.height;
+        if (centre < 1 / 3 || centre > 2 / 3) {
+          failures.push(
+            `slide ${slide.index} (${slide.id}, ${regions.tag}) asks for spread="center" but its ` +
+              `content sits at ${(centre * 100).toFixed(0)}% of the room under its title`,
+          );
+        }
       }
     }
 
