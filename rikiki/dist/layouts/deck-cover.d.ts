@@ -13,6 +13,12 @@ export declare class DeckCover extends LitElement {
     durationLabel?: string;
     audienceLabel?: string;
     runtimeLabel?: string;
+    /** The meta labels, in the language the document declares.
+     *
+     *  These four words used to be French whatever the deck said, so an English
+     *  deck opened on "PRÉSENTÉ PAR". Everything else the engine writes is in
+     *  English; the cover is the only place that spoke for the author. */
+    private labels;
     render(): import("lit-html").TemplateResult<1>;
 }
 declare global {
