@@ -4,9 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "dev": "node scripts/stage-assets.mjs && astro dev",
+    "build": "node scripts/stage-assets.mjs && astro build && node scripts/check-dist.mjs",
     "preview": "astro preview",
+    "stage": "node scripts/stage-assets.mjs",
+    "check:dist": "node scripts/check-dist.mjs",
     "lint:dashes": "node scripts/lint-dashes.mjs",
     "lint:links": "node scripts/lint-links.mjs",
     "lint": "npm run lint:dashes && npm run lint:links && astro check"
