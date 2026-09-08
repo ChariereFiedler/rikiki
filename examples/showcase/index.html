@@ -45,7 +45,7 @@
 </deck-feature>
 
 <deck-split eyebrow="Two columns" cols="1-1" gap="5">
-  <h1 slot="title">Two columns, equal weight</h1>
+  <h1 slot="title">Two columns of equal weight let a reader compare them directly</h1>
   <deck-stack slot="left" gap="3">
     <deck-callout type="info">A callout carries the aside that would otherwise crowd the prose.</deck-callout>
     <deck-md>Prose lives in **markdown**, with `inline code` and lists.
@@ -61,7 +61,7 @@
 </deck-split>
 
 <deck-split eyebrow="Asymmetric" cols="2-1" gap="5">
-  <h1 slot="title">Two columns, one leading</h1>
+  <h1 slot="title">An asymmetric split gives code the room and its commentary the margin</h1>
   <deck-code slot="left" lang="js">const deck = document.querySelector('deck-root');
 
 deck.addEventListener('slide-change', (e) => {
@@ -75,7 +75,7 @@ deck.addEventListener('slide-change', (e) => {
 </deck-split>
 
 <deck-split eyebrow="Three columns" cols="3" gap="4">
-  <h1 slot="title">Three columns, one idea each</h1>
+  <h1 slot="title">Three columns carry three ideas, and stop working at a fourth</h1>
   <deck-stack slot="a" gap="2">
     <deck-icon name="database" size="xl" tone="accent"></deck-icon>
     <h3>What goes in</h3>
@@ -114,7 +114,7 @@ deck.addEventListener('slide-change', (e) => {
 <deck-section num="Two"><h1>Rows that<br><em>line up</em></h1></deck-section>
 
 <deck-bento eyebrow="A row of points" cols="3">
-  <h1 slot="title">Three points, one baseline</h1>
+  <h1 slot="title">A row of points shares one baseline, whatever its titles do</h1>
   <deck-point plain>
     <h3>Sized by its words</h3>
     <p>A point is as tall as what it holds, so nothing paints a hole under its text.</p>
@@ -150,7 +150,7 @@ deck.addEventListener('slide-change', (e) => {
 </deck-bento>
 
 <deck-bento eyebrow="A bento" cols="4" rows="2" gap="3">
-  <h1 slot="title">Cells share the space</h1>
+  <h1 slot="title">A cell takes a share of the slide, not a share of its own content</h1>
   <deck-cell span="2x2" tone="info">
     <deck-punch fit>The wide one holds the number.</deck-punch>
   </deck-cell>
@@ -164,7 +164,7 @@ deck.addEventListener('slide-change', (e) => {
 <deck-section num="Three"><h1>Numbers, and<br>what they <em>mean</em></h1></deck-section>
 
 <deck-feature eyebrow="Figures" spread="center">
-  <h1 slot="title">Several figures, one family</h1>
+  <h1 slot="title">Several figures read as one family when they share a scale</h1>
   <deck-kpi-grid cols="3">
     <deck-kpi value="35" label="components in the default bundle"></deck-kpi>
     <deck-kpi value="14" label="more, one script tag each" tone="accent"></deck-kpi>
@@ -173,7 +173,7 @@ deck.addEventListener('slide-change', (e) => {
 </deck-feature>
 
 <deck-feature eyebrow="Proportions" spread="center">
-  <h1 slot="title">A proportion, drawn</h1>
+  <h1 slot="title">A proportion is easier to judge drawn than written as a number</h1>
   <deck-stack gap="4">
     <deck-bar value="42" total="56" label="initial load, of the 56 KB budget" tone="accent"></deck-bar>
     <deck-bar label="where the bytes go" segments="engine:25:accent|lit:7:info|marked:10:muted"></deck-bar>
@@ -201,7 +201,7 @@ deck.addEventListener('slide-change', (e) => {
 </deck-split>
 
 <deck-feature eyebrow="A table" spread="center">
-  <h1 slot="title">A table with a hierarchy</h1>
+  <h1 slot="title">A table needs one marked row, or the eye has nowhere to land</h1>
   <deck-table highlight-rows="2">
     <table>
       <thead><tr><th>Framework</th><th>Runtime</th><th>Build</th><th>Opens in 2031</th></tr></thead>
@@ -219,7 +219,7 @@ deck.addEventListener('slide-change', (e) => {
 <deck-section num="Four"><h1>Chains, maps<br>and <em>time</em></h1></deck-section>
 
 <deck-feature eyebrow="A chain" spread="center" data-steps="4">
-  <h1 slot="title">One stage at a time</h1>
+  <h1 slot="title">A chain shows its whole shape before it walks you through it</h1>
   <deck-flow cols="4" reveal>
     <deck-flow-step label="Write" note="one HTML file"></deck-flow-step>
     <deck-flow-step label="Preview" note="open it"></deck-flow-step>
@@ -230,7 +230,7 @@ deck.addEventListener('slide-change', (e) => {
 </deck-feature>
 
 <deck-feature eyebrow="A map" fill>
-  <h1 slot="title">Boxes, arrows and regions</h1>
+  <h1 slot="title">An architecture reads as boxes and arrows, never as paragraphs</h1>
   <deck-graph>
     <deck-lane at="6,34" label="edge"></deck-lane>
     <deck-group at="44,52,52,42" label="vpc · eu-west-3"></deck-group>
@@ -245,7 +245,7 @@ deck.addEventListener('slide-change', (e) => {
 </deck-feature>
 
 <deck-feature eyebrow="A trajectory" spread="center">
-  <h1 slot="title">Where it has been</h1>
+  <h1 slot="title">A timeline earns its axis only when the dates carry meaning</h1>
   <deck-timeline direction="row">
     <deck-milestone date="v0.1" label="Public MVP" note="TypeScript sources"></deck-milestone>
     <deck-milestone date="v0.3" label="Presenter" note="second screen"></deck-milestone>
@@ -271,7 +271,7 @@ deck.addEventListener('slide-change', (e) => {
 </deck-split>
 
 <deck-photo>
-  <h1>A full-bleed picture</h1>
+  <h1>A full-bleed picture says what a paragraph would take too long to say</h1>
   <p class="caption on-dark">Without a src this stays the inverse surface · the layout is the point.</p>
 </deck-photo>
 

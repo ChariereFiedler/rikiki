@@ -112,7 +112,7 @@
      3 · Three promises · <deck-stat> from the framework
      ════════════════════════════════════════════════════════════════ -->
 <deck-split eyebrow="Promises" cols="3" gap="5">
-  <h1 slot="title">Three on-purpose constraints</h1>
+  <h1 slot="title">Three constraints were chosen on purpose, and each one costs something</h1>
   <deck-stat slot="a" num="01" tone="orange">
     <h3 slot="claim">Open <code>index.html</code></h3>
     No build, no dev server, no toolchain. <strong>A deck is a folder.</strong>
@@ -131,8 +131,8 @@
      4 · Architecture · mermaid does the diagram
      ════════════════════════════════════════════════════════════════ -->
 <deck-feature eyebrow="Architecture">
-  <h1 slot="title">Three thin layers</h1>
-  <deck-mermaid>
+  <h1 slot="title">Three layers keep the engine replaceable</h1>
+  <deck-mermaid compact>
     graph TB
       A["Your deck<br/><code>index.html</code><br/>slides as &lt;deck-*&gt; elements"]:::deck
       B["rikiki<br/>~20 Lit components<br/>themes · livereload · overview"]:::pkg
@@ -153,7 +153,7 @@
      6 · A slide is just HTML · code on one side, key parts named
      ════════════════════════════════════════════════════════════════ -->
 <deck-split eyebrow="Source = output" gap="5" col-gap="3">
-  <h1 slot="title">A slide is just HTML</h1>
+  <h1 slot="title">A slide is plain HTML, which is what makes it readable in 2031</h1>
   <div slot="left">
     <deck-code lang="html">
       &lt;deck-feature eyebrow="Module"&gt;
@@ -189,7 +189,7 @@
      8 · Layouts cheat-sheet · deck-step-list
      ════════════════════════════════════════════════════════════════ -->
 <deck-feature eyebrow="Layouts">
-  <h1 slot="title">Six layouts, six jobs</h1>
+  <h1 slot="title">Six layouts cover six jobs, and a seventh would overlap one of them</h1>
   <deck-step-list>
     <deck-step n="1" note="Opening slide · XL title on dark, optional brand mark, meta block.">&lt;deck-cover&gt;</deck-step>
     <deck-step n="2" note="Chapter separator · number + centered title on dark.">&lt;deck-section&gt;</deck-step>
@@ -280,7 +280,7 @@
      12 · All shortcuts · framework component <deck-shortcut-list>
      ════════════════════════════════════════════════════════════════ -->
 <deck-feature eyebrow="Shortcuts">
-  <h1 slot="title">Every key, on one page</h1>
+  <h1 slot="title">Every shortcut fits on one page, because there are deliberately few</h1>
   <deck-shortcut-list col-gap="5">
     <deck-shortcut keys="← →"      label="Section"          note="Jump between top-level chapters."></deck-shortcut>
     <deck-shortcut keys="↑ ↓"      label="Sub-slide"        note="Within the current section."></deck-shortcut>
@@ -346,7 +346,7 @@
      16 · The whole HTML file
      ════════════════════════════════════════════════════════════════ -->
 <deck-feature eyebrow="60 seconds, no install">
-  <h1 slot="title">A deck, end to end</h1>
+  <h1 slot="title">A deck goes from one file to a shared bundle without a build step</h1>
   <deck-code lang="html" hero>
     &lt;!doctype html&gt;
     &lt;html&gt;
@@ -374,7 +374,7 @@
      16b · The opt-in components · one mass, two sizes
      ════════════════════════════════════════════════════════════════ -->
 <deck-feature eyebrow="Opt-in" spread="center">
-  <h1 slot="title">Components you load on purpose</h1>
+  <h1 slot="title">The opt-in components stay out of the bundle until a deck asks</h1>
   <deck-kpi-grid cols="3">
     <deck-kpi value="34" label="components in the default bundle"></deck-kpi>
     <deck-kpi value="14" label="more, one script tag each" tone="accent"></deck-kpi>
