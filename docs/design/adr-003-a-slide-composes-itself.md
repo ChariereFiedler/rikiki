@@ -95,12 +95,29 @@ once and been fixed by hand without a test. It is a test now.
 ## What is still open
 
 **The vertical distribution default.** A short slide still stacks at the top
-and leaves the bottom empty. The obvious replacement was tried and is worse:
-centring the body inside the leftover detaches the block and leaves a hole above
+and leaves the bottom empty. Two replacements have now been tried and measured,
+and neither is shipped.
+
+Centring the body inside the leftover detaches the block and leaves a hole above
 *and* below. The honest reading is that such a slide is under-filled rather
 than badly distributed, so the answer is `fill` plus larger type rather than a
 different `justify-content` value, and making that the default is a separate
 decision with its own blast radius.
+
+Splitting the leftover 1:2 above and below the content was the answer to that
+detachment · keep the space under the content clearly larger than the space over
+it, so the block stays attached to its title. It was implemented as a
+three-track grid on the field, with the gap moved onto the slot and an escape
+for `fill` and an explicit `spread`. It works, in the sense that nothing broke.
+It also **moves no number**: with it in, `deck-feature` still ranges 0.32 to
+0.79 across 37 slides, exactly as without. A mechanism that adds a track system
+and two escape hatches and changes no measurement is not worth its surface, so
+it was removed rather than kept "because it is more correct".
+
+What that null result says is that the spread is not made of free space being
+dropped at the bottom. It is made of the head moving: the shoulder ranges from
+0.19 to 0.32 of slide height, and the field starts wherever the title stopped.
+The next attempt should be the fixed shoulder, not another distribution.
 
 Until it is taken, `e2e/ink.spec.ts` keeps reporting the ink centroid without
 failing on it, for the reason it always gave: while the engine does not own the
