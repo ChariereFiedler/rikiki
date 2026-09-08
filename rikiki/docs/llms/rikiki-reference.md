@@ -947,7 +947,31 @@ low-contrast tint, and anything that has to be compared against something else
 to be understood. Compose from the first list. See
 `docs/design/adr-002-extras-visual-direction.md`.
 
-### 14.2 · The five rules
+### 14.2 · The title is the message, the body is the proof
+
+A content slide's title is a **full sentence stating what the slide argues**,
+about eight to fourteen words, and the body is its **evidence** · a figure, a
+diagram, a table, a number. Not a bullet list restating the title.
+
+This is the assertion-evidence structure (Michael Alley, Penn State), and it is
+here because the comprehension gain over the usual topic-and-subtopic slide is
+measured and statistically significant, not because it reads better.
+
+A topic title carries no message, so the body has to carry all of it, and the
+slide ends up with nothing to look at. "Graph" names a subject; "An architecture
+reads as boxes and arrows, never as paragraphs" says something the evidence can
+then support.
+
+It costs nothing in type size: at the shipped title size the usable width holds
+about forty-four characters a line, so fourteen words fit on two lines. It does
+cost height · a two-line title takes a line back from the body, and
+`e2e/slide-budget.spec.ts` will say so.
+
+`deck-cover` and `deck-section` are exempt. A chapter title is a boundary, not
+an assertion, and three words are right there.
+`scripts/assertion.test.mjs` holds the band on every shipped deck.
+
+### 14.3 · The five rules
 
 1. **One loud thing.** A slide has one statement. Everything else on it is
    quiet. Two loud things means the eye picks the wrong one.
@@ -964,7 +988,7 @@ to be understood. Compose from the first list. See
    glance cheap. Centre a whole slide if you mean to; never centre a column
    inside a row of columns, because it breaks that edge.
 
-### 14.3 · Filling the canvas
+### 14.4 · Filling the canvas
 
 Most rejected slides put their content in the top fifth and leave the rest
 white. That is almost never a component problem · it is a deck that never asked
@@ -977,7 +1001,7 @@ Prefer cutting to shrinking. If a slide needs a third type size or a smaller
 body to fit, it is two slides. `<deck-notes>` takes what does not fit, and a
 stepped reveal (§7) is the medium's own way of showing a lot without crowding.
 
-### 14.4 · Rows of items
+### 14.5 · Rows of items
 
 Reach for **`<deck-point>`** when a bento item holds words, and **`<deck-cell>`**
 when it holds something that must be measured to its box · fit-to-cell text, a
@@ -995,7 +1019,7 @@ Whichever you use, do not reach for `plain` to remove the gutter · it keeps the
 gutter on purpose, so a painted item and a plain one start their text on the
 same edge.
 
-### 14.5 · Mechanics
+### 14.6 · Mechanics
 
 - **Never nest `<deck-root>`.** One per document.
 - **Load theme CSS before `dist/index.js`.**

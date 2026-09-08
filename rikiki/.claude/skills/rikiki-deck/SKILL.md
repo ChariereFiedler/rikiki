@@ -27,6 +27,11 @@ The short version, because it decides most of the work:
 - **A slide is read at ten metres for forty seconds.** Area, size, position,
   one saturated colour and empty space survive that. Hairlines, small type,
   letter spacing and pale tints do not.
+- **The title states the message, the body proves it.** A content slide's title
+  is a full sentence of roughly eight to fourteen words saying what the slide
+  argues, and the body is its evidence · a figure, a table, a number. A title
+  that names a topic leaves the body carrying everything. Covers and chapter
+  titles are exempt.
 - **One loud thing per slide.** The statement is more than twice the reading
   size · the theme enforces it, and a title at 1.5x is why a deck looks flat.
 - **One filled area at most**, carrying whatever the content marks. On these
