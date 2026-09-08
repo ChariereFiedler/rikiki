@@ -48,6 +48,10 @@ export interface Regions {
   field: Box | null;
   /** The bottom of the head as a fraction of slide height · the shoulder. */
   shoulder: number | null;
+  /** The room the field is free to move in · from the bottom of the head, or
+   *  the top padding when there is none, to the bottom padding. This is what
+   *  `spread` distributes, so it is the box a spread promise is judged in. */
+  available: Box;
 }
 
 /** The slots a layout reserves for its head · everything else is field. */
@@ -97,6 +101,10 @@ export async function readRegions(page: Page): Promise<Regions> {
     if (eyebrow) head.unshift(eyebrow);
 
     const headBox = union(head);
+    const style = getComputedStyle(slide);
+    const innerTop = box.top + Number.parseFloat(style.paddingTop);
+    const innerBottom = box.bottom - Number.parseFloat(style.paddingBottom);
+    const availTop = headBox ? Math.max(headBox.bottom, innerTop) : innerTop;
     return {
       tag: slide.tagName.toLowerCase(),
       slide: {
@@ -109,6 +117,13 @@ export async function readRegions(page: Page): Promise<Regions> {
       head: headBox,
       field: union(field),
       shoulder: headBox ? (headBox.bottom - box.top) / box.height : null,
+      available: {
+        top: availTop,
+        bottom: innerBottom,
+        height: Math.max(0, innerBottom - availTop),
+        left: box.left,
+        width: box.width,
+      },
     };
   }, HEAD_SLOTS);
 }

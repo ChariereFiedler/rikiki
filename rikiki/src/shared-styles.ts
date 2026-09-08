@@ -33,15 +33,21 @@ export const slideShell = css`
      import · deck-photo takes it alone, without slideBase, so a rule written in
      typo or helpers would miss it.
 
-     .body is the box three layouts already name; the others are reached as
-     they gain one. See src/shared/slide-fill.ts for the attribute vocabulary.
+     .body is the box three layouts already name, and .col is the one a split
+     distributes in · its .body is a GRID, so justify-content there moves the
+     columns sideways and never the content down. The rule was copied from
+     deck-feature without the axis following it, so spread was inert on every
+     split and the assertion that should have caught it passed for the wrong
+     reason. See src/shared/slide-fill.ts for the attribute vocabulary.
      A theme may set --rik-slide-spread, a per-slide spread attribute wins, and
      the default is still the historical top stack · changing it is the next
      lot, and it is measured before it is chosen.
      No backticks in here · this sits inside a css template literal. */
-  .body { justify-content: var(--_spread, var(--rik-slide-spread, flex-start)); }
-  :host([fill]) .body > ::slotted(*) { flex: 1 1 0; min-height: 0; }
-  :host([fill]) .body { justify-content: stretch; }
+  .body, .col { justify-content: var(--_spread, var(--rik-slide-spread, flex-start)); }
+
+  :host([fill]) .body > ::slotted(*),
+  :host([fill]) .col > ::slotted(*) { flex: 1 1 0; min-height: 0; }
+  :host([fill]) .body, :host([fill]) .col { justify-content: stretch; }
 
   /* Print · every slide is shown and becomes exactly one page.
      On screen a slide is an absolutely-positioned layer inside a scaled stage;

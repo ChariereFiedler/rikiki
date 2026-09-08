@@ -38,6 +38,17 @@
     <p id="bogus-b">It must not drop the layout.</p>
   </deck-feature>
 
+  <!-- A split asking to be centred · its columns are short, so a spread that
+       works moves them down and one that does not leaves them at the top. The
+       assertion in e2e/ink.spec.ts is falsifiable only against a case like
+       this: deck-split's .body is a grid, so justify-content on it distributes
+       COLUMNS, and the vertical distribution belongs to each .col. -->
+  <deck-split id="split-center" eyebrow="reveals" spread="center">
+    <h1 slot="title">Centred columns</h1>
+    <div id="sc-left" slot="left"><p>A short left column.</p></div>
+    <div id="sc-right" slot="right"><p>A short right column.</p></div>
+  </deck-split>
+
 </deck-root>
 </body>
 </html>
