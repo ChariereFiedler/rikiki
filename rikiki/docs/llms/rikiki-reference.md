@@ -707,12 +707,14 @@ an `element` path that reaches into the Shadow DOM (`deck-feature#detail
 | `CONTENT_CLIPPED` | error | the slide clips rather than scrolls · that content is lost |
 | `SLIDE_DENSE` | warning | nothing is cut yet, but there is no room left |
 | `TEXT_TOO_SMALL` | warning | below the readable floor once the canvas is scaled |
+| `UNKNOWN_ATTRIBUTE` | warning | an attribute the element neither reads nor styles on · the value is dropped |
 | `DUPLICATE_SLIDE_ID` | warning | two slides answer to the same name |
 | `EXTERNAL_DEPENDENCY` | warning | the deck fetches from the network at runtime |
 
 The report also carries `notChecked`, which names what was **not** looked at:
 revealed steps, accessibility, wording and facts, other viewports, text inside
-a diagram. Silence about a check that never ran would read as a clean bill.
+a diagram, and the size of a component's own chrome. Silence about a check that
+never ran would read as a clean bill.
 
 Two things it will not do: call a slide bad for having empty space, and claim a
 deck is accessible. Space is a choice, and a handful of measurements is not an

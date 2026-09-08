@@ -124,9 +124,13 @@ const inspectPage = ({ limits, titleReader }) => {
     // which this ratio cannot see, and guessing there would cry wolf.
     const IGNORED = new Set(['style', 'script', 'template', 'noscript', 'title']);
     const tiny = [];
+    // Only the author's own text. A component's chrome (a cover's meta labels,
+    // a counter) is sized by the theme, and telling an author to fix a span
+    // they never wrote is noise. `deck-md` is the exception: it renders the
+    // author's markdown into its own shadow tree.
     const walk = (node) => {
       for (const el of node.querySelectorAll('*')) {
-        if (el.shadowRoot) walk(el.shadowRoot);
+        if (el.shadowRoot && el.tagName.toLowerCase() === 'deck-md') walk(el.shadowRoot);
         if (IGNORED.has(el.tagName.toLowerCase())) continue;
         if (el.ownerSVGElement || el.tagName.toLowerCase() === 'svg') continue;
         const text = Array.from(el.childNodes)
@@ -144,7 +148,6 @@ const inspectPage = ({ limits, titleReader }) => {
       }
     };
     walk(slide);
-    if (slide.shadowRoot) walk(slide.shadowRoot);
 
     return {
       index: index + 1,
@@ -157,6 +160,50 @@ const inspectPage = ({ limits, titleReader }) => {
       steps: Number.parseInt(slide.getAttribute('steps') ?? slide.dataset?.steps ?? '0', 10) || 0,
     };
   });
+
+  // An attribute a component does not observe is dropped in silence: the author
+  // wrote label="Budget consumed" on an element whose label comes from its
+  // content, and the words simply never appeared. Custom elements publish what
+  // they listen to, so this is asked rather than guessed.
+  const GLOBAL_ATTRS = /^(id|class|style|slot|hidden|title|lang|dir|part|exportparts|tabindex|role|steps|active|contenteditable|draggable|translate|spellcheck|itemscope|itemtype|itemprop|inert|popover|is)$/;
+
+  /** Attributes a component's own stylesheet selects on.
+   *
+   *  `compact` on deck-mermaid changes nothing in JavaScript · it exists purely
+   *  as `:host([compact])` in the shadow styles. An attribute that only styles
+   *  is still an attribute the element reads. */
+  const styledAttrsOf = (el) => {
+    const names = new Set();
+    const sheets = [...(el.shadowRoot?.adoptedStyleSheets ?? []), ...(el.shadowRoot?.styleSheets ?? [])];
+    for (const sheet of sheets) {
+      let rules;
+      try {
+        rules = sheet.cssRules;
+      } catch {
+        continue; // a cross-origin sheet · nothing to read, nothing to guess
+      }
+      for (const rule of rules) {
+        for (const m of (rule.selectorText ?? '').matchAll(/\[\s*([a-zA-Z-]+)/g)) names.add(m[1]);
+      }
+    }
+    return names;
+  };
+
+  const strayAttributes = [];
+  const styledCache = new Map();
+  for (const el of document.querySelectorAll('*')) {
+    const tag = el.tagName.toLowerCase();
+    if (!tag.startsWith('deck-')) continue;
+    const ctor = customElements.get(tag);
+    if (!ctor) continue;
+    if (!styledCache.has(tag)) styledCache.set(tag, styledAttrsOf(el));
+    const observed = new Set([...(ctor.observedAttributes ?? []), ...styledCache.get(tag)]);
+    for (const attr of el.getAttributeNames()) {
+      if (observed.has(attr)) continue;
+      if (GLOBAL_ATTRS.test(attr) || attr.startsWith('data-') || attr.startsWith('aria-')) continue;
+      strayAttributes.push({ tag, attr, path: pathOf(el), observed: [...observed] });
+    }
+  }
 
   // A tag that was never defined renders as an empty inline box: the author
   // typed `deck-callot`, and the slide simply lost a block with no error.
@@ -173,6 +220,7 @@ const inspectPage = ({ limits, titleReader }) => {
     runtimeLoaded: !!customElements.get('deck-root'),
     slides: measured,
     unknown,
+    strayAttributes,
   };
 };
 
@@ -220,6 +268,16 @@ function diagnose(page, source, limits) {
             element: u.path,
             suggestion: 'check the spelling against the reference · an undefined custom element is silently empty',
           }),
+    );
+  }
+
+  for (const stray of page.runtimeLoaded ? page.strayAttributes : []) {
+    found.push(
+      diagnostic('UNKNOWN_ATTRIBUTE', SEVERITY.warning, `<${stray.tag}> ignores ${stray.attr}="…" · the value is dropped, not rendered`, {
+        element: stray.path,
+        measurement: { accepts: stray.observed },
+        suggestion: `this element reads ${stray.observed.length ? stray.observed.join(', ') : 'no attribute'} · everything else goes in its content`,
+      }),
     );
   }
 
@@ -355,6 +413,7 @@ export async function checkDeck(deckPath, { timeoutMs = 30_000, width = 1920, he
           'wording, facts and figures · nothing here reads the content',
           'other viewports · the deck is measured at its own canvas size',
           'text inside a diagram · an SVG scales by its viewBox, which is not measured here',
+          "a component's own chrome · only the text an author wrote is measured for size",
         ],
       };
     },
