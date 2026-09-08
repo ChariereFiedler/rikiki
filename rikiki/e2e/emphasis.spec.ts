@@ -35,7 +35,17 @@ import { THEMES, useTheme } from './support/theme';
 const DECKS = [
   { path: '/rikiki/decks/tests/extras-more.html', fills: 9 },
   { path: '/rikiki/decks/tests/extensions.html', fills: 4 },
+  // The public examples · nothing measured their emphasis until now, and they
+  // are the decks a reader is pointed at. Their counts are ratchets like the
+  // fixtures' above: adding a marked element raises the number, nothing lowers
+  // it. They are deliberately not zero · a deck that marks nothing would sail
+  // through this file while proving nothing.
+  { path: '/examples/showcase/index.html', fills: 14 },
 ];
+/* examples/bento is deliberately absent · it is a bundled deck, so its theme is
+   inlined and there is no stylesheet link to swap. This file measures both
+   themes by construction, and a deck that can only be measured under one is a
+   deck this file would report on while proving half of what it claims. */
 
 /** The attributes a component sets to say "this one is different". Kept in
  *  step with STATE_ATTRIBUTE in scripts/paint-surfaces.mjs. */
@@ -137,7 +147,7 @@ function distinct(a: { r: number; g: number; b: number }, b: { r: number; g: num
 
 for (const { path: deck, fills } of DECKS) {
   for (const theme of THEMES) {
-    test(`emphasis reads on ${deck.split('/').pop()} under ${theme}`, async ({ page }) => {
+    test(`emphasis reads on ${deck.split('/').filter(Boolean).slice(-2).join('/')} under ${theme}`, async ({ page }) => {
       test.slow(); // one screenshot per emphasis across a whole deck · slow, not flaky
       const deckPage = createDeckPage(page);
       await deckPage.goto(deck);

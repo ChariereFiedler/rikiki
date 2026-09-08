@@ -124,7 +124,14 @@ failing on it, for the reason it always gave: while the engine does not own the
 distribution, a threshold here would be taste, and a test that encodes taste
 gets worked around within a month.
 
-**Defect 3, the slide with nothing to look at.** ADR-002 removed the accent
+**Defect 3 has a first answer, in the writing rather than in the engine.** A
+slide had nothing to look at partly because its title named a topic instead of
+stating a message, so the body had to carry the whole argument. Section 14 now
+asks for an assertion and evidence, `scripts/assertion.test.mjs` holds the band,
+and the twenty-three titles of the shipped decks are rewritten. What remains is
+the second half of the same pair.
+
+**The figure, still open.** ADR-002 removed the accent
 rule, the micro-label, the numbering and the third type step, for measured and
 correct reasons, and the doctrine that remains is entirely subtractive. ADR-002
 lists what survives a room · area, size, position, one saturated colour, empty
