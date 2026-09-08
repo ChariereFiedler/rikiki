@@ -395,9 +395,10 @@ vérifié à la main, pas encore par un test automatisé.
 
 **Lots C à G** · non commencés.
 
-### Constats mineurs relevés en passant
+### Constats mineurs traités
 
-- `deck-cover` étiquette « Présenté par » et « Durée » en français par défaut,
-  y compris dans un deck `lang="en"` ; les attributs `speaker-label` et
-  `duration-label` permettent de corriger au cas par cas. À trancher dans le
-  lot C, qui porte le cas multilingue.
+- **Corrigé le 2026-09-08 :** `deck-cover` étiquetait « Présenté par » et
+  « Durée » en français quelle que soit la langue déclarée, alors que tout le
+  reste du moteur écrit en anglais. Les étiquettes suivent désormais le `lang`
+  du document, et les attributs par étiquette priment toujours. Trois tests
+  tiennent les trois cas.

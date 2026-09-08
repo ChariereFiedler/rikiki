@@ -42,6 +42,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   rather than on a clock, and both resources closed even when the command fails.
 
 ### Fixed
+- **The cover speaks the deck's language.** Its four meta labels were French
+  whatever the document declared, so an English deck opened on "PRÉSENTÉ PAR"
+  while every other word the engine writes was in English. They now follow the
+  document's `lang`, and the per-label attributes still win over both.
 - **The served root no longer admits a sibling with a similar name.** The path
   check was a string prefix, so serving `/srv/deck` also admitted
   `/srv/deck-secrets`. Traversals, escaped traversals and prefix collisions are

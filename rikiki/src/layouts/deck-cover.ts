@@ -103,14 +103,30 @@ export class DeckCover extends LitElement {
   @property({ type: String }) duration?: string;
   @property({ type: String }) audience?: string;
   @property({ type: String }) runtime?: string;
-  // Labels (default FR, override via attrs for i18n)
+  // Labels · the default follows the document language, and every one of them
+  // can be overridden per deck.
   @property({ type: String, attribute: 'speaker-label' }) speakerLabel?: string;
   @property({ type: String, attribute: 'company-label' }) companyLabel?: string;
   @property({ type: String, attribute: 'duration-label' }) durationLabel?: string;
   @property({ type: String, attribute: 'audience-label' }) audienceLabel?: string;
   @property({ type: String, attribute: 'runtime-label' }) runtimeLabel?: string;
 
+  /** The meta labels, in the language the document declares.
+   *
+   *  These four words used to be French whatever the deck said, so an English
+   *  deck opened on "PRÉSENTÉ PAR". Everything else the engine writes is in
+   *  English; the cover is the only place that spoke for the author. */
+  private labels(): Record<'speaker' | 'company' | 'duration' | 'audience', string> {
+    const declared =
+      this.closest('[lang]')?.getAttribute('lang') ??
+      (typeof document === 'undefined' ? '' : document.documentElement.lang);
+    return declared.toLowerCase().startsWith('fr')
+      ? { speaker: 'Présenté par', company: 'Entreprise', duration: 'Durée', audience: 'Audience' }
+      : { speaker: 'Presented by', company: 'Company', duration: 'Duration', audience: 'Audience' };
+  }
+
   override render() {
+    const label = this.labels();
     const parts = (this.brand ?? '')
       .split('·')
       .map((s: string) => s.trim())
@@ -118,10 +134,10 @@ export class DeckCover extends LitElement {
     const brandName = parts[0] ?? '';
     const context = parts.slice(1).join(' · ');
     const items: MetaItem[] = [
-      this.speaker && { l: this.speakerLabel ?? 'Présenté par', v: this.speaker },
-      this.company && { l: this.companyLabel ?? 'Entreprise', v: this.company },
-      this.duration && { l: this.durationLabel ?? 'Durée', v: this.duration },
-      this.audience && { l: this.audienceLabel ?? 'Audience', v: this.audience },
+      this.speaker && { l: this.speakerLabel ?? label.speaker, v: this.speaker },
+      this.company && { l: this.companyLabel ?? label.company, v: this.company },
+      this.duration && { l: this.durationLabel ?? label.duration, v: this.duration },
+      this.audience && { l: this.audienceLabel ?? label.audience, v: this.audience },
       this.runtime && { l: this.runtimeLabel ?? 'Runtime', v: this.runtime },
     ].filter((x): x is MetaItem => !!x);
 
