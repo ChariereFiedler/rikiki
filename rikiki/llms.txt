@@ -50,6 +50,15 @@ Every command below works from an install, with no clone and no build step.
 - `npx rikiki bundle <deck>.html [out.html]` · folds theme, runtime and images
   into one self-contained file, curated to the components the deck uses. Needs
   the optional peer `rolldown`.
+- `npx rikiki render <deck>.html [--out dir] [--slides a,b] [--steps]` · one PNG
+  per slide, a gallery and a `manifest.json` tying each picture to the slide it
+  came from. This is how an agent sees a deck. Needs the optional peer
+  `playwright`.
+- `npx rikiki check <deck>.html [--json]` · measures the deck in a browser and
+  reports what is wrong: a runtime that never loaded, a missing file, a
+  misspelled `deck-*` element, content clipped by the slide, text too small for
+  a room. `--json` writes a versioned report to stdout and nothing else. Exit 0
+  clean, 1 defects found, 2 could not look. Needs `playwright`.
 - `npx rikiki export <deck>.html [--output deck.pdf]` · one PDF page per slide.
   Needs the optional peer `playwright`.
 - `npx rikiki skills` · installs the three agent skills into `.claude/skills/`.

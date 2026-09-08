@@ -278,6 +278,9 @@ exécuté, jamais supposé vert.
 | 2026-09-08 | recette des 22 invocations depuis le tarball | tous les codes de sortie conformes |
 | 2026-09-08 | rendu des 9 artefacts produits (Chromium) | aucune erreur, mermaid dessiné dans les deux modes |
 | 2026-09-08 | `npx vitest run` après la couverture CLI | 660 tests verts, 36 fichiers |
+| 2026-09-08 | `npx vitest run` après le lot B | 680 tests verts, 37 fichiers |
+| 2026-09-08 | `npx playwright test` après le lot B | 463 passés, 19 ignorés, 3 min 6 |
+| 2026-09-08 | recette de render et check depuis le tarball | 8 invocations, codes 0, 1 et 2 conformes |
 
 ---
 
@@ -334,6 +337,47 @@ d'inlining, le nom de sortie dérivé du titre, la sortie stdout, l'échappement
 titre et les quatre refus (config absente, argument manquant, partiel absent,
 `slides` vide).
 
+### Lot B · les yeux et la règle
+
+**B1 · une seule infrastructure navigateur.** `browser.mjs` porte le chargement
+paresseux de Playwright, le serveur local sur port libre, la racine servie la
+plus étroite qui contienne le deck, la collecte des erreurs et des ressources
+manquantes, l'attente de stabilisation, et la fermeture garantie du navigateur
+et du serveur même après échec. L'export PDF a été ramené dessus : il ne fait
+plus que demander le PDF. Le confinement des chemins servis est corrigé — le
+préfixe `/srv/deck` acceptait `/srv/deck-secrets` — et vingt tests le tiennent,
+traversées simples, échappées et à travers un vrai répertoire comprises.
+
+**B2 · `rikiki render`.** Une image par slide, une galerie sans dépendance, et
+un manifeste versionné qui relie index, identifiant, titre et fichier. Sélection
+par numéro ou par identifiant, l'ordre suivant le deck et non les arguments ;
+une sélection vide nomme les slides disponibles. Dimensions explicites, refus
+d'une taille qui n'en est pas une. Les noms de fichiers sont dérivés de
+l'identifiant et toujours inoffensifs, `../../etc/passwd` compris, tandis que le
+manifeste garde l'identifiant tel quel. `--steps` capture chaque état révélé ;
+sans lui la commande dit qu'elle a photographié l'état d'ouverture.
+
+**L'attente ne dort jamais.** La première version capturait une ligne en plein
+fondu. L'attente porte sur les animations elles-mêmes, via l'API Web Animations,
+et la borne de temps ne sert qu'aux animations sans fin.
+
+**B3 · `rikiki check`.** Rapport JSON versionné : dix codes stables, une gravité,
+la slide et son identifiant, un chemin qui traverse le Shadow DOM, la mesure qui
+justifie, une suggestion. Codes de sortie 0, 1 et 2, ce dernier distinguant
+« je n'ai pas pu regarder » de « le deck a des défauts ». En mode JSON, stdout
+ne porte que le rapport, même quand le deck est cassé. Le rapport nomme aussi ce
+qui n'a pas été vérifié, parce que le silence se lirait comme un quitus.
+
+**Ce que le diagnostic refuse de faire** : traiter le vide comme un défaut, et
+prétendre juger l'accessibilité sur quatre mesures.
+
+**Trois faux positifs corrigés avant livraison** : les balises `style` comptées
+comme du texte, le texte des diagrammes mesuré sans son facteur d'échelle SVG,
+et la cascade d'éléments inconnus quand le runtime n'a jamais tourné. Un défaut
+réel est sorti de là : le gabarit de `init` écrivait `<deck-*>` dans sa prose,
+que l'analyseur transformait en élément fantôme. Le gabarit échoue désormais à
+son propre diagnostic si cela revient.
+
 ## 7. Reste à faire
 
 **A3 (reste)** · documenter les trois modes et traiter la curation : un agent
@@ -346,7 +390,10 @@ dépendances tierces, métadonnées du paquet site.
 **D-G1** · la dérive de `dist/` reste ouverte, à traiter dans le lot G avec un
 contrôle mécanique plutôt qu'une consigne.
 
-**Lots B à G** · non commencés.
+**B4 (reste)** · le fonctionnement de `render` et `check` depuis le tarball est
+vérifié à la main, pas encore par un test automatisé.
+
+**Lots C à G** · non commencés.
 
 ### Constats mineurs relevés en passant
 
