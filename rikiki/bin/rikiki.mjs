@@ -6,6 +6,8 @@
 //               [--with-mermaid] [--with-shiki] [--no-fonts] [--force]
 //   rikiki bundle <deck.html> [out.html|-] [--with-mermaid] [--with-shiki] [--no-fonts]
 //   rikiki assemble <deck.config.js> [out.html|-]
+//   rikiki render <deck.html> [--out dir] [--slides a,b] [--steps]
+//   rikiki check <deck.html> [--json]
 //   rikiki export <deck.html> [--output deck.pdf]
 //   rikiki skills [--dir <path>] [--force]
 //
@@ -27,6 +29,8 @@ import { pruneIcons } from './lib/prune-icons.mjs';
 import { exportPdf } from './lib/export-pdf.mjs';
 import { ExpectedError, formatCliError } from './lib/cli-error.mjs';
 import { assembleDeck } from './lib/assemble.mjs';
+import { renderDeck } from './lib/render.mjs';
+import { checkDeck, formatReport } from './lib/check.mjs';
 
 const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -36,6 +40,8 @@ const HELP = `rikiki · self-contained slide decks
   rikiki init --standalone [name.html] [options]    generate a single self-contained file
   rikiki assemble <deck.config.js> [out.html|-]     build one deck from ordered partials
   rikiki bundle <deck.html> [out.html|-] [options]  fold an existing deck into one file
+  rikiki render <deck.html> [options]               one PNG per slide, plus a gallery and a manifest
+  rikiki check <deck.html> [--json]                 measure the deck and report what is wrong
   rikiki export <deck.html> [--output deck.pdf]     render the deck to PDF, one slide per page
   rikiki skills [--dir <path>] [--force]            install the Claude Code skills into a project
 
@@ -47,6 +53,11 @@ Options:
   --with-mermaid       inline the mermaid runtime (+~3 MB)
   --with-shiki         inline the Shiki highlighter (+~9 MB)
   --output, -o <file>  PDF path (export · default <deck>.pdf)
+  --out <dir>          picture directory (render · default <deck>.shots/)
+  --slides a,b         render: which slides · numbers (1-based) or ids
+  --steps              render: one picture per revealed state, not just the first
+  --width, --height    render/check: canvas size in pixels (default 1920×1080)
+  --json               check: write the report to stdout as JSON, notes to stderr
   --no-fonts           drop fonts instead of inlining them (smaller, system fonts)
   --all                bundle every component (skip the used-only curation)
   --include a,b        force-include components used only from JS
@@ -59,6 +70,17 @@ Output is one HTML file with zero external references · open it offline.
 The bundle is curated to the components the deck uses; HTML and CSS stay
 readable so you can keep editing the file. Images are inlined as base64 and
 SVGs as inline markup.`;
+
+/** A pixel dimension from the flags · a size that is not a size is an error,
+ *  not a silent fallback to the default. */
+function pixels(values, flag, fallback) {
+  if (values[flag] === undefined) return fallback;
+  const n = Number(values[flag]);
+  if (!Number.isInteger(n) || n < 1) {
+    throw new ExpectedError(`--${flag} must be a positive whole number of pixels`);
+  }
+  return n;
+}
 
 /** Shared inlining options derived from the parsed flags. */
 const inlineOpts = (v) => ({
@@ -256,6 +278,74 @@ async function cmdAssemble(argv) {
   console.error(`rikiki · wrote ${outputPath} · ${slides} partial(s) · ${kb} KB`);
 }
 
+async function cmdRender(argv) {
+  const { values, positionals } = parseArgs({
+    args: argv,
+    allowPositionals: true,
+    options: {
+      out: { type: 'string' },
+      slides: { type: 'string' },
+      steps: { type: 'boolean', default: false },
+      width: { type: 'string' },
+      height: { type: 'string' },
+    },
+  });
+  const inputPath = deckArgument('render', positionals[0]);
+  const outDir = resolve(process.cwd(), values.out ?? basename(inputPath, '.html') + '.shots');
+  const { manifest, galleryPath } = await renderDeck(inputPath, {
+    outDir,
+    slides: values.slides,
+    steps: values.steps,
+    width: pixels(values, 'width', 1920),
+    height: pixels(values, 'height', 1080),
+  });
+
+  for (const url of manifest.missing.slice(0, 5)) {
+    console.error(`rikiki · WARNING · the deck could not load: ${url}`);
+  }
+  console.error(
+    `rikiki · wrote ${manifest.captured} shot(s) to ${outDir} · ${manifest.canvas.width}×${manifest.canvas.height}`,
+  );
+  if (!manifest.stepsCaptured) {
+    console.error('rikiki · note · stepped slides are shown in their opening state · pass --steps for the rest');
+  }
+  console.error(`rikiki · gallery ${galleryPath}`);
+}
+
+/** Resolve a deck argument · shared by the commands that read one. */
+function deckArgument(command, input, { exitCode = 1 } = {}) {
+  if (!input) throw new ExpectedError(`${command} · missing <deck.html>\n\n` + HELP, { exitCode });
+  const inputPath = resolve(process.cwd(), input);
+  if (!existsSync(inputPath) || !statSync(inputPath).isFile()) {
+    throw new ExpectedError(`${command} · input not found: ` + inputPath, { exitCode });
+  }
+  return inputPath;
+}
+
+async function cmdCheck(argv) {
+  const { values, positionals } = parseArgs({
+    args: argv,
+    allowPositionals: true,
+    options: {
+      json: { type: 'boolean', default: false },
+      width: { type: 'string' },
+      height: { type: 'string' },
+    },
+  });
+  const inputPath = deckArgument('check', positionals[0], { exitCode: 2 });
+  const report = await checkDeck(inputPath, {
+    width: pixels(values, 'width', 1920),
+    height: pixels(values, 'height', 1080),
+  });
+
+  // In --json mode stdout carries the report and nothing else, so a caller can
+  // pipe it without stripping anything · including when the deck is broken.
+  if (values.json) process.stdout.write(JSON.stringify(report, null, 2) + '\n');
+  else console.error(formatReport(report));
+
+  if (report.summary.error > 0) process.exit(1);
+}
+
 async function cmdExport(argv) {
   const { values, positionals } = parseArgs({
     args: argv,
@@ -380,11 +470,13 @@ try {
   if (cmd === 'init') await cmdInit(rest);
   else if (cmd === 'assemble') await cmdAssemble(rest);
   else if (cmd === 'bundle') await cmdBundle(rest);
+  else if (cmd === 'render') await cmdRender(rest);
+  else if (cmd === 'check') await cmdCheck(rest);
   else if (cmd === 'export') await cmdExport(rest);
   else if (cmd === 'skills') cmdSkills(rest);
   else if (!cmd || cmd === '-h' || cmd === '--help' || cmd === 'help') { console.log(HELP); }
   else { console.error('rikiki · unknown command: ' + cmd + '\n\n' + HELP); process.exit(1); }
 } catch (e) {
   console.error(formatCliError(e));
-  process.exit(1);
+  process.exit(e?.exitCode ?? 1);
 }

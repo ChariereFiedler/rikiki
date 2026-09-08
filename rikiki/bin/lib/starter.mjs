@@ -73,13 +73,13 @@ ${mermaidTag}${shikiTag}<script type="module" src="${asset('dist/index.js')}"></
 ${assetBase
   ? `This deck is **plain HTML** you edit by hand.
 
-- each \`<deck-*>\` element is a slide
+- each \`&lt;deck-*&gt;\` element is a slide
 - the runtime sits in \`${assetBase.replace(/\/$/, '')}/\` next to this file
 - serve the folder over HTTP, then \`rikiki bundle\` it to share one file`
   : `This whole deck is **one HTML file** with zero external links.
 
 - open it anywhere, offline
-- each \`<deck-*>\` element is a slide
+- each \`&lt;deck-*&gt;\` element is a slide
 - press **?** for keyboard shortcuts`}
     </deck-md>
   </deck-feature>
