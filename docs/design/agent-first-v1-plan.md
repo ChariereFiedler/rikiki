@@ -275,6 +275,9 @@ exécuté, jamais supposé vert.
 | 2026-09-08 | parcours complet depuis le tarball, dossier `full run` | init, assemble, bundle, export enchaînés |
 | 2026-09-08 | rendu du deck assemblé et du bundle (Chromium) | 3 slides chacun, aucune erreur |
 | 2026-09-08 | `npx rikiki export` depuis l'installation | PDF de 3 pages, 51 Ko |
+| 2026-09-08 | recette des 22 invocations depuis le tarball | tous les codes de sortie conformes |
+| 2026-09-08 | rendu des 9 artefacts produits (Chromium) | aucune erreur, mermaid dessiné dans les deux modes |
+| 2026-09-08 | `npx vitest run` après la couverture CLI | 660 tests verts, 36 fichiers |
 
 ---
 
@@ -309,6 +312,21 @@ l'attribut HTML (`src="…"`). Six documents sur six étaient fautifs. Le README
 le fichier d'entrée pour agents, la référence de mille cinq cents lignes et les
 trois skills distribués passent désormais par la CLI : `init`, `assemble`,
 `bundle`, `export`, `skills`.
+
+**Chaque commande est couverte et éprouvée.** Une matrice de surfaces a précédé
+l'écriture : `bundle` et `export` étaient déjà couverts par les suites
+Playwright, `init` et `assemble` par leurs propres fichiers, mais `skills`,
+l'aide, les commandes inconnues et les refus d'entrée ne l'étaient pas du tout.
+Vingt-cinq scénarios comblent ces trous. La recette manuelle a ensuite rejoué
+vingt-deux invocations depuis le tarball et vérifié le rendu des neuf fichiers
+produits.
+
+**Deux défauts trouvés par cette couverture, et corrigés.** Une configuration
+`.js` était illisible dans un projet CommonJS, ce que `npm init -y` écrit par
+défaut : la commande crachait une trace d'analyse syntaxique. Elle accepte
+maintenant les deux dialectes et nomme le remède quand ils ne concordent pas.
+Et `--no-fonts` laissait douze règles `@font-face` avec `src: none`, du CSS
+invalide que le navigateur jette : la règle entière part avec sa source.
 
 **L'assembleur est publié et fini.** Dix tests couvrent l'inlining verbatim du
 HTML, le découpage markdown sur `---`, les défauts de chemins, l'avertissement

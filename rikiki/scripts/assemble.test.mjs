@@ -135,3 +135,60 @@ describe('assemble refuses what it cannot build', () => {
     expect(result.stderr).toMatch(/non-empty array/);
   });
 });
+
+describe('a config is loaded whatever dialect the host project uses', () => {
+  /** Write a package.json declaring `type`, plus a config and one partial. */
+  function project(type, configName, configBody) {
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'host', type }));
+    mkdirSync(join(dir, 'parts'), { recursive: true });
+    writeFileSync(join(dir, 'parts', 'a.html'), '<deck-takeaway/>');
+    writeFileSync(join(dir, configName), configBody);
+    return configName;
+  }
+
+  it('loads an ES module config in an ES module project', () => {
+    const config = project(
+      'module',
+      'deck.config.js',
+      "export default { title: 'T', slides: ['parts/a.html'] };",
+    );
+    const result = run([config, 'out.html']);
+    expect(result.status, result.stderr).toBe(0);
+    expect(readFileSync(join(dir, 'out.html'), 'utf8')).toContain('<title>T</title>');
+  });
+
+  it('loads a CommonJS config in a CommonJS project', () => {
+    // `npm init -y` writes "type": "commonjs" · this is the default project a
+    // consumer has, and `import()` of a .js file there is a parse error.
+    const config = project(
+      'commonjs',
+      'deck.config.js',
+      "module.exports = { title: 'T', slides: ['parts/a.html'] };",
+    );
+    const result = run([config, 'out.html']);
+    expect(result.status, result.stderr).toBe(0);
+    expect(readFileSync(join(dir, 'out.html'), 'utf8')).toContain('<title>T</title>');
+  });
+
+  it('loads an .mjs config in a CommonJS project', () => {
+    const config = project(
+      'commonjs',
+      'deck.config.mjs',
+      "export default { title: 'T', slides: ['parts/a.html'] };",
+    );
+    const result = run([config, 'out.html']);
+    expect(result.status, result.stderr).toBe(0);
+  });
+
+  it('explains the dialect mismatch instead of dumping a parse error', () => {
+    const config = project(
+      'commonjs',
+      'deck.config.js',
+      "export default { title: 'T', slides: ['parts/a.html'] };",
+    );
+    const result = run([config, 'out.html']);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/module\.exports|\.mjs/);
+    expect(result.stderr, 'an expected error must not print a stack').not.toMatch(/ {4}at /);
+  });
+});

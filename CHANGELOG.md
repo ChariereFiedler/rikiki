@@ -23,6 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `init` writes, which is the one `bundle` rewrites.
 
 ### Fixed
+- **An assemble config is read whatever dialect the host project uses.** `.js`
+  is CommonJS or ESM depending on the nearest package.json, and `npm init -y`
+  writes `"type": "commonjs"`. A config that did not match crashed with a parse
+  trace; both dialects now load, and a mismatch names the three ways out.
+- **`--no-fonts` drops the whole font rule, not just its source.** It left
+  twelve `@font-face` blocks declaring `src: none`, which is invalid CSS the
+  browser discards anyway.
 - **A missing optional peer prints its remedy, not a stack trace.** The advice
   to run `npm i -D rolldown` was buried under six lines of package internals.
 - **The published documents no longer send the reader to files they do not
