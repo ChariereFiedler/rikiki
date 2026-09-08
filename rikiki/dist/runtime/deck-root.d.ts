@@ -153,6 +153,16 @@ export declare class DeckRoot extends LitElement {
      *  the container for an embedded one). Driven by a ResizeObserver. */
     private _applyScale;
     private _resizeObserver;
+    /** A step the opening fragment asked for, held until the slide can hear it.
+     *
+     *  The components that carry steps are opt-in modules, and a module can
+     *  register AFTER the engine has read the fragment and applied the step. The
+     *  step reached a slide whose children were still plain elements with no
+     *  applyStep to call, so it landed on nothing and no second attempt was ever
+     *  made · every link into the middle of a build opened its neutral state,
+     *  which is the one thing such a link exists to avoid. */
+    private _pendingStep;
+    private _stepWatcher;
     /** Zoom is live only in the fixed canvas and outside overlays. */
     private _zoomEnabled;
     /** Publish zoom + pan as custom props the #stage transform reads. */
@@ -263,6 +273,20 @@ export declare class DeckRoot extends LitElement {
     /** What the deep-link use case needs to know about this deck right now. */
     private _linkContext;
     private _readHash;
+    /** Watch for a stepping component arriving late, and replay the step at it.
+     *
+     *  The trigger is the `data-steps` attribute a stepping component writes onto
+     *  its slide when it connects: that mutation IS the moment a component
+     *  capable of hearing a step appears. Watching it beats polling or waiting a
+     *  fixed time, and beats asking every component to reach back into the deck.
+     *
+     *  Armed only for a fragment that asks for a step, and disarmed at the first
+     *  move the reader makes · their navigation outranks the link they opened. */
+    private _watchForLateSteps;
+    /** Replay the opening step now that something on the slide can receive it. */
+    private _replayPendingStep;
+    /** Stop waiting · the link was honoured, or the reader moved on themselves. */
+    private _forgetPendingStep;
     private _writeHash;
     private _onKey;
     /** Lazy-import the help module the first time the user opens it. */

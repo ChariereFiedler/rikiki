@@ -10,7 +10,6 @@ export declare class DeckFlow extends LitElement {
      *  before being walked through it. Hiding four stages behind four clicks
      *  tells the audience nothing while they wait. */
     reveal: boolean;
-    private _step;
     willUpdate(): void;
     connectedCallback(): void;
     /** Called by deck-root on every step change. */
@@ -24,8 +23,14 @@ export declare class DeckFlowStep extends LitElement {
     /** Position in the chain, written by deck-flow · the reader counts stages,
      *  and a number does that better than four identical icons. */
     index?: string;
-    /** Drop the block and set the stage as type under a rule. */
+    /** Kept for decks that set it · the chain is now plain by default, so this
+     *  only stops the active stage from taking the block. */
     plain: boolean;
+    /** Last in the chain · written by deck-flow. Nothing to point at. */
+    last: boolean;
+    /** Draw the connector to the next stage · written by deck-flow from its own
+     *  no-connectors attribute, which declared the option and drew nothing. */
+    linked: boolean;
     render(): import("lit-html").TemplateResult<1>;
 }
 declare global {

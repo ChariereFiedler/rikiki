@@ -9,7 +9,7 @@ export declare class DeckKpiGrid extends LitElement {
     render(): import("lit-html").TemplateResult<1>;
 }
 export declare class DeckKpi extends LitElement {
-    static styles: import("lit").CSSResult;
+    static styles: import("lit").CSSResult[];
     value?: string;
     label?: string;
     /** A line of context under the label · what the figure is measured against. */
