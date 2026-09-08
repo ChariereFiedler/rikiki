@@ -48,8 +48,11 @@ The short version, because it decides most of the work:
 
 ## Workflow
 
-1. **Skeleton** — start from the head + `<deck-root>` shape in `starter.html`
-   (theme `<link>` first, then `<script type="module" src="./dist/index.js">`).
+1. **Skeleton** — run `npx rikiki init <name>.html`. It writes an editable deck
+   and copies the runtime into `./rikiki/` beside it, so the head already reads
+   theme `<link>` first, then
+   `<script type="module" src="rikiki/dist/index.js">`. Serve the folder over
+   HTTP · ES modules do not load from `file://`.
 2. **Pick layouts per slide** — one focal idea each. `deck-cover` to open,
    `deck-section` for chapters, `deck-feature` / `deck-split` /
    `deck-feature-cards` for content, `deck-takeaway` to close. Respect named
@@ -83,13 +86,13 @@ The short version, because it decides most of the work:
 6. **Livereload (authoring)** — add `?live` to the deck URL (e.g.
    `…/deck.html?live`) so `index.js` lazy-loads the poller and auto-reloads on
    file changes. Never ship it in a presented or bundled deck.
-7. **Multi-file decks** — split slides into `parts/*.html` / `*.md`, list them in
-   `deck.config.js`, run `npm run deck decks/<name>/deck.config.js` (or
-   `node build/vite-deck.mjs <config>`).
-8. **Share** — `node bundle.mjs <deck>.html` produces one self-contained file
-   (`--no-fonts` strips Google Fonts). Note: `bundle.mjs` only rewrites
-   `rikiki/(dist|themes|tokens.css)`-style references, not plain relative paths
-   like `../../dist/index.js` — see the reference's multi-deck caveat.
+7. **Share** — `npx rikiki bundle <deck>.html` produces one self-contained file
+   (`--no-fonts` strips the web fonts). It needs the optional peer `rolldown`;
+   without it the command says so and installs nothing behind your back. It
+   rewrites `rikiki/(dist|themes|tokens.css)`-style references, not plain
+   relative paths like `../../dist/index.js`.
+8. **Hand over a PDF** — `npx rikiki export <deck>.html` writes one page per
+   slide. It needs the optional peer `playwright`.
 
 ## Verify
 
@@ -100,10 +103,11 @@ and every step. Confirm slides are styled and reveals fire in order.
 
 - Never nest `<deck-root>`.
 - **Asset paths are relative to your deck file** — adjust the theme `<link>`,
-  the `dist/index.js` script, and any `click-stages.js` import together. Next to
-  `starter.html` it's `./tokens.css` / `./dist/…`; a deck under `examples/<name>/`
-  uses `../../rikiki/tokens.css` / `../../rikiki/dist/…`; an npm consumer points
-  at their `node_modules/rikiki-deck/…` (or an import map).
+  the `dist/index.js` script, and any `click-stages.js` import together. A deck
+  written by `rikiki init` uses `rikiki/tokens.css` / `rikiki/dist/…`, which is
+  also the spelling the bundler recognises. Pointing straight at
+  `node_modules/rikiki-deck/…` works in a browser but only bundles from a path
+  spelled that way.
 - Load theme CSS before `dist/index.js`.
 - Use semantic `--rik-*` tokens for any color/spacing override, at `:root` (or
   component `--deck-*-…` tokens on one host). Do not hardcode colors.

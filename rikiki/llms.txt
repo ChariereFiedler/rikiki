@@ -18,8 +18,8 @@ The framework is opinionated:
 ## Reference
 
 - [Full LLM reference](docs/llms/rikiki-reference.md) (served at `/rikiki/docs/llms/rikiki-reference.md`): the single source of truth · every tag, attribute, slot, design token, plugin, and recipe in one file. Read this first.
-- [README](README.md): human overview, common patterns, build/theming notes.
-- [starter.html](starter.html): the minimal copy-paste deck skeleton.
+- [README](README.md): human overview, common patterns, theming notes.
+- `npx rikiki init <name>.html`: writes a starter deck plus the runtime it loads, next to it. Nothing to copy by hand.
 
 ## Components
 
@@ -40,11 +40,21 @@ Authoring tags fall into four buckets (see the reference for the exhaustive attr
 - **Writing a plugin**: `deckRoot.use(plugin)` with a `DeckPlugin` (`steps` / `applyStep` / `navigate` / `setup` hooks); `setDeckCodeHighlighter(fn)` overrides `<deck-code>` highlighting. Both re-exported from `dist/index.js`. `installShiki` / `installClickStages` are back-compat shims.
 - **Livereload (authoring only)**: append `?live` to the deck URL.
 
-## Build & assembly
+## The CLI · what a consumer runs
 
-- [Multi-deck assembler](docs/llms/rikiki-reference.md): split a talk into `parts/*.html` / `*.md`, list them in `deck.config.js`, run `npm run deck <config>`.
-- [Example multi-file deck](decks/example/deck.config.js): a runnable assembly config.
-- [Single-file bundler](bundle.mjs): `node bundle.mjs <deck>.html` inlines theme + bundle + Lit into one self-contained HTML file.
+Every command below works from an install, with no clone and no build step.
+
+- `npx rikiki init <name>.html` · an editable source deck, plus the runtime
+  copied into `./rikiki/` beside it. Serve that folder over HTTP · ES modules do
+  not load from `file://`. Needs nothing but Node.
+- `npx rikiki bundle <deck>.html [out.html]` · folds theme, runtime and images
+  into one self-contained file, curated to the components the deck uses. Needs
+  the optional peer `rolldown`.
+- `npx rikiki export <deck>.html [--output deck.pdf]` · one PDF page per slide.
+  Needs the optional peer `playwright`.
+- `npx rikiki skills` · installs the three agent skills into `.claude/skills/`.
+
+A missing optional peer is reported with the command that installs it.
 
 ## Optional
 
