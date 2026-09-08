@@ -43,3 +43,6 @@ rikiki/-e2e-deck.html
 
 # Contact sheets · generated for looking at, never committed
 .shots*/
+
+# Staged from ../rikiki by site/scripts/stage-assets.mjs · never edited by hand
+site/public/rikiki/
