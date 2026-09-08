@@ -720,6 +720,10 @@ accessibility audit.
 
 ## 13 · Recipes / cookbook
 
+For choosing a composition from what a slide has to say, see
+[`rikiki-workflow.md`](./rikiki-workflow.md). This section is the wiring: what
+to type once the composition is chosen.
+
 Copy-paste patterns. Every tag/attribute used here is defined above · combine
 them freely. Assume the deck head loads the theme then `dist/index.js` (§2).
 
