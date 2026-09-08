@@ -4,7 +4,7 @@ This reference documents rikiki v0.6.0.
 
 Exhaustive, self-consistent reference for authoring valid **rikiki** decks. Every
 tag, attribute, slot, and token below was derived from the source in this repo
-(`src/index.ts` is the canonical component list; `themes/rikiki.css` is the
+(`dist/index.js` registers every component; `themes/rikiki.css` is the
 canonical token list). Do not invent tags, attributes, or tokens · use only what
 is listed here.
 
@@ -34,7 +34,8 @@ navigation, hash routing, the progress bar, step dots, and the keyboard hint.
 
 ## 2 · Minimal deck
 
-The canonical skeleton (see `starter.html`):
+The canonical skeleton · `rikiki init <name>.html` writes exactly this, with the
+runtime copied into `./rikiki/` beside it:
 
 ```html
 <!doctype html>
@@ -304,7 +305,7 @@ understand.
 
 ### Shiki plugin (optional, opt-in)
 
-`src/plugins/shiki.ts` (`dist/shiki.js`) re-renders all `<deck-code>` blocks
+The Shiki plugin (`dist/shiki.js`) re-renders all `<deck-code>` blocks
 through [Shiki](https://shiki.style), loaded from the vendored
 `dist/vendor/shiki.js` bundle on first use (offline · no CDN). Install it after
 the rikiki bundle:
@@ -361,7 +362,7 @@ The step dots at the bottom of the deck reflect the active slide's step count.
 
 ### Click-stages plugin (per-element reveals)
 
-`src/plugins/click-stages.ts` adds Slidev-style `v-click` reveals. rikiki drives
+The click-stages plugin (`dist/click-stages.js`) adds Slidev-style `v-click` reveals. rikiki drives
 them with **attributes** (`data-click` on any element) · it does **not** support
 Slidev's `<v-click>` / `<v-clicks>` wrapper elements. It is **opt-in** · not part
 of the core bundle. Install it after rikiki loads:
@@ -501,20 +502,20 @@ It is hidden in the deck itself; only the presenter window reads its text.
 
 ---
 
-## 9 · Multi-deck assembly
+## 9 · Multi-file decks
 
-Split a long talk into small partial files and assemble them into one deck at
-build time. The assembler is `build/vite-deck.mjs` (pure Node · no runtime
-weight added).
+A long talk is easier to write, review and diff in pieces. `rikiki assemble`
+joins ordered partials into the single HTML file everything else expects.
 
 A `deck.config.js` (or `.json`) describes the deck:
 
 ```js
 export default {
   title: 'My talk',
-  theme: '../../tokens.css',   // theme href, relative to the OUTPUT file
-  bundle: '../../dist/index.js', // rikiki bundle href, relative to OUTPUT
-  transition: 'slide',         // optional <deck-root transition="…">
+  theme: 'rikiki/tokens.css',      // href, relative to the OUTPUT file
+  bundle: 'rikiki/dist/index.js',  // runtime href, relative to OUTPUT
+  transition: 'slide',             // optional <deck-root transition="…">
+  lang: 'fr',                      // optional <html lang="…">
   slides: [
     'parts/cover.html',
     'parts/intro.md',
@@ -527,38 +528,27 @@ export default {
 - **`.md` partials** can hold one or many slides. A line that is exactly `---`
   splits the file into separate slides (reveal.js convention); each chunk is
   wrapped into its own `<deck-feature><deck-md>…</deck-md></deck-feature>`. Use
-  `***` for a horizontal rule inside a slide (since `---` is the slide break).
+  `***` for a horizontal rule inside a slide, since `---` is the slide break.
 
 Run it:
 
 ```bash
-node build/vite-deck.mjs decks/example/deck.config.js
-# or with an explicit output path:
-node build/vite-deck.mjs decks/example/deck.config.js dist-decks/example.html
+npx rikiki assemble deck.config.js                 # → <title>.html next to the config
+npx rikiki assemble deck.config.js out/talk.html   # explicit output
+npx rikiki assemble deck.config.js -               # to stdout
 ```
 
-There are also npm scripts: `npm run deck <config>` and `npm run deck:example`.
-The default output file is named from `title` and written next to the config.
+`theme` and `bundle` default to the `rikiki/…` paths `rikiki init` writes, which
+are the ones `rikiki bundle` inlines. Point them elsewhere and the deck still
+serves, but the command says on stderr that the single-file export will leave
+those references external.
 
-### Bundling caveat for assembled decks
-
-> The single-file export step (`bundle.mjs`, §12) only rewrites paths that use
-> the `rikiki/…` convention · specifically references matching
-> `rikiki/(dist|themes|tokens.css)` (as the decks under `examples/` do). It does
-> **not** resolve plain relative paths like `../../dist/index.js`.
->
-> The in-repo `decks/example` deliberately uses `../../dist/index.js` /
-> `../../tokens.css` relative paths so it can be **served directly** for dev. As
-> a result, `decks/example`'s assembled output is meant for direct serving and
-> does **not** bundle via `bundle.mjs` as-is. To produce a bundleable assembled
-> deck, point its `deck.config.js` `theme`/`bundle` at the `rikiki/…`-style paths
-> that `bundle.mjs` rewrites.
-
----
+Assembly is a one-way step: edit the partials, re-run, and keep the assembled
+file as an artefact rather than a source.
 
 ## 10 · Livereload (authoring only)
 
-`src/livereload.ts` polls the `Last-Modified`/etag of the deck's files and
+The livereload module (`dist/livereload.js`) polls the `Last-Modified`/etag of the deck's files and
 auto-reloads the page when any change (showing a brief toast and keeping the
 current slide via the hash). It watches: the deck's `<link rel="stylesheet">`
 hrefs, the rikiki component files in `dist/`, and the deck HTML itself.
@@ -566,7 +556,7 @@ hrefs, the rikiki component files in `dist/`, and the deck HTML itself.
 Enable it two ways:
 
 - **`?live`** on the deck URL · `dist/index.js` lazy-imports the poller only when
-  this query param is present, e.g. `…/starter.html?live`.
+  this query param is present, e.g. `…/my-deck.html?live`.
 - **Load the module directly** · `<script type="module" src="./dist/livereload.js">`
   (it auto-starts on import).
 
@@ -626,19 +616,25 @@ Light-DOM helper classes the theme ships (use on slotted children):
 
 ## 12 · Bundling (single-file export)
 
-`bundle.mjs` (Vite + vite-plugin-singlefile) crawls a deck's `<link>` and
-`<script type="module">` references, bundles and inlines everything (Lit
-included) into one self-contained HTML file:
+`rikiki bundle` crawls a deck's `<link>` and `<script type="module">`
+references and inlines everything, lit included, into one self-contained HTML
+file. It curates the runtime down to the components the deck actually uses.
 
 ```bash
-node bundle.mjs my-talk/index.html              # → my-talk/index.bundle.html
-node bundle.mjs my-talk/index.html out.html     # explicit output
-node bundle.mjs my-talk/index.html -            # to stdout
-node bundle.mjs my-talk/index.html --no-fonts   # strip Google Fonts @import (system fonts, zero network)
+npx rikiki bundle my-talk/index.html            # → my-talk/index.bundle.html
+npx rikiki bundle my-talk/index.html out.html   # explicit output
+npx rikiki bundle my-talk/index.html -          # to stdout
+npx rikiki bundle my-talk/index.html --no-fonts # drop the web fonts, use system ones
+npx rikiki bundle my-talk/index.html --with-mermaid   # inline the mermaid runtime
+npx rikiki bundle my-talk/index.html --with-shiki     # inline the Shiki highlighter
 ```
 
-The bundler resolves rikiki references written with the `rikiki/(dist|themes|tokens.css)`
-path convention (see the §9 caveat about decks that use plain relative paths).
+The command needs the optional peer `rolldown` (`npm i -D rolldown`); without
+it, it says so and does nothing. It exits non-zero if the result would still
+fetch something at runtime, so a file it accepts really opens offline.
+
+It resolves rikiki references written in the `rikiki/(dist|themes|tokens.css)`
+spelling · the one `rikiki init` writes.
 
 ---
 
@@ -965,11 +961,11 @@ then support.
 It costs nothing in type size: at the shipped title size the usable width holds
 about forty-four characters a line, so fourteen words fit on two lines. It does
 cost height · a two-line title takes a line back from the body, and
-`e2e/slide-budget.spec.ts` will say so.
+the repository's slide-budget suite will say so.
 
 `deck-cover` and `deck-section` are exempt. A chapter title is a boundary, not
 an assertion, and three words are right there.
-`scripts/assertion.test.mjs` holds the band on every shipped deck.
+a test in the repository holds the band on every shipped deck.
 
 ### 14.3 · The five rules
 
@@ -1076,7 +1072,7 @@ fetches the framework every time it runs, so it needs the network and is **not**
 an archival format. Always pin a version.
 
 The self-containment of a standalone file is enforced, not assumed:
-`e2e/bundle.spec.ts` writes each bundle outside the repository, opens it over
+the bundle suite writes each bundle outside the repository, opens it over
 `file://`, and fails if the page issues a single request beyond itself.
 
 ---
@@ -1107,7 +1103,7 @@ reports any asset it could not load rather than handing back a silently
 incomplete PDF. It needs **Playwright**, an optional peer dependency:
 `npm i -D playwright && npx playwright install chromium`.
 
-The whole contract is verified in `e2e/print.spec.ts` by reading the produced
+The whole contract is verified by a print suite that reads the produced
 PDF back with poppler.
 
 ---
@@ -1133,7 +1129,7 @@ An embedded deck:
 
 **Several decks per document are supported.** Each keeps its own canvas, its own
 slide index and its own navigation; focus decides which one the keyboard drives.
-Only one of them can be the page. Pinned by `e2e/multi-deck.spec.ts`.
+Only one of them can be the page. Pinned by the multi-deck suite.
 
 Recommended for a thumbnail or an inline demo:
 
@@ -1252,7 +1248,7 @@ One direction, four rules, repeated by every component here. They come from the
 medium rather than from a catalogue: a slide is read from three to ten metres in
 about forty seconds while someone talks over it, and at that distance area, size
 and position survive while hairlines, small caps, thin strokes and pale tints do
-not. See `src/extras/signature.ts` and `docs/design/adr-002-extras-visual-direction.md`.
+not.
 
 1. **One mass at most.** A single filled area per component, carrying whatever
    the markup marks. Nothing marked means nothing filled.
@@ -1371,7 +1367,7 @@ audience. A revealing table publishes the step count it needs onto its slide.
 The marked row is a dark band and the marked column takes colour and weight ·
 one fill per table, never two overlapping tints. Both `deck-csv` and
 `deck-table` follow the same rule, and both are measured: a fill that a room
-cannot tell from the page fails `scripts/theme-contrast.test.mjs`. Knobs:
+cannot tell from the page fails the theme-contrast test. Knobs:
 `--deck-csv-mark-bg`, `--deck-csv-mark-color`, `--deck-csv-mark-col-color`,
 `--deck-csv-mark-col-on-mark`, `--deck-csv-header-bg`, `--deck-csv-header-rule`.
 
@@ -1443,7 +1439,7 @@ Two ways a slide fails a room, and what the suite does about each.
 **Too full is a defect.** The engine never lets content overflow: every slide
 shell and every cell carries `overflow: hidden`, so an over-filled slide
 silently loses its last lines and nobody in the room knows.
-`e2e/slide-budget.spec.ts` walks every shipped deck slide by slide and fails
+The slide-budget suite walks every shipped deck slide by slide and fails
 when a clipping box loses more than a few pixels of content.
 
 **Too empty is a judgement.** A section title is meant to be sparse. The same

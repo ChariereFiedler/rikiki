@@ -64,7 +64,7 @@ for offline decks.
 
 ## Verify
 
-Load a deck (e.g. `examples/rikiki-tour/`) with your theme `<link>`. Click
+Load a deck (`npx rikiki init probe.html` writes one) with your theme `<link>`. Click
 through covers, sections, callouts, code, and a `deck-takeaway` (it uses
 `--rik-surface-inverse` + `--rik-accent`). Every surface, text tone, accent and
 status color must be intentional — no browser-default black or unstyled blocks.

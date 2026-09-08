@@ -11,10 +11,13 @@ This documentation tracks rikiki v0.6.0.
 ## TL;DR
 
 ```sh
-cp starter.html my-deck.html
+npm install rikiki-deck
+npx rikiki init my-deck.html
+python3 -m http.server        # ES modules need http://, not file://
 ```
 
-Edit `my-deck.html`. Each slide is a custom element. Markdown is available anywhere via `<deck-md>`. Navigate with `←` / `→` (or click, or the scroll wheel), `O` for the overview grid. Decks are linear by default; add `nav="2d"` on `<deck-root>` for chapter/slide grid navigation.
+`init` writes the deck and copies the runtime it loads into `./rikiki/` beside
+it. Edit `my-deck.html`. Each slide is a custom element. Markdown is available anywhere via `<deck-md>`. Navigate with `←` / `→` (or click, or the scroll wheel), `O` for the overview grid. Decks are linear by default; add `nav="2d"` on `<deck-root>` for chapter/slide grid navigation.
 
 ## For LLMs / coding assistants
 
@@ -31,42 +34,30 @@ npm package:
   `.claude/skills/` (see [Claude Code skills](#claude-code-skills) to install
   them); they teach an assistant the authoring/theming/debugging workflows.
 
-## Layout
+## What the install gives you
 
 ```
-rikiki/
+node_modules/rikiki-deck/
 ├── tokens.css                ← entry point · re-exports the default theme
 ├── themes/
 │   ├── rikiki.css            ← default theme (acid greens + mango, on dark)
 │   ├── siliceum.css          ← alternative theme (warm paper + yellow)
 │   └── siliceum-fonts.css    ← self-hosted Source Sans Pro + JetBrains Mono
 ├── fonts/                    ← woff2 files used by the Siliceum theme
-├── src/                      ← TypeScript sources · organised by DS bucket
-│   ├── index.ts              ← registers every component
-│   ├── shared-styles.ts
-│   ├── livereload.ts
-│   ├── runtime/              ← deck-root, deck-help, deck-overview,
-│   │                            deck-presenter, deck-transition, deck-notes
-│   ├── layouts/              ← deck-cover, deck-section, deck-feature,
-│   │                            deck-split, deck-feature-cards, deck-takeaway,
-│   │                            deck-photo
-│   ├── molecules/            ← deck-callout, deck-card, deck-md, deck-mermaid,
-│   │                            deck-stat, deck-metric, deck-tier-list,
-│   │                            deck-step-list, deck-shortcut, deck-stack,
-│   │                            deck-grid
-│   ├── atoms/                ← deck-badge, deck-kicker, deck-punch, deck-code
-│   └── plugins/              ← opt-in (shiki for advanced syntax highlighting)
-├── dist/                     ← built output · FLAT regardless of src bucket
-│                                (deck-root's dynamic imports rely on it)
-├── build.mjs                 ← esbuild script
-├── tsconfig.json
-└── starter.html              ← blank template, one slide per layout type
+├── dist/                     ← the runtime · plain ES modules, FLAT layout
+│   └── vendor/               ← lit and marked · mermaid and Shiki when asked
+├── bin/                      ← the rikiki CLI
+├── docs/llms/                ← the full agent reference
+└── .claude/skills/           ← three agent skills · install with `rikiki skills`
 ```
+
+`init` copies the first five of those next to your deck, minus the heavy
+plugin payloads unless you ask for them.
 
 ## Three-layer styling
 
 1. **Theme tokens** (`themes/<name>.css`) at `:root` · custom properties cross the Shadow DOM, so they reach every component.
-2. **Shared styles** (`src/shared-styles.ts`) · base typography, helpers, imported by every layout via `static styles`.
+2. **Shared styles** · base typography and helpers, compiled into every layout's own Shadow DOM.
 3. **Layout-specific CSS** · each component's own Shadow DOM.
 
 To re-theme: copy a theme file, change the values, that's it. All components follow.
@@ -233,37 +224,28 @@ deck-cover::part(brand) { font-family: 'Comic Sans'; }
 
 ### Add a layout
 
-Create `src/layouts/deck-my-layout.ts`, `import { slideBase } from '../shared-styles.js'`, extend `LitElement`, register in `src/index.ts`. Rebuild.
+Adding a `deck-*` element means changing the framework itself, which lives in
+the repository rather than in this package. See
+[CONTRIBUTING](https://gitlab.com/tordu-jardin/rikiki/-/blob/main/CONTRIBUTING.md).
 
-## Build
+## No build step
 
-```bash
-npm install
-npm run build      # node build.mjs (esbuild) + tsc --emitDeclarationOnly
-npm run watch      # esbuild watch mode
-npm run typecheck  # tsc --noEmit
-```
-
-`dist/` is versioned · consumers don't run a build.
+The published runtime is plain ES modules. Nothing here needs compiling,
+bundling or transpiling to author, serve or present a deck.
 
 ## Claude Code skills
 
 The package ships three Claude Code skills so an assistant authoring your deck
 knows the framework: `rikiki-deck` (build a deck), `rikiki-theme` (theming), and
-`rikiki-debug` (diagnose a deck). After `npm install rikiki-deck`, copy them into
-your project (or `~/.claude/skills` for all projects):
+`rikiki-debug` (diagnose a deck).
 
 ```sh
-# project-local · available in this repo only
-mkdir -p .claude/skills
-cp -r node_modules/rikiki-deck/.claude/skills/* .claude/skills/
-
-# or global · available in every project
-cp -r node_modules/rikiki-deck/.claude/skills/* ~/.claude/skills/
+npx rikiki skills                       # into ./.claude/skills/
+npx rikiki skills --dir ~/.claude/skills   # or once, for every project
 ```
 
-Claude Code discovers them automatically on the next session. Re-run the copy
-after `npm update rikiki-deck` to pick up skill changes.
+Claude Code discovers them on the next session. Re-run the command with
+`--force` after upgrading the package to pick up skill changes.
 
 ## Reveals & animations
 
@@ -271,8 +253,7 @@ Per-element click-through builds are an opt-in plugin (`installClickStages()` fr
 `dist/click-stages.js`): annotate elements with `data-click`, `data-click-hide`,
 `data-click-auto`, `data-click-stagger`, and `data-morph` (Keynote-style Magic
 Move via View Transitions). Slide transitions are driven by `transition="…"` on
-`<deck-root>`. See `docs/llms/rikiki-reference.md` §7 for the full attribute set,
-and `decks/tests/demo.html` for a runnable feature tour.
+`<deck-root>`. See `docs/llms/rikiki-reference.md` §7 for the full attribute set.
 
 ## Known limits
 

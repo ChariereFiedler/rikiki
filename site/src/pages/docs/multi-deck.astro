@@ -33,13 +33,12 @@ Plain markdown. One idea here.
 A line with just \`---\` starts a new slide, reveal.js style.
 Use \`***\` if you want a rule inside a slide.`;
 
-const runCmd = `# from the rikiki checkout
-node build/vite-deck.mjs decks/my-talk/deck.config.js
+const runCmd = `npx rikiki assemble deck.config.js
 
-# or the npm script
-npm run deck decks/my-talk/deck.config.js
+# explicit output, or - for stdout
+npx rikiki assemble deck.config.js out/my-talk.html
 
-# writes decks/my-talk/my-talk.html · a normal rikiki deck`;
+# writes my-talk.html next to the config · a normal rikiki deck`;
 ---
 
 <Docs
@@ -94,13 +93,14 @@ npm run deck decks/my-talk/deck.config.js
 
 <h2 id="bundle">Bundling an assembled deck</h2>
 <p>
-  Want a single self-contained file? <code>bundle.mjs</code> takes an
+  Want a single self-contained file? <code>rikiki bundle</code> takes an
   assembled deck the same as any other, on one condition: the deck has to
   reference rikiki with the <code>rikiki/...</code> path style that the
-  bundler rewrites (the way the <code>examples/</code> decks do). A deck that
-  points at rikiki with bare <code>../../</code> relatives serves fine on its
-  own but won't bundle. Set <code>theme</code> and <code>bundle</code> in the
-  config accordingly when single-file export is the goal.
+  bundler rewrites. That is the default in the config, and also what
+  <code>rikiki init</code> writes. Point <code>theme</code> or
+  <code>bundle</code> at bare <code>../../</code> relatives instead and the
+  deck serves fine on its own, but the assemble command warns that those
+  references will stay external.
 </p>
 
 </Docs>

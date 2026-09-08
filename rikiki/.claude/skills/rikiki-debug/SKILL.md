@@ -35,17 +35,16 @@ source of truth for tags, attributes, and tokens.
 | Steps don't advance | missing `steps="N"` + `[data-step-block]`, or `deck-code[step-groups]` JSON malformed |
 | Navigation dead | `mouse-nav="none"`, focus trapped in an input, or an overlay (`?`/`O`) open |
 | Zoom does nothing / "ça zoom pas" | Slide zoom is on by default in the fixed canvas: Ctrl/⌘+wheel, pinch, or `+`/`-`/`0` magnify the slide (drag/wheel to pan, any nav resets). If it does nothing: the deck is in `fluid` mode (no fixed layout to magnify · use the fixed canvas), `no-zoom` is set, or an overlay (`?`/`O`) is open. For reflowing bigger text instead of magnification, use `fluid` + `cqw/cqh` |
-| Embedded deck breaks the host page | older build — 0.5.0+ scopes globals to full-page decks; rebuild/upgrade |
+| Embedded deck breaks the host page | an older runtime — 0.5.0+ scopes globals to full-page decks; upgrade the package |
 | Livereload silent | `?live` missing from the URL, or the static server doesn't see file changes |
-| Bundled single-file deck unstyled | `bundle.mjs` resolves a plain relative ref against the deck's own dir; the `rikiki/(dist\|themes\|tokens.css)` convention is what triggers the package-root fallback. A deck pointing outside its dir (`../../dist/index.js`) won't inline — repoint at `rikiki/…`-style paths. See reference §9 |
+| Bundled single-file deck unstyled | `rikiki bundle` resolves a plain relative ref against the deck's own dir; the `rikiki/(dist\|themes\|tokens.css)` convention is what triggers the package-root fallback. A deck pointing outside its dir (`../../dist/index.js`) won't inline — repoint at `rikiki/…`-style paths. See reference §9 |
 
 ## Isolate
 
-Reproduce against a known-good fixture (`examples/rikiki-tour/`,
-`rikiki/starter.html`). If the fixture works and your deck doesn't, the deck
-markup is the fault — diff its `<head>` and slide tags against the reference.
-For rendering regressions in the engine itself, the Playwright render net
-(`e2e/`) is the fast reproduction harness.
+Reproduce against a known-good deck: `npx rikiki init probe.html` writes one,
+with its runtime, in a directory of its own. If that deck works and yours
+doesn't, the fault is in your markup — diff its `<head>` and its slide tags
+against the reference.
 
 ## Rules
 
