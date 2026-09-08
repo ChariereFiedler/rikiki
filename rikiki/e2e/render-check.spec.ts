@@ -324,3 +324,38 @@ test.describe('what the report says about itself', () => {
     expect(codes(r)).not.toContain('SLIDE_DENSE');
   });
 });
+
+test.describe('an attribute a component does not read', () => {
+  test('is reported, with what the element does accept', () => {
+    // deck-stat takes `num` and its words as content. Writing label="…" on it
+    // loses the label with no error anywhere · the slide simply renders without
+    // it, which is how three recipes in the authoring guide shipped wrong.
+    deck('stray', `<deck-feature id="s"><h1 slot="title">T</h1>
+      <deck-stat value="9" label="files">body</deck-stat></deck-feature>`);
+    const r = report('stray');
+    const strays = r.json.diagnostics.filter((d: any) => d.code === 'UNKNOWN_ATTRIBUTE');
+    expect(strays.map((d: any) => d.message).join(' ')).toContain('label');
+    expect(strays[0].severity).toBe('warning');
+    expect(strays[0].measurement.accepts).toContain('num');
+    expect(strays[0].element).toContain('deck-stat');
+  });
+
+  test('is not reported when the attribute only styles the element', () => {
+    // `compact` on deck-mermaid changes nothing in JavaScript · it exists as
+    // `:host([compact])` in the shadow styles. Reading only observedAttributes
+    // called it stray and cried wolf on three decks in this repository.
+    deck('styled', `<deck-feature id="c"><h1 slot="title">T</h1>
+      <deck-code lang="ts" hero>const a = 1;</deck-code></deck-feature>`);
+    const r = report('styled');
+    expect(r.json.diagnostics.filter((d: any) => d.code === 'UNKNOWN_ATTRIBUTE')).toEqual([]);
+  });
+
+  test('measures the size of the author\'s text, not the component chrome', () => {
+    // A cover's meta labels are sized by the theme. Telling an author to fix a
+    // span they never wrote is noise, and it fired on three shipped decks.
+    deck('chrome', `<deck-cover id="c" speaker="Alex" duration="5 min"><h1>Titre</h1></deck-cover>`);
+    const r = report('chrome');
+    expect(r.json.diagnostics.filter((d: any) => d.code === 'TEXT_TOO_SMALL')).toEqual([]);
+    expect(r.json.notChecked.join(' ')).toMatch(/chrome/);
+  });
+});

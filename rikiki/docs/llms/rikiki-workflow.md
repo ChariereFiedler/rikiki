@@ -54,7 +54,10 @@ exactly and keep where it came from in `<deck-notes>`. If a slide needs a figure
 you were not given, mark it in the deck itself:
 
 ```html
-<deck-stat value="TODO" label="conversion rate · to confirm with the data team"></deck-stat>
+<deck-stat num="TODO" tone="orange">
+  <h3 slot="claim">conversion rate</h3>
+  to confirm with the data team before the talk
+</deck-stat>
 ```
 
 A visible gap gets filled before the talk. An invented number gets presented.
@@ -94,6 +97,10 @@ HTML directly. Two rules that save a rewrite:
 - **Give every slide a stable `id`.** `<deck-feature id="ci-gate">`. It is how
   `render` selects it, how `check` reports it, and how you edit one slide later
   without touching the rest.
+- **An attribute a component does not read is dropped in silence.** `deck-stat`
+  takes `num` and its words as content; writing `label="…"` on it loses the
+  label with no error anywhere. `check` reports these as `UNKNOWN_ATTRIBUTE`,
+  and the reference tables say what each element accepts.
 - **Put detail in `<deck-notes>`, not on the slide.** The presenter window (`P`)
   shows them, the projector does not. Sources, figures to verify and the
   sentence you would say belong there.
@@ -171,7 +178,7 @@ reference for why.
 ```html
 <deck-feature id="ci-gate" eyebrow="Delivery">
   <h1 slot="title">A tag that publishes runs fewer checks than a branch push</h1>
-  <deck-callout tone="warn">
+  <deck-callout type="warn">
     On a tag pipeline the branch variable is empty, so only the publish job runs.
   </deck-callout>
   <deck-notes>Source: the pipeline definition, job rules. Say the consequence out loud.</deck-notes>
@@ -216,7 +223,10 @@ is being weighed against anything.
 ```html
 <deck-feature id="drift" eyebrow="Measured" spread="center">
   <h1 slot="title">Nine tracked files drifted from their sources on a clean build</h1>
-  <deck-stat value="9" label="files rebuilt differently" note="plus one never committed"></deck-stat>
+  <deck-stat num="9" tone="orange">
+    <h3 slot="claim">files rebuilt differently</h3>
+    plus one that was never committed at all
+  </deck-stat>
   <deck-notes>Measured on a clean tree, 2026-09-08. The tenth file is the deck-point declaration.</deck-notes>
 </deck-feature>
 ```
@@ -236,10 +246,10 @@ slides if each deserves a sentence.
 <deck-feature id="loop" eyebrow="Workflow" spread="center">
   <h1 slot="title">Every deck goes through the same four gestures</h1>
   <deck-step-list>
-    <deck-step num="1">Write the HTML</deck-step>
-    <deck-step num="2">Render and check</deck-step>
-    <deck-step num="3">Fix what it names</deck-step>
-    <deck-step num="4">Bundle or export</deck-step>
+    <deck-step n="1">Write the HTML</deck-step>
+    <deck-step n="2">Render and check</deck-step>
+    <deck-step n="3">Fix what it names</deck-step>
+    <deck-step n="4">Bundle or export</deck-step>
   </deck-step-list>
 </deck-feature>
 ```
@@ -314,8 +324,8 @@ real interface rather than a structure.
 <deck-feature id="weight" eyebrow="Before / after">
   <h1 slot="title">Naming the published assets cut the site from 400 MB to 14</h1>
   <deck-metric-list>
-    <deck-metric label="Published site" value="14.3 MB" delta="-96%"></deck-metric>
-    <deck-metric label="Files a browser fetches" value="7 entries"></deck-metric>
+    <deck-metric value="14.3 MB">Published site, down from 400 MB</deck-metric>
+    <deck-metric value="7 entries">What a browser is allowed to fetch</deck-metric>
   </deck-metric-list>
   <deck-notes>The old build copied the sources, the fixtures and 366 MB of dependencies.</deck-notes>
 </deck-feature>
