@@ -22,7 +22,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   at bundle time. Its `theme` and `bundle` default to the `rikiki/…` spelling
   `init` writes, which is the one `bundle` rewrites.
 
+- **`rikiki render` · one picture per slide, plus a manifest.** An agent cannot
+  see a deck. This writes a PNG per slide, a dependency-free gallery, and a
+  versioned `manifest.json` tying each picture to the slide index, id and title
+  it came from. Slides are picked by number or id, the canvas size is explicit,
+  and `--steps` captures each revealed state instead of only the opening one,
+  which on a stepped slide is usually the emptiest. File names derived from a
+  slide id are always safe; the manifest keeps the id verbatim.
+- **`rikiki check` · what is wrong, where, and what to try.** Ten stable codes,
+  a severity, the slide, an element path that reaches into the Shadow DOM, the
+  measurement behind the finding and a suggestion. `--json` writes a versioned
+  report to stdout and nothing else, even when the deck is broken. Exit 0 clean,
+  1 defects, 2 could not look. The report names what was *not* checked, because
+  silence about a check that never ran reads as approval. It will not call empty
+  space a defect, and it does not claim to audit accessibility.
+- **One browser layer behind export, render and check.** Lazy Playwright, a
+  local server on a free port, the narrowest served root that still holds the
+  deck, error and missing-resource collection, a settle that waits on animations
+  rather than on a clock, and both resources closed even when the command fails.
+
 ### Fixed
+- **The served root no longer admits a sibling with a similar name.** The path
+  check was a string prefix, so serving `/srv/deck` also admitted
+  `/srv/deck-secrets`. Traversals, escaped traversals and prefix collisions are
+  now covered by tests.
+- **The starter deck no longer plants a phantom element.** Its own prose said
+  `<deck-*>`, which the HTML parser turned into an element node. `rikiki check`
+  found it in the deck `rikiki init` writes, which is how it was noticed.
 - **An assemble config is read whatever dialect the host project uses.** `.js`
   is CommonJS or ESM depending on the nearest package.json, and `npm init -y`
   writes `"type": "commonjs"`. A config that did not match crashed with a parse

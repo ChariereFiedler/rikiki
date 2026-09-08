@@ -638,6 +638,86 @@ spelling · the one `rikiki init` writes.
 
 ---
 
+## 12b · Looking at a deck, and measuring it
+
+You cannot see a deck you wrote. These two commands are the eyes and the ruler.
+Both need the optional peer `playwright`.
+
+### `rikiki render` · pictures
+
+```bash
+npx rikiki render talk.html                       # → talk.shots/, one PNG per slide
+npx rikiki render talk.html --out previews/       # somewhere else
+npx rikiki render talk.html --slides intro,4      # by id or by 1-based number
+npx rikiki render talk.html --steps               # every revealed state, not just the first
+npx rikiki render talk.html --width 1280 --height 720
+```
+
+It writes, beside the pictures:
+
+- `index.html` · a plain gallery, no runtime, opens offline;
+- `manifest.json` · the contract between a picture and the slide it came from.
+
+```json
+{
+  "schema": 1,
+  "deck": "talk.html",
+  "canvas": { "width": 1920, "height": 1080 },
+  "slideCount": 12,
+  "captured": 12,
+  "stepsCaptured": false,
+  "shots": [
+    { "index": 1, "id": "intro", "tag": "deck-cover", "title": "…", "step": 0, "file": "01-intro.png" }
+  ]
+}
+```
+
+Read `stepsCaptured`. Without `--steps`, a stepped slide is photographed in its
+opening state, which is usually the emptiest one it has: judging it then is
+judging a slide nobody will see. File names are derived from the slide id and
+are always safe, whatever the id contains; the manifest keeps the id verbatim,
+which is what you edit against.
+
+The command waits for the elements to upgrade, the fonts to load, the diagrams
+to draw and every animation to finish before each shot. It does not sleep.
+
+### `rikiki check` · measurements
+
+```bash
+npx rikiki check talk.html          # a readable report on stderr
+npx rikiki check talk.html --json   # the report on stdout, nothing else
+```
+
+Exit codes: `0` nothing blocking, `1` defects found, `2` the deck could not be
+looked at (bad invocation, unreadable file). An agent branches on those: `1`
+means fix the deck, `2` means fix the call.
+
+Each diagnostic carries a stable `code`, a `severity`, the slide it belongs to,
+an `element` path that reaches into the Shadow DOM (`deck-feature#detail
+::shadow div`), the `measurement` that justifies it, and a `suggestion`.
+
+| Code | Severity | What it means |
+|---|---|---|
+| `RUNTIME_NOT_LOADED` | error | the elements never registered · every slide is raw HTML |
+| `NO_DECK_ROOT` / `NO_SLIDES` | error | nothing to show |
+| `RESOURCE_MISSING` | error | a file the deck asked for did not arrive |
+| `PAGE_ERROR` | error | the page threw during setup |
+| `UNKNOWN_ELEMENT` | error | a misspelled `deck-*` tag · it renders as nothing at all |
+| `STRAY_MARKUP` | warning | prose about markup that the parser turned into an element · escape the angle brackets |
+| `CONTENT_CLIPPED` | error | the slide clips rather than scrolls · that content is lost |
+| `SLIDE_DENSE` | warning | nothing is cut yet, but there is no room left |
+| `TEXT_TOO_SMALL` | warning | below the readable floor once the canvas is scaled |
+| `DUPLICATE_SLIDE_ID` | warning | two slides answer to the same name |
+| `EXTERNAL_DEPENDENCY` | warning | the deck fetches from the network at runtime |
+
+The report also carries `notChecked`, which names what was **not** looked at:
+revealed steps, accessibility, wording and facts, other viewports, text inside
+a diagram. Silence about a check that never ran would read as a clean bill.
+
+Two things it will not do: call a slide bad for having empty space, and claim a
+deck is accessible. Space is a choice, and a handful of measurements is not an
+accessibility audit.
+
 ## 13 · Recipes / cookbook
 
 Copy-paste patterns. Every tag/attribute used here is defined above · combine

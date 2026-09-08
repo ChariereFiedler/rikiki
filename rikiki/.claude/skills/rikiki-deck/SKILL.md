@@ -86,18 +86,26 @@ The short version, because it decides most of the work:
 6. **Livereload (authoring)** — add `?live` to the deck URL (e.g.
    `…/deck.html?live`) so `index.js` lazy-loads the poller and auto-reloads on
    file changes. Never ship it in a presented or bundled deck.
-7. **Share** — `npx rikiki bundle <deck>.html` produces one self-contained file
+7. **Look before you claim it works** — `npx rikiki check <deck>.html` names
+   what is broken and where, `npx rikiki render <deck>.html` writes one picture
+   per slide plus a manifest tying each one to its slide id. Pass `--steps` when
+   the deck reveals content, or you are judging the emptiest state of it. Fix,
+   re-run, and only then say it is done.
+8. **Share** — `npx rikiki bundle <deck>.html` produces one self-contained file
    (`--no-fonts` strips the web fonts). It needs the optional peer `rolldown`;
    without it the command says so and installs nothing behind your back. It
    rewrites `rikiki/(dist|themes|tokens.css)`-style references, not plain
    relative paths like `../../dist/index.js`.
-8. **Hand over a PDF** — `npx rikiki export <deck>.html` writes one page per
+9. **Hand over a PDF** — `npx rikiki export <deck>.html` writes one page per
    slide. It needs the optional peer `playwright`.
 
 ## Verify
 
-Serve with `python3 -m http.server` and open the deck; click through every slide
-and every step. Confirm slides are styled and reveals fire in order.
+`npx rikiki check <deck>.html` first: it measures what a glance cannot, and its
+exit code is 1 when the deck has defects. Then `npx rikiki render <deck>.html`
+and read the pictures · a green check with an ugly slide is still an ugly
+slide. For the presented behaviour, serve the folder and click through every
+slide and every step.
 
 ## Rules
 

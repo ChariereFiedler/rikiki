@@ -39,6 +39,14 @@ source of truth for tags, attributes, and tokens.
 | Livereload silent | `?live` missing from the URL, or the static server doesn't see file changes |
 | Bundled single-file deck unstyled | `rikiki bundle` resolves a plain relative ref against the deck's own dir; the `rikiki/(dist\|themes\|tokens.css)` convention is what triggers the package-root fallback. A deck pointing outside its dir (`../../dist/index.js`) won't inline — repoint at `rikiki/…`-style paths. See reference §9 |
 
+## Measure first
+
+`npx rikiki check <deck>.html --json` before reading anything. It names the
+runtime that never loaded, the file that did not arrive, the misspelled element
+that renders as nothing, and the content the slide clips away · each with the
+element path, inside the Shadow DOM when that is where it is. Most of the table
+above is answered by that one command.
+
 ## Isolate
 
 Reproduce against a known-good deck: `npx rikiki init probe.html` writes one,

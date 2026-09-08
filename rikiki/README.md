@@ -19,6 +19,24 @@ python3 -m http.server        # ES modules need http://, not file://
 `init` writes the deck and copies the runtime it loads into `./rikiki/` beside
 it. Edit `my-deck.html`. Each slide is a custom element. Markdown is available anywhere via `<deck-md>`. Navigate with `←` / `→` (or click, or the scroll wheel), `O` for the overview grid. Decks are linear by default; add `nav="2d"` on `<deck-root>` for chapter/slide grid navigation.
 
+## Look at it, and measure it
+
+You cannot review a deck you cannot see. Two commands stand in for eyes, both
+needing the optional peer `playwright`:
+
+```sh
+npx rikiki render talk.html            # one PNG per slide + a gallery + a manifest
+npx rikiki render talk.html --steps    # every revealed state, not just the first
+npx rikiki check talk.html             # what is wrong, where, and what to try
+npx rikiki check talk.html --json      # the same, as a versioned report
+```
+
+`check` reports a runtime that never loaded, a file that did not arrive, a
+misspelled `deck-*` element that renders as nothing, content the slide clips
+away, text too small for a room, and duplicate slide ids. It exits 0 when
+nothing blocks, 1 on defects, 2 when it could not look at the deck at all. It
+also lists what it did **not** check, because silence would read as approval.
+
 ## For LLMs / coding assistants
 
 If you point a coding assistant (Claude Code, Copilot, …) at this package, give it
