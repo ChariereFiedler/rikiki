@@ -1,0 +1,80 @@
+<div class="agent-loop" aria-label="LLM authoring and verification loop">
+  <div class="loop-label">
+    <span>Agent workflow</span>
+    <strong>Brief in. Evidence out.</strong>
+  </div>
+  <ol>
+    <li><span class="loop-num">01</span><strong>Brief</strong><code>prompt.md</code></li>
+    <li><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">02</span><strong>Reference</strong><code>llms.txt</code></li>
+    <li><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">03</span><strong>Deck</strong><code>index.html</code></li>
+    <li class="doctor"><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">04</span><strong>Doctor</strong><code>rikiki check</code></li>
+    <li><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">05</span><strong>Delivery</strong><code>HTML · PDF</code></li>
+  </ol>
+  <a href="/rikiki/docs/llms/rikiki-workflow.md">Open the complete agent workflow →</a>
+</div>
+
+<style>
+  .agent-loop {
+    margin-top: var(--rik-space-6);
+    padding: var(--rik-space-4);
+    background: var(--rik-surface-inverse);
+    color: var(--rik-text-inverse);
+    border-radius: var(--rik-radius-md);
+    box-shadow: var(--rik-elevation-2);
+  }
+  .loop-label {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: var(--rik-space-3); padding-bottom: var(--rik-space-3);
+    border-bottom: 1px solid var(--rik-border-inverse);
+  }
+  .loop-label span {
+    color: var(--rik-accent);
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: .14em; text-transform: uppercase;
+  }
+  .loop-label strong { font-family: var(--rik-font-display); }
+  ol {
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+    list-style: none; padding: var(--rik-space-4) 0; margin: 0;
+  }
+  li {
+    position: relative; display: flex; flex-direction: column; gap: 4px;
+    min-width: 0; padding: 0 var(--rik-space-3);
+  }
+  li:first-child { padding-left: 0; }
+  .loop-num { color: var(--rik-accent); font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono); }
+  li strong { font: 800 1rem/1.2 var(--rik-font-display); }
+  li code {
+    width: fit-content; max-width: 100%;
+    color: var(--rik-text-inverse--muted);
+    background: var(--rik-surface-inverse__overlay);
+    font-size: .72rem; overflow-wrap: anywhere;
+  }
+  .loop-arrow {
+    position: absolute; left: -5px; top: 22px;
+    color: var(--rik-text-inverse--ghost); font-family: var(--rik-font-mono);
+  }
+  .doctor {
+    margin: -8px 0; padding-top: 8px; padding-bottom: 8px;
+    border: 1px solid rgba(0, 200, 160, .5);
+    background: rgba(0, 200, 160, .1); border-radius: var(--rik-radius-sm);
+  }
+  .agent-loop > a {
+    color: var(--rik-accent); font-size: var(--rik-font-size-sm);
+    font-weight: 800; text-decoration: none;
+  }
+  .agent-loop > a:hover { text-decoration: underline; }
+  @media (max-width: 640px) {
+    .agent-loop { padding: var(--rik-space-3); }
+    .loop-label { align-items: flex-start; flex-direction: column; }
+    ol { grid-template-columns: 1fr; gap: 0; padding: var(--rik-space-3) 0; }
+    li, li:first-child {
+      display: grid; grid-template-columns: 28px 1fr auto; align-items: center;
+      padding: 11px 8px; border-bottom: 1px solid var(--rik-border-inverse);
+    }
+    li:last-child { border-bottom: 0; }
+    li code { white-space: nowrap; }
+    .loop-arrow { display: none; }
+    .doctor { margin: 0; }
+  }
+</style>
