@@ -53,6 +53,35 @@ Each pass ends with a short status line (`PLAN_READY`, `DECK_WRITTEN`,
 findings. This gives the next agent a stopping point and makes an incomplete
 run visible instead of turning silence into approval.
 
+Use these boundaries in the agent prompts:
+
+```text
+PLANNER: You may inspect the brief and its sources. Produce contract.md,
+facts.md and plan.md. Do not write HTML. Mark unknowns TODO. End PLAN_READY.
+
+WRITER: Read only contract.md, facts.md, plan.md and the component reference.
+Write the deck and notes. Do not add facts or change slide ids. End
+DECK_WRITTEN with a list of TODOs and files changed.
+
+CONTENT CRITIC: Read contract.md, facts.md, plan.md and the deck. Do not edit.
+Check argument, title sequence, evidence, sources, notes and duration. Return
+findings as [severity, slide id, evidence, proposed action]. End
+CONTENT_REVIEWED.
+
+VISUAL CRITIC: Read the rendered images and manifest, including reveal states.
+Do not edit. Check hierarchy, density, alignment, balance, legibility and
+whether the evidence is visible. Return [severity, slide id/state, observation,
+proposed action]. End VISUAL_REVIEWED.
+
+INTEGRATOR: Apply blocker and fix findings that do not change the user's
+argument or tone. Leave choices visible. Run check and render for the whole
+deck. End DELIVERY_READY only when no blocker or TODO remains.
+```
+
+The prompt is a boundary, not a substitute for judgment: the critic must cite
+the artifact or rendered state that supports a finding, and the integrator must
+keep an unresolved choice visible rather than silently deciding it.
+
 **The seven steps**
 
 1. [Fill the gaps in the brief](#1--fill-the-gaps-in-the-brief)
