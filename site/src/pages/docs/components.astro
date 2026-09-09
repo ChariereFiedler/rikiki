@@ -639,29 +639,6 @@ const optionalComponents: OptionalComponent[] = [
   <article class="comp">
     <h3 id={c.tag}><code>&lt;{c.tag}&gt;</code></h3>
     <p class="summary">{c.summary}</p>
-    {c.tag === 'deck-bento' && (
-      <aside class="bento-guide">
-        <strong>How the bento model works</strong>
-        <p>
-          <code>deck-bento</code> owns the grid. Put a <code>deck-cell</code> in the
-          default slot when the content needs a measured area, then use
-          <code>span="columns x rows"</code> to give it more room. A cell creates a
-          size container, so <code>cqw</code>, <code>cqh</code>, and
-          <code>&lt;deck-punch fit&gt;</code> respond to that cell rather than the
-          whole slide.
-        </p>
-        <p>
-          Use <code>deck-point</code> for text led by its content. A row of points
-          with the same number of children is automatically banded, keeping
-          headings and bodies aligned. Add <code>rows</code> or explicit spans when
-          the composition is art directed; the automatic banding then steps aside.
-        </p>
-        <p class="bento-recipe">
-          <code>deck-bento</code> → grid tracks · <code>deck-cell</code> → measured
-          surface · <code>deck-point</code> → content sized to its words
-        </p>
-      </aside>
-    )}
     {c.attrs && (
       <>
         <p class="block-head">Attributes</p>
@@ -907,29 +884,6 @@ const optionalComponents: OptionalComponent[] = [
     color: var(--rik-text-default--muted);
     line-height: 1.55;
     overflow-wrap: anywhere;
-  }
-  .bento-guide {
-    max-width: 760px;
-    padding: var(--rik-space-4);
-    border-left: 4px solid var(--rik-status-success);
-    background: var(--rik-surface-raised);
-    color: var(--rik-text-default--muted);
-  }
-  .bento-guide strong {
-    display: block;
-    margin-bottom: var(--rik-space-2);
-    color: var(--rik-text-default);
-    font-family: var(--rik-font-display);
-    font-size: 1.25rem;
-  }
-  .bento-guide p {
-    margin: var(--rik-space-2) 0 0;
-    line-height: 1.6;
-  }
-  .bento-guide code { color: var(--rik-text-default); }
-  .bento-guide .bento-recipe {
-    color: var(--rik-status-success);
-    font: 700 var(--rik-font-size-sm)/1.5 var(--rik-font-mono);
   }
   @media (max-width: 640px) {
     table.optional th,
