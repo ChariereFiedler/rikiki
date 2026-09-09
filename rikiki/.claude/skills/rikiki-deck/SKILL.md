@@ -1,130 +1,301 @@
 ---
 name: rikiki-deck
-description: Use when creating or editing a rikiki presentation deck (HTML decks using <deck-root> and deck-* Web Components), assembling multi-file decks, adding click-stage animations, enabling livereload, or bundling a deck to a single file. Triggers on "rikiki deck", "create a slide deck", "rikiki slides", "presentation deck".
+description: Use when writing, composing or fixing a slide deck with rikiki — turning a brief into slides, choosing a composition, writing speaker notes, adding reveals, checking a deck and delivering it as HTML, a single file or a PDF. Triggers on "rikiki deck", "create a slide deck", "make slides", "presentation deck", "fais des slides", "une présentation".
 ---
 
-# Authoring rikiki decks
+# Writing a deck with rikiki
 
-Rikiki is a Lit Web Components presentation framework. Decks are plain HTML: a
-theme stylesheet + `dist/index.js`, then a `<deck-root>` wrapping `deck-*` slide
-elements. No build step is required to author or run a deck.
+A deck is plain HTML: a theme stylesheet, then `dist/index.js`, then a
+`<deck-root>` wrapping `deck-*` elements. Nothing compiles. You edit the file,
+a browser renders it, and two commands let you see and measure what you wrote.
 
-## Before you start
+Work in this order. Skipping to step 4 is how a deck ends up correct and
+useless.
 
-Read the full component + attribute reference first:
-`docs/llms/rikiki-reference.md` (in the rikiki repo). It is the source of truth
-for every tag, attribute, slot, and design token. Do not invent tags,
-attributes, or tokens — use only what the reference lists.
+```
+1 contract → 2 plan → 3 composition → 4 write → 5 look & measure → 6 fix → 7 deliver
+```
 
-## What a good slide is, before how to wire one
+Full guide, with the nine recipes and their verified HTML:
+`node_modules/rikiki-deck/docs/llms/rikiki-workflow.md`.
+Every tag, attribute and token: `rikiki-reference.md` beside it.
 
-This skill used to describe only the wiring, and decks wired correctly from it
-were rejected in a room three times. The reference now carries the composition
-rules as §14; read that section before writing slides, not just the tables.
+## 1 · The contract, before any HTML
 
-The short version, because it decides most of the work:
+Eight lines. They decide everything after them.
 
-- **A slide is read at ten metres for forty seconds.** Area, size, position,
-  one saturated colour and empty space survive that. Hairlines, small type,
-  letter spacing and pale tints do not.
-- **The title states the message, the body proves it.** A content slide's title
-  is a full sentence of roughly eight to fourteen words saying what the slide
-  argues, and the body is its evidence · a figure, a table, a number. A title
-  that names a topic leaves the body carrying everything. Covers and chapter
-  titles are exempt.
-- **One loud thing per slide.** The statement is more than twice the reading
-  size · the theme enforces it, and a title at 1.5x is why a deck looks flat.
-- **One filled area at most**, carrying whatever the content marks. On these
-  themes a pale tint is invisible in a room; real emphasis is the inverse
-  surface.
-- **Left, ragged right.** Never centre one column inside a row of columns.
-- **A slide that fills a fifth of the canvas is not finished.** Use `spread`
-  when the rhythm is wrong and `fill` when the type is too small (§19). If it
-  needs a third size to fit, it is two slides · `<deck-notes>` and stepped
-  reveals take the rest.
-- **`<deck-point>` for a bento item made of words, `<deck-cell>` for one that
-  holds something measured** (fit-to-cell text, a diagram, an image). A row of
-  points shares its baselines; a row of cells takes a share of the slide.
+```
+Audience · Decision · Duration · Language · Context · Theme · Sources · Missing
+Tone: sober unless asked otherwise · gifs only on explicit request
+```
 
-## Before the first slide
+- **Ask for what is missing.** If you cannot ask, write the assumption into the
+  deck where it will be seen and fixed, not into your own head.
+- **Never invent a number, a quotation or a source.** Not a rounded figure, not
+  a plausible date. A gap marked `TODO` gets filled before the talk; an invented
+  figure gets presented.
+- **Duration is words, not slides.** Speech runs at 100 to 130 words a minute
+  for technical content, so twenty minutes is roughly 2,400 spoken words. Those
+  words live in `<deck-notes>`. Nine thin slides fill ten minutes, whatever the
+  plan says.
 
-Read `docs/llms/rikiki-workflow.md` in the installed package. It carries the
-editorial contract to fill in before writing, the nine compositions by intent
-with verified HTML, and the order to try fixes in when a slide is too full.
-This skill is the short form; that guide is the working one.
+## 2 · The plan · three columns, not a table of contents
 
-## Workflow
+A list of subjects is not a plan. What makes a deck hold together is that each
+slide answers a question the previous one opened. Write three columns:
 
-1. **Skeleton** — run `npx rikiki init <name>.html`. It writes an editable deck
-   and copies the runtime into `./rikiki/` beside it, so the head already reads
-   theme `<link>` first, then
-   `<script type="module" src="rikiki/dist/index.js">`. Serve the folder over
-   HTTP · ES modules do not load from `file://`.
-2. **Pick layouts per slide** — one focal idea each. `deck-cover` to open,
-   `deck-section` for chapters, `deck-feature` / `deck-split` /
-   `deck-feature-cards` for content, `deck-takeaway` to close. Respect named
-   `slot=` attributes (`title`, `lead`, `left`/`right`, `a`/`b`/`c`).
-3. **Prose & code** — put Markdown inside `<deck-md>`; code inside
-   `<deck-code lang="…">`. The built-in highlighter only understands
-   `js`/`ts`/`json`/`html`/`xml`/`svg`/`css`/`scss`/`less`. Any other `lang`
-   (`python`, `rust`, `bash`, `go`, `sql`, …) is silently colored as JS — no
-   error — so it looks fine but is wrong. If the deck uses any language outside
-   that set, install Shiki **after** `dist/index.js`:
-   `import { installShiki } from './dist/shiki.js'; await installShiki({ theme: 'one-dark-pro', langs: ['ts','rust','bash'] });`
-   (list every language the deck uses in `langs`). See the reference's Shiki
-   section.
-4. **Reveals** — for stepped builds use `steps="N"` + `[data-step-block]` or
-   `deck-code[step-groups]`; for per-element reveals install the click-stages
-   plugin (`import { installClickStages } from './dist/click-stages.js';
-   installClickStages();`) and annotate elements with `data-click`,
-   `data-click="N"`, `data-click-hide`, and
-   `data-anim="fade|slide-up|slide-down|slide-left|slide-right|scale|blur|flip-up|draw"`.
-   Fine-tune with `data-anim-duration` / `data-anim-delay` (ms) and
-   `data-anim-ease="out|spring|in-out|cubic-bezier(…)"`. One-click
-   choreographies: `data-click-auto="800"` (chains after the previous stage,
-   no click), `data-click-stagger="80"` (container children cascade on one
-   click), `data-click-children` (one click per child). Magic move:
-   `data-morph="key"` pairs an element across steps or consecutive slides
-   (explicit steps for same-click swaps: `data-click-hide="1"` +
-   `data-click="1"`). Mouse navigation is on by default (click/wheel/
-   chevrons/buttons 4-5) · disable with `mouse-nav="none"` or pick a subset
-   like `mouse-nav="wheel arrows"` on `<deck-root>`.
-5. **Speaker notes** — add `<deck-notes>` inside a slide; press `P` to present.
-6. **Livereload (authoring)** — add `?live` to the deck URL (e.g.
-   `…/deck.html?live`) so `index.js` lazy-loads the poller and auto-reloads on
-   file changes. Never ship it in a presented or bundled deck.
-7. **Look before you claim it works** — `npx rikiki check <deck>.html` names
-   what is broken and where, `npx rikiki render <deck>.html` writes one picture
-   per slide plus a manifest tying each one to its slide id. Pass `--steps` when
-   the deck reveals content, or you are judging the emptiest state of it. Fix,
-   re-run, and only then say it is done.
-8. **Share** — `npx rikiki bundle <deck>.html` produces one self-contained file
-   (`--no-fonts` strips the web fonts). It needs the optional peer `rolldown`;
-   without it the command says so and installs nothing behind your back. It
-   rewrites `rikiki/(dist|themes|tokens.css)`-style references, not plain
-   relative paths like `../../dist/index.js`.
-9. **Hand over a PDF** — `npx rikiki export <deck>.html` writes one page per
-   slide. It needs the optional peer `playwright`.
+```
+#  Question the room is asking here    →  What this slide answers    →  With what
+2  "Why should I care?"                   Recopying costs 40 min        two-column comparison
+3  "So what would work instead?"          A slide is an HTML element    the code itself
+5  "Does that actually hold?"             Valid code, broken slide      screenshot + marks
+```
 
-## Verify
+Two rules make it mechanical:
 
-`npx rikiki check <deck>.html` first: it measures what a glance cannot, and its
-exit code is 1 when the deck has defects. Then `npx rikiki render <deck>.html`
-and read the pictures · a green check with an ugly slide is still an ugly
-slide. For the presented behaviour, serve the folder and click through every
-slide and every step.
+- **A slide answering no open question is cut or moved.** This is the single
+  most useful check. It removes the "while we're at it" slides that a subject
+  list always grows.
+- **A question still open at the end needs a slide.** If nothing answers "what
+  do I do Monday", the deck has no ending.
 
-## Rules
+### The shape underneath
 
-- Never nest `<deck-root>`.
-- **Asset paths are relative to your deck file** — adjust the theme `<link>`,
-  the `dist/index.js` script, and any `click-stages.js` import together. A deck
-  written by `rikiki init` uses `rikiki/tokens.css` / `rikiki/dist/…`, which is
-  also the spelling the bundler recognises. Pointing straight at
-  `node_modules/rikiki-deck/…` works in a browser but only bundles from a path
-  spelled that way.
-- Load theme CSS before `dist/index.js`.
-- Use semantic `--rik-*` tokens for any color/spacing override, at `:root` (or
-  component `--deck-*-…` tokens on one host). Do not hardcode colors.
-- Keep one idea per slide; move detail into `<deck-notes>`.
-- Only use tags, attributes, and tokens listed in `docs/llms/rikiki-reference.md`.
+Two structures cover almost every technical talk. Pick one, name it, keep it.
+
+- **Situation, complication, question, answer.** State the shared ground, then
+  what disrupts it, then the question that follows, then your answer with its
+  support. Barbara Minto's structure, from the consulting world, and the one
+  that carries a recommendation best.
+- **What is, what could be.** Alternate the present state and the possible one,
+  each return to "what is" buying the next claim, tightening until the last
+  slide only names the action.
+
+For a tooling or migration talk, problem then solution then results works; for a
+learning or migration story, the journey shape does.
+
+### The title test, before writing any body
+
+Read the slide titles in sequence, aloud. They must form a text that stands on
+its own · that is the deck's argument. Any title that reads as a subject
+("The architecture") rather than a claim breaks the chain, and any title you
+could move elsewhere without loss means the order is not a story.
+
+`rikiki render` writes the titles into its manifest, so the test can be run on
+a deck already written. Run it on the plan first; it costs nothing there.
+
+## 3 · Composition
+
+### The rule the research supports
+
+The title is a **full sentence stating what the slide argues**, eight to
+fourteen words. The body is its **evidence**: a figure, a diagram, a number, a
+comparison. Not a bullet list restating the title.
+
+This is assertion-evidence, and it is here because it was measured: against the
+usual topic headline over bullets, audiences understood and remembered more,
+with fewer misconceptions and lower cognitive load. It is Mayer's multimedia
+principles at slide scale.
+
+Two consequences:
+
+- **A bullet list read aloud is worse than no slide.** The room reads and
+  listens to the same words at once, and pays for it.
+- **Cutting is a design act.** Removing what does not serve the claim improves
+  comprehension by itself.
+
+`deck-cover` and `deck-section` are exempt: a chapter title is a boundary.
+
+### Graphic composition, in seven decisions
+
+What separates a slide that reads at ten metres from one that does not. The
+first four are the ones that carry; spend effort there.
+
+| Decision | The rule | The failure it prevents |
+|---|---|---|
+| **Hierarchy** | Two type sizes, and the gap between them *is* the design. A statement size and a reading size, nothing between. But the title is not free: a headline that wraps to two lines eats a third of the canvas, and everything under it then looks small. Prefer a title that fits one line. | A title at 1.5× reads as bold body text · the single commonest reason a deck looks flat. Its opposite: a three-line headline over one small box. |
+| **Mass** | One filled area at most. Everything else sits on the page ground. | Two masses and the eye picks the wrong one. |
+| **Text density** | The strongest measurable predictor of how a room judges a slide. When in doubt, remove a sentence. | A wall of text: nobody reads it, they wait for you to say it. |
+| **Balance** | One alignment axis for the whole slide. Left-align by default; centre only when a single block is the whole slide. | Content massed in the top fifth with a dead half below · fix it with `spread`, not with more content. |
+| **Colour** | The accent is a **mark**, not a surface: a rule, a stroke, a number, a word. Real emphasis on a light theme is the inverse surface. | An accent-tinted panel that is invisible on one of the two shipped themes. |
+| **Whitespace** | Empty space is a choice, not a defect. It is what makes the one loud thing loud. But a lone callout on an otherwise empty slide is not restraint, it is a slide with nothing on it: either the claim deserves real evidence, or it belongs in the notes of the slide before. | Filling the space because it is there · and its opposite, a slide carrying one small box. |
+| **Structure** | A device must encode information: number a list only when it is a sequence, label a block only when the label adds something. | Numbered markers on three unordered items, eyebrows above everything. |
+
+### The density floor
+
+A content slide carries at least one of: a figure, an image, three comparable
+items, a diagram, or code. A headline over one sentence is not a slide · it is
+a sentence that belongs in the notes of the slide before it.
+
+`rikiki check` measures this on the pixels and reports `SLIDE_TOP_HEAVY` when
+the ink sits in the top of the canvas with a dead band under it. It reports the
+imbalance, never the amount of empty space: space that the composition uses is
+left alone.
+
+### Emphasis, icons, and the occasional gif
+
+Flat prose on a slide reads as flat prose in the room. Three cheap tools:
+
+- **Bold for the word that carries the claim**, italic for the aside or the term
+  you are introducing. One or two per slide · past that nothing stands out.
+- **`deck-icon`** (opt-in, 24 drawn glyphs) beside a status, a step or a
+  verdict. It gives a shape to what would otherwise be another line of text.
+  Give it a `label` when it carries meaning, leave it off when it decorates.
+**Gifs are asked for, never offered.** Add one only when the person writing the
+deck asks for it in so many words. No gif by default, none "because the slide
+felt dry", none in a deck whose tone was never discussed. A steering committee
+and a Friday internal talk do not want the same thing, and guessing wrong is
+worse than a sober slide.
+
+When asked: place one between two dense passages, or right after the hardest
+slide. One per talk, maybe two. It works because it is rare, and never on a
+slide that already has something to say.
+
+**Where the file comes from matters as much as the file.** Tenor and Giphy both
+require an API key, and their catalogue is largely clips from films and shows:
+fine for a Friday internal talk, a risk for a recorded conference. Without a key
+in the environment, use a source whose licence is explicit · Wikimedia Commons
+has one on every file · or draw the animation yourself in the deck's own
+colours. Either way, credit it on the slide: author, licence, source, one line.
+
+The file must live next to the deck. A gif left on a remote URL breaks the
+single-file promise, and `rikiki bundle` exits non-zero for it. Downloaded, it
+inlines as base64 like any image (a 400 KB gif costs 400 KB there) and exports
+to PDF as its first frame. Say so when you use one.
+
+### Show the mechanism, do not describe it
+
+A technical audience reads a diagram faster than a sentence about the same
+thing. Three habits separate a deck that argues from one that recites:
+
+- **A boxed sentence is not evidence.** A `deck-callout` carrying two lines of
+  prose is the claim restated in a frame. Either the slide has something to
+  show, or the sentence belongs in the notes of the slide before it.
+- **Show your own artefacts.** A screenshot of the broken thing, the real
+  report, the actual output. `deck-annotate` puts numbered marks on an image
+  and reveals them one per step · one photograph of a defect beats a paragraph
+  describing it.
+- **Draw the flow.** A pipeline, a fan-out, a set of layers: `deck-graph` with
+  positioned nodes says in one look what three bullets say badly. Reserve
+  `deck-flow` for what is genuinely a sequence · one source with three outputs
+  is a fan-out, and numbering it is a lie about the content.
+
+### Choosing the element
+
+Pick from what the slide has to say, not from the tag you remember. Reach for
+the opt-in components when they fit · one `<script type="module">` each, after
+the core bundle.
+
+| The slide says | Reach for |
+|---|---|
+| A claim and its proof | `deck-feature` + `deck-callout` / `deck-code` |
+| Two options, before and after | `deck-split` with two `deck-card` |
+| One figure that carries the slide | `deck-stat` (`num` + a `claim` slot) |
+| Several figures as one family | `deck-kpi-grid` + `deck-kpi` (opt-in) |
+| An ordered process | `deck-flow` + `deck-flow-step` (opt-in) |
+| How the parts sit together | `deck-graph` + `deck-node` / `deck-edge` (opt-in) |
+| What works and what does not | `deck-checklist` + `deck-check` (opt-in) |
+| A trajectory in time | `deck-timeline` + `deck-milestone` (opt-in) |
+| Code, explained | `deck-code lang="…" hero` |
+| The close | `deck-takeaway` |
+
+`deck-mermaid` renders a diagram from text, but a hand-placed `deck-graph`
+reads better for anything you can position yourself.
+
+## 4 · Writing
+
+```sh
+npx rikiki init talk.html --title "…" --theme rikiki   # or siliceum
+```
+
+Then edit the HTML. Three rules that save a rewrite:
+
+- **Give every slide a stable `id`.** It is how `render` selects it, how
+  `check` names it, and how you edit one slide later without touching the rest.
+- **An attribute a component does not read is dropped in silence.** `deck-stat`
+  takes `num` and its words as content; `label="…"` on it loses the label with
+  no error. `check` reports these.
+- **Slotted content only renders if a slot takes it.** A `deck-card slot="a"`
+  inside the wrong parent leaves a blank slide.
+
+## 5 · The presentation mode · what the speaker gets
+
+Press **P** and rikiki opens a second window: the current slide, the next one as
+a preview, a running timer, and the `<deck-notes>` of the slide on screen. With
+a second display it sends the slides fullscreen to the projector and keeps this
+view on the speaker's screen. Both windows stay in sync through
+`BroadcastChannel`.
+
+Design for that window from the start:
+
+- **The notes are the script, not a summary.** Write what you would say. The
+  slide already carries what is projected; repeating it there wastes the one
+  surface the speaker actually reads.
+- **Put in the notes what must not be projected**: the source of a figure, the
+  method behind it, the answer to the question you expect, the sentence you
+  would add if asked, what to say if a demo fails.
+- **The notes are what `check` measures for length.** A deck whose cover says
+  `duration="20 min"` and whose notes carry two minutes of speech gets a
+  warning. Either the notes are thin, or the slot is shorter than announced.
+- **`<deck-notes>` never appears on the slide** and is not counted in what the
+  room sees. It is the only place where being long is free.
+
+### Reveals, when the slide would otherwise be a wall
+
+```html
+<deck-feature steps="2">
+  <h1 slot="title">Two things happen, in order</h1>
+  <p data-step-block="1">The first.</p>
+  <p data-step-block="2">The second.</p>
+</deck-feature>
+```
+
+Use a reveal when the order is the message: the speaker comments each state
+before the next appears. Do not use it to fit more on one slide · that is a
+split, not a reveal. Render them with `--steps`, or you are judging the emptiest
+state of the deck.
+
+## 6 · Fixing, in this order
+
+Stop at the first that works. The early moves keep the deck's shape.
+
+1. **Cut the repetition.** The title already says it.
+2. **Shorten.** Sentences to clauses, clauses to words.
+3. **Move detail into `<deck-notes>`.** Still said, no longer projected.
+4. **Split the slide.** Two slides with one idea each beat one with two.
+5. **Change the composition.** A list that will not fit is often a comparison,
+   a flow, or a single number.
+6. **Adjust the type,** last, and within the readable floor.
+
+A request about one slide changes that slide. Keep the ids stable, leave the
+others byte for byte, and re-run `check` on the whole deck afterwards.
+
+## 7 · Look, measure, deliver
+
+```sh
+npx rikiki check talk.html            # 0 clean · 1 defects · 2 could not look
+npx rikiki render talk.html --steps   # one picture per state + a manifest
+npx rikiki bundle talk.html           # one file, opens offline  (needs rolldown)
+npx rikiki export talk.html           # PDF, one page per slide  (needs playwright)
+```
+
+**Do both.** `check` measures what is objective: content clipped away, an
+element that renders as nothing, a missing file, text too small for a room, an
+attribute being ignored, a deck shorter than it claims. It does not judge
+whether the slide is any good. So read the pictures too · a green report on an
+ugly slide is still an ugly slide.
+
+Read what the report says it did **not** check: your wording, your figures, your
+argument, accessibility. Silence there is not approval.
+
+## Before saying it is done
+
+- [ ] Every figure in the deck comes from the brief, and nothing else does.
+- [ ] The titles, read in sequence, form a text that holds together.
+- [ ] Each slide answers a question an earlier slide opened.
+- [ ] Each content slide's title is a sentence that states its message.
+- [ ] No slide is a headline over a single sentence.
+- [ ] Notes are written as speech, and their length matches the announced slot.
+- [ ] `rikiki check` exits 0.
+- [ ] You looked at the rendered pictures, including revealed states.
+- [ ] What you did not verify is said out loud.

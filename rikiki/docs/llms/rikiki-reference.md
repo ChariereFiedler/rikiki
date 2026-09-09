@@ -684,9 +684,15 @@ to draw and every animation to finish before each shot. It does not sleep.
 ### `rikiki check` · measurements
 
 ```bash
-npx rikiki check talk.html          # a readable report on stderr
-npx rikiki check talk.html --json   # the report on stdout, nothing else
+npx rikiki check talk.html              # a readable report on stderr
+npx rikiki check talk.html --json       # the report on stdout, nothing else
+npx rikiki check talk.html --no-visual  # skip the pixel pass (one shot per slide)
 ```
+
+The pixel pass photographs each slide with the engine's own chrome hidden, and
+measures where the ink sits. It reports imbalance only · a slide whose content
+fills the canvas is left alone whatever empty space remains. `visualMeasured`
+in the report says whether it ran.
 
 Exit codes: `0` nothing blocking, `1` defects found, `2` the deck could not be
 looked at (bad invocation, unreadable file). An agent branches on those: `1`
@@ -706,6 +712,8 @@ an `element` path that reaches into the Shadow DOM (`deck-feature#detail
 | `STRAY_MARKUP` | warning | prose about markup that the parser turned into an element · escape the angle brackets |
 | `CONTENT_CLIPPED` | error | the slide clips rather than scrolls · that content is lost |
 | `SLIDE_DENSE` | warning | nothing is cut yet, but there is no room left |
+| `SLIDE_TOP_HEAVY` | warning | measured on the pixels · the ink sits in the top with a dead band under it |
+| `TALK_SHORTER_THAN_ANNOUNCED` | warning | the notes carry far less speech than the cover announces |
 | `TEXT_TOO_SMALL` | warning | below the readable floor once the canvas is scaled |
 | `UNKNOWN_ATTRIBUTE` | warning | an attribute the element neither reads nor styles on · the value is dropped |
 | `DUPLICATE_SLIDE_ID` | warning | two slides answer to the same name |
