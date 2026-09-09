@@ -575,8 +575,13 @@ const optionalComponents: OptionalComponent[] = [
     slots: 'default: one table element',
     example: `<deck-table highlight-rows="2,4" reveal>
   <table>
-    <tr><th>Check</th><th>Status</th></tr>
-    <tr><td>Offline</td><td>Pass</td></tr>
+    <thead>
+      <tr><th>Check</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Runtime</td><td>Pass</td></tr>
+      <tr><td>Offline bundle</td><td>Pass</td></tr>
+    </tbody>
   </table>
 </deck-table>`,
     tokens: '--deck-table-mark-bg · --deck-table-mark-color · --deck-table-pending-opacity',

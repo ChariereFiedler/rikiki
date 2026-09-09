@@ -72,6 +72,8 @@ const { id, eyebrow, num, title, tone = 'paper' } = Astro.props;
     border-bottom: 4px solid var(--rik-accent);
     display: inline-block;
     align-self: flex-start;
+    max-width: 24ch;
+    text-wrap: balance;
   }
   .dark .title { color: var(--rik-text-inverse); }
   .body { margin-top: var(--rik-space-4); }

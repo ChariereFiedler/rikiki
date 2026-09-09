@@ -20,6 +20,7 @@ import LiveReload from '../components/LiveReload.astro';
 import Limits from '../components/Limits.astro';
 import Faq from '../components/Faq.astro';
 import StickyCta from '../components/StickyCta.astro';
+import AgentLoop from '../components/AgentLoop.astro';
 
 const anatomyCode = `<deck-feature eyebrow="Module">
   <h1 slot="title">Side effects</h1>
@@ -67,18 +68,19 @@ const quickstartCode = `<!doctype html>
   <Section id="workflow" num="01" eyebrow="The workflow" title="From brief to delivery, with evidence">
     <StatGrid>
       <Stat num="01" claim="Write the source" tone="mango">
-        Start with a brief and readable <code>index.html</code>. A deck stays
-        inspectable, editable, and archivable by the people who own it.
+        Give an LLM the brief, the Rikiki skill, and the component reference.
+        It writes a readable <code>index.html</code> you can inspect and edit.
       </Stat>
-      <Stat num="02" claim="Check the deck" tone="helico">
-        Run structural, runtime, accessibility, timing, and visual checks.
-        Stable diagnostics make review concrete for people and agents.
+      <Stat num="02" claim="Run the doctor" tone="helico">
+        <code>rikiki check</code> inspects structure, runtime, accessibility,
+        timing, and pixels. Its report tells the agent what to revise.
       </Stat>
       <Stat num="03" claim="Deliver the proof" tone="lime">
         Render the slides, bundle a standalone HTML file, and export a PDF.
-        <strong>Everything needed to present travels with the deliverable.</strong>
+        <br /><strong>Everything needed to present travels with the deliverable.</strong>
       </Stat>
     </StatGrid>
+    <AgentLoop />
   </Section>
 
   <DualUse />
