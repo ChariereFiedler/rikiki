@@ -125,7 +125,7 @@ const layouts: Component[] = [
     slots: [
       { name: '(default)', note: 'Title (h1), subtitle (.sub), or any HTML to overlay on the image' },
     ],
-    example: `<deck-photo src="/cover.jpg" darken="0.4" align="center">
+    example: `<deck-photo src="/component-photo.svg" darken="0.4" align="center">
   <h1>Mood opener</h1>
   <p class="sub">One line caption.</p>
 </deck-photo>`,
@@ -434,6 +434,8 @@ interface OptionalComponent {
   attrs: string;
   slots: string;
   example: string;
+  preview?: string;
+  previewFull?: boolean;
   tokens: string;
 }
 
@@ -445,6 +447,14 @@ const optionalComponents: OptionalComponent[] = [
     attrs: 'no-numbers · no-jump',
     slots: 'default: reads deck-section titles from the nearest deck-root',
     example: '<deck-agenda></deck-agenda>',
+    preview: `<deck-feature eyebrow="Navigation">
+  <h1 slot="title">Today</h1>
+  <deck-agenda></deck-agenda>
+</deck-feature>
+<deck-section><h1>Context</h1></deck-section>
+<deck-section><h1>Decision</h1></deck-section>
+<deck-section><h1>Delivery</h1></deck-section>`,
+    previewFull: true,
     tokens: '--deck-agenda-gap · --deck-agenda-size · --deck-agenda-color · --deck-agenda-done-color · --deck-agenda-current-color · --deck-agenda-marker · --deck-agenda-rule · --deck-agenda-num-color',
   },
   {
@@ -454,6 +464,7 @@ const optionalComponents: OptionalComponent[] = [
     attrs: 'src: URL · alt: string · marks: JSON/string mark data · all-at-once · no-legend',
     slots: 'default: optional legend content when marks do not provide one',
     example: '<deck-annotate src="/screen.png" alt="Product screen" marks="1:42,18,2:74,55"></deck-annotate>',
+    preview: '<deck-annotate src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'900\' height=\'480\'%3E%3Crect width=\'900\' height=\'480\' fill=\'%23161c2e\'/%3E%3Crect x=\'55\' y=\'55\' width=\'790\' height=\'72\' rx=\'12\' fill=\'%23263249\'/%3E%3Crect x=\'55\' y=\'155\' width=\'360\' height=\'270\' rx=\'12\' fill=\'%23f07020\'/%3E%3Crect x=\'445\' y=\'155\' width=\'400\' height=\'120\' rx=\'12\' fill=\'%2300c8a0\'/%3E%3Crect x=\'445\' y=\'305\' width=\'400\' height=\'120\' rx=\'12\' fill=\'%23e8e4f0\'/%3E%3C/svg%3E" alt="Product screen" marks="1:42,42,2:74,28"></deck-annotate>',
     tokens: '--deck-annotate-radius · --deck-annotate-border · --deck-annotate-mark-bg · --deck-annotate-mark-color · --deck-annotate-mark-size · --deck-annotate-mark-ring · --deck-annotate-legend-color · --deck-annotate-legend-size · --deck-annotate-gap',
   },
   {
@@ -471,7 +482,10 @@ const optionalComponents: OptionalComponent[] = [
     module: 'deck-checklist.js',
     attrs: 'cols: number/string · deck-check no: boolean',
     slots: 'default: deck-check children',
-    example: '<deck-checklist cols="2"><deck-check>Offline bundle</deck-check><deck-check no>External CDN</deck-check></deck-checklist>',
+    example: `<deck-checklist cols="2">
+  <deck-check>Offline bundle</deck-check>
+  <deck-check no>External CDN</deck-check>
+</deck-checklist>`,
     tokens: '--deck-checklist-gap · --deck-checklist-cols · --deck-checklist-rule · --deck-check-yes · --deck-check-no · --deck-check-size · --deck-check-gap · --deck-check-color',
   },
   {
@@ -480,7 +494,14 @@ const optionalComponents: OptionalComponent[] = [
     module: 'deck-flow.js',
     attrs: 'cols: number/string · no-connectors · reveal · deck-flow-step label · note · index · plain · last · linked',
     slots: 'default: deck-flow-step children',
-    example: '<deck-flow cols="4"><deck-flow-step index="01" label="Write" note="brief">Source</deck-flow-step><deck-flow-step index="02" label="Check" note="evidence">Review</deck-flow-step></deck-flow>',
+    example: `<deck-flow cols="4">
+  <deck-flow-step index="01" label="Write" note="brief">
+    Source
+  </deck-flow-step>
+  <deck-flow-step index="02" label="Check" note="evidence">
+    Review
+  </deck-flow-step>
+</deck-flow>`,
     tokens: '--deck-flow-gap · --deck-flow-step-accent · --deck-flow-step-label-color · --deck-flow-step-note-color · --deck-flow-step-pending-opacity · --deck-flow-link',
   },
   {
@@ -489,7 +510,11 @@ const optionalComponents: OptionalComponent[] = [
     module: 'deck-graph.js',
     attrs: 'layout: free|row|column · reveal · deck-node at · label · note · boxed · tone · icon · deck-group at · label · solid · deck-lane at · label · deck-edge from · to · label · dashed',
     slots: 'default: deck-node, deck-group, deck-lane, and deck-edge children',
-    example: '<deck-graph layout="row"><deck-node id="source" label="Brief"></deck-node><deck-edge from="source" to="proof" label="check"></deck-edge><deck-node id="proof" label="Verified deck" boxed tone="ok"></deck-node></deck-graph>',
+    example: `<deck-graph layout="row">
+  <deck-node id="source" label="Brief"></deck-node>
+  <deck-edge from="source" to="proof" label="check"></deck-edge>
+  <deck-node id="proof" label="Verified deck" boxed tone="ok"></deck-node>
+</deck-graph>`,
     tokens: '--deck-graph-edge · --deck-graph-edge-width · --deck-graph-edge-label · --deck-graph-ratio · --deck-node-color · --deck-node-rule · --deck-node-size · --deck-node-bg · --deck-node-active-color · --deck-group-border · --deck-group-bg · --deck-lane-rule',
   },
   {
@@ -507,7 +532,12 @@ const optionalComponents: OptionalComponent[] = [
     module: 'deck-kpi-grid.js',
     attrs: 'cols: number/string · ruled · deck-kpi value · label · note · tone: default|accent|ok|warn|danger|muted',
     slots: 'default: deck-kpi children; deck-kpi default slot accepts supporting text',
-    example: '<deck-kpi-grid cols="3" ruled><deck-kpi value="0" label="CDNs" tone="ok">Runtime requests</deck-kpi><deck-kpi value="20" label="slides"></deck-kpi></deck-kpi-grid>',
+    example: `<deck-kpi-grid cols="3" ruled>
+  <deck-kpi value="0" label="CDNs" tone="ok">
+    Runtime requests
+  </deck-kpi>
+  <deck-kpi value="20" label="slides"></deck-kpi>
+</deck-kpi-grid>`,
     tokens: '--deck-kpi-grid-gap · --deck-kpi-grid-cols · --deck-kpi-grid-rule · --deck-kpi-value-size · --deck-kpi-value-color · --deck-kpi-label-color · --deck-kpi-note-color',
   },
   {
@@ -543,7 +573,12 @@ const optionalComponents: OptionalComponent[] = [
     module: 'deck-table.js',
     attrs: 'highlight-rows: comma-separated row numbers · highlight-cols: comma-separated column numbers · reveal',
     slots: 'default: one table element',
-    example: '<deck-table highlight-rows="2,4" reveal><table><tr><th>Check</th><th>Status</th></tr><tr><td>Offline</td><td>Pass</td></tr></table></deck-table>',
+    example: `<deck-table highlight-rows="2,4" reveal>
+  <table>
+    <tr><th>Check</th><th>Status</th></tr>
+    <tr><td>Offline</td><td>Pass</td></tr>
+  </table>
+</deck-table>`,
     tokens: '--deck-table-mark-bg · --deck-table-mark-color · --deck-table-pending-opacity',
   },
   {
@@ -552,7 +587,14 @@ const optionalComponents: OptionalComponent[] = [
     module: 'deck-timeline.js',
     attrs: 'direction: row|column · reveal · deck-milestone date · label · note · tone: default|accent|ok|warn|danger',
     slots: 'default: deck-milestone children',
-    example: '<deck-timeline direction="row"><deck-milestone date="Now" label="Source" tone="accent">Write the brief</deck-milestone><deck-milestone date="Next" label="Proof">Run the checks</deck-milestone></deck-timeline>',
+    example: `<deck-timeline direction="row">
+  <deck-milestone date="Now" label="Source" tone="accent">
+    Write the brief
+  </deck-milestone>
+  <deck-milestone date="Next" label="Proof">
+    Run the checks
+  </deck-milestone>
+</deck-timeline>`,
     tokens: '--deck-timeline-axis · --deck-timeline-axis-width · --deck-timeline-gap · --deck-milestone-dot · --deck-milestone-dot-size · --deck-milestone-date-color · --deck-milestone-label-color · --deck-milestone-note-color · --deck-milestone-pending-opacity',
   },
   {
@@ -561,7 +603,16 @@ const optionalComponents: OptionalComponent[] = [
     module: 'deck-versus.js',
     attrs: 'pivot: string · winner: left|right',
     slots: 'left / right: the two alternatives',
-    example: '<deck-versus pivot="Choose"><div slot="left"><h3>Source</h3><p>Readable and editable.</p></div><div slot="right"><h3>Proof</h3><p>Checked and deliverable.</p></div></deck-versus>',
+    example: `<deck-versus pivot="Choose">
+  <div slot="left">
+    <h3>Source</h3>
+    <p>Readable and editable.</p>
+  </div>
+  <div slot="right">
+    <h3>Proof</h3>
+    <p>Checked and deliverable.</p>
+  </div>
+</deck-versus>`,
     tokens: '--deck-versus-gap · --deck-versus-pivot-color · --deck-versus-pivot-size · --deck-versus-rule · --deck-versus-winner-rule · --deck-versus-loser-color',
   },
 ];
@@ -639,6 +690,25 @@ const optionalComponents: OptionalComponent[] = [
   <article class="comp">
     <h3 id={c.tag}><code>&lt;{c.tag}&gt;</code></h3>
     <p class="summary">{c.summary}</p>
+    {c.tag === 'deck-bento' && (
+      <aside class="bento-guide">
+        <strong>Bento composition model</strong>
+        <p>
+          <code>deck-bento</code> defines the grid tracks. Use
+          <code>deck-cell</code> for measured areas and
+          <code>span="columns x rows"</code> to shape the composition. A cell is
+          a size container, so fitted type responds to the cell rather than the
+          full slide.
+        </p>
+        <p>
+          Use <code>deck-point</code> when text should size the item. Points with
+          the same child structure align their internal bands automatically.
+          Explicit <code>rows</code>, <code>col</code>, <code>row</code>, or
+          <code>span</code> values disable that automatic alignment where the
+          composition needs exact placement.
+        </p>
+      </aside>
+    )}
     {c.attrs && (
       <>
         <p class="block-head">Attributes</p>
@@ -761,12 +831,19 @@ const optionalComponents: OptionalComponent[] = [
     <p class="summary">{c.summary}</p>
     <dl class="optional-details">
       <div><dt>Module</dt><dd><code>rikiki/dist/{c.module}</code></dd></div>
-      <div><dt>Attributes</dt><dd><code>{c.attrs}</code></dd></div>
+      <div>
+        <dt>Attributes</dt>
+        <dd><ul class="detail-chips">{c.attrs.split(' · ').map((item) => <li><code>{item}</code></li>)}</ul></dd>
+      </div>
       <div><dt>Slots and children</dt><dd>{c.slots}</dd></div>
-      <div><dt>Customization tokens</dt><dd><code>{c.tokens}</code></dd></div>
+      <div>
+        <dt>Customization tokens</dt>
+        <dd><ul class="detail-chips tokens-list">{c.tokens.split(' · ').map((item) => <li><code>{item}</code></li>)}</ul></dd>
+      </div>
     </dl>
     <p class="block-head">Example</p>
     <CodeBlock lang="html" code={c.example} />
+    <ComponentPreview code={c.preview ?? c.example} module={c.module} full={c.previewFull} />
   </article>
 ))}
 
@@ -885,6 +962,47 @@ const optionalComponents: OptionalComponent[] = [
     line-height: 1.55;
     overflow-wrap: anywhere;
   }
+  .detail-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .detail-chips li { min-width: 0; }
+  .detail-chips code {
+    display: inline-block;
+    max-width: 100%;
+    padding: 5px 8px;
+    border: 1px solid var(--rik-border-default);
+    border-radius: var(--rik-radius-sm);
+    background: var(--rik-surface-raised);
+    color: var(--rik-text-default);
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+  .tokens-list code {
+    color: var(--rik-accent--strong);
+    background: var(--rik-accent--faint);
+    border-color: transparent;
+  }
+  .bento-guide {
+    max-width: 760px;
+    padding: var(--rik-space-4);
+    border-left: 4px solid var(--rik-status-success);
+    background: var(--rik-surface-raised);
+    color: var(--rik-text-default--muted);
+  }
+  .bento-guide strong {
+    display: block;
+    margin-bottom: var(--rik-space-2);
+    color: var(--rik-text-default);
+    font-family: var(--rik-font-display);
+    font-size: 1.25rem;
+  }
+  .bento-guide p { margin: var(--rik-space-2) 0 0; line-height: 1.6; }
+  .bento-guide code { color: var(--rik-text-default); }
   @media (max-width: 640px) {
     table.optional th,
     table.optional td {
