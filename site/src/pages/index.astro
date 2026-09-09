@@ -13,7 +13,6 @@ import ThemeSwap  from '../components/ThemeSwap.astro';
 import Hook       from '../components/Hook.astro';
 import Footer     from '../components/Footer.astro';
 import LayoutPreview from '../components/LayoutPreview.astro';
-import Comparison from '../components/Comparison.astro';
 import DocsToc from '../components/DocsToc.astro';
 import DualUse from '../components/DualUse.astro';
 import PluginShelf from '../components/PluginShelf.astro';
@@ -171,7 +170,6 @@ const quickstartCode = `<!doctype html>
 
   <PluginShelf />
   <LiveReload />
-  <Comparison />
   <StickyCta />
   <Limits />
   <Faq />
@@ -258,5 +256,23 @@ const quickstartCode = `<!doctype html>
     color: var(--rik-text-default);
     padding: 1px 5px;
     border-radius: 3px;
+  }
+
+  @media (max-width: 640px) {
+    .demo-band {
+      padding: 0 var(--rik-space-3) var(--rik-space-5);
+    }
+    .demo-inner {
+      margin-top: -48px;
+    }
+    .layout-grid {
+      gap: var(--rik-space-3);
+    }
+    .layout-grid li {
+      padding: var(--rik-space-3);
+    }
+    .more {
+      font-size: var(--rik-font-size-body);
+    }
   }
 </style>

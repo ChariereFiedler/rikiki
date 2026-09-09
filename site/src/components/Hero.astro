@@ -123,4 +123,35 @@
     color: var(--rik-text-inverse--faint);
   }
   .meta strong { color: var(--rik-text-inverse); font-weight: 700; }
+
+  @media (max-width: 640px) {
+    .hero {
+      padding: var(--rik-space-6) var(--rik-space-3) calc(var(--rik-space-6) + 2rem);
+    }
+    .title {
+      font-size: clamp(2.8rem, 15vw, 4.5rem);
+      line-height: 0.98;
+    }
+    .tagline {
+      font-size: var(--rik-font-size-xs);
+    }
+    .lead {
+      font-size: var(--rik-font-size-body);
+      line-height: 1.55;
+    }
+    .ctas {
+      align-items: stretch;
+      flex-direction: column;
+    }
+    .btn {
+      justify-content: center;
+      min-height: 44px;
+    }
+    .meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--rik-space-3);
+      font-size: var(--rik-font-size-xs);
+    }
+  }
 </style>
