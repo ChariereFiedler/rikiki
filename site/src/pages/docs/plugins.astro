@@ -142,7 +142,7 @@ document.querySelector('deck-root').use(stopwatch);`;
       <td><a href="#click-stages"><code>click-stages</code></a></td>
       <td>~2.6 KB</td>
       <td>Explicit <code>import + installClickStages()</code></td>
-      <td>Reveal elements one click at a time (Slidev-style <code>v-click</code>)</td>
+      <td>Reveal elements one click at a time with <code>data-click</code></td>
     </tr>
     <tr>
       <td><a href="/docs/navigation"><code>deck-overview</code></a></td>
@@ -274,7 +274,7 @@ document.querySelector('deck-root').use(stopwatch);`;
 
 <h2 id="click-stages">click-stages · reveal elements on click</h2>
 <p>
-  Slidev-style click-through. Tag any element with <code>data-click</code> and
+  Click-through mode. Tag any element with <code>data-click</code> and
   it stays hidden until you click, then fades in. The step dots at the bottom
   count the reveals, and stepping back hides them again. It builds on the same
   step engine <code>deck-code</code> already uses, so one slide can mix click
