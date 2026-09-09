@@ -7,7 +7,7 @@
 //   rikiki bundle <deck.html> [out.html|-] [--with-mermaid] [--with-shiki] [--no-fonts]
 //   rikiki assemble <deck.config.js> [out.html|-]
 //   rikiki render <deck.html> [--out dir] [--slides a,b] [--steps]
-//   rikiki check <deck.html> [--json]
+//   rikiki check <deck.html> [--json] [--no-visual]
 //   rikiki export <deck.html> [--output deck.pdf]
 //   rikiki skills [--dir <path>] [--force]
 //
@@ -41,7 +41,7 @@ const HELP = `rikiki · self-contained slide decks
   rikiki assemble <deck.config.js> [out.html|-]     build one deck from ordered partials
   rikiki bundle <deck.html> [out.html|-] [options]  fold an existing deck into one file
   rikiki render <deck.html> [options]               one PNG per slide, plus a gallery and a manifest
-  rikiki check <deck.html> [--json]                 measure the deck and report what is wrong
+  rikiki check <deck.html> [--json] [--no-visual]   measure the deck and report what is wrong
   rikiki export <deck.html> [--output deck.pdf]     render the deck to PDF, one slide per page
   rikiki skills [--dir <path>] [--force]            install the Claude Code skills into a project
 
@@ -58,6 +58,7 @@ Options:
   --steps              render: one picture per revealed state, not just the first
   --width, --height    render/check: canvas size in pixels (default 1920×1080)
   --json               check: write the report to stdout as JSON, notes to stderr
+  --no-visual          check: skip the pixel pass (one screenshot per slide)
   --no-fonts           drop fonts instead of inlining them (smaller, system fonts)
   --all                bundle every component (skip the used-only curation)
   --include a,b        force-include components used only from JS
@@ -328,6 +329,7 @@ async function cmdCheck(argv) {
     allowPositionals: true,
     options: {
       json: { type: 'boolean', default: false },
+      'no-visual': { type: 'boolean', default: false },
       width: { type: 'string' },
       height: { type: 'string' },
     },
@@ -336,6 +338,7 @@ async function cmdCheck(argv) {
   const report = await checkDeck(inputPath, {
     width: pixels(values, 'width', 1920),
     height: pixels(values, 'height', 1080),
+    visual: !values['no-visual'],
   });
 
   // In --json mode stdout carries the report and nothing else, so a caller can
