@@ -59,44 +59,50 @@ export class DeckStepList extends LitElement {
 @customElement('deck-step')
 export class DeckStep extends LitElement {
   /* Customization tokens:
-       --deck-step-bg / --deck-step-border / --deck-step-radius
-       --deck-step-padding-x / --deck-step-padding-y / --deck-step-shadow
-       --deck-step-num-bg / --deck-step-num-color / --deck-step-num-size
-       --deck-step-label-color / --deck-step-chip-bg / --deck-step-chip-color */
+       --deck-step-rule          the hairline between steps
+       --deck-step-padding-y     vertical breathing room
+       --deck-step-num-color / --deck-step-num-size / --deck-step-num-scale
+       --deck-step-label-color / --deck-step-note-color */
+  /* The step is a line of a sequence, not a card in a grid.
+   *
+   *  It used to be a white rounded box with a shadow, a 16px accent disc
+   *  holding the number at the smallest type step, and the label in the mono
+   *  face. Projected, the disc read as a speck and the mono read as code the
+   *  step was not. The number carries the sequence, so it is the thing that is
+   *  allowed to be large; the accent is a mark on it, never a fill behind it,
+   *  which is what the measured 1.48 contrast under siliceum requires. */
   static override styles = css`
     :host {
-      display: flex; align-items: center; gap: var(--rik-space-3);
-      background: var(--deck-step-bg, var(--rik-surface-raised--strong));
-      border: 1px solid var(--deck-step-border, var(--rik-border-default));
-      border-radius: var(--deck-step-radius, var(--rik-radius-md));
-      padding: var(--deck-step-padding-y, var(--rik-space-2xs)) var(--deck-step-padding-x, var(--rik-space-3));
-      box-shadow: var(--deck-step-shadow, var(--rik-elevation-2));
+      display: flex; align-items: baseline; gap: var(--rik-space-3);
+      padding: var(--deck-step-padding-y, var(--rik-space-2)) 0;
+      border-bottom: 1px solid var(--deck-step-rule, var(--rik-border-subtle, var(--rik-border-default)));
       font-family: var(--rik-font-sans);
       font-size: var(--rik-font-size-body);
     }
+    :host(:last-of-type) { border-bottom: 0; }
     .step-num {
       flex: 0 0 auto;
-      width: var(--deck-step-num-size, var(--rik-icon-sm));
-      height: var(--deck-step-num-size, var(--rik-icon-sm));
-      display: inline-flex; align-items: center; justify-content: center;
-      background: var(--deck-step-num-bg, var(--rik-accent));
-      color: var(--deck-step-num-color, var(--rik-accent__on, var(--rik-surface-inverse)));
-      border-radius: 50%;
-      font: 700 var(--rik-font-size-xs)/1 var(--rik-font-sans);
+      min-width: var(--deck-step-num-size, 1.6em);
+      color: var(--deck-step-num-color, var(--rik-accent));
+      font: 800 var(--deck-step-num-scale, 1.15em)/1 var(--rik-font-sans);
+      font-variant-numeric: tabular-nums;
     }
     .label {
-      flex: 1;
-      font-family: var(--rik-font-mono); font-weight: 600;
+      flex: 0 1 auto;
+      font-weight: 600;
       color: var(--deck-step-label-color, var(--rik-text-default));
     }
-    .chip {
-      flex: 0 0 auto;
-      display: inline-block;
-      padding: 2px var(--rik-space-2);
-      background: var(--deck-step-chip-bg, var(--rik-surface-tint));
-      color: var(--deck-step-chip-color, var(--rik-text-default--faint));
-      border-radius: var(--rik-radius-pill);
-      font: 600 var(--rik-font-size-sm)/1.4 var(--rik-font-sans);
+    /* The note explains the step · it reads after it, quietly, on the same
+       line. A pill floated to the far right made the eye travel the whole
+       slide width to pair two halves of one sentence. */
+    .note {
+      /* Right after the label, not against the far edge. Pushing it to the
+         other side of the slide made the eye travel the full width to pair two
+         halves of one sentence. */
+      flex: 0 1 auto;
+      margin-right: auto;
+      color: var(--deck-step-note-color, var(--rik-text-default--muted, var(--rik-text-default--faint)));
+      font-size: var(--rik-font-size-sm);
     }
   `;
 
@@ -105,9 +111,9 @@ export class DeckStep extends LitElement {
 
   override render() {
     return html`
-      <span class="step-num">${this.n}</span>
+      ${this.n ? html`<span class="step-num">${this.n}</span>` : ''}
       <span class="label"><slot></slot></span>
-      ${this.note ? html`<span class="chip">${this.note}</span>` : ''}
+      ${this.note ? html`<span class="note">${this.note}</span>` : ''}
     `;
   }
 }

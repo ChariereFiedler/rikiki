@@ -1,9 +1,11 @@
 import { expect, test } from '@playwright/test';
 import { createDeckPage } from './pages/deck.page';
 
-// A short slide used to leave most of the canvas empty · measured at 62% on a
-// plain deck-feature. `spread` and `fill` are the two opt-in answers, and both
-// must stay no-ops when absent.
+// A short slide used to leave most of the canvas empty below its content ·
+// measured at 62% on a plain deck-feature, and the commonest defect in every
+// deck written here. The default distribution is now `center`, so the space
+// falls on both sides of the content instead of all under it. `spread` and
+// `fill` remain the two ways to ask for something else.
 const DECK = '/rikiki/decks/tests/fill.html';
 
 /** How much of the slide height sits unused below the last block.
@@ -24,10 +26,14 @@ async function emptyBelow(
   );
 }
 
-test('a plain slide still stacks at the top · the default is untouched', async ({ page }) => {
+test('a plain slide centres its content · the default distributes', async ({ page }) => {
   const deck = createDeckPage(page);
   await deck.goto(DECK);
-  expect(await emptyBelow(page, 'plain', 'plain-c')).toBeGreaterThan(0.4);
+  const below = await emptyBelow(page, 'plain', 'plain-c');
+  // Under the old top-stack default this measured above 40%. Centred, the same
+  // slide leaves a band on both sides instead of a dead half underneath.
+  expect(below, 'the space is no longer all below the content').toBeLessThan(0.4);
+  expect(below, 'and the slide is not stretched to the bottom either').toBeGreaterThan(0.1);
 });
 
 test('spread=between pushes the blocks apart over the full height', async ({ page }) => {
@@ -76,6 +82,6 @@ test('an unknown spread value falls back instead of dropping the layout', async 
     const body = document.getElementById('bogus')!.shadowRoot!.querySelector('.body')!;
     return getComputedStyle(body).justifyContent;
   });
-  expect(justify, 'a typo degrades to the documented default').toBe('flex-start');
-  expect(await emptyBelow(page, 'bogus', 'bogus-b')).toBeGreaterThan(0.4);
+  expect(justify, 'a typo degrades to the documented default').toBe('center');
+  expect(await emptyBelow(page, 'bogus', 'bogus-b')).toBeLessThan(0.4);
 });
