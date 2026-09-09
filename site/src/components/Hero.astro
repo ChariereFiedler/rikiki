@@ -4,34 +4,48 @@
 
 <section id="top" class="hero">
   <div class="hero-inner">
-    <p class="eyebrow"><span class="eyebrow-mark"></span>Brief to verified deck</p>
+    <div class="hero-copy">
+      <p class="eyebrow"><span class="eyebrow-mark"></span>Brief to verified deck</p>
 
-    <h1 class="title">
-      Write the talk.<br />
-      Ship the <span class="accent">proof</span>.
-    </h1>
+      <h1 class="title">
+        Write the talk.<br />
+        Ship the <span class="accent">proof</span>.
+      </h1>
 
-    <p class="tagline">
-      HTML + Web Components <span class="dot">·</span> <strong>agent-ready workflow</strong> <span class="dot">·</span> offline delivery <span class="dot">·</span> MIT
-    </p>
+      <p class="tagline">
+        HTML + Web Components <span class="dot">·</span> <strong>agent-ready workflow</strong> <span class="dot">·</span> offline delivery <span class="dot">·</span> MIT
+      </p>
 
-    <p class="lead">
-      Turn a brief into a presentation you can inspect, render, audit, bundle,
-      and hand over. Authors edit readable HTML; agents and CI check structure,
-      visuals, timing, and delivery.
-    </p>
+      <p class="lead">
+        Turn a brief into a presentation you can inspect, render, audit, bundle,
+        and hand over. Authors edit readable HTML; agents and CI check structure,
+        visuals, timing, and delivery.
+      </p>
 
-    <div class="ctas">
-      <a class="btn primary" href="#workflow">See the workflow</a>
-      <a class="btn ghost" href="/demo/">Open the verified tour →</a>
+      <div class="ctas">
+        <a class="btn primary" href="#agent-workflow">Build with an LLM</a>
+        <a class="btn ghost" href="/demo/">Open the verified tour →</a>
+      </div>
+
+      <ul class="meta">
+        <li><strong>0</strong> external runtime requests</li>
+        <li><strong>34</strong> core components</li>
+        <li><strong>HTML + PDF</strong> delivery</li>
+        <li><strong>MIT</strong></li>
+      </ul>
     </div>
 
-    <ul class="meta">
-      <li><strong>0</strong> external runtime requests</li>
-      <li><strong>35</strong> core components</li>
-      <li><strong>HTML + PDF</strong> delivery</li>
-      <li><strong>MIT</strong></li>
-    </ul>
+    <aside class="hero-proof" aria-label="From brief to proof">
+      <div class="proof-caption"><span>THE LOOP</span><span>01 → 04</span></div>
+      <div class="proof-row"><span class="proof-index">01</span><strong>Brief</strong><code>prompt.md</code></div>
+      <div class="proof-arrow">↓</div>
+      <div class="proof-row active"><span class="proof-index">02</span><strong>Source</strong><code>index.html</code></div>
+      <div class="proof-arrow">↓</div>
+      <div class="proof-row"><span class="proof-index">03</span><strong>Doctor</strong><code>rikiki check</code></div>
+      <div class="proof-arrow">↓</div>
+      <div class="proof-row"><span class="proof-index">04</span><strong>Delivery</strong><code>HTML · PDF</code></div>
+      <p class="proof-note">Readable source in.<br /><span>Presentable proof out.</span></p>
+    </aside>
   </div>
 </section>
 
@@ -54,10 +68,15 @@
     pointer-events: none;
   }
   .hero-inner {
-    max-width: 920px;
+    max-width: 1120px;
     margin: 0 auto;
     position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr);
+    align-items: center;
+    gap: clamp(2rem, 7vw, 7rem);
   }
+  .hero-copy { min-width: 0; }
   .eyebrow {
     display: flex;
     align-items: center;
@@ -135,10 +154,32 @@
   }
   .meta strong { color: var(--rik-text-inverse); font-weight: 700; }
 
+  .hero-proof {
+    width: min(100%, 360px);
+    justify-self: end;
+    padding: 18px;
+    border: 1px solid var(--rik-border-inverse);
+    border-radius: var(--rik-radius-md);
+    background: rgba(232, 228, 240, .045);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, .2);
+  }
+  .proof-caption, .proof-row, .proof-arrow, .proof-note { font-family: var(--rik-font-mono); }
+  .proof-caption { display: flex; justify-content: space-between; color: var(--rik-text-inverse--ghost); font-size: .62rem; letter-spacing: .13em; }
+  .proof-row { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 10px; margin-top: 12px; padding: 13px 11px; border: 1px solid transparent; color: var(--rik-text-inverse--muted); }
+  .proof-row.active { border-color: rgba(0, 200, 160, .55); background: rgba(0, 200, 160, .11); color: var(--rik-text-inverse); }
+  .proof-index { color: var(--rik-accent); font-size: .7rem; }
+  .proof-row strong { font-family: var(--rik-font-display); font-size: 1rem; }
+  .proof-row code { color: var(--rik-text-inverse--ghost); font-size: .68rem; }
+  .proof-arrow { margin: 2px 0 0 12px; color: var(--rik-accent); font-size: .9rem; }
+  .proof-note { margin: 20px 11px 2px; color: var(--rik-text-inverse--muted); font-size: .72rem; line-height: 1.5; }
+  .proof-note span { color: var(--rik-accent); }
+
   @media (max-width: 640px) {
     .hero {
       padding: var(--rik-space-6) var(--rik-space-3) calc(var(--rik-space-6) + 2rem);
     }
+    .hero-inner { display: block; }
+    .hero-proof { width: 100%; margin-top: var(--rik-space-5); }
     .title {
       font-size: clamp(2.8rem, 15vw, 4.5rem);
       line-height: 0.98;
