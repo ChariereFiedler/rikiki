@@ -107,9 +107,9 @@ document.querySelector('deck-root').use(stopwatch);`;
   description="Optional add-ons · activated by an attribute on deck-root or an explicit import. None of them are in the core bundle · they fetch on first use only."
 >
 
-<h2 id="overview">The five plugins</h2>
+<h2 id="overview">Optional modules</h2>
 <p>
-  Rikiki ships five optional modules. The core (<code>dist/index.js</code>,
+  Rikiki ships optional runtime modules and component modules. The core (<code>dist/index.js</code>,
   ~42 KB gzip) doesn't load any of them. Each one fetches separately the
   first time it's needed, so a deck that doesn't use a plugin pays nothing
   for it.
@@ -164,6 +164,30 @@ document.querySelector('deck-root').use(stopwatch);`;
     </tr>
   </tbody>
 </table>
+
+<h2 id="extra-components">Extra component modules</h2>
+<p>
+  The components below are compiled from <code>src/extras</code> and ship as
+  separate files. Import the file only when the deck uses that element; the
+  complete catalogue, attributes, and examples live in the
+  <a href="/docs/components#optional">component reference</a>.
+</p>
+<p class="module-list">
+  <a href="/docs/components#deck-agenda"><code>deck-agenda</code></a> ·
+  <a href="/docs/components#deck-annotate"><code>deck-annotate</code></a> ·
+  <a href="/docs/components#deck-bar"><code>deck-bar</code></a> ·
+  <a href="/docs/components#deck-checklist"><code>deck-checklist</code></a> ·
+  <a href="/docs/components#deck-flow"><code>deck-flow</code></a> ·
+  <a href="/docs/components#deck-graph"><code>deck-graph</code></a> ·
+  <a href="/docs/components#deck-icon"><code>deck-icon</code></a> ·
+  <a href="/docs/components#deck-kpi-grid"><code>deck-kpi-grid</code></a> ·
+  <a href="/docs/components#deck-persona"><code>deck-persona</code></a> ·
+  <a href="/docs/components#deck-pull"><code>deck-pull</code></a> ·
+  <a href="/docs/components#deck-quote"><code>deck-quote</code></a> ·
+  <a href="/docs/components#deck-table"><code>deck-table</code></a> ·
+  <a href="/docs/components#deck-timeline"><code>deck-timeline</code></a> ·
+  <a href="/docs/components#deck-versus"><code>deck-versus</code></a>
+</p>
 
 <h2 id="transition">deck-transition · animations between slides</h2>
 <p>
@@ -378,6 +402,10 @@ document.querySelector('deck-root').use(stopwatch);`;
     padding: 10px 14px;
     border-bottom: 1px solid var(--rik-border-default);
     vertical-align: top;
+  }
+  .module-list {
+    max-width: 78ch;
+    line-height: 2;
   }
   table.plugins th,
   table.opts th {
