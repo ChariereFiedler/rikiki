@@ -150,35 +150,28 @@
 <deck-section num="02"><h1>Anatomy</h1></deck-section>
 
 <!-- ════════════════════════════════════════════════════════════════
-     6 · A slide is just HTML · code on one side, key parts named
+     6 · A slide is just HTML · a compact source map
      ════════════════════════════════════════════════════════════════ -->
-<deck-split eyebrow="Source = output" gap="5" col-gap="3">
+<deck-bento eyebrow="Source = output" cols="3" rows="2" gap="4">
   <h1 slot="title">A slide is plain HTML, which is what makes it readable in 2031</h1>
-  <div slot="left">
-    <deck-code lang="html">
+  <deck-cell span="2x2" tone="info">
+    <deck-code lang="html" hero>
       &lt;deck-feature eyebrow="Module"&gt;
         &lt;h1 slot="title"&gt;Side effects&lt;/h1&gt;
-        &lt;p slot="lead" class="lead"&gt;
-          A module can act on import.
-        &lt;/p&gt;
-        &lt;deck-code lang="ts" hero&gt;
-          import './polyfill';
-        &lt;/deck-code&gt;
+        &lt;p slot="lead"&gt;A module can act on import.&lt;/p&gt;
+        &lt;deck-code lang="ts"&gt;import './polyfill';&lt;/deck-code&gt;
       &lt;/deck-feature&gt;
     </deck-code>
-  </div>
-  <deck-stack slot="right" gap="3">
-    <deck-callout type="info">
-      <strong>Layouts</strong> · <code>&lt;deck-feature&gt;</code> and friends provide structure · title, lead, body.
-    </deck-callout>
-    <deck-callout type="ok">
-      <strong>Slots</strong> · <code>slot="title"</code>, <code>slot="lead"</code>, <code>slot="left"</code>, <code>slot="right"</code>.
-    </deck-callout>
-    <deck-callout type="warn">
-      <strong>Atoms</strong> · <code>&lt;deck-code&gt;</code>, <code>&lt;deck-md&gt;</code>, <code>&lt;deck-callout&gt;</code>, <code>&lt;deck-card&gt;</code>, <code>&lt;deck-mermaid&gt;</code>.
-    </deck-callout>
-  </deck-stack>
-</deck-split>
+  </deck-cell>
+  <deck-cell tone="ok">
+    <h3>Layouts</h3>
+    <p><code>&lt;deck-feature&gt;</code> provides structure: title, lead, body.</p>
+  </deck-cell>
+  <deck-cell tone="warn">
+    <h3>Slots</h3>
+    <p>Content goes where the layout expects it: <code>title</code>, <code>lead</code>, <code>left</code>, <code>right</code>.</p>
+  </deck-cell>
+</deck-bento>
 
 <!-- ════════════════════════════════════════════════════════════════
      7 · SECTION · Library
@@ -224,7 +217,7 @@
     </deck-card>
     <deck-card color="orange">
       <h3>&lt;deck-mermaid&gt;</h3>
-      <deck-md>Mermaid diagram loaded **on demand** from CDN · the only opt-in CDN dep.</deck-md>
+      <deck-md>Mermaid diagram loaded **on demand** from the vendored runtime.</deck-md>
     </deck-card>
     <deck-card color="yellow">
       <h3>…plus 11 more</h3>
