@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "node scripts/stage-assets.mjs && astro dev",
-    "build": "node scripts/stage-assets.mjs && astro build && node scripts/check-dist.mjs",
+    "build": "node scripts/stage-assets.mjs && astro build && node scripts/check-dist.mjs && node scripts/check-links.mjs",
     "preview": "astro preview",
     "stage": "node scripts/stage-assets.mjs",
     "check:dist": "node scripts/check-dist.mjs",
@@ -14,7 +14,7 @@
     "lint": "npm run lint:dashes && npm run lint:links && astro check"
   },
   "keywords": [],
-  "author": "Cédric Chariere Fiedler",
+  "author": "C\u00e9dric Chariere Fiedler",
   "license": "MIT",
   "engines": {
     "node": ">=22.12.0"

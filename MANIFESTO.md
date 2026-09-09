@@ -32,7 +32,7 @@ Upside: no "it worked before the Vite update". No build regression on the deck s
 
 ### 3. Light by default, extensible on demand
 
-The core (`rikiki/index.js` + every base component) stays **under 25 KB gzip**. Every non-essential feature is an opt-in module: `deck-timer.js`, `deck-presenter.js`, `deck-pdf.js`. You pay only for what you import.
+The core (`rikiki/index.js` + every base component) stays **under 25 KB gzip**. Every non-essential feature is an opt-in module: `deck-presenter.js`, `deck-transition.js`, `shiki.js`. You pay only for what you import.
 
 Explicit refusals:
 

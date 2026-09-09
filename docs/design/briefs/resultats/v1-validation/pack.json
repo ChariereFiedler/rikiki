@@ -1,0 +1,981 @@
+[
+  {
+    "id": "rikiki-deck@1.0.0",
+    "name": "rikiki-deck",
+    "version": "1.0.0",
+    "size": 3147632,
+    "unpackedSize": 13790427,
+    "shasum": "804b51e49cbc362bf562b7732af5361afc0c0b60",
+    "integrity": "sha512-UYjaB6MsBV4A5Zx/TLzk5+TAGS1CaVsdkDF3kwjVU15pI7BWH1V9+gDxmrZu6LVW0VTtX7o/ohULji5UbmknAQ==",
+    "filename": "rikiki-deck-1.0.0.tgz",
+    "files": [
+      {
+        "path": ".claude/skills/rikiki-debug/SKILL.md",
+        "size": 5060,
+        "mode": 420
+      },
+      {
+        "path": ".claude/skills/rikiki-deck/SKILL.md",
+        "size": 18917,
+        "mode": 420
+      },
+      {
+        "path": ".claude/skills/rikiki-theme/SKILL.md",
+        "size": 3863,
+        "mode": 420
+      },
+      {
+        "path": "LICENSE",
+        "size": 1081,
+        "mode": 420
+      },
+      {
+        "path": "README.md",
+        "size": 11133,
+        "mode": 420
+      },
+      {
+        "path": "bin/lib/assemble.mjs",
+        "size": 6496,
+        "mode": 420
+      },
+      {
+        "path": "bin/lib/browser.mjs",
+        "size": 9169,
+        "mode": 420
+      },
+      {
+        "path": "bin/lib/check.mjs",
+        "size": 25255,
+        "mode": 420
+      },
+      {
+        "path": "bin/lib/cli-error.mjs",
+        "size": 1372,
+        "mode": 420
+      },
+      {
+        "path": "bin/lib/export-pdf.mjs",
+        "size": 1888,
+        "mode": 420
+      },
+      {
+        "path": "bin/lib/inline.mjs",
+        "size": 14042,
+        "mode": 420
+      },
+      {
+        "path": "bin/lib/prune-icons.mjs",
+        "size": 3415,
+        "mode": 420
+      },
+      {
+        "path": "bin/lib/render.mjs",
+        "size": 8484,
+        "mode": 420
+      },
+      {
+        "path": "bin/lib/scan-external.mjs",
+        "size": 5651,
+        "mode": 420
+      },
+      {
+        "path": "bin/lib/starter.mjs",
+        "size": 3956,
+        "mode": 420
+      },
+      {
+        "path": "bin/lib/visual.mjs",
+        "size": 4605,
+        "mode": 420
+      },
+      {
+        "path": "bin/rikiki.mjs",
+        "size": 21217,
+        "mode": 420
+      },
+      {
+        "path": "dist/annotation-marks.js",
+        "size": 584,
+        "mode": 420
+      },
+      {
+        "path": "dist/application/deep-link.d.ts",
+        "size": 1575,
+        "mode": 420
+      },
+      {
+        "path": "dist/application/keymap.d.ts",
+        "size": 2397,
+        "mode": 420
+      },
+      {
+        "path": "dist/application/mouse-nav.d.ts",
+        "size": 606,
+        "mode": 420
+      },
+      {
+        "path": "dist/atoms/deck-badge.d.ts",
+        "size": 378,
+        "mode": 420
+      },
+      {
+        "path": "dist/atoms/deck-code-highlighter.d.ts",
+        "size": 417,
+        "mode": 420
+      },
+      {
+        "path": "dist/atoms/deck-code.d.ts",
+        "size": 1587,
+        "mode": 420
+      },
+      {
+        "path": "dist/atoms/deck-kicker.d.ts",
+        "size": 185,
+        "mode": 420
+      },
+      {
+        "path": "dist/atoms/deck-punch.d.ts",
+        "size": 760,
+        "mode": 420
+      },
+      {
+        "path": "dist/bar-segments.js",
+        "size": 840,
+        "mode": 420
+      },
+      {
+        "path": "dist/browser-location.js",
+        "size": 169,
+        "mode": 420
+      },
+      {
+        "path": "dist/cards-syntax.js",
+        "size": 1867,
+        "mode": 420
+      },
+      {
+        "path": "dist/click-stages.js",
+        "size": 6240,
+        "mode": 420
+      },
+      {
+        "path": "dist/color.js",
+        "size": 312,
+        "mode": 420
+      },
+      {
+        "path": "dist/contrast.js",
+        "size": 2253,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-agenda.js",
+        "size": 3809,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-annotate.js",
+        "size": 5183,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-badge.js",
+        "size": 1640,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-bar.js",
+        "size": 5023,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-bento.js",
+        "size": 5114,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-callout.js",
+        "size": 2879,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-card.js",
+        "size": 2290,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-cell.js",
+        "size": 3151,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-checklist.js",
+        "size": 3883,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-code-highlighter.js",
+        "size": 229,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-code.js",
+        "size": 4743,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-cover.js",
+        "size": 6837,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-csv.js",
+        "size": 5252,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-feature-cards.js",
+        "size": 4106,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-feature.js",
+        "size": 4070,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-fit.js",
+        "size": 1554,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-flow.js",
+        "size": 5520,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-graph.js",
+        "size": 10741,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-grid.js",
+        "size": 1525,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-help.js",
+        "size": 4275,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-icon.js",
+        "size": 3705,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-kicker.js",
+        "size": 598,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-kpi-grid.js",
+        "size": 3139,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-link.js",
+        "size": 506,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-md.js",
+        "size": 5911,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-mermaid.js",
+        "size": 3273,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-metric.js",
+        "size": 2055,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-notes.js",
+        "size": 498,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-outline.js",
+        "size": 823,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-overview.js",
+        "size": 16674,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-persona.js",
+        "size": 3607,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-photo.js",
+        "size": 5711,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-point.js",
+        "size": 2935,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-presenter.js",
+        "size": 15745,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-pull.js",
+        "size": 1535,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-punch.js",
+        "size": 2921,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-quote.js",
+        "size": 2605,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-root.js",
+        "size": 31458,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-section.js",
+        "size": 4147,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-shortcut.js",
+        "size": 3676,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-split.js",
+        "size": 6522,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-stack.js",
+        "size": 1482,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-stat.js",
+        "size": 2499,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-step-list.js",
+        "size": 2418,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-table.js",
+        "size": 1874,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-takeaway.js",
+        "size": 4437,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-tier-list.js",
+        "size": 2700,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-timeline.js",
+        "size": 3768,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-transition.js",
+        "size": 5937,
+        "mode": 420
+      },
+      {
+        "path": "dist/deck-versus.js",
+        "size": 2761,
+        "mode": 420
+      },
+      {
+        "path": "dist/deep-link.js",
+        "size": 1607,
+        "mode": 420
+      },
+      {
+        "path": "dist/domain/deck-link.d.ts",
+        "size": 925,
+        "mode": 420
+      },
+      {
+        "path": "dist/domain/deck-outline.d.ts",
+        "size": 2482,
+        "mode": 420
+      },
+      {
+        "path": "dist/domain/navigation.d.ts",
+        "size": 1896,
+        "mode": 420
+      },
+      {
+        "path": "dist/domain/viewport.d.ts",
+        "size": 1885,
+        "mode": 420
+      },
+      {
+        "path": "dist/escape-html.js",
+        "size": 162,
+        "mode": 420
+      },
+      {
+        "path": "dist/extras/deck-agenda.d.ts",
+        "size": 759,
+        "mode": 420
+      },
+      {
+        "path": "dist/extras/deck-annotate.d.ts",
+        "size": 1510,
+        "mode": 420
+      },
+      {
+        "path": "dist/extras/deck-bar.d.ts",
+        "size": 1176,
+        "mode": 420
+      },
+      {
+        "path": "dist/extras/deck-checklist.d.ts",
+        "size": 673,
+        "mode": 420
+      },
+      {
+        "path": "dist/extras/deck-flow.d.ts",
+        "size": 1669,
+        "mode": 420
+      },
+      {
+        "path": "dist/extras/deck-graph.d.ts",
+        "size": 2662,
+        "mode": 420
+      },
+      {
+        "path": "dist/extras/deck-icon.d.ts",
+        "size": 784,
+        "mode": 420
+      },
+      {
+        "path": "dist/extras/deck-kpi-grid.d.ts",
+        "size": 853,
+        "mode": 420
+      },
+      {
+        "path": "dist/extras/deck-persona.d.ts",
+        "size": 975,
+        "mode": 420
+      },
+      {
+        "path": "dist/extras/deck-pull.d.ts",
+        "size": 436,
+        "mode": 420
+      },
+      {
+        "path": "dist/extras/deck-quote.d.ts",
+        "size": 1012,
+        "mode": 420
+      },
+      {
+        "path": "dist/extras/deck-table.d.ts",
+        "size": 953,
+        "mode": 420
+      },
+      {
+        "path": "dist/extras/deck-timeline.d.ts",
+        "size": 1111,
+        "mode": 420
+      },
+      {
+        "path": "dist/extras/deck-versus.d.ts",
+        "size": 454,
+        "mode": 420
+      },
+      {
+        "path": "dist/extras/signature.d.ts",
+        "size": 132,
+        "mode": 420
+      },
+      {
+        "path": "dist/fit-controller.js",
+        "size": 878,
+        "mode": 420
+      },
+      {
+        "path": "dist/graph-layout.js",
+        "size": 767,
+        "mode": 420
+      },
+      {
+        "path": "dist/grid-tracks.js",
+        "size": 546,
+        "mode": 420
+      },
+      {
+        "path": "dist/icon-set.js",
+        "size": 1875,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.d.ts",
+        "size": 1385,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.js",
+        "size": 104149,
+        "mode": 420
+      },
+      {
+        "path": "dist/infrastructure/browser-location.d.ts",
+        "size": 181,
+        "mode": 420
+      },
+      {
+        "path": "dist/keymap.js",
+        "size": 2764,
+        "mode": 420
+      },
+      {
+        "path": "dist/layouts/deck-bento.d.ts",
+        "size": 1604,
+        "mode": 420
+      },
+      {
+        "path": "dist/layouts/deck-cover.d.ts",
+        "size": 902,
+        "mode": 420
+      },
+      {
+        "path": "dist/layouts/deck-feature-cards.d.ts",
+        "size": 326,
+        "mode": 420
+      },
+      {
+        "path": "dist/layouts/deck-feature.d.ts",
+        "size": 684,
+        "mode": 420
+      },
+      {
+        "path": "dist/layouts/deck-photo.d.ts",
+        "size": 422,
+        "mode": 420
+      },
+      {
+        "path": "dist/layouts/deck-section.d.ts",
+        "size": 306,
+        "mode": 420
+      },
+      {
+        "path": "dist/layouts/deck-split.d.ts",
+        "size": 1223,
+        "mode": 420
+      },
+      {
+        "path": "dist/layouts/deck-takeaway.d.ts",
+        "size": 686,
+        "mode": 420
+      },
+      {
+        "path": "dist/livereload.d.ts",
+        "size": 11,
+        "mode": 420
+      },
+      {
+        "path": "dist/livereload.js",
+        "size": 1654,
+        "mode": 420
+      },
+      {
+        "path": "dist/molecules/deck-callout.d.ts",
+        "size": 379,
+        "mode": 420
+      },
+      {
+        "path": "dist/molecules/deck-card.d.ts",
+        "size": 414,
+        "mode": 420
+      },
+      {
+        "path": "dist/molecules/deck-cell.d.ts",
+        "size": 568,
+        "mode": 420
+      },
+      {
+        "path": "dist/molecules/deck-csv.d.ts",
+        "size": 1376,
+        "mode": 420
+      },
+      {
+        "path": "dist/molecules/deck-fit.d.ts",
+        "size": 351,
+        "mode": 420
+      },
+      {
+        "path": "dist/molecules/deck-grid.d.ts",
+        "size": 478,
+        "mode": 420
+      },
+      {
+        "path": "dist/molecules/deck-md.d.ts",
+        "size": 489,
+        "mode": 420
+      },
+      {
+        "path": "dist/molecules/deck-mermaid.d.ts",
+        "size": 985,
+        "mode": 420
+      },
+      {
+        "path": "dist/molecules/deck-metric.d.ts",
+        "size": 621,
+        "mode": 420
+      },
+      {
+        "path": "dist/molecules/deck-point.d.ts",
+        "size": 816,
+        "mode": 420
+      },
+      {
+        "path": "dist/molecules/deck-shortcut.d.ts",
+        "size": 881,
+        "mode": 420
+      },
+      {
+        "path": "dist/molecules/deck-stack.d.ts",
+        "size": 617,
+        "mode": 420
+      },
+      {
+        "path": "dist/molecules/deck-stat.d.ts",
+        "size": 537,
+        "mode": 420
+      },
+      {
+        "path": "dist/molecules/deck-step-list.d.ts",
+        "size": 706,
+        "mode": 420
+      },
+      {
+        "path": "dist/molecules/deck-tier-list.d.ts",
+        "size": 820,
+        "mode": 420
+      },
+      {
+        "path": "dist/mouse-nav.js",
+        "size": 197,
+        "mode": 420
+      },
+      {
+        "path": "dist/navigation.js",
+        "size": 1233,
+        "mode": 420
+      },
+      {
+        "path": "dist/parse-csv.js",
+        "size": 428,
+        "mode": 420
+      },
+      {
+        "path": "dist/plugins/click-stages.d.ts",
+        "size": 382,
+        "mode": 420
+      },
+      {
+        "path": "dist/plugins/shiki.d.ts",
+        "size": 316,
+        "mode": 420
+      },
+      {
+        "path": "dist/runtime/color.d.ts",
+        "size": 436,
+        "mode": 420
+      },
+      {
+        "path": "dist/runtime/deck-help.d.ts",
+        "size": 121,
+        "mode": 420
+      },
+      {
+        "path": "dist/runtime/deck-notes.d.ts",
+        "size": 347,
+        "mode": 420
+      },
+      {
+        "path": "dist/runtime/deck-overview.d.ts",
+        "size": 464,
+        "mode": 420
+      },
+      {
+        "path": "dist/runtime/deck-presenter.d.ts",
+        "size": 112,
+        "mode": 420
+      },
+      {
+        "path": "dist/runtime/deck-root.d.ts",
+        "size": 17757,
+        "mode": 420
+      },
+      {
+        "path": "dist/runtime/deck-transition.d.ts",
+        "size": 120,
+        "mode": 420
+      },
+      {
+        "path": "dist/shared-styles.d.ts",
+        "size": 224,
+        "mode": 420
+      },
+      {
+        "path": "dist/shared-styles.js",
+        "size": 2686,
+        "mode": 420
+      },
+      {
+        "path": "dist/shared/annotation-marks.d.ts",
+        "size": 1584,
+        "mode": 420
+      },
+      {
+        "path": "dist/shared/bar-segments.d.ts",
+        "size": 1360,
+        "mode": 420
+      },
+      {
+        "path": "dist/shared/cards-syntax.d.ts",
+        "size": 1235,
+        "mode": 420
+      },
+      {
+        "path": "dist/shared/contrast.d.ts",
+        "size": 2844,
+        "mode": 420
+      },
+      {
+        "path": "dist/shared/escape-html.d.ts",
+        "size": 218,
+        "mode": 420
+      },
+      {
+        "path": "dist/shared/fit-controller.d.ts",
+        "size": 1266,
+        "mode": 420
+      },
+      {
+        "path": "dist/shared/graph-layout.d.ts",
+        "size": 1396,
+        "mode": 420
+      },
+      {
+        "path": "dist/shared/grid-tracks.d.ts",
+        "size": 970,
+        "mode": 420
+      },
+      {
+        "path": "dist/shared/icon-set.d.ts",
+        "size": 355,
+        "mode": 420
+      },
+      {
+        "path": "dist/shared/parse-csv.d.ts",
+        "size": 500,
+        "mode": 420
+      },
+      {
+        "path": "dist/shared/slide-fill.d.ts",
+        "size": 454,
+        "mode": 420
+      },
+      {
+        "path": "dist/shiki.js",
+        "size": 719,
+        "mode": 420
+      },
+      {
+        "path": "dist/signature.js",
+        "size": 932,
+        "mode": 420
+      },
+      {
+        "path": "dist/slide-fill.js",
+        "size": 289,
+        "mode": 420
+      },
+      {
+        "path": "dist/standalone.js",
+        "size": 191294,
+        "mode": 420
+      },
+      {
+        "path": "dist/vendor/lit.js",
+        "size": 17747,
+        "mode": 420
+      },
+      {
+        "path": "dist/vendor/marked.js",
+        "size": 34586,
+        "mode": 420
+      },
+      {
+        "path": "dist/vendor/mermaid.min.js",
+        "size": 3337508,
+        "mode": 420
+      },
+      {
+        "path": "dist/vendor/shiki.js",
+        "size": 9240375,
+        "mode": 420
+      },
+      {
+        "path": "dist/viewport.js",
+        "size": 800,
+        "mode": 420
+      },
+      {
+        "path": "docs/llms/rikiki-reference.md",
+        "size": 73958,
+        "mode": 420
+      },
+      {
+        "path": "docs/llms/rikiki-workflow.md",
+        "size": 22480,
+        "mode": 420
+      },
+      {
+        "path": "fonts/6xK3dSBYKcSV-LCoeQqfX1RYOo3qN67lqDY.woff2",
+        "size": 5840,
+        "mode": 420
+      },
+      {
+        "path": "fonts/6xK3dSBYKcSV-LCoeQqfX1RYOo3qNq7lqDY.woff2",
+        "size": 23124,
+        "mode": 420
+      },
+      {
+        "path": "fonts/6xK3dSBYKcSV-LCoeQqfX1RYOo3qOK7l.woff2",
+        "size": 14868,
+        "mode": 420
+      },
+      {
+        "path": "fonts/6xKydSBYKcSV-LCoeQqfX1RYOo3i54rwlxdu.woff2",
+        "size": 14876,
+        "mode": 420
+      },
+      {
+        "path": "fonts/6xKydSBYKcSV-LCoeQqfX1RYOo3i54rwmBduz8A.woff2",
+        "size": 5852,
+        "mode": 420
+      },
+      {
+        "path": "fonts/6xKydSBYKcSV-LCoeQqfX1RYOo3i54rwmRduz8A.woff2",
+        "size": 23112,
+        "mode": 420
+      },
+      {
+        "path": "fonts/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwlxdu.woff2",
+        "size": 14724,
+        "mode": 420
+      },
+      {
+        "path": "fonts/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwmBduz8A.woff2",
+        "size": 5824,
+        "mode": 420
+      },
+      {
+        "path": "fonts/6xKydSBYKcSV-LCoeQqfX1RYOo3ig4vwmRduz8A.woff2",
+        "size": 22928,
+        "mode": 420
+      },
+      {
+        "path": "fonts/6xKydSBYKcSV-LCoeQqfX1RYOo3iu4nwlxdu.woff2",
+        "size": 14204,
+        "mode": 420
+      },
+      {
+        "path": "fonts/6xKydSBYKcSV-LCoeQqfX1RYOo3iu4nwmBduz8A.woff2",
+        "size": 5648,
+        "mode": 420
+      },
+      {
+        "path": "fonts/6xKydSBYKcSV-LCoeQqfX1RYOo3iu4nwmRduz8A.woff2",
+        "size": 22124,
+        "mode": 420
+      },
+      {
+        "path": "fonts/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPx_cwhsk.woff2",
+        "size": 5888,
+        "mode": 420
+      },
+      {
+        "path": "fonts/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPx7cwhsk.woff2",
+        "size": 11624,
+        "mode": 420
+      },
+      {
+        "path": "fonts/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxDcwg.woff2",
+        "size": 31432,
+        "mode": 420
+      },
+      {
+        "path": "llms.txt",
+        "size": 5873,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 2734,
+        "mode": 420
+      },
+      {
+        "path": "themes/rikiki.css",
+        "size": 25610,
+        "mode": 420
+      },
+      {
+        "path": "themes/siliceum-fonts.css",
+        "size": 5603,
+        "mode": 420
+      },
+      {
+        "path": "themes/siliceum.css",
+        "size": 22057,
+        "mode": 420
+      },
+      {
+        "path": "tokens.css",
+        "size": 754,
+        "mode": 420
+      }
+    ],
+    "entryCount": 193,
+    "bundled": []
+  }
+]

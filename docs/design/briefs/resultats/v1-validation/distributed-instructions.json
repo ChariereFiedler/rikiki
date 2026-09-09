@@ -1,0 +1,22 @@
+[
+  {
+    "path": "llms.txt",
+    "sha256": "0d47cdd5519a57400d5a7d6e1150a7865083b35352e826705aec5cebbfb26160"
+  },
+  {
+    "path": "README.md",
+    "sha256": "d46cc3f4675d282a3c6602e4a2855bcfb235b34bc97a089394a7dd9129dce5f5"
+  },
+  {
+    "path": ".claude/skills/rikiki-deck/SKILL.md",
+    "sha256": "ae548f420c2ca8effbf1d83903094ea5c26084ddf6c546e3619b29efbc947f78"
+  },
+  {
+    "path": "docs/llms/rikiki-workflow.md",
+    "sha256": "641949958bd81c5cdc007b4fa4bb63245ae76ae5c76fd4425bad584fee71b8a5"
+  },
+  {
+    "path": "docs/llms/rikiki-reference.md",
+    "sha256": "48a7e403371c58b202a8cbcaab09be352f74e4207ddf96e4b26fc83b05354308"
+  }
+]

@@ -17,6 +17,14 @@ import Docs from '../../layouts/Docs.astro';
   <li><strong>Runtime diagnostics.</strong> <code>check</code> reports structural, runtime, accessibility and visual risks with stable exit codes.</li>
 </ul>
 
+<h3>Measured runtime sizes · 2026-09-09</h3>
+<ul>
+  <li><strong>25.7 KB gzip</strong> · <code>dist/index.js</code> for the core alone; Lit and marked are separate local imports, bringing initial load to approximately 42 KiB gzip.</li>
+  <li><strong>5.2 KB gzip</strong> · lazy overview module.</li>
+  <li><strong>1.5 KB gzip</strong> · lazy help module.</li>
+  <li>Mermaid and Shiki remain opt-in payloads for bundles that use them.</li>
+</ul>
+
 <h2 id="v060">0.6.0 · 2026-06-19</h2>
 
 <h3>Added</h3>
@@ -184,12 +192,6 @@ import Docs from '../../layouts/Docs.astro';
   </li>
 </ul>
 
-<h3>Performance budget</h3>
-<ul>
-  <li><strong>25.7 KB gzip</strong> · <code>dist/index.js</code> with the default runtime dependencies vendored locally.</li>
-  <li><strong>5.2 KB gzip</strong> · lazy overview module.</li>
-  <li><strong>1.5 KB gzip</strong> · lazy help module.</li>
-  <li>Mermaid and Shiki remain opt-in payloads for bundles that use them.</li>
-</ul>
+
 
 </Docs>

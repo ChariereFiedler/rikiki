@@ -1,0 +1,30 @@
+{
+  "date_utc": "2026-09-09T20:59:31.208701+00:00",
+  "workspace": "/tmp/rikiki-r5-validation",
+  "package": "rikiki-deck-1.0.0.tgz",
+  "sha256": "1be67c4560130d23971d61073abaf599e39ea5c64a93f191c855cfa6e39ff6e6",
+  "node": "v20.19.5",
+  "npm": "10.8.2",
+  "dependencies": {
+    "version": "1.0.0",
+    "name": "rikiki-r5-validation",
+    "dependencies": {
+      "playwright": {
+        "version": "1.63.0",
+        "resolved": "https://registry.npmjs.org/playwright/-/playwright-1.63.0.tgz",
+        "overridden": false
+      },
+      "rikiki-deck": {
+        "version": "1.0.0",
+        "resolved": "file:/tmp/rikiki-r5-validation/rikiki-deck-1.0.0.tgz",
+        "overridden": false
+      },
+      "rolldown": {
+        "version": "1.2.8",
+        "resolved": "https://registry.npmjs.org/rolldown/-/rolldown-1.2.8.tgz",
+        "overridden": false
+      }
+    }
+  },
+  "protocol": "Briefs copied from repo; npm pack without rebuild; authoring restricted to installed documentation and copied briefs; five Codex CLI agents; repository runtime/package/site/CI untouched by R5."
+}

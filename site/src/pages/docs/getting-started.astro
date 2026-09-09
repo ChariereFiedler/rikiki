@@ -2,7 +2,11 @@
 import Docs from '../../layouts/Docs.astro';
 import CodeBlock from '../../components/CodeBlock.astro';
 
-const npmCmd = `npm install rikiki-deck`;
+const npmCmd = `mkdir my-talk
+cd my-talk
+npm init -y
+npm install rikiki-deck
+npx rikiki init index.html`;
 
 const minDeck = `<!doctype html>
 <html>
@@ -59,8 +63,8 @@ npx serve .
 <h3 id="install-npm">Via npm (versioned, offline-friendly)</h3>
 <CodeBlock label="terminal" lang="js" code={npmCmd} />
 <p>
-  Then reference the files relative to <code>node_modules/rikiki-deck/</code> · or
-  copy <code>node_modules/rikiki-deck</code> next to your deck and commit it.
+  The command writes <code>index.html</code> and copies its assets into
+  <code>rikiki/</code> inside <code>my-talk/</code>.
 </p>
 
 <h3 id="install-clone">Via git clone (contributors)</h3>
@@ -71,26 +75,26 @@ npx serve .
 
 <h2 id="first-deck">2 · Your first deck</h2>
 <p>
-  Create a single HTML file. <strong>That's the whole project.</strong>
+  Edit the generated <code>index.html</code>. This minimal example uses the assets copied by <code>init</code>.
 </p>
 <CodeBlock label="my-talk/index.html" lang="html" code={minDeck} />
 
 <h2 id="serve">3 · Serve it</h2>
 <p>
   Modules need <code>http://</code> · don't double-click the file. Run any
-  static server from the parent folder:
+  static server from the <code>my-talk/</code> folder:
 </p>
 <CodeBlock label="terminal" lang="js" code={serve} />
 
 <p>
-  Open <code>http://localhost:7799/my-talk/</code> and press <code>→</code> to
+  Open <code>http://localhost:7799/</code> and press <code>→</code> to
   go through the slides. That's the loop.
 </p>
 
 <h2 id="next">Where to go next</h2>
 <ul>
   <li><a href="/docs/anatomy">Anatomy of a slide</a> · how a <code>&lt;deck-*&gt;</code> element maps to what you see.</li>
-  <li><a href="/docs/components">The component library</a> · all 29 documented elements with their attributes and slots.</li>
+  <li><a href="/docs/components">The component library</a> · the documented elements with their attributes and slots.</li>
   <li><a href="/docs/navigation">Navigation</a> · ←/→, ↑/↓, Space, O, ? · and the 2D model behind them.</li>
   <li><a href="/docs/theming">Theming</a> · how the design tokens work and how to write a new theme.</li>
 </ul>

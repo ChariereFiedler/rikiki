@@ -9,7 +9,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0, // flaky tests are bugs to fix, not retry away (test-discipline)
-  reporter: process.env.CI ? [['list'], ['json', { outputFile: 'e2e-report.json' }]] : 'list',
+  reporter: [['list'], ['json', { outputFile: 'test-results/e2e-report.json' }]],
   use: {
     baseURL: `http://localhost:${PORT}`,
     // retries stay at 0, so a retry-gated trace would never fire · keep the

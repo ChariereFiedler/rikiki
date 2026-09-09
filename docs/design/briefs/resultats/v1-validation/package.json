@@ -1,0 +1,17 @@
+{
+  "name": "rikiki-r5-validation",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "playwright": "^1.63.0",
+    "rikiki-deck": "file:rikiki-deck-1.0.0.tgz",
+    "rolldown": "^1.2.8"
+  }
+}

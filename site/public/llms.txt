@@ -1,1 +1,75 @@
-../../rikiki/llms.txt
+# Rikiki
+
+> Rikiki is a tiny (~42 KB gzip) Lit Web Components framework for technical
+> presentations and product carousels. A deck is plain HTML: load a theme
+> stylesheet, then the component bundle, then write a `<deck-root>` wrapping
+> `deck-*` slide elements. No build step to author or run a deck.
+
+This reference documents rikiki v1.0.0.
+
+The framework is opinionated:
+
+- Web standards only (Custom Elements, Shadow DOM, ES Modules, CSS Custom Properties).
+- Zero-build for deck authors. Consumers never touch a bundler.
+- Three-layer design tokens (`--rik-palette-*` private, `--rik-*` semantic, `--deck-<tag>-*` per-component).
+- Plugins are opt-in and lazy-loaded (transitions, presenter window, Shiki, click-stages).
+- The same `<deck-root>` engine drives slides AND swipe-able carousels via `autoplay` / `loop` / `swipe`.
+
+## Reference
+
+- [Working guide](/rikiki/docs/llms/rikiki-workflow.md): the short path from a brief to a
+  file someone can present · seven steps, an editorial contract, nine
+  compositions by intent with checked HTML, and the order to try fixes in. Start
+  here; it says when to open the reference.
+- [Full LLM reference](/rikiki/docs/llms/rikiki-reference.md) (served at `/rikiki/docs/llms/rikiki-reference.md`): the single source of truth · every tag, attribute, slot, design token, plugin, and recipe in one file. Read this first.
+- [README](/rikiki/README.md): human overview, common patterns, theming notes.
+- `npx rikiki init <name>.html`: writes a starter deck plus the runtime it loads, next to it. Nothing to copy by hand.
+
+## Components
+
+Authoring tags fall into four buckets (see the reference for the exhaustive attribute/slot tables):
+
+- **Layouts (slide-level, direct children of `<deck-root>`)**: `<deck-cover>` · `<deck-section>` · `<deck-feature>` · `<deck-split>` · `<deck-feature-cards>` · `<deck-photo>` · `<deck-takeaway>` · `<deck-bento>`
+- **Molecules (composed containers)**: `<deck-callout>` · `<deck-card>` · `<deck-md>` · `<deck-mermaid>` · `<deck-stat>` · `<deck-metric-list>` / `<deck-metric>` · `<deck-tier-list>` / `<deck-tier>` / `<deck-tier-arrow>` · `<deck-step-list>` / `<deck-step>` · `<deck-shortcut-list>` / `<deck-shortcut>` / `<deck-kbd>` · `<deck-stack>` · `<deck-grid>` · `<deck-point>` / `<deck-cell>` / `<deck-fit>` / `<deck-csv>` (the bento family · reach for `<deck-point>` when a bento item holds words, and `<deck-cell>` when it holds something measured such as fit-to-cell text, a diagram or an image)
+- **Atoms (primitives)**: `<deck-badge>` · `<deck-kicker>` · `<deck-punch>` · `<deck-code>`
+- **Runtime (authoring touchpoints)**: `<deck-root>` (navigation host) · `<deck-notes>` (speaker notes, read by the presenter window)
+
+## Plugins (opt-in, lazy)
+
+- **Transitions**: `transition="slide|slide-up|slide-down|slide-right|fade|zoom|flip"` on `<deck-root>` (per-slide `data-transition`).
+- **Presenter window**: press `P` · mirrors current + next slide, timer, and `<deck-notes>`. With a second screen it sends the slides fullscreen to the projector and keeps the presenter view on the speaker's screen; previews are 16:9; the projected deck auto-hides its chrome while it's open.
+- **Shiki highlighting**: the built-in `deck-code` highlighter only knows js/ts/json/html/xml/svg/css/scss/less; any other `lang` is silently colored as JS (no error). For any other language, install Shiki **after** `dist/index.js`: `import { installShiki } from './dist/shiki.js'` then `await installShiki({ theme, langs })` (list every language the deck uses in `langs`).
+- **Click-stages**: `import { installClickStages } from './dist/click-stages.js'` then `installClickStages()` · per-element `data-click` / `data-anim` / `data-morph` reveals.
+- **Slide zoom**: Ctrl/⌘+wheel / pinch / `+`/`-`/`0` magnify a slide (fixed canvas, on by default, pan by drag/wheel); `no-zoom` on `<deck-root>` opts out.
+- **Writing a plugin**: `deckRoot.use(plugin)` with a `DeckPlugin` (`steps` / `applyStep` / `navigate` / `setup` hooks); `setDeckCodeHighlighter(fn)` overrides `<deck-code>` highlighting. Both re-exported from `dist/index.js`. `installShiki` / `installClickStages` are back-compat shims.
+- **Livereload (authoring only)**: append `?live` to the deck URL.
+
+## The CLI · what a consumer runs
+
+Every command below works from an install, with no clone and no build step.
+
+- `npx rikiki init <name>.html` · an editable source deck, plus the runtime
+  copied into `./rikiki/` beside it. Serve that folder over HTTP · ES modules do
+  not load from `file://`. Needs nothing but Node.
+- `npx rikiki bundle <deck>.html [out.html]` · folds theme, runtime and images
+  into one self-contained file, curated to the components the deck uses. Needs
+  the optional peer `rolldown`.
+- `npx rikiki render <deck>.html [--out dir] [--slides a,b] [--steps]` · one PNG
+  per slide, a gallery and a `manifest.json` tying each picture to the slide it
+  came from. This is how an agent sees a deck. Needs the optional peer
+  `playwright`.
+- `npx rikiki check <deck>.html [--json]` · measures the deck in a browser and
+  reports what is wrong: a runtime that never loaded, a missing file, a
+  misspelled `deck-*` element, content clipped by the slide, text too small for
+  a room. `--json` writes a versioned report to stdout and nothing else. Exit 0
+  clean, 1 defects found, 2 could not look. Needs `playwright`.
+- `npx rikiki export <deck>.html [--output deck.pdf]` · one PDF page per slide.
+  Needs the optional peer `playwright`.
+- `npx rikiki skills` · installs the three agent skills into `.claude/skills/`.
+
+A missing optional peer is reported with the command that installs it.
+
+## Optional
+
+- [Themes](/rikiki/themes/rikiki.css): the default theme and its token layers (`themes/siliceum.css` is an alternative).
+- [Project homepage](https://rikiki.tordu-jardin.fr): rendered docs site (also serves `/llms.txt`).

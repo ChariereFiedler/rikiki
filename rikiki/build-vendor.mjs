@@ -17,6 +17,7 @@ import { mkdirSync, copyFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
+import { writeInventory } from './scripts/vendor-inventory.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -29,13 +30,15 @@ const common = {
   target: 'es2022',
   platform: 'browser',
   minify: true,
-  legalComments: 'none',
+  legalComments: 'inline',
+  metafile: true,
+  absWorkingDir: __dirname,
   logLevel: 'info',
 };
 
 // lit · merge the two specifiers components import ('lit' and 'lit/decorators.js')
 // into one shared module so the browser fetches Lit exactly once for the whole deck.
-await build({
+const lit = await build({
   ...common,
   stdin: {
     contents: `export * from 'lit';\nexport * from 'lit/decorators.js';`,
@@ -47,7 +50,7 @@ await build({
 
 // marked · the markdown parser. <deck-md> imports the bare 'marked' specifier,
 // rewritten to this file by build.mjs for the per-component build.
-await build({
+const marked = await build({
   ...common,
   stdin: {
     contents: `export * from 'marked';`,
@@ -60,7 +63,7 @@ await build({
 // shiki · bundle the highlighter with the pure-JS regex engine so the whole
 // thing (core + grammars + themes) is one self-contained file with no wasm to
 // fetch. The default createHighlighter wires the JS engine in automatically.
-await build({
+const shiki = await build({
   ...common,
   stdin: {
     contents: `
@@ -79,5 +82,7 @@ await build({
 // mermaid · ship the upstream self-contained UMD bundle verbatim. It registers
 // window.mermaid on load · deck-mermaid injects it as a <script> on first use.
 copyFileSync(require.resolve('mermaid/dist/mermaid.min.js'), resolve(VENDOR, 'mermaid.min.js'));
+
+writeInventory(__dirname, { 'lit.js': lit.metafile, 'marked.js': marked.metafile, 'shiki.js': shiki.metafile });
 
 console.log('[vendor] wrote dist/vendor/{lit,marked,shiki}.js + mermaid.min.js');

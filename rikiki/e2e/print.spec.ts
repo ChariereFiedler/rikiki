@@ -157,7 +157,7 @@ test('speaker notes stay out of the printed deck', async ({ page }) => {
       .map((n) => (n.textContent ?? '').trim())
       .filter((t) => t.length > 20),
   );
-  test.skip(notes.length === 0, 'the fixture carries no speaker notes');
+  expect(notes.length, 'the fixture must exercise speaker-note exclusion').toBeGreaterThan(0);
   for (const note of notes) {
     expect(text, 'a speaker note leaked into the printed deck').not.toContain(
       note.slice(0, 30),
