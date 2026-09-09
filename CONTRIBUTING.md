@@ -4,6 +4,17 @@ Thank you for considering a contribution. This document is short on purpose.
 
 ## Setup
 
+Use Node 24 (`nvm use` or `mise use node@24`). The site requires Node >=22.12.0.
+
+To validate the site from the repository root:
+
+```sh
+cd site
+npm ci
+npm run lint
+npm run build
+```
+
 ```bash
 git clone https://gitlab.com/tordu-jardin/rikiki.git
 cd rikiki/rikiki      # the npm package lives one level down
