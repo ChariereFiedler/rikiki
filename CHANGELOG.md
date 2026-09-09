@@ -56,7 +56,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   element observes *and* what its own stylesheet selects on, because an
   attribute can act through CSS alone.
 
+- **`check` compares the announced duration with what there is to say.** A cover
+  that promises twenty minutes over notes carrying two gets a warning. Speech
+  runs at 100 to 130 words a minute on technical material, and those words live
+  in `<deck-notes>`, so the slide count was never the right proxy. Reported as
+  an estimate from the notes, never as a verdict.
+- **`check` reports content no slot takes.** A `deck-card` written inside a
+  `deck-feature-cards` that sits in another layout is dropped: the slide renders
+  blank and nothing said why. `CONTENT_NOT_RENDERED` names the element, the slot
+  it asked for and the slots the parent offers. Components that read their own
+  text rather than slot it, like `deck-code` and `deck-mermaid`, are left alone.
+- **Text inside `deck-code` is measured for size.** Slotted content is measured
+  in the light DOM, but this element rebuilds the author's own text into its
+  shadow tree, where the size check never looked.
+
+### Changed
+- **The authoring skill covers the whole job.** It carried the wiring; it now
+  carries the seven steps from brief to delivery, the editorial contract, seven
+  graphic composition decisions with the failure each one prevents, a table
+  mapping what a slide has to say to the element that says it, and the
+  presentation mode: what the speaker window shows, what belongs in the notes
+  rather than on the slide, and when a reveal is right.
+- **The guide states why assertion-evidence, rather than asserting it.** The
+  measured comprehension and recall results, and the two consequences that
+  follow: a bullet list read aloud costs the room, and cutting is a design act.
+
 ### Fixed
+- **`deck-step` reads as a list, not as three stacked cards.** The label was in
+  the mono face for no reason, the number sat in a 16px accent disc that read as
+  a speck from the back of a room, and each row was a white card with a shadow ·
+  the card kit, three times over. The number now carries the sequence at reading
+  size in accent, the label is in the sans face, the note follows it instead of
+  being pushed to the far edge, and a hairline separates the rows.
+- **The tour deck's cover line was invisible.** It was written `slot="sub"` on a
+  component that offers only a default slot, so the sentence never rendered.
+  Found by the diagnostic above, on the repository's own showcase deck.
 - **Three recipes in the authoring guide used attributes their components
   ignore**, and one example deck promised an arrow head that is not drawn.
   Both found by the diagnostic above, on its first run.
