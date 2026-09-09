@@ -6,7 +6,7 @@
 
 A tiny **Lit Web Components** framework for technical presentations. Drop a folder anywhere, open `index.html`, give the talk. No build step on the consumer side · the framework itself is built from TypeScript, but the output is plain ES modules you import directly.
 
-This documentation tracks rikiki v0.6.0.
+This documentation tracks rikiki v1.0.0.
 
 ## TL;DR
 
@@ -105,7 +105,7 @@ To re-theme: copy a theme file, change the values, that's it. All components fol
 | `<deck-code lang="js" hero?>` | Code block with light syntax highlighting |
 | `<deck-callout type="info\|warn\|danger\|ok">` | Information callout |
 | `<deck-card color="yellow\|orange\|green\|red?">` | Tinted card |
-| `<deck-mermaid>` | Diagram via Mermaid (loaded on demand from CDN) |
+| `<deck-mermaid>` | Diagram via the vendored Mermaid runtime (opt-in bundle) |
 
 Plus `<deck-badge>`, `<deck-metric>`, `<deck-tier-list>`, `<deck-step-list>`, `<deck-kicker>`, `<deck-stack>`, `<deck-grid>`, `<deck-punch>`.
 
@@ -152,7 +152,7 @@ Plus `<deck-badge>`, `<deck-metric>`, `<deck-tier-list>`, `<deck-step-list>`, `<
 
 ## Markdown support (`<deck-md>`)
 
-Parser: `marked` 12 from CDN. Supports GFM (tables, task lists), code blocks, inline code, **bold**, *italic*, lists, blockquotes, links, `---`.
+Parser: vendored `marked` 12. Supports GFM (tables, task lists), code blocks, inline code, **bold**, *italic*, lists, blockquotes, links, `---`.
 
 ## Navigation
 

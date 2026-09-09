@@ -8,6 +8,15 @@ import Docs from '../../layouts/Docs.astro';
   description="Notable changes. Follows Keep a Changelog · the project is on semver."
 >
 
+<h2 id="v100">1.0.0 · 2026-09-09</h2>
+
+<h3>Added</h3>
+<ul>
+  <li><strong>Agent-first delivery workflow.</strong> The package ships the authoring, diagnostic, visual review and delivery workflow needed to take a brief to a checked deck.</li>
+  <li><strong>Self-contained delivery.</strong> Bundles and PDF export are available from the installed CLI, with optional Mermaid and Shiki runtimes embedded only when requested.</li>
+  <li><strong>Runtime diagnostics.</strong> <code>check</code> reports structural, runtime, accessibility and visual risks with stable exit codes.</li>
+</ul>
+
 <h2 id="v060">0.6.0 · 2026-06-19</h2>
 
 <h3>Added</h3>
@@ -177,10 +186,10 @@ import Docs from '../../layouts/Docs.astro';
 
 <h3>Performance budget</h3>
 <ul>
-  <li><strong>11.3 KB gzip</strong> · <code>dist/index.js</code> (everything in one import)</li>
-  <li><strong>1.6 KB gzip</strong> · lazy overview module</li>
-  <li><strong>1.4 KB gzip</strong> · lazy help module</li>
-  <li>Lit + decorators externalized to jsdelivr (~21 KB gzip, cached across decks).</li>
+  <li><strong>25.7 KB gzip</strong> · <code>dist/index.js</code> with the default runtime dependencies vendored locally.</li>
+  <li><strong>5.2 KB gzip</strong> · lazy overview module.</li>
+  <li><strong>1.5 KB gzip</strong> · lazy help module.</li>
+  <li>Mermaid and Shiki remain opt-in payloads for bundles that use them.</li>
 </ul>
 
 </Docs>

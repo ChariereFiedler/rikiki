@@ -10,7 +10,7 @@ Current presentation frameworks have drifted. Reveal.js (2011) is a fossil still
 
 We want three things:
 
-1. **Open `index.html` directly** in a browser. No build, no dev server, no `dist/` step.
+1. **Open `index.html` from a static HTTP server** in a browser. No consumer build or toolchain.
 2. **Edit a component file** and see the change immediately. No toolchain.
 3. **Keep a deck alive long-term** · 5 years, 10 years later, it still runs. No dependency that breaks at the next major.
 
@@ -24,7 +24,7 @@ Everything rests on native Web Components. Lit is used for its ergonomics (~5 KB
 
 ### 2. Source = output · for the consumer
 
-No build step **between an author and their finished deck**. A presentation folder contains the entire app. No `dist/`, no bundle, no transpilation on the consumer side. You open `index.html` and it runs.
+No build step **between an author and their finished deck**. A presentation folder contains the entire app. No transpilation or consumer toolchain. You serve the folder and open `index.html`; it runs.
 
 Upside: no "it worked before the Vite update". No build regression on the deck side. No toolchain for the author to maintain.
 
