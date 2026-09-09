@@ -288,6 +288,9 @@ exécuté, jamais supposé vert.
 | 2026-09-08 | `check` sur les six decks du dépôt | aucun défaut après corrections |
 | 2026-09-08 | `npx vitest run` après le lot D | 681 tests verts |
 | 2026-09-08 | `npx playwright test` après le lot D | 520 passés, 19 ignorés, 3 min 54 |
+| 2026-09-08 | `check` sur les six decks après les deux nouveaux diagnostics | aucun défaut, après trois corrections |
+| 2026-09-08 | `npx playwright test` final | 529 passés, 19 ignorés, 3 min 42 |
+| 2026-09-09 | `npx playwright test` après le skill et deck-step | 529 passés, 19 ignorés, 4 min 54 |
 
 ---
 
@@ -441,6 +444,63 @@ première version ignorait au prix de trois faux positifs sur les decks du dép�
 **Il a immédiatement rapporté quatre défauts réels** : trois recettes du guide
 utilisant des attributs inexistants, et un exemple du dépôt promettant une
 flèche bidirectionnelle que le composant ne dessine pas.
+
+### Le deck de présentation, écrit et corrigé à la vue
+
+Un deck présentant rikiki a été écrit dans le bac à sable en suivant le guide,
+avec les chiffres relevés depuis le dépôt et non estimés. Le diagnostic n'a
+jamais menti, mais il n'a pas tout vu du premier coup.
+
+**Ce que la mesure a trouvé** : la couverture coupée de 95 puis 7 pixels, un
+runtime de diagramme absent du dossier, et une slide entièrement vide dont
+personne ne parlait.
+
+**Ce que l'œil a trouvé, et la mesure pas** : du contenu massé en haut de slide,
+une liste d'étapes en police à chasse fixe sans raison, des numéros illisibles,
+un écart clé-valeur trop grand, et des composants mal choisis là où les extras
+`deck-flow`, `deck-graph`, `deck-kpi-grid` et `deck-checklist` font mieux. La
+distribution verticale se règle avec `spread`, côté auteur, pas côté composant.
+
+**Deux diagnostics en sont sortis** : `CONTENT_NOT_RENDERED` pour le contenu
+qu'aucun slot ne prend, et l'extension de la mesure de taille au texte que
+`deck-code` reconstruit dans son arbre d'ombre.
+
+**Et un défaut de l'exemple phare** : la ligne d'accroche du tour rikiki était
+écrite `slot="sub"` sur un composant qui n'offre qu'un slot par défaut. Elle
+n'était rendue nulle part, probablement depuis longtemps.
+
+**`deck-step` a été refondu** : la police à chasse fixe est partie, le numéro
+porte la séquence à taille lisible en accent plutôt que dans une pastille de
+seize pixels, les cartes blanches à ombre ont laissé place à un filet, et la
+note suit le libellé au lieu d'être poussée au bord opposé.
+
+**Restent connus et non traités** : `deck-metric` étire l'écart entre le
+libellé et la valeur, comme `deck-step` le faisait ; la référence documente
+`arrow` sur `deck-edge`, que le composant n'implémente pas.
+
+### Les référentiels de conception, et ce qu'ils changent
+
+Recherche menée le 2026-09-09 à la demande de l'utilisateur.
+
+**Retenus, avec assise expérimentale.** L'assertion-evidence d'Alley et Garner
+(compréhension et rappel supérieurs, significatif ; réplication 2025 sur 110
+étudiants avec en plus moins d'idées fausses et une charge cognitive perçue
+moindre). Les principes multimédias de Mayer, dont l'assertion-evidence est
+l'application aux slides : redondance et cohérence mordent directement. Les
+sept signaux mesurables d'Inui et coauteurs (2025), corrélés à 0,83 au jugement
+humain, où la densité de texte et l'équilibre spatial dominent. Le débit de
+parole, 130 à 160 mots par minute en rythme normal, 100 à 120 en prise de parole
+technique.
+
+**Écarté.** Le barème AWSM : ses auteurs publient le classement des critères
+mais ni les pondérations ni les seuils, et écrivent qu'il reste à valider.
+
+**Gardé sans prétention de preuve.** La sparkline de Duarte, comme cadre de
+composition au niveau du plan.
+
+**Ce qui en découle** : le contrôle de durée dans `check`, la synthèse de
+composition graphique en sept décisions dans le skill, et la justification
+mesurée de l'assertion-evidence dans le guide plutôt que son affirmation.
 
 ## 7. Reste à faire
 
