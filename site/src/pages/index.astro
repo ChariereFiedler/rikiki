@@ -64,17 +64,20 @@ const quickstartCode = `<!doctype html>
     </div>
   </section>
 
-  <!-- ── Why ────────────────────────────────────────── -->
-  <Section id="why" num="01" eyebrow="Why" title="Three constraints, on purpose">
+  <!-- ── Workflow ───────────────────────────────────── -->
+  <Section id="workflow" num="01" eyebrow="The workflow" title="From brief to delivery, with evidence">
     <StatGrid>
-      <Stat num="01" claim={`Open <code>index.html</code>`} tone="mango">
-        No build step, no toolchain. <strong>A deck is a folder</strong>, served by any static server.
+      <Stat num="01" claim="Write the source" tone="mango">
+        Start with a brief and readable <code>index.html</code>. A deck stays
+        inspectable, editable, and archivable by the people who own it.
       </Stat>
-      <Stat num="02" claim="Alive in 2031" tone="helico">
-        Web standards only. Custom Elements, Shadow DOM, ES Modules, CSS variables.
+      <Stat num="02" claim="Check the deck" tone="helico">
+        Run structural, runtime, accessibility, timing, and visual checks.
+        Stable diagnostics make review concrete for people and agents.
       </Stat>
-      <Stat num="03" claim="~42 KB gzip" tone="lime">
-        Lit and 35 components. <strong>Anything bigger, you opt in.</strong>
+      <Stat num="03" claim="Deliver the proof" tone="lime">
+        Render the slides, bundle a standalone HTML file, and export a PDF.
+        <strong>Everything needed to present travels with the deliverable.</strong>
       </Stat>
     </StatGrid>
   </Section>
@@ -154,14 +157,15 @@ const quickstartCode = `<!doctype html>
   </Section>
 
   <!-- ── Quickstart ─────────────────────────────────── -->
-  <Section id="quickstart" num="06" eyebrow="60 seconds, no install" title="A deck, end to end">
+  <Section id="quickstart" num="06" eyebrow="A concrete starting point" title="Source, checks, delivery">
     <CodeBlock label="my-talk/index.html" lang="html" code={quickstartCode} />
     <p class="more">
-      Drop this file on any static host. GitHub Pages, S3, Netlify, your local
-      <code>python -m http.server</code>. No build, no environment to set up.
+      The source stays plain HTML. Serve it locally, then use the CLI to check
+      the deck, render screenshots, bundle a standalone file, or export a PDF.
+      The final HTML bundle runs offline.
     </p>
     <p class="more">
-      Want the guided version? &nbsp;<a href="/docs/cheatsheet">→ Your first deck in 5 components</a>.
+      Want the guided version? &nbsp;<a href="/docs/cheatsheet">→ Start with a five-component deck</a>.
     </p>
   </Section>
 
@@ -175,8 +179,8 @@ const quickstartCode = `<!doctype html>
 
   <Hook
     kicker="The whole point"
-    punch={`Source <span class="accent">=</span> output.`}
-    caption="A deck is a folder. Open it in 2031, change one character, give the talk again."
+    punch={`Source <span class="accent">→</span> proof.`}
+    caption="A deck should be readable at the start, verifiable in review, and complete when it reaches the room."
   />
 
   <Footer />
