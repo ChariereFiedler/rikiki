@@ -408,6 +408,30 @@ guide en deck réel et le mesure avec `rikiki check`, la commande même que le
 guide recommande. Onze blocs, zéro diagnostic. Un composant renommé casse le
 test avant que la documentation ne mente.
 
+### Revue du parcours de rédaction par agents
+
+Le parcours initial demandait encore à un agent unique de remplir le brief,
+d'écrire le HTML et de déclarer le résultat bon. Cela mélangeait trois
+responsabilités qui ne disposent pas des mêmes preuves : choisir l'argument,
+produire le fichier et le critiquer. `check` pouvait confirmer que le runtime
+était sain alors que le récit restait faible, qu'un chiffre manquait de source
+ou qu'une slide était jolie mais vide.
+
+Le guide impose désormais des handoffs explicites : le planificateur produit un
+contrat éditorial, un registre des faits et un plan ligne par slide ; le rédacteur
+produit le HTML à partir de ces artefacts ; deux critiques séparées relisent le
+contenu puis les pixels ; l'intégrateur applique les constats et relance les
+deux passes après une modification structurelle. Chaque constat porte un id de
+slide et une sévérité (`blocker`, `fix`, `choice`). Le registre interdit qu'un
+agent comble un trou avec une invention, et le plan interdit qu'un sujet ou un
+nom de composant tienne lieu de preuve.
+
+Cette séparation reste opérable avec un seul agent : il sauvegarde chaque
+artefact avant de passer au rôle suivant et ne s'autorise pas à approuver le
+texte qu'il vient d'écrire. Elle transforme une consigne générale en preuves
+inspectables, sans prétendre qu'un diagnostic mécanique juge l'argument ou le
+goût visuel.
+
 **Un défaut de composant est sorti de là.** La recette « architecture »
 débordait de 57 pixels : `deck-mermaid` plafonnait son SVG à 60 % de la hauteur
 de slide, ce qui ignore le rembourrage de son propre hôte. Le plafond porte
