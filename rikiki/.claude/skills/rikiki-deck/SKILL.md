@@ -13,12 +13,39 @@ Work in this order. Skipping to step 4 is how a deck ends up correct and
 useless.
 
 ```
-1 contract → 2 plan → 3 composition → 4 write → 5 look & measure → 6 fix → 7 deliver
+1 contract → 2 plan → 3 composition → 4 write → 5 independent review → 6 fix → 7 deliver
 ```
 
 Full guide, with the nine recipes and their verified HTML:
 `node_modules/rikiki-deck/docs/llms/rikiki-workflow.md`.
 Every tag, attribute and token: `rikiki-reference.md` beside it.
+
+## The agent workflow
+
+Treat deck writing as a small editorial pipeline, not one long generation.
+Use separate passes when agents are available:
+
+1. **Planner** turns the brief into a contract, a fact ledger and a slide plan.
+2. **Writer** turns that plan into HTML and notes without adding claims.
+3. **Content critic** checks the story, claims, sources, titles and notes without
+   editing the deck.
+4. **Visual critic** renders every slide and reveal state, reads the images and
+   reports hierarchy, density, balance and legibility without editing the deck.
+5. **Integrator** applies only accepted findings, then runs the complete check
+   and render pass again.
+
+The planner's artifacts are the handoff between agents. Keep them in a
+temporary working directory, with one row per slide containing `id`, question,
+claim, evidence, composition, source and note purpose. The fact ledger lists
+every number, quote, date and external asset with its source or `TODO`; the
+writer may use only entries in that ledger. If there is one agent, simulate the
+same boundaries by saving each artifact before starting the next pass. Never
+ask the writer to approve its own deck in the same instruction.
+
+Critics return findings keyed by slide id and severity (`blocker`, `fix`, or
+`choice`). The integrator fixes blockers first, then fixes, and leaves choices
+for the user when they change the argument or tone. Re-run the critics after a
+structural change, not only after changing CSS.
 
 ## 1 · The contract, before any HTML
 
@@ -83,6 +110,11 @@ could move elsewhere without loss means the order is not a story.
 
 `rikiki render` writes the titles into its manifest, so the test can be run on
 a deck already written. Run it on the plan first; it costs nothing there.
+
+Freeze the plan before writing HTML. Each row is complete only when it names the
+audience's question, the slide's answer, the evidence that earns the answer,
+the source for each factual item, and what the speaker will add in the notes.
+A topic, a component name, or a decorative idea is not evidence.
 
 ## 3 · Composition
 
@@ -218,7 +250,7 @@ Then edit the HTML. Three rules that save a rewrite:
 - **Slotted content only renders if a slot takes it.** A `deck-card slot="a"`
   inside the wrong parent leaves a blank slide.
 
-## 5 · The presentation mode · what the speaker gets
+## The presentation mode · what the speaker gets
 
 Press **P** and rikiki opens a second window: the current slide, the next one as
 a preview, a running timer, and the `<deck-notes>` of the slide on screen. With
@@ -254,6 +286,28 @@ Use a reveal when the order is the message: the speaker comments each state
 before the next appears. Do not use it to fit more on one slide · that is a
 split, not a reveal. Render them with `--steps`, or you are judging the emptiest
 state of the deck.
+
+## 5 · Independent review
+
+Review in two passes with different questions. The content pass reads the
+contract, plan, titles and notes without looking at the implementation first:
+
+- Does each slide answer a question opened by the previous slide?
+- Do the titles form a coherent argument when read aloud?
+- Does every number, quote, date and asset have a source or an explicit `TODO`?
+- Is the note speech rather than projected copy, and does its length fit the
+  announced duration?
+
+The visual pass starts from rendered images, including every reveal state. Look
+for one focal point, a readable title, evidence that occupies the right amount
+of space, a stable alignment axis, and an image or diagram that can be read at
+the intended distance. Record the slide id and the concrete change needed;
+do not rewrite the deck while reviewing it.
+
+The two critics return findings keyed by slide id and severity (`blocker`,
+`fix`, or `choice`). Apply blockers first, then fixes. Leave choices for the
+user when they change the argument or tone. A structural correction triggers
+both review passes again.
 
 ## 6 · Fixing, in this order
 
@@ -291,6 +345,7 @@ argument, accessibility. Silence there is not approval.
 ## Before saying it is done
 
 - [ ] Every figure in the deck comes from the brief, and nothing else does.
+- [ ] The plan and fact ledger exist, and the writer stayed inside the ledger.
 - [ ] The titles, read in sequence, form a text that holds together.
 - [ ] Each slide answers a question an earlier slide opened.
 - [ ] Each content slide's title is a sentence that states its message.
@@ -298,4 +353,6 @@ argument, accessibility. Silence there is not approval.
 - [ ] Notes are written as speech, and their length matches the announced slot.
 - [ ] `rikiki check` exits 0.
 - [ ] You looked at the rendered pictures, including revealed states.
+- [ ] A separate content pass and visual pass reviewed the final structure.
+- [ ] Structural changes triggered another full review, not only a local check.
 - [ ] What you did not verify is said out loud.

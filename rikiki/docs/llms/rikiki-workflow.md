@@ -11,6 +11,48 @@ The exhaustive tag, attribute and token tables are in
 for them. What makes a slide worth projecting is §14 there, and it is the one
 section to read before writing any content.
 
+## Work as a pipeline
+
+The reliable unit is a handoff, not a prompt that asks one agent to write and
+judge a complete deck. Use these passes when you can delegate them:
+
+| Pass | Produces | Must not do |
+|---|---|---|
+| Planner | contract, fact ledger, slide plan | write HTML or fill unknown facts |
+| Writer | HTML and speaker notes | add claims outside the ledger |
+| Content critic | story and evidence findings | edit the deck |
+| Visual critic | image based findings for every state | approve its own changes |
+| Integrator | corrected deck and final report | hide unresolved findings |
+
+Keep the artifacts in a temporary work directory. The slide plan is the
+handoff: one row per slide with `id`, room question, claim, evidence,
+composition, source and note purpose. The fact ledger lists every number,
+quote, date and external asset with its source or `TODO`. If delegation is not
+available, perform the same passes sequentially and save the artifacts before
+moving on. The writer and critics must not be the same pass, even when they are
+the same model.
+
+Critics report `blocker`, `fix` or `choice`, each tied to a slide id. The
+integrator resolves blockers first, then fixes, and leaves choices that alter
+the argument or tone for the user. Any structural change starts another
+content and visual review.
+
+A small handoff directory is enough:
+
+```text
+deck-work/
+  contract.md       audience, decision, duration, acceptance
+  facts.md           allowed claims, values, sources, TODOs, assets
+  plan.md            one row per slide, in order
+  content-review.md  findings keyed by slide id
+  visual-review.md   findings keyed by slide id and render state
+```
+
+Each pass ends with a short status line (`PLAN_READY`, `DECK_WRITTEN`,
+`CONTENT_REVIEWED`, `VISUAL_REVIEWED` or `DELIVERY_READY`) and a list of open
+findings. This gives the next agent a stopping point and makes an incomplete
+run visible instead of turning silence into approval.
+
 **The seven steps**
 
 1. [Fill the gaps in the brief](#1--fill-the-gaps-in-the-brief)
@@ -25,7 +67,7 @@ section to read before writing any content.
 
 ## 1 · Fill the gaps in the brief
 
-Before writing a single slide, write down the editorial contract. It is eight
+Before writing a single slide, write down the editorial contract. It is nine
 lines and it decides everything after it.
 
 ```markdown
@@ -37,6 +79,7 @@ lines and it decides everything after it.
 - Theme:         rikiki, siliceum, or a constraint from a brand
 - Sources:       what you were given, and what is quotable from it
 - Missing:       what you had to ask for or assume
+- Acceptance:    what must be true for the deck to be useful
 ```
 
 Ask for what is missing rather than inventing it. If asking is not possible,
@@ -104,6 +147,12 @@ breaks the chain; a title you could move without loss means there is no story.
 `rikiki render` writes the titles into its manifest, so the same test runs on a
 deck already written.
 
+Before HTML, freeze the plan and fact ledger. A plan row is complete only when
+the evidence earns the claim and the source is known. A component name,
+decorative idea or topic label is not evidence. The writer is allowed to turn
+the plan into markup, shorten wording and choose a documented variant; it is
+not allowed to invent a fact to make a slide feel complete.
+
 ## 3 · Choose the compositions
 
 Pick per slide, from the intent, not from the tag you remember. The recipes are
@@ -131,6 +180,11 @@ HTML directly. Two rules that save a rewrite:
   shows them, the projector does not. Sources, figures to verify and the
   sentence you would say belong there.
 
+Write one slide at a time from its plan row, then check the row against the
+HTML before moving on. Keep the planned `id`, claim and evidence visible in the
+working notes. This prevents a late slide from becoming a second conclusion or
+from quietly changing the argument because a component was easier to fill.
+
 ## 5 · Render and check
 
 Never claim a deck works without having looked at it.
@@ -144,6 +198,18 @@ npx rikiki render talk.html --steps # each revealed state, not just the first
 `check` exits 0 when nothing blocks, 1 on defects, 2 when it could not look at
 the deck at all. Read the pictures too: `check` measures, it does not judge. A
 green report on an ugly slide is still an ugly slide.
+
+Run a content review before the visual review. The content review reads the
+contract, plan, title sequence and notes and asks whether each slide answers an
+open question, whether each claim has evidence, whether every factual item is
+in the ledger, and whether the notes sound spoken rather than projected.
+
+The visual review reads the rendered images, including every `--steps` state.
+Look for one focal point, a readable title, a coherent alignment axis, useful
+occupation of the canvas, and diagrams or images that can be understood at the
+intended distance. Record findings with slide ids and concrete changes; do not
+silently rewrite while reviewing. After integration, run `check` and render the
+whole deck again.
 
 Read what the report says it did **not** check. It does not read your wording,
 your figures or your argument. Those are yours.
