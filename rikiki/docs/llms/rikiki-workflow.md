@@ -43,10 +43,15 @@ Ask for what is missing rather than inventing it. If asking is not possible,
 write the assumption into `Missing:` and carry it into the deck's notes, so the
 person presenting knows what to verify before standing up.
 
-**Duration caps the deck.** A spoken slide takes about a minute, a section
-divider takes none. Twenty minutes is roughly fifteen content slides, not
-thirty. Cutting at the plan stage costs a line; cutting after writing costs an
-hour.
+**Duration is measured in words, not in slides.** The slide count is a poor
+proxy: nine light slides fill ten minutes, nine dense ones fill thirty. Speech
+runs at 130 to 160 words a minute at a normal pace, and public speaking on
+technical material sits nearer 100 to 120. So a twenty-minute talk is roughly
+2,400 spoken words, and those words live in `<deck-notes>`, not on the slides.
+
+Write the notes as what you would say, and `rikiki check` will compare their
+length to the `duration` on the cover. It reports the gap as an estimate, never
+as a verdict: what a speaker adds around a slide is not in the file.
 
 **Never invent a number, a quotation or a source.** Not a rounded figure, not a
 plausible date, not an attribution. If the brief gives you a number, use it
@@ -64,19 +69,40 @@ A visible gap gets filled before the talk. An invented number gets presented.
 
 ## 2 · Propose a plan
 
-One line per slide, before any HTML:
+Give the talk a shape before giving it slides. The one that carries a technical
+argument alternates between what is and what could be: the situation, then the
+gap, then what closes it, tightening until the last slide only has to name the
+action. Each return to "what is" costs the audience nothing and buys the next
+claim.
+
+Three columns, before any HTML:
 
 ```
-1  cover        · title, speaker, duration, audience
-2  section      · The problem
-3  assertion    · Deploys fail on Friday because nothing gates the tag → the CI graph
-4  comparison   · Before / after, one column each
-5  takeaway     · Gate the tag on the same checks as main
+#  The question the room is asking here   →  What this slide answers   →  With what
+2  Why should I care?                        Deploys fail on Friday       the CI graph
+3  What causes it?                           Nothing gates the tag        the pipeline rules
+4  What would fix it?                        Before / after               two columns
+5  What do I do Monday?                      Gate the tag                 the takeaway
 ```
 
-Each content line carries **the message and its evidence**. A line that reads
-"talk about the CI" is not a plan, it is a subject. Show the plan and get it
-agreed before writing: reordering a list is cheap, reordering slides is not.
+**A slide that answers no open question is cut or moved.** That single check
+removes the "while we're at it" slides a subject list always grows. And a
+question still open at the end needs a slide: if nothing answers "what do I do
+Monday", the deck has no ending.
+
+Two shapes cover almost every technical talk. Pick one and keep it.
+
+- **Situation, complication, question, answer** · the shared ground, what
+  disrupts it, the question that follows, your answer with its support.
+  Minto's structure, and the one that carries a recommendation best.
+- **What is, what could be** · alternate present and possible, each return to
+  "what is" buying the next claim.
+
+**Read the titles in sequence, aloud, before writing any body.** They must form
+a text that stands on its own. A title that names a subject rather than a claim
+breaks the chain; a title you could move without loss means there is no story.
+`rikiki render` writes the titles into its manifest, so the same test runs on a
+deck already written.
 
 ## 3 · Choose the compositions
 
@@ -168,8 +194,27 @@ block below is checked by the repository's test suite, so it is copy-paste
 correct, but the words in it are placeholders: replace them with the brief's.
 
 The house style behind all of them: the title states the message in a full
-sentence, the body is the evidence, one loud thing per slide. See §14 of the
-reference for why.
+sentence, the body is the evidence, one loud thing per slide.
+
+That is the assertion-evidence structure, and it is here because it was
+measured, not because it reads better. Against the usual topic headline over a
+bullet list, audiences understood and remembered more, with the difference
+statistically significant; a later study on 110 engineering students found the
+same, plus fewer misconceptions, lower perceived cognitive load and stronger
+recall at a delayed test. It is the slide-level form of Mayer's multimedia
+principles: one channel per idea, nothing on the slide that does not serve it,
+words beside the thing they describe.
+
+Two consequences worth stating plainly:
+
+- **A bullet list read aloud is worse than no slide.** The audience reads and
+  listens to the same words at once, which the redundancy principle predicts
+  will cost them, and the studies above measured.
+- **Cutting is a design act.** Removing what does not serve the claim improves
+  comprehension on its own · that is the coherence principle, and it is the
+  cheapest edit available.
+
+Reference §14 carries the projection-specific rules that follow from this.
 
 ### 1 · Assertion and proof
 
