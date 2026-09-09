@@ -47,6 +47,10 @@ Critics return findings keyed by slide id and severity (`blocker`, `fix`, or
 for the user when they change the argument or tone. Re-run the critics after a
 structural change, not only after changing CSS.
 
+The working guide contains copyable boundaries for these five prompts and the
+expected status markers. Use them when delegating; do not collapse the writer
+and critic into one pass to save a turn.
+
 ## 1 · The contract, before any HTML
 
 Eight lines. They decide everything after them.
