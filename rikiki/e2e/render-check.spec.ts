@@ -182,10 +182,16 @@ test.describe('render', () => {
 
 test.describe('check', () => {
   test('passes a sound deck, and says what it did not look at', () => {
+    // Enough content that the slide fills its canvas · a headline over one
+    // sentence is reported by the visual pass, and rightly so.
     deck(
       'sound',
       `<deck-cover id="intro"><h1>Titre</h1></deck-cover>
-       <deck-feature id="body"><h1 slot="title">Corps</h1><p>Une phrase.</p></deck-feature>`,
+       <deck-feature id="body" spread="center"><h1 slot="title">Corps</h1>
+         <deck-callout type="info">Une première phrase, qui porte le propos de la slide.</deck-callout>
+         <deck-callout type="ok">Une deuxième, qui l'appuie avec un fait.</deck-callout>
+         <deck-callout type="warn">Une troisième, qui nuance ce que les deux premières affirment.</deck-callout>
+       </deck-feature>`,
     );
     const r = report('sound');
     expect(r.status).toBe(0);
@@ -357,5 +363,108 @@ test.describe('an attribute a component does not read', () => {
     const r = report('chrome');
     expect(r.json.diagnostics.filter((d: any) => d.code === 'TEXT_TOO_SMALL')).toEqual([]);
     expect(r.json.notChecked.join(' ')).toMatch(/chrome/);
+  });
+});
+
+test('text is measured inside the elements that re-render the author\'s words', () => {
+  // Slotted content stays in the light DOM and is measured there. deck-md and
+  // deck-code are different: they rebuild the author's own text into their
+  // shadow tree, and skipping shadow trees wholesale made a code block
+  // invisible to the size check.
+  deck(
+    'shadowtext',
+    `<deck-feature id="code"><h1 slot="title">T</h1>
+       <deck-code lang="ts" style="font-size:6px">const a = 1;</deck-code>
+     </deck-feature>`,
+  );
+  const r = report('shadowtext');
+  const where = r.json.diagnostics
+    .filter((d: any) => d.code === 'TEXT_TOO_SMALL')
+    .map((d: any) => d.element)
+    .join(' ');
+  expect(where, 'the code block is measured').toMatch(/deck-code ::shadow/);
+  // deck-md is walked for the same reason, but it sets its own type size, so
+  // an author cannot shrink it from the outside · nothing to assert there.
+});
+
+test.describe('content no slot takes', () => {
+  test('is an error, naming the slots the parent does offer', () => {
+    // deck-feature-cards is a slide layout, not a block: putting cards in it
+    // from inside another layout drops all three and leaves the slide blank,
+    // with nothing in the report to say so.
+    deck(
+      'lost',
+      `<deck-feature id="host"><h1 slot="title">T</h1>
+         <deck-feature-cards>
+           <deck-card slot="a">un</deck-card>
+         </deck-feature-cards>
+       </deck-feature>`,
+    );
+    const r = report('lost');
+    expect(r.status).toBe(1);
+    const lost = r.json.diagnostics.find((d: any) => d.code === 'CONTENT_NOT_RENDERED');
+    expect(lost.severity).toBe('error');
+    expect(lost.element).toContain('deck-card');
+    expect(lost.measurement.wantedSlot).toBe('a');
+    expect(lost.measurement.slotsOffered).toContain('left');
+    expect(lost.suggestion).toMatch(/slot/);
+  });
+
+  test('does not fire on notes, which are for the presenter and never shown', () => {
+    deck('notes', `<deck-feature id="n"><h1 slot="title">T</h1><p>corps</p>
+      <deck-notes>ce que je dirai</deck-notes></deck-feature>`);
+    const r = report('notes');
+    expect(r.json.diagnostics.filter((d: any) => d.code === 'CONTENT_NOT_RENDERED')).toEqual([]);
+  });
+});
+
+test.describe('the visual pass', () => {
+  test('reports a slide whose content sits in the top with a dead band below', () => {
+    // Measured on the pixels, not on the DOM: a box can be the right size and
+    // the slide still read as unfinished. This is the defect a room notices
+    // first, and the one the DOM cannot see.
+    deck(
+      'topheavy',
+      `<deck-feature id="haut"><h1 slot="title">Un titre qui prend le haut</h1>
+         <p>Une phrase, et rien d'autre.</p>
+       </deck-feature>`,
+    );
+    const r = report('topheavy');
+    const found = r.json.diagnostics.find((d: any) => d.code === 'SLIDE_TOP_HEAVY');
+    expect(found, 'the imbalance is reported').toBeTruthy();
+    expect(found.severity).toBe('warning');
+    expect(found.slideId).toBe('haut');
+    expect(found.measurement.emptyBandBelow).toBeGreaterThan(0.3);
+    expect(found.suggestion).toMatch(/spread/);
+    expect(r.json.visualMeasured).toBe(true);
+  });
+
+  test('leaves a slide alone when its content earns the space', () => {
+    // The imbalance is reported, never the amount of empty space on its own:
+    // a slide whose ink reaches down the canvas is left alone whatever remains.
+    deck(
+      'filled',
+      `<deck-feature id="plein" spread="center"><h1 slot="title">Plein</h1>
+         <deck-callout type="info">Une première phrase, qui porte le propos de la slide.</deck-callout>
+         <deck-callout type="ok">Une deuxième, qui l'appuie avec un fait mesuré.</deck-callout>
+         <deck-callout type="warn">Une troisième, qui nuance ce que les deux premières affirment.</deck-callout>
+       </deck-feature>`,
+    );
+    const r = report('filled');
+    expect(r.json.diagnostics.filter((d: any) => d.code === 'SLIDE_TOP_HEAVY')).toEqual([]);
+  });
+
+  test('says so when the pixels were not measured', () => {
+    // A deck that never rendered cannot be measured · the report must not let
+    // that silence read as a clean visual bill.
+    writeFileSync(
+      join(workDir, 'novisual.html'),
+      `<!doctype html><html lang="fr"><head><meta charset="UTF-8">
+<script type="module" src="rikiki/dist/absent.js"></script>
+</head><body><deck-root><deck-cover><h1>A</h1></deck-cover></deck-root></body></html>`,
+    );
+    const r = report('novisual');
+    expect(r.json.visualMeasured).toBe(false);
+    expect(r.json.notChecked.join(' ')).toMatch(/pixels/);
   });
 });

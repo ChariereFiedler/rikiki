@@ -83,7 +83,9 @@ ${block.html}
 </body></html>`,
     );
 
-    const run = spawnSync(process.execPath, [CLI, 'check', file, '--json'], {
+    // --no-visual: a recipe is one slide shown alone, so its vertical balance
+    // says nothing · what is under test is that the markup is correct.
+    const run = spawnSync(process.execPath, [CLI, 'check', file, '--json', '--no-visual'], {
       cwd: workDir,
       encoding: 'utf8',
       maxBuffer: 32 * 1024 * 1024,

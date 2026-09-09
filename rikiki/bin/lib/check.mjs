@@ -13,7 +13,8 @@
 
 import { basename } from 'node:path';
 import { readFileSync } from 'node:fs';
-import { SLIDE_TITLE_READER, withDeck } from './browser.mjs';
+import { SLIDE_TITLE_READER, waitForStillFrame, withDeck } from './browser.mjs';
+import { measureSlides } from './visual.mjs';
 import { scanExternal } from './scan-external.mjs';
 
 export const REPORT_SCHEMA = 1;
@@ -22,6 +23,14 @@ export const SEVERITY = { error: 'error', warning: 'warning' };
 
 // Thresholds are named, not scattered · each says what a reader would notice.
 const LIMITS = {
+  // Speech runs at 130 to 160 words a minute at a normal pace, and public
+  // speaking on technical material sits lower, around 100 to 120. A deck is
+  // measured against the slower end: what a room can follow, not what a
+  // speaker can articulate.
+  wordsPerMinute: 120,
+  // The gap that is worth a word. Below this the estimate is noise: how much
+  // someone says around a slide varies more than any measurement can capture.
+  talkLengthTolerance: 0.5,
   // Under this, the back row of a room cannot read it. Measured against the
   // deck's own canvas, so it holds whatever the projector does.
   minTextPx: 18,
@@ -30,6 +39,12 @@ const LIMITS = {
   denseFillRatio: 0.92,
   // One pixel of clipping is a rounding artefact; a lost line is not.
   clipPx: 4,
+  // A dead band under the content, as a share of the slide height. Empty space
+  // is a choice; a third of the slide empty *below* a full top is a slide that
+  // forgot to distribute itself. Measured on the pixels, chrome excluded.
+  tailBand: 0.3,
+  // How far the ink may sit above centre before the slide reads as top-heavy.
+  verticalBias: -0.1,
 };
 
 const diagnostic = (code, severity, message, extra = {}) => ({
@@ -126,11 +141,14 @@ const inspectPage = ({ limits, titleReader }) => {
     const tiny = [];
     // Only the author's own text. A component's chrome (a cover's meta labels,
     // a counter) is sized by the theme, and telling an author to fix a span
-    // they never wrote is noise. `deck-md` is the exception: it renders the
-    // author's markdown into its own shadow tree.
+    // they never wrote is noise. Slotted content stays in the light DOM, so it
+    // is measured here with the styles the component gives it · but two
+    // elements re-render the author's own words into their shadow tree, and
+    // skipping those hid a code block nobody could read.
+    const AUTHOR_TEXT_IN_SHADOW = new Set(['deck-md', 'deck-code']);
     const walk = (node) => {
       for (const el of node.querySelectorAll('*')) {
-        if (el.shadowRoot && el.tagName.toLowerCase() === 'deck-md') walk(el.shadowRoot);
+        if (el.shadowRoot && AUTHOR_TEXT_IN_SHADOW.has(el.tagName.toLowerCase())) walk(el.shadowRoot);
         if (IGNORED.has(el.tagName.toLowerCase())) continue;
         if (el.ownerSVGElement || el.tagName.toLowerCase() === 'svg') continue;
         const text = Array.from(el.childNodes)
@@ -205,6 +223,26 @@ const inspectPage = ({ limits, titleReader }) => {
     }
   }
 
+  // Content a component never took. An element whose parent has a shadow root
+  // is rendered only if a <slot> accepts it: writing slot="a" where no such
+  // slot exists, or putting a block inside a component that only forwards
+  // named slots, drops it silently and leaves the slide blank.
+  const unslotted = [];
+  for (const el of document.querySelectorAll('*')) {
+    const parent = el.parentElement;
+    if (!parent?.shadowRoot) continue;
+    if (!parent.tagName.toLowerCase().startsWith('deck-')) continue;
+    if (el.assignedSlot) continue;
+    if (el.tagName.toLowerCase() === 'deck-notes') continue; // read by the presenter, never shown
+    const offered = [...parent.shadowRoot.querySelectorAll('slot')].map((n) => n.name || '(default)');
+    // A component with no slot at all reads its own textContent · deck-code and
+    // deck-mermaid do, and every element the parser leaves in there is theirs
+    // to interpret, not ours to complain about.
+    if (offered.length === 0) continue;
+    const wanted = el.getAttribute('slot');
+    unslotted.push({ tag: el.tagName.toLowerCase(), parent: parent.tagName.toLowerCase(), wanted, offered, path: pathOf(el) });
+  }
+
   // A tag that was never defined renders as an empty inline box: the author
   // typed `deck-callot`, and the slide simply lost a block with no error.
   const unknown = [];
@@ -215,14 +253,55 @@ const inspectPage = ({ limits, titleReader }) => {
     }
   }
 
+  // What the deck says it lasts, and what it gives someone to say. Notes are
+  // the script; the projected words are read, not spoken, so they count for
+  // little. This is an order of magnitude, never a verdict.
+  const coverEl = slides.find((el) => el.tagName.toLowerCase() === 'deck-cover');
+  const announced = coverEl?.getAttribute('duration') ?? null;
+  const countWords = (text) => (text.match(/[\p{L}\p{N}'’-]+/gu) ?? []).length;
+  let spokenWords = 0;
+  for (const el of document.querySelectorAll('deck-notes')) {
+    spokenWords += countWords(el.textContent ?? '');
+  }
+
   return {
+    announced,
+    spokenWords,
     hasRoot: !!root,
     runtimeLoaded: !!customElements.get('deck-root'),
     slides: measured,
     unknown,
     strayAttributes,
+    unslotted,
   };
 };
+
+/** What the pixels say · imbalance only, never the amount of empty space. */
+function diagnoseVisual(visual, outline, limits) {
+  const found = [];
+  for (const slide of visual) {
+    if (slide.empty) continue;
+    const named = outline[slide.index - 1] ?? {};
+    // Both conditions together: ink pulled up AND a dead band under it. Either
+    // one alone is a legitimate composition.
+    if (slide.tailBand > limits.tailBand && slide.verticalBias < limits.verticalBias) {
+      found.push(
+        diagnostic('SLIDE_TOP_HEAVY', SEVERITY.warning, `the content sits in the top of the slide · ${Math.round(slide.tailBand * 100)}% of the height below it is empty`, {
+          slide: slide.index,
+          slideId: named.id ?? null,
+          slideTag: named.tag ?? null,
+          measurement: {
+            emptyBandBelow: Math.round(slide.tailBand * 100) / 100,
+            verticalBias: Math.round(slide.verticalBias * 100) / 100,
+            inkRatio: Math.round(slide.inkRatio * 100) / 100,
+          },
+          suggestion: 'distribute with `spread` (center, between, around), or give the slide content that earns the space · a lone box under a headline is not restraint',
+        }),
+      );
+    }
+  }
+  return found;
+}
 
 /** Turn the measurements into findings · this is where policy lives. */
 function diagnose(page, source, limits) {
@@ -268,6 +347,18 @@ function diagnose(page, source, limits) {
             element: u.path,
             suggestion: 'check the spelling against the reference · an undefined custom element is silently empty',
           }),
+    );
+  }
+
+  for (const lost of page.runtimeLoaded ? page.unslotted : []) {
+    found.push(
+      diagnostic('CONTENT_NOT_RENDERED', SEVERITY.error, `<${lost.tag}> is inside <${lost.parent}> but no slot takes it · nothing of it appears`, {
+        element: lost.path,
+        measurement: { wantedSlot: lost.wanted, slotsOffered: lost.offered },
+        suggestion: lost.wanted
+          ? `<${lost.parent}> offers ${lost.offered.join(', ')} · check the slot name`
+          : `<${lost.parent}> only forwards named slots · give this element one of ${lost.offered.join(', ')}`,
+      }),
     );
   }
 
@@ -331,6 +422,21 @@ function diagnose(page, source, limits) {
     }
   }
 
+  // A duration on the cover is a promise to whoever books the room.
+  const minutes = Number.parseFloat(String(page.announced ?? '').replace(',', '.'));
+  if (page.runtimeLoaded && Number.isFinite(minutes) && minutes > 0) {
+    const spokenMinutes = page.spokenWords / limits.wordsPerMinute;
+    const ratio = spokenMinutes / minutes;
+    if (ratio < limits.talkLengthTolerance) {
+      found.push(
+        diagnostic('TALK_SHORTER_THAN_ANNOUNCED', SEVERITY.warning, `the cover announces ${minutes} min · the notes carry about ${spokenMinutes.toFixed(0)} min of speech`, {
+          measurement: { announcedMinutes: minutes, spokenWords: page.spokenWords, wordsPerMinute: limits.wordsPerMinute },
+          suggestion: 'either the deck has more to say than its notes admit, or the slot is shorter than announced · an estimate from the notes alone, never a verdict',
+        }),
+      );
+    }
+  }
+
   // Said about the file, not about the run: a deck that fetches from a CDN is
   // fine on a network and empty on a plane.
   for (const hit of scanExternal(source).filter((h) => /^https?:|^\/\//.test(h.ref))) {
@@ -348,7 +454,7 @@ function diagnose(page, source, limits) {
  * Inspect a deck and report what is wrong with it.
  * @returns {Promise<object>} the versioned report.
  */
-export async function checkDeck(deckPath, { timeoutMs = 30_000, width = 1920, height = 1080 } = {}) {
+export async function checkDeck(deckPath, { timeoutMs = 30_000, width = 1920, height = 1080, visual = true } = {}) {
   const source = readFileSync(deckPath, 'utf8');
   const limits = LIMITS;
 
@@ -365,6 +471,26 @@ export async function checkDeck(deckPath, { timeoutMs = 30_000, width = 1920, he
           }));
 
       const diagnostics = diagnose(observed, source, limits);
+
+      // The pixel pass needs a settled deck and one screenshot per slide · it
+      // is the slowest thing here, so it is skippable.
+      let visualMeasured = false;
+      if (visual && settled && observed.slides.length) {
+        const goTo = async (index) => {
+          await page.evaluate((i) => {
+            window.location.hash = `#${i}`;
+          }, index);
+          await page
+            .waitForFunction((i) => document.querySelector('deck-root')?.current === i - 1, index, {
+              timeout: 5_000,
+            })
+            .catch(() => {});
+          await waitForStillFrame(page);
+        };
+        const measured = await measureSlides(page, observed.slides.length, goTo);
+        diagnostics.push(...diagnoseVisual(measured, observed.slides, limits));
+        visualMeasured = true;
+      }
 
       for (const message of [...new Set(errors)]) {
         diagnostics.unshift(
@@ -401,6 +527,7 @@ export async function checkDeck(deckPath, { timeoutMs = 30_000, width = 1920, he
         slideCount: observed.slides.length,
         statesInspected: observed.slides.length,
         limits,
+        visualMeasured,
         summary,
         diagnostics,
         // Named so a reader does not mistake silence for a clean bill.
@@ -411,9 +538,11 @@ export async function checkDeck(deckPath, { timeoutMs = 30_000, width = 1920, he
           'revealed steps · only the opening state of each slide is measured',
           'accessibility · no contrast, focus order or screen-reader check is run',
           'wording, facts and figures · nothing here reads the content',
+          'what a speaker actually says · the length estimate reads the notes, not the room',
           'other viewports · the deck is measured at its own canvas size',
           'text inside a diagram · an SVG scales by its viewBox, which is not measured here',
           "a component's own chrome · only the text an author wrote is measured for size",
+          ...(visualMeasured ? [] : ['the pixels · the visual pass did not run']),
         ],
       };
     },
