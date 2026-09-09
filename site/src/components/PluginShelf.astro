@@ -7,13 +7,14 @@ const plugins = [
   { role: 'speaker notes',  name: 'deck-notes',       file: 'deck-notes',          kb: 0.4, activate: '<deck-notes>',            summary: 'A hidden slot that surfaces in the presenter window. Free text, kept as written.',                          href: '/docs/plugins#notes',      glyph: 'notes' },
 ];
 const totalKb = plugins.reduce((s, p) => s + p.kb, 0).toFixed(1);
+const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck-timeline', 'deck-versus'];
 ---
 
 <section id="plugins" class="shelf">
   <div class="inner">
     <header class="head">
-      <p class="eyebrow"><span class="num">07</span> Plugin shelf</p>
-      <h2>Five opt-in modules. Nothing else loads.</h2>
+      <p class="eyebrow"><span class="num">07</span> Optional modules</p>
+      <h2>Bring only the pieces the deck needs.</h2>
       <p class="lede">
         The ~42 KB initial load ships none of these. Each one fetches on first use.
         A deck that never asks for a feature never pays for it.
@@ -89,6 +90,18 @@ const totalKb = plugins.reduce((s, p) => s + p.kb, 0).toFixed(1);
       ))}
     </ol>
 
+    <div class="extras">
+      <p class="extras-title">Extended components</p>
+      <p class="extras-list">
+        {extras.map((name, index) => (
+          <>
+            <a href={'/docs/components#' + name}><code>&lt;{name}&gt;</code></a>{index < extras.length - 1 && ' · '}
+          </>
+        ))}
+        <span> · and more</span>
+      </p>
+    </div>
+
     <p class="footer-note">
       <a href="/docs/plugins">Read the plugin reference →</a>
     </p>
@@ -120,21 +133,20 @@ const totalKb = plugins.reduce((s, p) => s + p.kb, 0).toFixed(1);
 
   .head { max-width: 70ch; margin-bottom: var(--rik-space-6); }
   .eyebrow {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: var(--rik-accent);
-    color: var(--rik-accent__on);
-    padding: 4px 14px 4px 4px;
-    border-radius: var(--rik-radius-pill);
+    display: inline-flex; align-items: center; gap: 10px;
+    color: var(--rik-accent);
     font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
     letter-spacing: 0.16em;
     text-transform: uppercase;
     margin: 0 0 var(--rik-space-3);
   }
   .eyebrow .num {
-    background: var(--rik-accent__on);
-    color: var(--rik-accent--strong);
-    padding: 4px 7px;
-    border-radius: var(--rik-radius-pill);
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px;
+    background: var(--rik-accent);
+    color: var(--rik-accent__on);
+    border-radius: 50%;
+    letter-spacing: 0;
   }
   h2 {
     font-family: var(--rik-font-display);
@@ -298,6 +310,21 @@ const totalKb = plugins.reduce((s, p) => s + p.kb, 0).toFixed(1);
     text-decoration: none;
   }
   .footer-note a:hover { text-decoration: underline; }
+  .extras {
+    margin-top: var(--rik-space-6);
+    padding-top: var(--rik-space-4);
+    border-top: 1px solid var(--rik-border-inverse);
+  }
+  .extras-title {
+    margin: 0 0 var(--rik-space-2);
+    color: var(--rik-text-inverse--faint);
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .extras-list { margin: 0; color: var(--rik-text-inverse--muted); line-height: 1.8; }
+  .extras-list a { color: var(--rik-text-inverse); text-decoration: none; }
+  .extras-list a:hover { color: var(--rik-accent); }
 
   @media (max-width: 600px) {
     .plugin { grid-template-columns: 48px 36px 1fr; }

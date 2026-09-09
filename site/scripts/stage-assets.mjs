@@ -13,6 +13,8 @@ import { fileURLToPath } from 'node:url';
 const SITE_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PKG_DIR = resolve(SITE_DIR, '..', 'rikiki');
 const DEST = join(SITE_DIR, 'public', 'rikiki');
+const DEMO_SRC = resolve(SITE_DIR, '..', 'examples', 'rikiki-tour');
+const DEMO_DEST = join(SITE_DIR, 'public', 'embed');
 
 // Each entry says what a browser or a reader asks for. Anything absent here is
 // absent from the published site, on purpose.
@@ -38,13 +40,17 @@ function stage() {
     mkdirSync(dirname(dest), { recursive: true });
     cpSync(src, dest, { recursive: true });
   }
+  // Astro dev does not follow the symlinked demo directory reliably. Copy the
+  // one public demo into public/ so `/embed/` works in dev and in the static build.
+  if (lstatSafe(DEMO_DEST)) rmSync(DEMO_DEST, { recursive: true, force: true });
+  cpSync(DEMO_SRC, DEMO_DEST, { recursive: true });
   // The web entry has a different base URL from the installed package.
   const entry = join(SITE_DIR, 'public', 'llms.txt');
   if (lstatSafe(entry)?.isSymbolicLink()) rmSync(entry);
   const web = readFileSync(join(PKG_DIR, 'llms.txt'), 'utf8')
     .replace(/\]\((docs\/llms\/[^)]+|README\.md|themes\/[^)]+)\)/g, '](/rikiki/$1)');
   writeFileSync(entry, web);
-  console.log(`stage-assets · staged ${PUBLISHED.length} entries into public/rikiki/`);
+  console.log(`stage-assets · staged ${PUBLISHED.length} entries and the demo into public/`);
 }
 
 /** `existsSync` follows symlinks · a dangling one still has to be removed. */

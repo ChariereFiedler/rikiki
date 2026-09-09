@@ -427,32 +427,154 @@ const atoms: Component[] = [
   },
 ];
 
-const optionalComponents = [
-  ['deck-agenda', 'Agenda and chapter overview.', 'deck-agenda.js'],
-  ['deck-annotate', 'Marks and callouts layered over slide content.', 'deck-annotate.js'],
-  ['deck-bar', 'Horizontal progress or comparison bar.', 'deck-bar.js'],
-  ['deck-checklist', 'Checklist with status and completion state.', 'deck-checklist.js'],
-  ['deck-flow', 'Stage based process flow.', 'deck-flow.js'],
-  ['deck-graph', 'Node and edge graph layout.', 'deck-graph.js'],
-  ['deck-icon', 'Icon display from the bundled icon set.', 'deck-icon.js'],
-  ['deck-kpi-grid', 'Grid of related key performance indicators.', 'deck-kpi-grid.js'],
-  ['deck-persona', 'Persona card for audience or user framing.', 'deck-persona.js'],
-  ['deck-pull', 'Pull quote or highlighted excerpt.', 'deck-pull.js'],
-  ['deck-quote', 'Attribution based quote block.', 'deck-quote.js'],
-  ['deck-table', 'Structured table with responsive cell treatment.', 'deck-table.js'],
-  ['deck-timeline', 'Chronological milestones and events.', 'deck-timeline.js'],
-  ['deck-versus', 'Two sided decision or tradeoff layout.', 'deck-versus.js'],
+interface OptionalComponent {
+  tag: string;
+  summary: string;
+  module: string;
+  attrs: string;
+  slots: string;
+  example: string;
+  tokens: string;
+}
+
+const optionalComponents: OptionalComponent[] = [
+  {
+    tag: 'deck-agenda',
+    summary: 'Agenda that follows the deck sections and marks the current chapter.',
+    module: 'deck-agenda.js',
+    attrs: 'no-numbers · no-jump',
+    slots: 'default: reads deck-section titles from the nearest deck-root',
+    example: '<deck-agenda></deck-agenda>',
+    tokens: '--deck-agenda-gap · --deck-agenda-size · --deck-agenda-color · --deck-agenda-done-color · --deck-agenda-current-color · --deck-agenda-marker · --deck-agenda-rule · --deck-agenda-num-color',
+  },
+  {
+    tag: 'deck-annotate',
+    summary: 'Image or screenshot with numbered marks, progressive reveal, and an optional legend.',
+    module: 'deck-annotate.js',
+    attrs: 'src: URL · alt: string · marks: JSON/string mark data · all-at-once · no-legend',
+    slots: 'default: optional legend content when marks do not provide one',
+    example: '<deck-annotate src="/screen.png" alt="Product screen" marks="1:42,18,2:74,55"></deck-annotate>',
+    tokens: '--deck-annotate-radius · --deck-annotate-border · --deck-annotate-mark-bg · --deck-annotate-mark-color · --deck-annotate-mark-size · --deck-annotate-mark-ring · --deck-annotate-legend-color · --deck-annotate-legend-size · --deck-annotate-gap',
+  },
+  {
+    tag: 'deck-bar',
+    summary: 'Single value or stacked horizontal bar for progress, proportions, or budgets.',
+    module: 'deck-bar.js',
+    attrs: 'value: number · total: number · label: string · tone: accent|ok|warn|danger|info|muted · segments: JSON · no-value · no-legend',
+    slots: 'default: optional legend content',
+    example: '<deck-bar label="Coverage" value="82" total="100" tone="ok"></deck-bar>',
+    tokens: '--deck-bar-track · --deck-bar-height · --deck-bar-radius · --deck-bar-gap · --deck-bar-label-color · --deck-bar-value-color · --deck-bar-legend-color · --deck-bar-legend-size · --deck-bar-fill · --deck-bar-divider',
+  },
+  {
+    tag: 'deck-checklist',
+    summary: 'Responsive checklist container for yes/no decisions and acceptance criteria.',
+    module: 'deck-checklist.js',
+    attrs: 'cols: number/string · deck-check no: boolean',
+    slots: 'default: deck-check children',
+    example: '<deck-checklist cols="2"><deck-check>Offline bundle</deck-check><deck-check no>External CDN</deck-check></deck-checklist>',
+    tokens: '--deck-checklist-gap · --deck-checklist-cols · --deck-checklist-rule · --deck-check-yes · --deck-check-no · --deck-check-size · --deck-check-gap · --deck-check-color',
+  },
+  {
+    tag: 'deck-flow',
+    summary: 'Stage based process diagram with labels, notes, connectors, and reveal states.',
+    module: 'deck-flow.js',
+    attrs: 'cols: number/string · no-connectors · reveal · deck-flow-step label · note · index · plain · last · linked',
+    slots: 'default: deck-flow-step children',
+    example: '<deck-flow cols="4"><deck-flow-step index="01" label="Write" note="brief">Source</deck-flow-step><deck-flow-step index="02" label="Check" note="evidence">Review</deck-flow-step></deck-flow>',
+    tokens: '--deck-flow-gap · --deck-flow-step-accent · --deck-flow-step-label-color · --deck-flow-step-note-color · --deck-flow-step-pending-opacity · --deck-flow-link',
+  },
+  {
+    tag: 'deck-graph',
+    summary: 'Positioned node and edge graph for architecture, dependencies, or relationships.',
+    module: 'deck-graph.js',
+    attrs: 'layout: free|row|column · reveal · deck-node at · label · note · boxed · tone · icon · deck-group at · label · solid · deck-lane at · label · deck-edge from · to · label · dashed',
+    slots: 'default: deck-node, deck-group, deck-lane, and deck-edge children',
+    example: '<deck-graph layout="row"><deck-node id="source" label="Brief"></deck-node><deck-edge from="source" to="proof" label="check"></deck-edge><deck-node id="proof" label="Verified deck" boxed tone="ok"></deck-node></deck-graph>',
+    tokens: '--deck-graph-edge · --deck-graph-edge-width · --deck-graph-edge-label · --deck-graph-ratio · --deck-node-color · --deck-node-rule · --deck-node-size · --deck-node-bg · --deck-node-active-color · --deck-group-border · --deck-group-bg · --deck-lane-rule',
+  },
+  {
+    tag: 'deck-icon',
+    summary: 'Consistent icon slot or named glyph from the bundled icon set.',
+    module: 'deck-icon.js',
+    attrs: 'name: icon name · size: sm|md|lg|xl · tone: default|accent|ok|warn|danger|info|muted · label: accessible label',
+    slots: 'default: custom SVG used when name is absent or unknown',
+    example: '<deck-icon name="check" size="lg" tone="ok" label="Ready"></deck-icon>',
+    tokens: '--deck-icon-size · --deck-icon-color · --deck-icon-stroke',
+  },
+  {
+    tag: 'deck-kpi-grid',
+    summary: 'Aligned KPI figures with optional rules between the values.',
+    module: 'deck-kpi-grid.js',
+    attrs: 'cols: number/string · ruled · deck-kpi value · label · note · tone: default|accent|ok|warn|danger|muted',
+    slots: 'default: deck-kpi children; deck-kpi default slot accepts supporting text',
+    example: '<deck-kpi-grid cols="3" ruled><deck-kpi value="0" label="CDNs" tone="ok">Runtime requests</deck-kpi><deck-kpi value="20" label="slides"></deck-kpi></deck-kpi-grid>',
+    tokens: '--deck-kpi-grid-gap · --deck-kpi-grid-cols · --deck-kpi-grid-rule · --deck-kpi-value-size · --deck-kpi-value-color · --deck-kpi-label-color · --deck-kpi-note-color',
+  },
+  {
+    tag: 'deck-persona',
+    summary: 'Audience or user framing block with avatar, name, role, organisation, and context.',
+    module: 'deck-persona.js',
+    attrs: 'name: string · person-role: string · org: string · context: string · src: image URL · on-dark',
+    slots: 'default: additional context content',
+    example: '<deck-persona name="Alex" person-role="Staff engineer" org="Siliceum" context="Needs a deck that survives handover"></deck-persona>',
+    tokens: '--deck-persona-avatar-size · --deck-persona-initials-color · --deck-persona-rule · --deck-persona-name-color · --deck-persona-role-color · --deck-persona-context-color · --deck-persona-gap',
+  },
+  {
+    tag: 'deck-pull',
+    summary: 'Large pull quote that can occupy the full width or float to one side.',
+    module: 'deck-pull.js',
+    attrs: 'side: left|right|full',
+    slots: 'default: quoted text or slotted HTML',
+    example: '<deck-pull side="left">The source stays readable after delivery.</deck-pull>',
+    tokens: '--deck-pull-color · --deck-pull-size · --deck-pull-rule · --deck-pull-rule-width · --deck-pull-bg · --deck-pull-padding · --deck-pull-width',
+  },
+  {
+    tag: 'deck-quote',
+    summary: 'Attributed quote with controlled mark, size, contrast, and author role.',
+    module: 'deck-quote.js',
+    attrs: 'author: string · author-role: string · size: lead|big|mega · plain · on-dark · no-mark',
+    slots: 'default: quoted text',
+    example: '<deck-quote author="Jane Doe" author-role="Platform lead" size="big">Make the proof part of the delivery.</deck-quote>',
+    tokens: '--deck-quote-color · --deck-quote-size · --deck-quote-mark-color · --deck-quote-mark-size · --deck-quote-rule · --deck-quote-rule-width · --deck-quote-gap · --deck-quote-author-color · --deck-quote-role-color · --deck-quote-max-width',
+  },
+  {
+    tag: 'deck-table',
+    summary: 'Progressive table wrapper that highlights rows or columns as steps advance.',
+    module: 'deck-table.js',
+    attrs: 'highlight-rows: comma-separated row numbers · highlight-cols: comma-separated column numbers · reveal',
+    slots: 'default: one table element',
+    example: '<deck-table highlight-rows="2,4" reveal><table><tr><th>Check</th><th>Status</th></tr><tr><td>Offline</td><td>Pass</td></tr></table></deck-table>',
+    tokens: '--deck-table-mark-bg · --deck-table-mark-color · --deck-table-pending-opacity',
+  },
+  {
+    tag: 'deck-timeline',
+    summary: 'Chronological milestone track with row or column direction and progressive reveal.',
+    module: 'deck-timeline.js',
+    attrs: 'direction: row|column · reveal · deck-milestone date · label · note · tone: default|accent|ok|warn|danger',
+    slots: 'default: deck-milestone children',
+    example: '<deck-timeline direction="row"><deck-milestone date="Now" label="Source" tone="accent">Write the brief</deck-milestone><deck-milestone date="Next" label="Proof">Run the checks</deck-milestone></deck-timeline>',
+    tokens: '--deck-timeline-axis · --deck-timeline-axis-width · --deck-timeline-gap · --deck-milestone-dot · --deck-milestone-dot-size · --deck-milestone-date-color · --deck-milestone-label-color · --deck-milestone-note-color · --deck-milestone-pending-opacity',
+  },
+  {
+    tag: 'deck-versus',
+    summary: 'Two sided decision layout with a central pivot and an optional winner.',
+    module: 'deck-versus.js',
+    attrs: 'pivot: string · winner: left|right',
+    slots: 'left / right: the two alternatives',
+    example: '<deck-versus pivot="Choose"><div slot="left"><h3>Source</h3><p>Readable and editable.</p></div><div slot="right"><h3>Proof</h3><p>Checked and deliverable.</p></div></deck-versus>',
+    tokens: '--deck-versus-gap · --deck-versus-pivot-color · --deck-versus-pivot-size · --deck-versus-rule · --deck-versus-winner-rule · --deck-versus-loser-color',
+  },
 ];
 ---
 
 <Docs
   title="Component library"
   eyebrow="Reference"
-  description="Every <deck-*> element · attributes, slots, tokens, live preview. 35 components total, but you'll only meet five on day one."
+  description="Every <deck-*> element · attributes, slots, tokens, live preview. The core catalog has 8 layouts and 21 atoms; optional modules are documented below."
 >
 
 <h2 id="mental-model">Mental model · which one do I need?</h2>
-<p>The 35 components fit in five buckets. Use this as a triage map.</p>
+<p>The core catalog fits in four practical buckets. Start with the layout, then add only the atoms the slide needs.</p>
 <ul>
   <li>
     <strong>Layouts (8)</strong> · the slide's overall shape ·
@@ -461,7 +583,9 @@ const optionalComponents = [
     <a href="#deck-feature"><code>deck-feature</code></a>,
     <a href="#deck-split"><code>deck-split</code></a>,
     <a href="#deck-feature-cards"><code>deck-feature-cards</code></a>,
-    <a href="#deck-takeaway"><code>deck-takeaway</code></a>.
+    <a href="#deck-takeaway"><code>deck-takeaway</code></a>,
+    <a href="#deck-photo"><code>deck-photo</code></a>,
+    <a href="#deck-bento"><code>deck-bento</code></a>.
   </li>
   <li>
     <strong>The five you'll always use</strong> · the talk-shaping atoms ·
@@ -483,7 +607,7 @@ const optionalComponents = [
     <a href="#deck-kicker"><code>deck-kicker</code></a>.
   </li>
   <li>
-    <strong>Layout helpers (2)</strong> · plumbing for spacing ·
+    <strong>Composition helpers</strong> · plumbing for spacing ·
     <a href="#deck-stack"><code>deck-stack</code></a>,
     <a href="#deck-grid"><code>deck-grid</code></a>.
   </li>
@@ -496,7 +620,7 @@ const optionalComponents = [
 </ul>
 <p>
   New to Rikiki? Read the <a href="/docs/cheatsheet">5-component cheatsheet</a>
-  first · don't try to learn all 35 before your first talk.
+  first · don't try to learn the whole catalog before your first talk.
 </p>
 
 
@@ -621,15 +745,30 @@ const optionalComponents = [
 <table class="optional">
   <thead><tr><th>Element</th><th>Purpose</th><th>Module</th></tr></thead>
   <tbody>
-    {optionalComponents.map(([tag, summary, module]) => (
-      <tr id={tag}>
-        <td><code>&lt;{tag}&gt;</code></td>
-        <td>{summary}</td>
-        <td><code>{module}</code></td>
+    {optionalComponents.map((c) => (
+      <tr>
+        <td><code>&lt;{c.tag}&gt;</code></td>
+        <td>{c.summary}</td>
+        <td><code>{c.module}</code></td>
       </tr>
     ))}
   </tbody>
 </table>
+
+{optionalComponents.map((c) => (
+  <article class="comp optional-comp">
+    <h3 id={c.tag}><code>&lt;{c.tag}&gt;</code></h3>
+    <p class="summary">{c.summary}</p>
+    <dl class="optional-details">
+      <div><dt>Module</dt><dd><code>rikiki/dist/{c.module}</code></dd></div>
+      <div><dt>Attributes</dt><dd><code>{c.attrs}</code></dd></div>
+      <div><dt>Slots and children</dt><dd>{c.slots}</dd></div>
+      <div><dt>Customization tokens</dt><dd><code>{c.tokens}</code></dd></div>
+    </dl>
+    <p class="block-head">Example</p>
+    <CodeBlock lang="html" code={c.example} />
+  </article>
+))}
 
 <style>
   /* Aerated layout · one component per "page-break" block, generous padding,
@@ -720,6 +859,32 @@ const optionalComponents = [
     color: var(--rik-text-default);
     font-weight: 700;
   }
+  .optional-details {
+    display: grid;
+    gap: 0;
+    margin: var(--rik-space-4) 0;
+    border-top: 1px solid var(--rik-border-default);
+  }
+  .optional-details > div {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr);
+    gap: var(--rik-space-3);
+    padding: var(--rik-space-3) 0;
+    border-bottom: 1px solid var(--rik-border-default);
+  }
+  .optional-details dt {
+    color: var(--rik-text-default--muted);
+    font: 700 var(--rik-font-size-xs)/1.4 var(--rik-font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .optional-details dd {
+    min-width: 0;
+    margin: 0;
+    color: var(--rik-text-default--muted);
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+  }
   @media (max-width: 640px) {
     table.optional th,
     table.optional td {
@@ -727,6 +892,10 @@ const optionalComponents = [
       font-size: var(--rik-font-size-sm);
     }
     table.optional td:first-child { width: auto; }
+    .optional-details > div {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
   }
   p.tokens {
     font-size: var(--rik-font-size-sm);
