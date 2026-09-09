@@ -1,0 +1,173 @@
+---
+const prompt = `Build a 10-slide talk about our API launch.
+Use one idea per slide, keep the notes useful,
+and deliver an offline HTML file plus PDF.`;
+
+const source = `<deck-feature eyebrow="Launch">
+  <h1 slot="title">One idea per slide.</h1>
+  <deck-md>Keep the source readable.</deck-md>
+</deck-feature>`;
+---
+
+<section id="agent-workflow" class="agent-workflow">
+  <div class="agent-inner">
+    <header class="agent-head">
+      <p class="eyebrow"><span class="num">02</span> Brief to deck</p>
+      <h2>Give an LLM a brief. Get a deck you can inspect.</h2>
+      <p class="lede">
+        Rikiki gives an agent a constrained vocabulary, a working recipe, and a
+        feedback loop. The result is source you can read, then check and revise.
+      </p>
+    </header>
+
+    <div class="pipeline" aria-label="Agent workflow from brief to checked deck">
+      <article class="stage brief-stage">
+        <div class="stage-top"><span class="stage-number">01</span><span>Brief</span></div>
+        <div class="paper prompt-paper">
+          <span class="paper-label">PROMPT.md</span>
+          <p>{prompt}</p>
+        </div>
+        <p class="stage-note">Describe the audience, point of view, evidence, and delivery constraints.</p>
+      </article>
+
+      <div class="connector" aria-hidden="true"><span>→</span></div>
+
+      <article class="stage source-stage">
+        <div class="stage-top"><span class="stage-number">02</span><span>Source</span></div>
+        <div class="paper code-paper">
+          <span class="paper-label">index.html</span>
+          <pre><code>{source}</code></pre>
+        </div>
+        <p class="stage-note">The agent uses real tags and slots from the reference, not invented UI syntax.</p>
+      </article>
+
+      <div class="connector" aria-hidden="true"><span>→</span></div>
+
+      <article class="stage proof-stage">
+        <div class="stage-top"><span class="stage-number">03</span><span>Proof</span></div>
+        <div class="doctor-paper">
+          <div class="doctor-head"><span class="doctor-dot"></span><strong>rikiki check</strong><span>report.json</span></div>
+          <ul>
+            <li><span class="check">✓</span> runtime loaded</li>
+            <li><span class="check">✓</span> 10 slides render</li>
+            <li><span class="check">✓</span> text fits the canvas</li>
+            <li><span class="warn">!</span> 1 note is too short</li>
+          </ul>
+        </div>
+        <p class="stage-note">The diagnostic tells the agent what failed, where it failed, and what to try next.</p>
+      </article>
+    </div>
+
+    <footer class="agent-foot">
+      <span><strong>render</strong> screenshots</span>
+      <span><strong>bundle</strong> one offline HTML</span>
+      <span><strong>export</strong> a PDF</span>
+      <a href="/rikiki/docs/llms/rikiki-workflow.md">Read the agent workflow →</a>
+    </footer>
+  </div>
+</section>
+
+<style>
+  .agent-workflow {
+    background: var(--rik-surface-inverse);
+    color: var(--rik-text-inverse);
+    padding: var(--rik-space-7) var(--rik-space-5);
+    overflow: hidden;
+  }
+  .agent-inner { max-width: 1080px; margin: 0 auto; }
+  .agent-head { max-width: 760px; margin-bottom: var(--rik-space-6); }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    color: var(--rik-accent);
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: .16em; text-transform: uppercase;
+    margin: 0 0 var(--rik-space-3);
+  }
+  .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border: 2px solid var(--rik-accent);
+    border-radius: 50%; letter-spacing: 0;
+  }
+  h2 {
+    margin: 0 0 var(--rik-space-3);
+    max-width: 18ch;
+    color: var(--rik-text-inverse);
+    font: 900 var(--rik-font-size-mega)/1.02 var(--rik-font-display);
+    letter-spacing: -.03em; text-wrap: balance;
+  }
+  .lede {
+    max-width: 62ch; margin: 0;
+    color: var(--rik-text-inverse--muted);
+    font-size: var(--rik-font-size-lead); line-height: 1.55;
+    text-wrap: balance;
+  }
+  .pipeline {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr) 40px minmax(0, 1fr);
+    align-items: stretch; gap: var(--rik-space-3);
+  }
+  .stage { min-width: 0; display: flex; flex-direction: column; }
+  .stage-top {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px; color: var(--rik-text-inverse--muted);
+    font: 800 var(--rik-font-size-sm)/1 var(--rik-font-display);
+    text-transform: uppercase; letter-spacing: .08em;
+  }
+  .stage-number {
+    color: var(--rik-accent); font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    letter-spacing: 0;
+  }
+  .paper, .doctor-paper {
+    min-height: 206px; border: 1px solid var(--rik-border-inverse);
+    border-radius: var(--rik-radius-md); background: #17161b;
+    box-shadow: var(--rik-elevation-2); overflow: hidden;
+  }
+  .paper-label {
+    display: block; padding: 12px 14px 0;
+    color: var(--rik-text-inverse--ghost);
+    font: 700 0.66rem/1 var(--rik-font-mono); letter-spacing: .14em;
+  }
+  .prompt-paper { background: linear-gradient(145deg, #28242c, #17161b); }
+  .prompt-paper p {
+    margin: 20px 16px; color: #f3eee8;
+    font: 700 1.05rem/1.45 var(--rik-font-display); text-wrap: pretty;
+  }
+  .code-paper pre {
+    margin: 18px 14px; white-space: pre-wrap; overflow-wrap: anywhere;
+    color: #d6a7f5; font: 0.78rem/1.65 var(--rik-font-mono);
+  }
+  .code-paper code { font: inherit; }
+  .doctor-paper { background: #101116; }
+  .doctor-head {
+    display: flex; align-items: center; gap: 8px; padding: 13px 14px;
+    border-bottom: 1px solid var(--rik-border-inverse);
+    color: var(--rik-text-inverse--muted); font: 0.7rem/1 var(--rik-font-mono);
+  }
+  .doctor-head strong { color: #f3eee8; }
+  .doctor-head span:last-child { margin-left: auto; color: var(--rik-text-inverse--ghost); }
+  .doctor-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--rik-status-success); }
+  .doctor-paper ul { list-style: none; padding: 17px 14px; margin: 0; display: grid; gap: 12px; color: var(--rik-text-inverse--muted); font: 0.78rem/1.2 var(--rik-font-mono); }
+  .check, .warn { display: inline-flex; width: 18px; justify-content: center; margin-right: 5px; font-weight: 800; }
+  .check { color: var(--rik-status-success); }
+  .warn { color: var(--rik-accent); }
+  .stage-note { margin: 12px 0 0; color: var(--rik-text-inverse--ghost); font-size: var(--rik-font-size-sm); line-height: 1.5; text-wrap: pretty; }
+  .connector { display: grid; place-items: center; color: var(--rik-accent); font: 1.6rem/1 var(--rik-font-mono); }
+  .connector span { transform: translateY(18px); }
+  .agent-foot {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px;
+    margin-top: var(--rik-space-5); padding-top: var(--rik-space-4);
+    border-top: 1px solid var(--rik-border-inverse);
+    color: var(--rik-text-inverse--muted); font-size: var(--rik-font-size-sm);
+  }
+  .agent-foot strong { color: var(--rik-text-inverse); font-family: var(--rik-font-mono); }
+  .agent-foot a { margin-left: auto; color: var(--rik-accent); font-weight: 800; text-decoration: none; }
+  .agent-foot a:hover { text-decoration: underline; }
+  @media (max-width: 760px) {
+    .agent-workflow { padding: var(--rik-space-6) var(--rik-space-3); }
+    .pipeline { grid-template-columns: 1fr; gap: 14px; }
+    .connector { height: 20px; }
+    .connector span { transform: rotate(90deg); }
+    .paper, .doctor-paper { min-height: 0; }
+    .agent-foot a { width: 100%; margin-left: 0; }
+  }
+</style>
