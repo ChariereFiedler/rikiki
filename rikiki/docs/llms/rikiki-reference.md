@@ -1,6 +1,6 @@
 # Rikiki · LLM reference
 
-This reference documents rikiki v0.6.0.
+This reference documents rikiki v1.0.0.
 
 Exhaustive, self-consistent reference for authoring valid **rikiki** decks. Every
 tag, attribute, slot, and token below was derived from the source in this repo
@@ -253,7 +253,7 @@ badge back sets `--deck-eyebrow-bg`, `--deck-eyebrow-color`,
 | `deck-callout` | Highlighted note box | `type` (`info`/`warn`/`danger`/`ok`) | default (text / `deck-md`) |
 | `deck-card` | Tinted card | `color` (`yellow`/`orange`/`green`/`red`), `center`, `compact` | default (`<h3>` + body) |
 | `deck-md` | Render Markdown (GFM) · also expands `::: cards` blocks into a tinted card grid | · | default = raw Markdown text |
-| `deck-mermaid` | Render a Mermaid diagram (loads Mermaid from CDN) | `compact` | default = Mermaid source |
+| `deck-mermaid` | Render a Mermaid diagram (uses the optional vendored Mermaid runtime) | `compact` | default = Mermaid source |
 | `deck-stat` | Big-number visual | `num`, `tone` (`yellow`/`orange`/`green`/`red`/`purple`/`lime`/`cyan`) | `claim` (`<h3>`), default = body line |
 | `deck-metric-list` | Wraps `deck-metric` rows | · | `deck-metric` children |
 | `deck-metric` | One metric row | `severity` (`bad`/`warn`/`ok`/`info`), `value`, `mono` (render the value in the mono font) | default = label |

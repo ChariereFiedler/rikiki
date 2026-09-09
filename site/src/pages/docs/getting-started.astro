@@ -26,14 +26,14 @@ const minDeck = `<!doctype html>
 </body>
 </html>`;
 
-const cdnDeck = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rikiki-deck@0.6.0/tokens.css">
-<script type="module" src="https://cdn.jsdelivr.net/npm/rikiki-deck@0.6.0/dist/index.js"></script>`;
+const cdnDeck = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rikiki-deck@1.0.0/tokens.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/rikiki-deck@1.0.0/dist/index.js"></script>`;
 
 const serve = `# Any static server works · pick one you already have:
 python3 -m http.server 7799
 # or
 npx serve .
-# or just open the file directly in Chrome (modules need http:// though)`;
+# ES modules require http://; do not double-click the file`;
 ---
 
 <Docs
@@ -90,7 +90,7 @@ npx serve .
 <h2 id="next">Where to go next</h2>
 <ul>
   <li><a href="/docs/anatomy">Anatomy of a slide</a> · how a <code>&lt;deck-*&gt;</code> element maps to what you see.</li>
-  <li><a href="/docs/components">The component library</a> · all 23 elements with their attributes and slots.</li>
+  <li><a href="/docs/components">The component library</a> · all 29 documented elements with their attributes and slots.</li>
   <li><a href="/docs/navigation">Navigation</a> · ←/→, ↑/↓, Space, O, ? · and the 2D model behind them.</li>
   <li><a href="/docs/theming">Theming</a> · how the design tokens work and how to write a new theme.</li>
 </ul>

@@ -5,7 +5,7 @@ les critères d'acceptation, les résultats de vérification et le reste à fair
 Il remplace `v1-rc-plan.md` comme plan actif : ce dernier reste la trace de
 l'audit du 2026-09-07, dont les constats sont réconciliés lot par lot ici.
 
-Ouvert le 2026-09-08. Paquet à cette date : `rikiki-deck@0.6.0`.
+Ouvert le 2026-09-08. Ce document a été révisé pour préparer `rikiki-deck@1.0.0`.
 
 ---
 
@@ -52,9 +52,10 @@ présenter avec les notes · partager un HTML autonome · produire un PDF lisibl
 
 ---
 
-## 2. État revalidé le 2026-09-08
+## 2. État historique — remplacé par la recette finale
 
-Mesuré sur le dépôt à `2330f1d`, arbre propre au départ.
+Cette section conserve l'audit initial pour la traçabilité. Ses défauts ne décrivent
+plus l'arbre actuel ; la recette courante se trouve dans la section 8.
 
 ### Ce qui tient
 
@@ -291,6 +292,10 @@ exécuté, jamais supposé vert.
 | 2026-09-08 | `check` sur les six decks après les deux nouveaux diagnostics | aucun défaut, après trois corrections |
 | 2026-09-08 | `npx playwright test` final | 529 passés, 19 ignorés, 3 min 42 |
 | 2026-09-09 | `npx playwright test` après le skill et deck-step | 529 passés, 19 ignorés, 4 min 54 |
+| 2026-09-09 | `npm test` après le passage en 1.0.0 | 681 tests verts, 37 fichiers |
+| 2026-09-09 | `npm pack --dry-run` | 193 fichiers, aucun test interne publié |
+| 2026-09-09 | `site` avec Node 24 | lint et build verts, 14,4 Mo publiés |
+| 2026-09-09 | `npx playwright test` après le passage en 1.0.0 | 538 passés, 19 ignorés, 4 min 12 |
 
 ---
 
@@ -526,29 +531,40 @@ composition au niveau du plan.
 composition graphique en sept décisions dans le skill, et la justification
 mesurée de l'assertion-evidence dans le guide plutôt que son affirmation.
 
-## 7. Reste à faire
+## 7. Reste à faire avant publication
 
-**A3 (reste)** · documenter les trois modes et traiter la curation : un agent
-qui ajoute un composant après un bundle curé obtient aujourd'hui un élément
-silencieusement inerte.
+**Release metadata** · paquet en `1.0.0`, notes de release complètes, `dist/`
+reconstruit et tag correspondant.
 
-**A5** · version Node du dépôt, fallback nginx, types MIME et 404, notices des
-dépendances tierces, métadonnées du paquet site.
+**Site** · validation avec Node `>=22.12.0`, contenu publié contrôlé et vraies
+réponses 404 du serveur statique.
 
-**D-G1** · la dérive de `dist/` reste ouverte, à traiter dans le lot G avec un
-contrôle mécanique plutôt qu'une consigne.
+**Tarball** · contenu de `npm pack` vérifié, commandes testées depuis un dossier
+extérieur et tests internes exclus du paquet final.
 
-**B4 (reste)** · le fonctionnement de `render` et `check` depuis le tarball est
-vérifié à la main, pas encore par un test automatisé.
+**Documentation** · versions, tailles, runtimes vendus et liens LLM alignés sur
+une source unique, puis copie publique du site régénérée.
 
-**C5 (reste)** · les skills distribués pointent vers le guide, mais les règles
-utiles du skill visuel interne ne sont pas encore extraites.
+**Recette** · code de sortie Playwright nul et rapport machine lisible archivé
+avant le tag.
 
-**D (reste)** · les quatre autres briefs ne sont pas exécutés, et aucune
-exécution par un agent extérieur au dépôt n'a eu lieu. C'est la limite
-principale du programme à ce stade.
+**Post-1.0** · découper `deck-root.ts`, réévaluer les gros modules et décider si
+les workspaces npm apportent une valeur suffisante.
 
-**Lots E à G** · non commencés.
+## 8. Recette v1.0
+
+À exécuter depuis un arbre propre :
+
+```sh
+cd rikiki && npm ci && npm run typecheck && npm run lint && npm test
+npm pack --dry-run
+cd ../site && npm ci && npm run lint && npm run build
+```
+
+La recette externe installe le tarball dans un dossier temporaire, exécute les
+six commandes CLI documentées, ouvre un bundle hors ligne, exporte un PDF et
+vérifie les réponses HTTP du site, y compris une 404. Le tag `v1.0.0` n'est
+créé qu'après un code de sortie nul de cette recette et de Playwright.
 
 ### Constats mineurs traités
 

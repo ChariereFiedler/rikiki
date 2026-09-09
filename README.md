@@ -2,9 +2,9 @@
 
 > A tiny Lit Web Components framework for technical presentations · zero-build for consumers, TypeScript for contributors.
 
-This documentation tracks rikiki v0.6.0.
+This documentation tracks rikiki v1.0.0.
 
-Open `index.html` in a browser and you get a deck. No dev server, no build step, no `dist/` to ship. Reopen the same folder in 2031 and it still runs · everything is Web standards (Custom Elements, Shadow DOM, ES Modules, CSS Custom Properties).
+Serve the folder with any static HTTP server and open `index.html`. There is no consumer build step or toolchain to maintain; the shipped folder contains the runtime. Reopen the same folder in 2031 and it still runs · everything is Web standards (Custom Elements, Shadow DOM, ES Modules, CSS Custom Properties).
 
 ```
 .

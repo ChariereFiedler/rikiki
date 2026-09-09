@@ -6,7 +6,7 @@
 interface Props {
   type: 'cover' | 'section' | 'hero' | 'split' | 'hero-detail' | 'hook';
 }
-const { type } = Astro.props;
+const type = Astro.props.type as Props['type'];
 
 // One self-contained HTML per layout. The iframe will scale the deck
 // to ~30 % so a 1920×1080 slide fits a ~560×315 card.

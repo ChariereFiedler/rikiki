@@ -3,7 +3,8 @@
 Status of the work needed to publish rikiki as a credible open-source project.
 Tick items as they land. Severity: **P0** blocker · **P1** expected · **P2** nice.
 
-Analysis date: 2026-06-12.
+Analysis date: 2026-09-09. The v1.0 release pass has completed; remaining
+architecture items are deliberately post-release work.
 
 ## Lot 1 · Truth (P0 — wrong docs kill credibility)
 
@@ -60,18 +61,18 @@ Analysis date: 2026-06-12.
 
 ## Lot 5 · Architecture & modularity (P2 — do behind tests)
 
-- [ ] Split `runtime/deck-root.ts` (808 lines, too many roles): extract
+- [ ] **Post-1.0:** Split `runtime/deck-root.ts` (808 lines, too many roles): extract
       `hash-router`, `nav-controller`, keyboard input, pointer/wheel input.
-- [ ] Reassess `runtime/deck-overview.ts` (681) and `plugins/click-stages.ts` (517).
-- [ ] Decide the `dist/` strategy: keep committed (document the "zero-build"
+- [ ] **Post-1.0:** Reassess `runtime/deck-overview.ts` (681) and `plugins/click-stages.ts` (517).
+- [x] Decide the `dist/` strategy: keep committed (document the "zero-build"
       promise loudly) **or** build in release CI. At minimum the `.gitattributes`
       generated-marker above so diffs/language-stats collapse it.
 - [x] Render coverage via the Playwright net (smoke + navigation + scaling).
       Pure-logic unit tests will land WITH the deck-root split (test-first).
-- [ ] Tidy internal process artifacts: `rikiki/docs/superpowers/` and
+- [ ] **Post-1.0:** Tidy internal process artifacts: `rikiki/docs/superpowers/` and
       `.claude/skills/` — keep for transparency but file under `docs/design/`.
 
 ## Lot 6 · Repo shape (P2)
 
-- [ ] Declare npm workspaces across root / `rikiki/` / `site/` so the CI shim
+- [ ] **Post-1.0:** Declare npm workspaces across root / `rikiki/` / `site/` so the CI shim
       `rikiki-monorepo` becomes a real workspace root (`npm -w rikiki test`).

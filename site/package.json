@@ -14,11 +14,14 @@
     "lint": "npm run lint:dashes && npm run lint:links && astro check"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Cédric Chariere Fiedler",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "type": "commonjs",
   "dependencies": {
-    "astro": "^6.3.6"
+    "astro": "^7.3.2"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
