@@ -55,6 +55,6 @@
   }
   .links .cta:hover { color: var(--rik-surface-inverse); }
   @media (max-width: 640px) {
-    .links a:not(.cta) { display: none; }
+    .links a:not(:first-child):not(.cta) { display: none; }
   }
 </style>

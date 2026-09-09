@@ -38,36 +38,27 @@ const { id, eyebrow, num, title, tone = 'paper' } = Astro.props;
   }
   .inner { max-width: 1080px; margin: 0 auto; }
 
-  /* The eyebrow is a two-part pill: a white "num" chip flush-left and an
-     orange section name to its right. Both share the pill rounding so the
-     left curve belongs to the num chip · no double-rounded overlap. */
   .eyebrow {
-    /* width: fit-content keeps the pill hugging its content while the
-       flex container stays block-level · prevents the eyebrow from
-       sharing its line with the following <h2 class="title">. */
-    display: flex; align-items: stretch;
+    display: flex; align-items: center; gap: 10px;
     width: fit-content;
-    background: var(--rik-accent);
-    color: var(--rik-accent__on);
-    border-radius: var(--rik-radius-pill);
+    color: var(--rik-accent--strong);
     font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
     letter-spacing: 0.16em;
     text-transform: uppercase;
     margin: 0 0 var(--rik-space-3);
-    overflow: hidden;
   }
   .eyebrow .num {
     display: inline-flex; align-items: center;
-    background: var(--rik-accent__on);
-    color: var(--rik-accent--strong);
-    padding: 5px 11px;
+    justify-content: center;
+    width: 26px; height: 26px;
+    background: var(--rik-accent);
+    color: var(--rik-accent__on);
+    border-radius: 50%;
+    letter-spacing: 0;
   }
   .eyebrow .eyebrow-text {
     display: inline-flex; align-items: center;
-    padding: 5px 14px;
   }
-  /* eyebrow without num · single-segment pill */
-  .eyebrow:not(:has(.num)) .eyebrow-text { padding: 5px 12px; }
 
   .title {
     font-family: var(--rik-font-display);

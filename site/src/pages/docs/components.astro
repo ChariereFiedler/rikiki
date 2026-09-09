@@ -426,6 +426,23 @@ const atoms: Component[] = [
 </deck-feature>`,
   },
 ];
+
+const optionalComponents = [
+  ['deck-agenda', 'Agenda and chapter overview.', 'deck-agenda.js'],
+  ['deck-annotate', 'Marks and callouts layered over slide content.', 'deck-annotate.js'],
+  ['deck-bar', 'Horizontal progress or comparison bar.', 'deck-bar.js'],
+  ['deck-checklist', 'Checklist with status and completion state.', 'deck-checklist.js'],
+  ['deck-flow', 'Stage based process flow.', 'deck-flow.js'],
+  ['deck-graph', 'Node and edge graph layout.', 'deck-graph.js'],
+  ['deck-icon', 'Icon display from the bundled icon set.', 'deck-icon.js'],
+  ['deck-kpi-grid', 'Grid of related key performance indicators.', 'deck-kpi-grid.js'],
+  ['deck-persona', 'Persona card for audience or user framing.', 'deck-persona.js'],
+  ['deck-pull', 'Pull quote or highlighted excerpt.', 'deck-pull.js'],
+  ['deck-quote', 'Attribution based quote block.', 'deck-quote.js'],
+  ['deck-table', 'Structured table with responsive cell treatment.', 'deck-table.js'],
+  ['deck-timeline', 'Chronological milestones and events.', 'deck-timeline.js'],
+  ['deck-versus', 'Two sided decision or tradeoff layout.', 'deck-versus.js'],
+];
 ---
 
 <Docs
@@ -595,6 +612,25 @@ const atoms: Component[] = [
   </article>
 ))}
 
+<h2 id="optional">Optional components</h2>
+<p>
+  These components live in <code>src/extras</code>. They are compiled as
+  separate modules and loaded only by decks that use them. Import the matching
+  file from <code>rikiki/dist/</code> after the core runtime.
+</p>
+<table class="optional">
+  <thead><tr><th>Element</th><th>Purpose</th><th>Module</th></tr></thead>
+  <tbody>
+    {optionalComponents.map(([tag, summary, module]) => (
+      <tr id={tag}>
+        <td><code>&lt;{tag}&gt;</code></td>
+        <td>{summary}</td>
+        <td><code>{module}</code></td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
 <style>
   /* Aerated layout · one component per "page-break" block, generous padding,
      subtle alternating background to separate sections at a glance. */
@@ -660,6 +696,37 @@ const atoms: Component[] = [
     background: rgba(42, 37, 32, 0.06);
     padding: 1px 5px;
     border-radius: 3px;
+  }
+  table.optional {
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--rik-space-4) 0 var(--rik-space-6);
+  }
+  table.optional th,
+  table.optional td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--rik-border-default);
+    vertical-align: top;
+  }
+  table.optional th {
+    color: var(--rik-text-default--muted);
+    font: 700 var(--rik-font-size-xs)/1.2 var(--rik-font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  table.optional td:first-child {
+    width: 24%;
+    color: var(--rik-text-default);
+    font-weight: 700;
+  }
+  @media (max-width: 640px) {
+    table.optional th,
+    table.optional td {
+      padding: 10px 8px;
+      font-size: var(--rik-font-size-sm);
+    }
+    table.optional td:first-child { width: auto; }
   }
   p.tokens {
     font-size: var(--rik-font-size-sm);
