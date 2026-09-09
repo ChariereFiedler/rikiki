@@ -157,9 +157,7 @@
     overflow-x: auto;
     white-space: pre;
   }
-  /* The source newline between spans already creates the line break inside
-     the pre. Keeping the spans inline avoids rendering every line twice. */
-  .diff .line { display: inline; }
+  .diff .line { display: block; }
   .diff .tok-tag  { color: var(--rik-code__syntax-keyword); }
   .diff .tok-attr { color: var(--rik-code__syntax-property); }
   .diff .tok-str  { color: var(--rik-code__syntax-string); }
