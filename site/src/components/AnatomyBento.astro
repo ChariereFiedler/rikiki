@@ -1,5 +1,4 @@
 ---
-import CodeBlock from './CodeBlock.astro';
 interface Props { code: string; }
 const { code } = Astro.props;
 ---
@@ -7,17 +6,24 @@ const { code } = Astro.props;
 <div class="anatomy">
   <div class="source">
     <p class="overline">What you write</p>
-    <CodeBlock label="index.html" lang="html" code={code} />
+    <div class="editor">
+      <header><span>index.html</span><span class="editing">Editable</span></header>
+      <textarea aria-label="Editable slide source" spellcheck="false">{code}</textarea>
+    </div>
+    <div class="doctor" role="status" aria-live="polite">
+      <header><span><i></i> Doctor</span><code>$ rikiki check --watch</code></header>
+      <div class="doctor-output"></div>
+    </div>
   </div>
   <div class="result" aria-label="Annotated rendering of the source">
     <p class="overline on-dark">What Rikiki renders</p>
     <div class="slide">
       <div class="slide-copy">
-        <span class="eyebrow">Module</span>
-        <h3>Side effects</h3>
-        <p>A module can act on import.</p>
+        <span class="eyebrow" data-render="eyebrow">Module</span>
+        <h3 data-render="title">Side effects</h3>
+        <p data-render="lead">A module can act on import.</p>
       </div>
-      <pre><code>import './polyfill';</code></pre>
+      <pre><code data-render="code">import './polyfill';</code></pre>
     </div>
     <ol class="legend">
       <li><span>Layout</span><code>&lt;deck-feature&gt;</code> sets the composition.</li>
@@ -27,12 +33,30 @@ const { code } = Astro.props;
   </div>
 </div>
 
+<ol class="delivery" aria-label="Delivery commands">
+  <li><span>01</span><strong>Inspect</strong><code>rikiki check</code></li>
+  <li><span>02</span><strong>Review</strong><code>rikiki render</code></li>
+  <li><span>03</span><strong>Package</strong><code>rikiki bundle</code></li>
+  <li><span>04</span><strong>Deliver</strong><code>rikiki export</code></li>
+</ol>
+
 <style>
   .anatomy { display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); gap:var(--rik-space-5); align-items:stretch; }
   .source,.result { min-width:0; }
   .overline { margin:0 0 var(--rik-space-2); color:var(--rik-text-default--faint); font:700 var(--rik-font-size-xs)/1 var(--rik-font-mono); letter-spacing:.15em; text-transform:uppercase; }
-  .source :global(.code) { height:calc(100% - 1.4rem); }
-  .source :global(.block),.source :global(pre) { height:100%; }
+  .editor { overflow:hidden; background:#0d0d0f; border-radius:var(--rik-radius-md) var(--rik-radius-md) 0 0; }
+  .editor header,.doctor header { display:flex; justify-content:space-between; gap:var(--rik-space-2); padding:11px 14px; color:rgba(255,255,255,.55); border-bottom:1px solid rgba(255,255,255,.1); font:700 .68rem/1 var(--rik-font-mono); letter-spacing:.1em; text-transform:uppercase; }
+  .editing { color:#79dec9; }
+  textarea { display:block; box-sizing:border-box; width:100%; min-height:320px; resize:vertical; padding:var(--rik-space-4); border:0; outline:0; color:#e8e4f0; background:#0d0d0f; font:clamp(.76rem,1.1vw,.9rem)/1.65 var(--rik-font-mono); tab-size:2; }
+  textarea:focus { box-shadow:inset 0 0 0 2px #00c8a0; }
+  .doctor { overflow:hidden; color:#d8d4df; background:#17171a; border-radius:0 0 var(--rik-radius-md) var(--rik-radius-md); }
+  .doctor header { border-top:1px solid rgba(255,255,255,.08); border-bottom:0; }
+  .doctor header span { color:#fff; }
+  .doctor i { display:inline-block; width:7px; height:7px; margin-right:6px; border-radius:50%; background:#00c8a0; }
+  .doctor-output { min-height:44px; padding:0 14px 13px; font:clamp(.68rem,1vw,.78rem)/1.55 var(--rik-font-mono); }
+  .doctor-output p { margin:2px 0; }
+  .doctor-output .ok { color:#79dec9; }
+  .doctor-output .error { color:#ff8d72; }
   .result { padding:var(--rik-space-4); color:#fff; background:#0d0d0f; border-radius:var(--rik-radius-md); }
   .on-dark { color:rgba(255,255,255,.5); }
   .slide { display:grid; grid-template-columns:minmax(0,1fr) minmax(240px,.9fr); gap:var(--rik-space-5); align-items:center; min-height:260px; padding:var(--rik-space-4) 0; }
@@ -45,6 +69,12 @@ const { code } = Astro.props;
   .legend li + li { padding-left:var(--rik-space-3); border-left:1px solid rgba(255,255,255,.14); }
   .legend span { display:block; margin-bottom:.35rem; color:#fff; font-weight:800; }
   .legend code { color:#79dec9; font-size:.82em; }
+  .delivery { display:grid; grid-template-columns:repeat(4,1fr); margin:var(--rik-space-4) 0 0; padding:0; list-style:none; border-block:1px solid var(--rik-border-default); }
+  .delivery li { display:grid; gap:6px; padding:var(--rik-space-3); }
+  .delivery li + li { border-left:1px solid var(--rik-border-default); }
+  .delivery span { color:var(--rik-accent--strong); font:700 var(--rik-font-size-xs)/1 var(--rik-font-mono); }
+  .delivery strong { color:var(--rik-text-default); font:800 1.05rem/1.2 var(--rik-font-display); }
+  .delivery code { width:fit-content; color:var(--rik-text-default--muted); font:var(--rik-font-size-xs)/1.4 var(--rik-font-mono); }
   @media (max-width:800px) {
     .anatomy { grid-template-columns:1fr; }
     .source :global(.code),.source :global(.block),.source :global(pre) { height:auto; }
@@ -52,5 +82,43 @@ const { code } = Astro.props;
     .legend { grid-template-columns:1fr; }
     .legend li { padding:var(--rik-space-2) 0; }
     .legend li + li { padding-left:0; border-left:0; border-top:1px solid rgba(255,255,255,.14); }
+    .delivery { grid-template-columns:1fr 1fr; }
+    .delivery li:nth-child(3) { border-left:0; }
+    .delivery li:nth-child(n+3) { border-top:1px solid var(--rik-border-default); }
   }
 </style>
+
+<script is:inline>
+  document.querySelectorAll('.anatomy').forEach((root) => {
+    const input = root.querySelector('textarea');
+    const output = root.querySelector('.doctor-output');
+    if (!input || !output) return;
+    const text = (pattern, fallback) => input.value.match(pattern)?.[1]?.trim() || fallback;
+    const line = (needle) => input.value.slice(0, Math.max(0, input.value.indexOf(needle))).split('\n').length;
+    const render = () => {
+      const problems = [];
+      if (!/<deck-feature\b/.test(input.value)) problems.push(`L${line('<deck-feature')} E101 missing slide layout`);
+      if (!/<h1\s+slot=["']title["']>/.test(input.value)) problems.push(`L${line('<h1')} E203 title slot is required`);
+      const opens = (input.value.match(/<deck-code\b/g) || []).length;
+      const closes = (input.value.match(/<\/deck-code>/g) || []).length;
+      if (opens !== closes) problems.push(`E112 deck-code is not closed`);
+
+      root.querySelector('[data-render="eyebrow"]').textContent = text(/<deck-feature[^>]*eyebrow=["']([^"']+)/, 'Slide');
+      root.querySelector('[data-render="title"]').textContent = text(/<h1\s+slot=["']title["'][^>]*>([^<]*)<\/h1>/, 'Untitled slide');
+      root.querySelector('[data-render="lead"]').textContent = text(/<p\s+slot=["']lead["'][^>]*>([\s\S]*?)<\/p>/, '').replace(/\s+/g, ' ');
+      root.querySelector('[data-render="code"]').textContent = text(/<deck-code[^>]*>([\s\S]*?)<\/deck-code>/, '');
+      output.innerHTML = problems.length
+        ? problems.map((message) => `<p class="error">× ${message}</p>`).join('')
+        : '<p class="ok">✓ structure · runtime · accessibility</p><p>✓ 1 slide checked · 0 errors · fresh</p>';
+    };
+    input.addEventListener('input', render);
+    input.addEventListener('keydown', (event) => {
+      if (event.key !== 'Tab') return;
+      event.preventDefault();
+      const start = input.selectionStart;
+      input.setRangeText('  ', start, input.selectionEnd, 'end');
+      render();
+    });
+    render();
+  });
+</script>
