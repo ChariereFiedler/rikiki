@@ -1,10 +1,6 @@
 ---
 const items = [
   {
-    q: 'Why Lit Web Components and not React, Vue or Svelte?',
-    a: 'Lit compiles to standard Web Components, which the browser runs natively. The runtime is ~42 KB gz (engine + Lit + marked), against ~50 KB for React plus ReactDOM, and it needs no build step on your side. A deck stays a folder. Open it in 2031, it still runs.',
-  },
-  {
     q: 'Do I need to know Lit to write a deck?',
     a: 'No. You write HTML tags. Lit is what built the components under the hood. What you touch is plain HTML and CSS custom properties. No decorators, no template literals, no extending classes.',
   },
@@ -19,10 +15,6 @@ const items = [
   {
     q: 'How do I theme a deck for my brand?',
     a: 'Copy <code>themes/rikiki.css</code>, change the values, link it instead of the default. ~140 CSS custom properties, in two layers (palette, then semantic). For a one-off, override the <code>--deck-*-*</code> tokens inline on the element.',
-  },
-  {
-    q: 'What if I want an animation that is not in the box?',
-    a: 'Drop a <code>&lt;script&gt;</code> inside any slide and run whatever JS you like. The slide is just an HTML host. Most of the time the four built-in transitions (slide, fade, zoom, flip) cover it. For one-off effects, GSAP and friends are a script tag away.',
   },
   {
     q: 'Why also pitch carousels?',

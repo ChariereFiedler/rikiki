@@ -2,22 +2,14 @@
 import Base       from '../layouts/Base.astro';
 import Nav        from '../components/Nav.astro';
 import Hero       from '../components/Hero.astro';
-import LiveDemo   from '../components/LiveDemo.astro';
 import Section    from '../components/Section.astro';
-import Stat       from '../components/Stat.astro';
-import StatGrid   from '../components/StatGrid.astro';
 import ThemeSwap  from '../components/ThemeSwap.astro';
 import Hook       from '../components/Hook.astro';
 import Footer     from '../components/Footer.astro';
 import LayoutPreview from '../components/LayoutPreview.astro';
-import DocsToc from '../components/DocsToc.astro';
 import DualUse from '../components/DualUse.astro';
 import PluginShelf from '../components/PluginShelf.astro';
-import LiveReload from '../components/LiveReload.astro';
-import Limits from '../components/Limits.astro';
 import Faq from '../components/Faq.astro';
-import StickyCta from '../components/StickyCta.astro';
-import AgentLoop from '../components/AgentLoop.astro';
 import AnatomyBento from '../components/AnatomyBento.astro';
 
 const anatomyCode = `<deck-feature eyebrow="Module">
@@ -36,41 +28,16 @@ const anatomyCode = `<deck-feature eyebrow="Module">
   <Nav />
   <Hero />
 
-  <!-- ── Live demo embedded right after the hero ─────── -->
-  <section class="demo-band">
-    <div class="demo-inner">
-      <LiveDemo />
-    </div>
-  </section>
-
-  <!-- ── Workflow ───────────────────────────────────── -->
-  <Section id="workflow" num="01" eyebrow="The workflow" title="From brief to delivery, with evidence">
-    <StatGrid>
-      <Stat num="01" claim="Write the source" tone="mango">
-        Give an LLM the brief, the Rikiki skill, and the component reference.
-        It writes a readable <code>index.html</code> you can inspect and edit.
-      </Stat>
-      <Stat num="02" claim="Run the doctor" tone="helico">
-        <code>rikiki check</code> inspects structure, runtime, accessibility,
-        timing, and pixels. Its report tells the agent what to revise.
-      </Stat>
-      <Stat num="03" claim="Deliver the proof" tone="lime">
-        Render the slides, bundle a standalone HTML file, and export a PDF.
-        <br /><strong>Everything needed to present travels with the deliverable.</strong>
-      </Stat>
-    </StatGrid>
-    <AgentLoop />
+  <Section id="quickstart" num="01" eyebrow="Live playground" title="Write. Verify. Present.">
+    <p class="section-lead">Edit readable HTML, watch the slide respond, and get Doctor feedback while you work. An agent can draft the same source and use the report to revise it.</p>
+    <AnatomyBento code={anatomyCode} />
+    <div class="inline-cta"><a href="/docs/getting-started">Create your first deck →</a><span>One folder · standalone HTML · PDF</span></div>
   </Section>
 
   <DualUse />
 
-  <!-- ── Source loop ─────────────────────────────────── -->
-  <Section id="quickstart" num="03" eyebrow="Source and result" title="Source, checks, delivery">
-    <AnatomyBento code={anatomyCode} />
-  </Section>
-
   <!-- ── Library ────────────────────────────────────── -->
-  <Section id="library" num="04" eyebrow="Library" title="Layouts, one job each">
+  <Section id="library" num="03" eyebrow="Reusable parts" title="Compose with purpose-built layouts">
     <ul class="layout-grid">
       <li>
         <LayoutPreview type="cover" />
@@ -103,18 +70,17 @@ const anatomyCode = `<deck-feature eyebrow="Module">
         <p>The line they remember. Centered, on dark.</p>
       </li>
     </ul>
-    <p class="more">
-      And there's more. <code>&lt;deck-photo&gt;</code> for full-bleed images, plus ~21 other
-      building blocks · <code>md</code>, <code>code</code>, <code>callout</code>,
-      <code>card</code>, <code>mermaid</code>, <code>stat</code>, <code>badge</code>,
-      <code>metric</code>, <code>tier-list</code>, <code>step-list</code>,
-      <code>kicker</code>, <code>stack</code>, <code>grid</code>, <code>punch</code>,
-      <code>shortcut</code>, <code>kbd</code> · and the rest.
-    </p>
+    <p class="swipe-hint">Swipe to browse · 6 layouts</p>
+    <div class="component-groups">
+      <p><strong>Media</strong><span>photo · mermaid · code</span></p>
+      <p><strong>Data</strong><span>stat · metric · tier list</span></p>
+      <p><strong>Structure</strong><span>grid · stack · cards</span></p>
+      <a href="/docs/components">Browse all components →</a>
+    </div>
   </Section>
 
   <!-- ── Themes ─────────────────────────────────────── -->
-  <Section id="themes" num="05" eyebrow="Two themes" title="Pick a look. One link, one swap.">
+  <Section id="themes" num="04" eyebrow="Design system" title="Brand the same source with tokens">
     <ThemeSwap />
     <p class="more">
       Every component reads its colors, type and spacing from CSS custom
@@ -124,11 +90,7 @@ const anatomyCode = `<deck-feature eyebrow="Module">
   </Section>
 
   <PluginShelf />
-  <LiveReload />
-  <StickyCta />
-  <Limits />
   <Faq />
-  <DocsToc />
 
   <Hook
     kicker="The whole point"
@@ -140,21 +102,10 @@ const anatomyCode = `<deck-feature eyebrow="Module">
 </Base>
 
 <style>
-  .demo-band {
-    /* Dark on top so the preview overlaps the hero · pulls into the dark
-       portion via the negative top-margin on .demo-inner. */
-    background: linear-gradient(180deg, var(--rik-surface-inverse) 0%, var(--rik-surface-inverse) 80px, var(--rik-surface-page) 80px);
-    padding: 0 var(--rik-space-5) var(--rik-space-6);
-  }
-  .demo-inner {
-    max-width: 1080px;
-    margin: -80px auto 0;     /* preview crosses the hero/paper boundary */
-    position: relative;
-  }
-  .notes {
-    display: flex; flex-direction: column;
-    gap: var(--rik-space-3);
-  }
+  .section-lead { max-width:70ch; margin:-1rem 0 var(--rik-space-5); color:var(--rik-text-default--muted); font-size:var(--rik-font-size-lead); line-height:1.55; }
+  .inline-cta { display:flex; justify-content:space-between; align-items:center; gap:var(--rik-space-3); margin-top:var(--rik-space-4); padding:var(--rik-space-3) 0; border-bottom:1px solid var(--rik-border-default); }
+  .inline-cta a { color:var(--rik-accent--strong); font-weight:800; text-decoration:none; }
+  .inline-cta span { color:var(--rik-text-default--faint); font:var(--rik-font-size-xs)/1.4 var(--rik-font-mono); }
   .more {
     margin-top: var(--rik-space-5);
     font-size: var(--rik-font-size-body);
@@ -165,6 +116,12 @@ const anatomyCode = `<deck-feature eyebrow="Module">
   .more code {
     color: var(--rik-text-default);
   }
+  .swipe-hint { display:none; color:var(--rik-text-default--faint); font:700 var(--rik-font-size-xs)/1.4 var(--rik-font-mono); text-transform:uppercase; letter-spacing:.1em; }
+  .component-groups { display:grid; grid-template-columns:repeat(3,1fr) auto; align-items:end; gap:var(--rik-space-4); margin-top:var(--rik-space-4); padding-top:var(--rik-space-3); border-top:1px solid var(--rik-border-default); }
+  .component-groups p { display:grid; gap:4px; margin:0; }
+  .component-groups strong { color:var(--rik-text-default); font-size:var(--rik-font-size-sm); }
+  .component-groups span { color:var(--rik-text-default--faint); font-size:var(--rik-font-size-sm); }
+  .component-groups a { color:var(--rik-accent--strong); font-weight:800; text-decoration:none; white-space:nowrap; }
 
   /* Library section · 6 layouts with mini schematics on top of each card */
   .layout-grid {
@@ -179,7 +136,17 @@ const anatomyCode = `<deck-feature eyebrow="Module">
     .layout-grid { grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 560px) {
-    .layout-grid { grid-template-columns: 1fr; }
+    .layout-grid {
+      display:flex !important;
+      overflow-x:auto !important;
+      scroll-snap-type:x mandatory;
+      scrollbar-width:none;
+      margin-inline:calc(var(--rik-space-3) * -1);
+      padding:0 var(--rik-space-3) var(--rik-space-3);
+    }
+    .layout-grid::-webkit-scrollbar { display:none; }
+    .layout-grid li { flex:0 0 min(82vw,320px); scroll-snap-align:center; }
+    .swipe-hint { display:block; margin:var(--rik-space-2) 0 0; }
   }
   .layout-grid li {
     display: flex; flex-direction: column;
@@ -214,12 +181,6 @@ const anatomyCode = `<deck-feature eyebrow="Module">
   }
 
   @media (max-width: 640px) {
-    .demo-band {
-      padding: 0 var(--rik-space-3) var(--rik-space-5);
-    }
-    .demo-inner {
-      margin-top: -48px;
-    }
     .layout-grid {
       gap: var(--rik-space-3);
     }
@@ -229,5 +190,9 @@ const anatomyCode = `<deck-feature eyebrow="Module">
     .more {
       font-size: var(--rik-font-size-body);
     }
+    .inline-cta { align-items:flex-start; flex-direction:column; }
+    .component-groups { grid-template-columns:1fr; gap:var(--rik-space-3); }
+    .component-groups a { grid-column:1 / -1; margin-top:var(--rik-space-2); }
+    .component-groups p { padding-bottom:var(--rik-space-2); border-bottom:1px solid var(--rik-border-default); }
   }
 </style>
