@@ -33,6 +33,7 @@ function purpose(token: string): string {
     [/-opacity$/, 'Opacity'],
     [/-cols$/, 'Grid column template'],
     [/-marker$/, 'Marker color or paint'],
+    [/-flex$/, 'Flex sizing of the named region'],
   ];
   for (const [pattern, label] of rules) if (pattern.test(token)) return label;
   if (token.includes('syntax-')) return 'Syntax color for this token category';
@@ -49,6 +50,7 @@ function sample(token: string): string {
   if (/(opacity)$/.test(token)) return '0.65';
   if (/(shadow)$/.test(token)) return '0 12px 30px rgb(0 0 0 / 15%)';
   if (/(border|rule)$/.test(token)) return '1px solid #f07020';
+  if (/-flex$/.test(token)) return '1 1 auto';
   return '#f07020';
 }
 
@@ -64,11 +66,17 @@ ${shown.map((token) => `  ${token}: ${sample(token)};`).join('\n')}
       <p class="label">Customization tokens</p>
       <p class="help">Override these CSS custom properties on one component instance or in a shared stylesheet.</p>
     </div>
-    <code class="scope">{tag} {'{ … }'}</code>
+    <button type="button" class="reset">Reset preview</button>
   </div>
   <ul>
     {tokens.map((token) => (
-      <li><code>{token}</code><span>{purpose(token)}</span></li>
+      <li>
+        <div><code>{token}</code><span>{purpose(token)}</span></div>
+        <label>
+          <span class="sr-only">Value for {token}</span>
+          <input data-token={token} value={sample(token)} spellcheck="false" />
+        </label>
+      </li>
     ))}
   </ul>
   <details>
@@ -88,16 +96,46 @@ ${shown.map((token) => `  ${token}: ${sample(token)};`).join('\n')}
   .token-head { display: flex; justify-content: space-between; gap: var(--rik-space-4); align-items: start; }
   .label { margin: 0 0 6px; color: var(--rik-text-default); font: 800 var(--rik-font-size-sm)/1 var(--rik-font-display); }
   .help { margin: 0; max-width: 60ch; color: var(--rik-text-default--muted); font-size: var(--rik-font-size-sm); line-height: 1.5; }
-  .scope { white-space: nowrap; color: var(--rik-accent--strong); }
+  .reset { flex:none; padding:6px 9px; border:1px solid var(--rik-border-default); border-radius:4px; color:var(--rik-text-default--muted); background:var(--rik-surface-raised--strong); font:700 var(--rik-font-size-xs)/1 var(--rik-font-mono); cursor:pointer; }
   ul { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; list-style: none; padding: 0; margin: var(--rik-space-3) 0 0; border: 1px solid var(--rik-border-default); border-radius: var(--rik-radius-sm); overflow: hidden; background: var(--rik-border-default); }
-  li { display: grid; gap: 5px; align-content: start; padding: 11px 12px; margin: 0; background: var(--rik-surface-raised--strong); min-width: 0; }
+  li { display:grid; grid-template-columns:minmax(0,1fr) minmax(90px,.55fr); gap:12px; align-items:center; padding:11px 12px; margin:0; background:var(--rik-surface-raised--strong); min-width:0; }
+  li > div { display:grid; gap:5px; min-width:0; }
   li code { width: fit-content; max-width: 100%; color: var(--rik-accent--strong); background: var(--rik-accent--faint); overflow-wrap: anywhere; }
   li span { color: var(--rik-text-default--muted); font-size: var(--rik-font-size-xs); line-height: 1.4; }
+  li label { min-width:0; }
+  li input { box-sizing:border-box; width:100%; min-width:0; padding:7px 8px; border:1px solid var(--rik-border-default); border-radius:4px; outline:0; color:var(--rik-text-default); background:var(--rik-surface-page); font:var(--rik-font-size-xs)/1.2 var(--rik-font-mono); }
+  li input:focus { border-color:var(--rik-status-success); box-shadow:0 0 0 2px rgba(0,200,160,.12); }
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
   details { margin-top: var(--rik-space-3); }
   summary { width: fit-content; cursor: pointer; color: var(--rik-accent--strong); font-size: var(--rik-font-size-sm); font-weight: 700; }
   details :global(.code) { margin-top: var(--rik-space-3); }
   @media (max-width: 640px) {
     .token-head { flex-direction: column; gap: var(--rik-space-2); }
     ul { grid-template-columns: 1fr; }
+    li { grid-template-columns:1fr; }
   }
 </style>
+
+<script is:inline define:vars={{ tag }}>
+  document.querySelectorAll('.token-reference').forEach((panel) => {
+    if (panel.dataset.ready) return;
+    panel.dataset.ready = 'true';
+    const article = panel.closest('.comp');
+    const frame = article?.querySelector('.comp-preview iframe');
+    const apply = (input) => {
+      const target = frame?.contentDocument?.querySelector(tag);
+      if (!target) return;
+      target.style.setProperty(input.dataset.token, input.value);
+    };
+    panel.querySelectorAll('input[data-token]').forEach((input) => {
+      input.addEventListener('input', () => apply(input));
+    });
+    panel.querySelector('.reset')?.addEventListener('click', () => {
+      const target = frame?.contentDocument?.querySelector(tag);
+      panel.querySelectorAll('input[data-token]').forEach((input) => {
+        input.value = input.defaultValue;
+        target?.style.removeProperty(input.dataset.token);
+      });
+    });
+  });
+</script>

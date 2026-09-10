@@ -1,6 +1,7 @@
 ---
 import Docs from '../../layouts/Docs.astro';
 import CodeBlock from '../../components/CodeBlock.astro';
+import ComponentPreview from '../../components/ComponentPreview.astro';
 
 const configCode = `// decks/my-talk/deck.config.js
 export default {
@@ -32,6 +33,13 @@ Plain markdown. One idea here.
 
 A line with just \`---\` starts a new slide.
 Use \`***\` if you want a rule inside a slide.`;
+
+const partialMdPreview = `<deck-feature>
+  <deck-md>## First slide\n\nPlain markdown. One idea here.</deck-md>
+</deck-feature>
+<deck-feature>
+  <deck-md>## Second slide\n\nA separator in the source starts this slide.</deck-md>
+</deck-feature>`;
 
 const runCmd = `npx rikiki assemble deck.config.js
 
@@ -77,7 +85,9 @@ npx rikiki assemble deck.config.js out/my-talk.html
   <li><strong><code>.md</code></strong> · one file, one or many slides. A line that is just <code>---</code> splits the file into separate slides. Each chunk becomes a <code>deck-feature</code> with a <code>deck-md</code> inside. Use <code>***</code> for a rule inside a slide.</li>
 </ul>
 <CodeBlock label="parts/cover.html" lang="html" code={partialHtml} />
+<ComponentPreview code={partialHtml} full />
 <CodeBlock label="parts/intro.md" code={partialMd} />
+<ComponentPreview code={partialMdPreview} full />
 
 <h2 id="build">Build it</h2>
 <p>

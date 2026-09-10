@@ -1,6 +1,7 @@
 ---
 import Docs from '../../layouts/Docs.astro';
 import CodeBlock from '../../components/CodeBlock.astro';
+import ComponentPreview from '../../components/ComponentPreview.astro';
 
 const swap = `<!-- Default: tropical Rikiki -->
 <link rel="stylesheet" href="rikiki/themes/rikiki.css">
@@ -168,6 +169,7 @@ const allTokens = `/* SEMANTIC LAYER · consumer-facing
   CSS selectors don't, so this is the supported way to retheme one block.
 </p>
 <CodeBlock label="One-off override" lang="html" code={componentOverride} />
+<ComponentPreview code={componentOverride} />
 <p>
   See the <a href="/docs/components">Component library</a> for the
   per-component token list (every component declares its own
