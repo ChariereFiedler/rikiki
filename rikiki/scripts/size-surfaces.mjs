@@ -106,12 +106,6 @@ export const SIZE_SURFACES = [
     expect: 'initialLoadGzip',
   },
   {
-    file: at('site/src/components/DualUse.astro'),
-    label: 'dual-use paragraph',
-    find: /~([\d.]+) KB initial load/g,
-    expect: 'initialLoadGzip',
-  },
-  {
     file: at('site/src/components/Faq.astro'),
     label: 'faq runtime size',
     find: /~([\d.]+) KB (?:gz \(engine|initial load)/g,

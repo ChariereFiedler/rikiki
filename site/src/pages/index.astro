@@ -18,7 +18,6 @@ import Limits from '../components/Limits.astro';
 import Faq from '../components/Faq.astro';
 import StickyCta from '../components/StickyCta.astro';
 import AgentLoop from '../components/AgentLoop.astro';
-import QuickstartShowcase from '../components/QuickstartShowcase.astro';
 import AnatomyBento from '../components/AnatomyBento.astro';
 
 const anatomyCode = `<deck-feature eyebrow="Module">
@@ -31,34 +30,6 @@ const anatomyCode = `<deck-feature eyebrow="Module">
   </deck-code>
 </deck-feature>`;
 
-const quickstartCode = `<!doctype html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <link rel="stylesheet" href="rikiki/tokens.css">
-  <script type="module" src="rikiki/dist/index.js"></script>
-</head>
-<body>
-  <deck-root>
-    <deck-cover brand="my-talk">
-      <h1>Hello, <span class="accent">world</span>.</h1>
-    </deck-cover>
-    <deck-feature eyebrow="One slide">
-      <h1 slot="title">That's all you need.</h1>
-      <deck-md>Write **markdown**, drop &lt;deck-*&gt; blocks, navigate with arrows.</deck-md>
-    </deck-feature>
-  </deck-root>
-</body>
-</html>`;
-
-const quickstartPreview = `<deck-cover brand="my-talk">
-  <h1>Hello, <span class="accent">world</span>.</h1>
-  <p class="sub">Readable source. Presentable result.</p>
-</deck-cover>
-<deck-feature eyebrow="One slide">
-  <h1 slot="title">That's all you need.</h1>
-  <deck-md>Write **markdown**, add components, navigate with arrows.</deck-md>
-</deck-feature>`;
 ---
 
 <Base>
@@ -93,8 +64,8 @@ const quickstartPreview = `<deck-cover brand="my-talk">
 
   <DualUse />
 
-  <!-- ── Anatomy ────────────────────────────────────── -->
-  <Section id="anatomy" num="03" eyebrow="Anatomy" title="The source explains the slide">
+  <!-- ── Source loop ─────────────────────────────────── -->
+  <Section id="quickstart" num="03" eyebrow="Source and result" title="Source, checks, delivery">
     <AnatomyBento code={anatomyCode} />
   </Section>
 
@@ -150,11 +121,6 @@ const quickstartPreview = `<deck-cover brand="my-talk">
       properties. Want a third theme? Copy <code>themes/rikiki.css</code>,
       change the values, ship it.
     </p>
-  </Section>
-
-  <!-- ── Quickstart ─────────────────────────────────── -->
-  <Section id="quickstart" num="06" eyebrow="A concrete starting point" title="Source, checks, delivery">
-    <QuickstartShowcase source={quickstartCode} preview={quickstartPreview} />
   </Section>
 
   <PluginShelf />

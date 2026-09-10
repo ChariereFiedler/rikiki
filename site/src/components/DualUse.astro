@@ -1,231 +1,108 @@
 ---
-// DualUse · "same components, different attributes" pitched as a literal diff.
-// The hero of this section IS the markup. Three differentiator attributes are
-// inline-highlighted so the eye lands on the entire change at once.
+const carousel = `<!doctype html><html><head><meta charset="UTF-8">
+<link rel="stylesheet" href="/rikiki/themes/rikiki.css">
+<script type="module" src="/rikiki/dist/index.js"></scr` + `ipt>
+<style>html,body{width:100%;height:100%;margin:0;overflow:hidden}deck-root{width:100%;height:100%}</style>
+</head><body><deck-root autoplay="4000" loop swipe transition="slide">
+  <deck-cover brand="COURSE · 01">
+    <h1>Learn in <span class="accent">context.</span></h1>
+    <p class="sub">A lesson embedded where people need it.</p>
+  </deck-cover>
+  <deck-feature eyebrow="Concept">
+    <h1 slot="title">One idea per screen</h1>
+    <p slot="lead" class="lead">Use the same layouts, components and theme as the full deck.</p>
+    <deck-callout type="ok"><strong>Swipe, click, or let it advance.</strong></deck-callout>
+  </deck-feature>
+  <deck-split cols="1-1">
+    <h1 slot="title">Check understanding</h1>
+    <deck-card slot="left" color="green"><h3>Example</h3><p>Show the pattern.</p></deck-card>
+    <deck-card slot="right"><h3>Practice</h3><p>Let the learner apply it.</p></deck-card>
+  </deck-split>
+</deck-root></body></html>`;
 ---
 
 <section id="dual" class="dual">
   <div class="inner">
-    <p class="eyebrow"><span class="num">02</span> Two products, one folder</p>
-    <h2>Add three attributes. The deck becomes a carousel.</h2>
-    <p class="lede">
-      Same components. Same theming. Same ~42 KB initial load. This wasn't
-      planned. It falls out of building the engine on Web Components and CSS
-      custom properties, so you get it for free.
-    </p>
-
-    <div class="diff-wrap">
-      <header class="diff-head">
-        <span class="from">A slide deck</span>
-        <span class="arrow" aria-hidden="true">→</span>
-        <span class="to">A carousel</span>
-      </header>
-      <pre class="diff" aria-label="Three attributes turn a deck into a carousel">
-<span class="line"><span class="tok-pun">&lt;</span><span class="tok-tag">deck-root</span><span class="diff-add"> <span class="tok-attr">autoplay</span>=<span class="tok-str">"4000"</span> <span class="tok-attr">loop</span> <span class="tok-attr">swipe</span></span> <span class="tok-attr">transition</span>=<span class="tok-str">"slide"</span><span class="tok-pun">&gt;</span></span>
-<span class="line">  <span class="tok-pun">&lt;</span><span class="tok-tag">deck-cover</span><span class="tok-pun">&gt;</span>...<span class="tok-pun">&lt;/</span><span class="tok-tag">deck-cover</span><span class="tok-pun">&gt;</span></span>
-<span class="line">  <span class="tok-pun">&lt;</span><span class="tok-tag">deck-feature</span><span class="tok-pun">&gt;</span>...<span class="tok-pun">&lt;/</span><span class="tok-tag">deck-feature</span><span class="tok-pun">&gt;</span></span>
-<span class="line">  <span class="tok-pun">&lt;</span><span class="tok-tag">deck-feature</span><span class="tok-pun">&gt;</span>...<span class="tok-pun">&lt;/</span><span class="tok-tag">deck-feature</span><span class="tok-pun">&gt;</span></span>
-<span class="line"><span class="tok-pun">&lt;/</span><span class="tok-tag">deck-root</span><span class="tok-pun">&gt;</span></span>
-      </pre>
-      <p class="diff-caption">
-        <strong>Three attributes.</strong> That's the whole change. Same markup as
-        any other deck. The engine stops waiting on you and starts
-        auto-advancing, with touch swipe.
-      </p>
+    <p class="eyebrow"><span class="num">02</span> Embedded learning</p>
+    <div class="intro">
+      <div>
+        <h2>Put the deck inside the page.</h2>
+        <p class="lede">
+          A Rikiki deck is a Web Component, so the same material can live inside
+          a training course, an onboarding guide, or product documentation.
+          It keeps its theme, navigation and responsive canvas.
+        </p>
+      </div>
+      <aside class="use-cases" aria-label="Common carousel uses">
+        <span>Training</span><span>Onboarding</span><span>Documentation</span>
+      </aside>
     </div>
 
-    <div class="cases">
-      <article class="case">
+    <div class="demo-grid">
+      <div class="embed">
         <header>
-          <h3>As a slide deck</h3>
-          <p class="case-line">Leave the three off. Keep 2D nav, the presenter window, speaker notes, step-reveal.</p>
+          <span><i></i> Live carousel</span>
+          <span>Swipe or use the arrows</span>
         </header>
-        <ul class="tags">
-          <li><kbd>P</kbd> presenter</li>
-          <li><kbd>O</kbd> overview</li>
-          <li><kbd>.</kbd> blank</li>
-        </ul>
-      </article>
-
-      <article class="case">
-        <header>
-          <h3>As a carousel</h3>
-          <p class="case-line">Add the three. Get touch swipe, autoplay that pauses on hover, an end that wraps to the start.</p>
-        </header>
-        <ul class="tags">
-          <li>60 px swipe</li>
-          <li>Hover-pause</li>
-          <li>Loop</li>
-        </ul>
-      </article>
+        <div class="viewport">
+          <iframe srcdoc={carousel} title="Embedded Rikiki training carousel"></iframe>
+        </div>
+      </div>
+      <div class="how">
+        <p class="label">The integration</p>
+        <pre><code>&lt;deck-root
+  autoplay="4000"
+  loop
+  swipe&gt;
+  …your slides
+&lt;/deck-root&gt;</code></pre>
+        <p>
+          Add three attributes to the existing deck. Autoplay pauses on hover,
+          touch gestures work on mobile, and <code>loop</code> returns to the first slide.
+        </p>
+        <a href="/docs/api#carousel">Read the carousel options →</a>
+      </div>
     </div>
   </div>
 </section>
 
-<style is:global>
-  .dual {
-    background: var(--rik-surface-raised);
-    padding: var(--rik-space-7) var(--rik-space-5);
-    border-top: 1px solid var(--rik-border-default);
-    border-bottom: 1px solid var(--rik-border-default);
-  }
-  .inner { max-width: 1080px; margin: 0 auto; }
-
-  .eyebrow {
-    display: inline-flex; align-items: center; gap: 10px;
-    color: var(--rik-accent--strong);
-    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    margin: 0 0 var(--rik-space-3);
-  }
-  .eyebrow .num {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px;
-    height: 26px;
-    background: var(--rik-accent__on);
-    color: var(--rik-accent--strong);
-    border: 2px solid var(--rik-accent);
-    border-radius: 50%;
-    letter-spacing: 0;
-  }
-  h2 {
-    font-family: var(--rik-font-display);
-    font-size: var(--rik-font-size-mega);
-    font-weight: 900;
-    color: var(--rik-text-default);
-    letter-spacing: -0.025em;
-    line-height: 1.05;
-    margin: 0 0 var(--rik-space-3);
-    max-width: 24ch;
-  }
-  .lede {
-    font-size: var(--rik-font-size-lead);
-    color: var(--rik-text-default--muted);
-    line-height: 1.55;
-    max-width: 72ch;
-    margin: 0 0 var(--rik-space-6);
-  }
-  .lede code, .case code {
-    font-family: var(--rik-font-mono);
-    font-size: 0.92em;
-    background: rgba(42, 37, 32, 0.06);
-    color: var(--rik-text-default);
-    padding: 2px 7px;
-    border-radius: 4px;
-  }
-
-  /* ── The diff · hero of the section ────────────────────── */
-  .diff-wrap {
-    background: var(--rik-code__bg);
-    border-radius: var(--rik-radius-md);
-    padding: 0 0 var(--rik-space-3);
-    box-shadow: var(--rik-elevation-3);
-    margin-bottom: var(--rik-space-5);
-    overflow: hidden;
-  }
-  .diff-head {
-    display: flex; align-items: center; gap: var(--rik-space-3);
-    padding: var(--rik-space-3) var(--rik-space-4);
-    background: linear-gradient(90deg, var(--rik-status-success), var(--rik-accent));
-    color: var(--rik-accent__on);
-    font: 800 var(--rik-font-size-sm)/1 var(--rik-font-display);
-    letter-spacing: -0.005em;
-  }
-  .diff-head .from, .diff-head .to {
-    padding: 3px 8px;
-    background: rgba(0, 0, 0, 0.22);
-    border-radius: 4px;
-    color: #fff;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
-  }
-  .diff-head .arrow {
-    font: 700 1.1rem/1 var(--rik-font-mono);
-    opacity: 0.8;
-  }
-  .diff {
-    margin: 0;
-    padding: var(--rik-space-4);
-    font-family: var(--rik-font-mono);
-    font-size: 1.05rem;
-    line-height: 1.65;
-    color: var(--rik-code__text);
-    overflow-x: auto;
-    white-space: pre;
-  }
-  .diff .line { display: inline; }
-  .diff .tok-tag  { color: var(--rik-code__syntax-keyword); }
-  .diff .tok-attr { color: var(--rik-code__syntax-property); }
-  .diff .tok-str  { color: var(--rik-code__syntax-string); }
-  .diff .tok-pun  { color: var(--rik-code__text); opacity: 0.65; }
-  .diff .diff-add {
-    background: rgba(0, 200, 160, 0.20);
-    color: var(--rik-code__text);
-    padding: 2px 6px;
-    border-radius: 4px;
-    box-shadow: inset 0 0 0 1px rgba(0, 200, 160, 0.45);
-  }
-  .diff .diff-add .tok-attr { color: #c3e88d; font-weight: 700; }
-  .diff-caption {
-    margin: 0 var(--rik-space-4);
-    padding-top: var(--rik-space-3);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    font-size: var(--rik-font-size-sm);
-    color: rgba(232, 228, 240, 0.72);
-    line-height: 1.6;
-  }
-  .diff-caption strong { color: var(--rik-status-success); font-weight: 800; }
-
-  /* ── Two minimal cases · short headers, tag list ── */
-  .cases {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--rik-space-4) var(--rik-space-6);
-  }
-  @media (max-width: 720px) { .cases { grid-template-columns: 1fr; } }
-  @media (max-width: 640px) {
-    .dual { padding: var(--rik-space-6) var(--rik-space-3); }
-    .diff-head { gap: var(--rik-space-2); }
-    .diff { font-size: 0.82rem; }
-    .diff-caption { font-size: var(--rik-font-size-xs); }
-  }
-  .case header { margin-bottom: var(--rik-space-2); }
-  .case h3 {
-    font-family: var(--rik-font-display);
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: var(--rik-text-default);
-    letter-spacing: -0.012em;
-    line-height: 1.25;
-    margin: 0 0 4px;
-  }
-  .case-line {
-    font-size: var(--rik-font-size-body);
-    color: var(--rik-text-default--muted);
-    line-height: 1.55;
-    margin: 0;
-  }
-  ul.tags {
-    list-style: none;
-    padding: var(--rik-space-3) 0 0;
-    margin: 0;
-    border-top: 1px solid var(--rik-border-default);
-    display: flex; flex-wrap: wrap;
-    gap: 6px 10px;
-    font-size: var(--rik-font-size-sm);
-    color: var(--rik-text-default--faint);
-  }
-  ul.tags li { display: inline-flex; align-items: center; gap: 6px; }
-  kbd {
-    display: inline-block;
-    padding: 1px 6px;
-    background: var(--rik-surface-raised);
-    border: 1px solid var(--rik-border-default);
-    border-bottom-width: 2px;
-    border-radius: 4px;
-    font: 700 0.78em/1.2 var(--rik-font-mono);
-    color: var(--rik-text-default);
+<style>
+  .dual { padding:var(--rik-space-7) var(--rik-space-5); background:var(--rik-surface-raised); border-block:1px solid var(--rik-border-default); }
+  .inner { max-width:1080px; margin:0 auto; }
+  .eyebrow { display:inline-flex; align-items:center; gap:10px; margin:0 0 var(--rik-space-3); color:var(--rik-accent--strong); font:700 var(--rik-font-size-xs)/1 var(--rik-font-mono); letter-spacing:.16em; text-transform:uppercase; }
+  .num { display:grid; place-items:center; width:26px; height:26px; border:2px solid var(--rik-accent); border-radius:50%; letter-spacing:0; }
+  .intro { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:var(--rik-space-5); align-items:end; margin-bottom:var(--rik-space-5); }
+  h2 { max-width:20ch; margin:0 0 var(--rik-space-3); color:var(--rik-text-default); font:900 var(--rik-font-size-mega)/1.05 var(--rik-font-display); letter-spacing:-.025em; }
+  .lede { max-width:66ch; margin:0; color:var(--rik-text-default--muted); font-size:var(--rik-font-size-lead); line-height:1.55; }
+  .use-cases { display:flex; flex-direction:column; align-items:flex-end; gap:5px; color:var(--rik-text-default--faint); font:700 var(--rik-font-size-xs)/1.2 var(--rik-font-mono); letter-spacing:.08em; text-transform:uppercase; }
+  .demo-grid { display:grid; grid-template-columns:minmax(0,1.65fr) minmax(260px,.65fr); gap:var(--rik-space-4); align-items:stretch; }
+  .embed { min-width:0; overflow:hidden; background:#080910; border-radius:var(--rik-radius-md); box-shadow:var(--rik-elevation-3); }
+  .embed header { display:flex; justify-content:space-between; gap:var(--rik-space-3); padding:12px 16px; color:rgba(255,255,255,.52); font:700 .7rem/1 var(--rik-font-mono); letter-spacing:.08em; text-transform:uppercase; }
+  .embed header span:first-child { color:#fff; }
+  .embed i { display:inline-block; width:8px; height:8px; margin-right:7px; border-radius:50%; background:#00c8a0; }
+  .viewport { position:relative; aspect-ratio:16/9; overflow:hidden; }
+  iframe { position:absolute; inset:0; width:1920px; height:1080px; border:0; transform-origin:top left; }
+  .how { display:flex; flex-direction:column; justify-content:center; padding:var(--rik-space-4); border-block:1px solid var(--rik-border-default); }
+  .label { margin:0 0 var(--rik-space-2)!important; color:var(--rik-accent--strong)!important; font:700 var(--rik-font-size-xs)/1 var(--rik-font-mono)!important; letter-spacing:.12em; text-transform:uppercase; }
+  pre { margin:0 0 var(--rik-space-3); padding:0; overflow:auto; color:var(--rik-text-default); background:transparent; font:var(--rik-font-size-sm)/1.65 var(--rik-font-mono); }
+  .how p { margin:0 0 var(--rik-space-3); color:var(--rik-text-default--muted); font-size:var(--rik-font-size-sm); line-height:1.55; }
+  .how code { font-family:var(--rik-font-mono); }
+  .how a { color:var(--rik-accent--strong); font-size:var(--rik-font-size-sm); font-weight:800; text-decoration:none; }
+  @media (max-width:800px) {
+    .dual { padding:var(--rik-space-6) var(--rik-space-3); }
+    .intro,.demo-grid { grid-template-columns:1fr; }
+    .use-cases { flex-direction:row; flex-wrap:wrap; align-items:flex-start; }
+    .how { padding-inline:0; }
+    .embed header span:last-child { display:none; }
   }
 </style>
+
+<script is:inline>
+  document.querySelectorAll('.embed .viewport').forEach((viewport) => {
+    const iframe = viewport.querySelector('iframe');
+    if (!iframe) return;
+    const fit = () => { iframe.style.transform = `scale(${viewport.clientWidth / 1920})`; };
+    fit();
+    new ResizeObserver(fit).observe(viewport);
+  });
+</script>
