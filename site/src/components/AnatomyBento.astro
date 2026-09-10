@@ -33,21 +33,15 @@ const { code } = Astro.props;
   </div>
 </div>
 
-<ol class="delivery" aria-label="Delivery commands">
-  <li><span>01</span><strong>Inspect</strong><code>rikiki check</code></li>
-  <li><span>02</span><strong>Review</strong><code>rikiki render</code></li>
-  <li><span>03</span><strong>Package</strong><code>rikiki bundle</code></li>
-  <li><span>04</span><strong>Deliver</strong><code>rikiki export</code></li>
+<ol class="delivery" aria-label="Verified delivery workflow">
+  <li><span>01 · Inspect</span><code>rikiki check</code><strong>0 errors</strong></li>
+  <li><span>02 · Review</span><code>rikiki render</code><strong>20 slides</strong></li>
+  <li><span>03 · Package</span><code>rikiki bundle</code><strong>offline HTML</strong></li>
+  <li><span>04 · Deliver</span><code>rikiki export</code><strong>PDF · 19 min</strong></li>
 </ol>
-<ul class="proof" aria-label="Example Doctor and delivery results">
-  <li><strong>✓ 20</strong><span>slides rendered</span></li>
-  <li><strong>✓ 0</strong><span>accessibility errors</span></li>
-  <li><strong>✓ 19 min</strong><span>estimated duration</span></li>
-  <li><strong>✓ HTML + PDF</strong><span>ready to deliver</span></li>
-</ul>
 
 <style>
-  .anatomy { display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); gap:var(--rik-space-5); align-items:stretch; }
+  .anatomy { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--rik-space-4); align-items:stretch; }
   .source,.result { min-width:0; }
   .overline { margin:0 0 var(--rik-space-2); color:var(--rik-text-default--faint); font:700 var(--rik-font-size-xs)/1 var(--rik-font-mono); letter-spacing:.15em; text-transform:uppercase; }
   .editor { overflow:hidden; background:#0d0d0f; border-radius:var(--rik-radius-md) var(--rik-radius-md) 0 0; }
@@ -63,9 +57,9 @@ const { code } = Astro.props;
   .doctor-output p { margin:2px 0; }
   .doctor-output .ok { color:#79dec9; }
   .doctor-output .error { color:#ff8d72; }
-  .result { padding:var(--rik-space-4); color:#fff; background:#0d0d0f; border-radius:var(--rik-radius-md); }
+  .result { display:grid; grid-template-rows:auto 1fr auto; padding:var(--rik-space-4); color:#fff; background:#0d0d0f; border-radius:var(--rik-radius-md); }
   .on-dark { color:rgba(255,255,255,.5); }
-  .slide { display:grid; grid-template-columns:minmax(0,1fr) minmax(240px,.9fr); gap:var(--rik-space-5); align-items:center; min-height:260px; padding:var(--rik-space-4) 0; }
+  .slide { display:grid; grid-template-columns:minmax(0,1fr) minmax(210px,.85fr); gap:var(--rik-space-4); align-items:center; min-height:220px; padding:var(--rik-space-3) 0; }
   .eyebrow { color:#f07020; font:700 .72rem/1 var(--rik-font-mono); letter-spacing:.14em; text-transform:uppercase; }
   h3 { margin:var(--rik-space-2) 0; color:#fff; font:900 clamp(2rem,3.2vw,3rem)/.95 var(--rik-font-display); letter-spacing:-.04em; }
   .slide-copy p { margin:0; color:rgba(255,255,255,.62); line-height:1.45; }
@@ -75,16 +69,12 @@ const { code } = Astro.props;
   .legend li + li { padding-left:var(--rik-space-3); border-left:1px solid rgba(255,255,255,.14); }
   .legend span { display:block; margin-bottom:.35rem; color:#fff; font-weight:800; }
   .legend code { color:#79dec9; font-size:.82em; }
-  .delivery { display:grid; grid-template-columns:repeat(4,1fr); margin:var(--rik-space-4) 0 0; padding:0; list-style:none; border-block:1px solid var(--rik-border-default); }
-  .delivery li { display:grid; gap:6px; padding:var(--rik-space-3); }
+  .delivery { display:grid; grid-template-columns:repeat(4,1fr); margin:var(--rik-space-3) 0 0; padding:0; list-style:none; border:1px solid var(--rik-border-default); }
+  .delivery li { display:grid; grid-template-columns:1fr auto; align-items:center; gap:5px 12px; padding:var(--rik-space-3); }
   .delivery li + li { border-left:1px solid var(--rik-border-default); }
-  .delivery span { color:var(--rik-accent--strong); font:700 var(--rik-font-size-xs)/1 var(--rik-font-mono); }
-  .delivery strong { color:var(--rik-text-default); font:800 1.05rem/1.2 var(--rik-font-display); }
+  .delivery span { grid-column:1 / -1; color:var(--rik-accent--strong); font:700 var(--rik-font-size-xs)/1 var(--rik-font-mono); text-transform:uppercase; letter-spacing:.06em; }
+  .delivery strong { color:var(--rik-status-success); font:800 var(--rik-font-size-xs)/1.3 var(--rik-font-mono); text-align:right; }
   .delivery code { width:fit-content; color:var(--rik-text-default--muted); font:var(--rik-font-size-xs)/1.4 var(--rik-font-mono); }
-  .proof { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--rik-space-2); margin:var(--rik-space-3) 0 0; padding:0; list-style:none; }
-  .proof li { display:grid; gap:3px; }
-  .proof strong { color:var(--rik-status-success); font:800 var(--rik-font-size-sm)/1.3 var(--rik-font-mono); }
-  .proof span { color:var(--rik-text-default--faint); font-size:var(--rik-font-size-xs); }
   @media (max-width:800px) {
     .anatomy { grid-template-columns:1fr; }
     .source :global(.code),.source :global(.block),.source :global(pre) { height:auto; }
@@ -95,10 +85,6 @@ const { code } = Astro.props;
     .delivery { grid-template-columns:1fr 1fr; }
     .delivery li:nth-child(3) { border-left:0; }
     .delivery li:nth-child(n+3) { border-top:1px solid var(--rik-border-default); }
-    .proof { grid-template-columns:1fr 1fr; }
-    .proof li { gap:5px; padding:var(--rik-space-2) 0; }
-    .proof strong { font-size:var(--rik-font-size-body); }
-    .proof span { font-size:var(--rik-font-size-sm); line-height:1.4; }
   }
 </style>
 
