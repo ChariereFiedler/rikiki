@@ -9,17 +9,20 @@ const { num, claim, tone = 'mango' } = Astro.props;
 ---
 
 <article class={`stat ${tone}`}>
-  <div class="num">{num}</div>
-  <h3 class="claim" set:html={claim}></h3>
-  <p class="body"><slot /></p>
+  <div class="num" aria-hidden="true">{num}</div>
+  <div class="copy">
+    <h3 class="claim" set:html={claim}></h3>
+    <p class="body"><slot /></p>
+  </div>
 </article>
 
 <style>
   .stat {
-    display: flex; flex-direction: column;
-    gap: var(--rik-space-2);
-    padding: var(--rik-space-4) var(--rik-space-3);
-    border-left: 4px solid var(--_c, var(--rik-accent));
+    display: grid;
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    gap: var(--rik-space-3);
+    padding: var(--rik-space-4) 0;
+    border-top: 1px solid var(--rik-border-default);
     min-width: 0;
   }
   .stat.mango  { --_c: var(--rik-accent); }
@@ -29,16 +32,18 @@ const { num, claim, tone = 'mango' } = Astro.props;
   .stat.ember  { --_c: var(--rik-status-danger); }
 
   .num {
+    padding-top: .1em;
     font-family: var(--rik-font-display);
-    font-size: clamp(3rem, 6vw, 5rem);
+    font-size: 1.15rem;
     font-weight: 900;
-    line-height: 0.9;
+    line-height: 1;
     color: var(--_c, var(--rik-accent));
     letter-spacing: -0.04em;
   }
+  .copy { min-width: 0; }
   .claim {
     font-family: var(--rik-font-display);
-    font-size: 1.4rem;
+    font-size: 1.35rem;
     font-weight: 800;
     color: var(--rik-text-default);
     line-height: 1.15;
@@ -49,7 +54,7 @@ const { num, claim, tone = 'mango' } = Astro.props;
     font-size: var(--rik-font-size-body);
     color: var(--rik-text-default--faint);
     line-height: 1.5;
-    margin-top: var(--rik-space-2);
+    margin: var(--rik-space-2) 0 0;
   }
   .body :global(strong) { color: var(--rik-text-default); font-weight: 700; }
 </style>

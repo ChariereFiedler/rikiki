@@ -1,0 +1,103 @@
+---
+import CodeBlock from './CodeBlock.astro';
+
+interface Props { tag: string; tokens: string[]; }
+const { tag, tokens }: Props = Astro.props;
+
+function purpose(token: string): string {
+  const rules: Array<[RegExp, string]> = [
+    [/-padding-x$/, 'Horizontal inner spacing'],
+    [/-padding-y$/, 'Vertical inner spacing'],
+    [/-padding$/, 'Inner spacing'],
+    [/-col-gap$/, 'Spacing between columns'],
+    [/-gap$/, 'Spacing between items'],
+    [/-bg$/, 'Background color or paint'],
+    [/-fg$/, 'Foreground color'],
+    [/-text$/, 'Main text color'],
+    [/-muted$/, 'Muted text color'],
+    [/-faint$/, 'Lowest emphasis text color'],
+    [/-soft$/, 'Secondary text or surface color'],
+    [/-color$/, 'Color of the named element'],
+    [/-border-width$/, 'Border thickness'],
+    [/-border$/, 'Border color or complete border value'],
+    [/-rule-width$/, 'Divider thickness'],
+    [/-rule$/, 'Divider color or complete divider value'],
+    [/-radius$/, 'Corner radius'],
+    [/-shadow$/, 'Box shadow'],
+    [/-font-size$/, 'Font size'],
+    [/-size$/, 'Size of the named element'],
+    [/-weight$/, 'Font weight'],
+    [/-tracking$/, 'Letter spacing'],
+    [/-width$/, 'Width of the named element'],
+    [/-height$/, 'Height of the named element'],
+    [/-opacity$/, 'Opacity'],
+    [/-cols$/, 'Grid column template'],
+    [/-marker$/, 'Marker color or paint'],
+  ];
+  for (const [pattern, label] of rules) if (pattern.test(token)) return label;
+  if (token.includes('syntax-')) return 'Syntax color for this token category';
+  if (token.includes('value-')) return 'Value color for this semantic state';
+  if (token.includes('speed-')) return 'Speed indicator color for this state';
+  return 'Visual value used by the named part';
+}
+
+function sample(token: string): string {
+  if (/(padding|gap|margin)$/.test(token) || /-(padding|gap)-[xy]$/.test(token)) return '1.5rem';
+  if (/(radius)$/.test(token)) return '14px';
+  if (/(size|width|height|font-size)$/.test(token)) return '2rem';
+  if (/(weight)$/.test(token)) return '800';
+  if (/(opacity)$/.test(token)) return '0.65';
+  if (/(shadow)$/.test(token)) return '0 12px 30px rgb(0 0 0 / 15%)';
+  if (/(border|rule)$/.test(token)) return '1px solid #f07020';
+  return '#f07020';
+}
+
+const shown = tokens.slice(0, 2);
+const override = `${tag} {
+${shown.map((token) => `  ${token}: ${sample(token)};`).join('\n')}
+}`;
+---
+
+<div class="token-reference">
+  <div class="token-head">
+    <div>
+      <p class="label">Customization tokens</p>
+      <p class="help">Override these CSS custom properties on one component instance or in a shared stylesheet.</p>
+    </div>
+    <code class="scope">{tag} {'{ … }'}</code>
+  </div>
+  <ul>
+    {tokens.map((token) => (
+      <li><code>{token}</code><span>{purpose(token)}</span></li>
+    ))}
+  </ul>
+  <details>
+    <summary>Show an override example</summary>
+    <CodeBlock lang="css" code={override} />
+  </details>
+</div>
+
+<style>
+  .token-reference {
+    margin-top: var(--rik-space-5);
+    padding: var(--rik-space-4);
+    border: 1px solid rgba(240, 112, 32, .22);
+    border-radius: var(--rik-radius-md);
+    background: rgba(240, 112, 32, .035);
+  }
+  .token-head { display: flex; justify-content: space-between; gap: var(--rik-space-4); align-items: start; }
+  .label { margin: 0 0 6px; color: var(--rik-text-default); font: 800 var(--rik-font-size-sm)/1 var(--rik-font-display); }
+  .help { margin: 0; max-width: 60ch; color: var(--rik-text-default--muted); font-size: var(--rik-font-size-sm); line-height: 1.5; }
+  .scope { white-space: nowrap; color: var(--rik-accent--strong); }
+  ul { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; list-style: none; padding: 0; margin: var(--rik-space-3) 0 0; border: 1px solid var(--rik-border-default); border-radius: var(--rik-radius-sm); overflow: hidden; background: var(--rik-border-default); }
+  li { display: grid; gap: 5px; align-content: start; padding: 11px 12px; margin: 0; background: var(--rik-surface-raised--strong); min-width: 0; }
+  li code { width: fit-content; max-width: 100%; color: var(--rik-accent--strong); background: var(--rik-accent--faint); overflow-wrap: anywhere; }
+  li span { color: var(--rik-text-default--muted); font-size: var(--rik-font-size-xs); line-height: 1.4; }
+  details { margin-top: var(--rik-space-3); }
+  summary { width: fit-content; cursor: pointer; color: var(--rik-accent--strong); font-size: var(--rik-font-size-sm); font-weight: 700; }
+  details :global(.code) { margin-top: var(--rik-space-3); }
+  @media (max-width: 640px) {
+    .token-head { flex-direction: column; gap: var(--rik-space-2); }
+    ul { grid-template-columns: 1fr; }
+  }
+</style>

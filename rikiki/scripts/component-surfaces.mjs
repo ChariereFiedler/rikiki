@@ -73,9 +73,9 @@ export function optInElements() {
 /** Every page that publishes a component count. */
 export const COUNT_SURFACES = [
   {
-    file: at('site/src/pages/index.astro'),
-    label: 'home stat tile',
-    find: /Lit and (\d+) components/g,
+    file: at('site/src/components/Hero.astro'),
+    label: 'home hero',
+    find: /<strong>(\d+)<\/strong> core components/g,
   },
   {
     file: at('site/src/pages/docs/recipes.astro'),
@@ -91,7 +91,7 @@ export const COUNT_SURFACES = [
   {
     file: at('site/src/pages/docs/components.astro'),
     label: 'components catalogue intro',
-    find: /(\d+) components (?:total|fit)/g,
+    find: /(\d+) core components/g,
   },
 ];
 

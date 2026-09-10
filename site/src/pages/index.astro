@@ -6,9 +6,6 @@ import LiveDemo   from '../components/LiveDemo.astro';
 import Section    from '../components/Section.astro';
 import Stat       from '../components/Stat.astro';
 import StatGrid   from '../components/StatGrid.astro';
-import Card       from '../components/Card.astro';
-import CardGrid   from '../components/CardGrid.astro';
-import CodeBlock  from '../components/CodeBlock.astro';
 import ThemeSwap  from '../components/ThemeSwap.astro';
 import Hook       from '../components/Hook.astro';
 import Footer     from '../components/Footer.astro';
@@ -21,6 +18,8 @@ import Limits from '../components/Limits.astro';
 import Faq from '../components/Faq.astro';
 import StickyCta from '../components/StickyCta.astro';
 import AgentLoop from '../components/AgentLoop.astro';
+import QuickstartShowcase from '../components/QuickstartShowcase.astro';
+import AnatomyBento from '../components/AnatomyBento.astro';
 
 const anatomyCode = `<deck-feature eyebrow="Module">
   <h1 slot="title">Side effects</h1>
@@ -51,6 +50,15 @@ const quickstartCode = `<!doctype html>
   </deck-root>
 </body>
 </html>`;
+
+const quickstartPreview = `<deck-cover brand="my-talk">
+  <h1>Hello, <span class="accent">world</span>.</h1>
+  <p class="sub">Readable source. Presentable result.</p>
+</deck-cover>
+<deck-feature eyebrow="One slide">
+  <h1 slot="title">That's all you need.</h1>
+  <deck-md>Write **markdown**, add components, navigate with arrows.</deck-md>
+</deck-feature>`;
 ---
 
 <Base>
@@ -86,21 +94,8 @@ const quickstartCode = `<!doctype html>
   <DualUse />
 
   <!-- ── Anatomy ────────────────────────────────────── -->
-  <Section id="anatomy" num="03" eyebrow="Anatomy" title="A slide is just HTML">
-    <CardGrid cols={2}>
-      <CodeBlock label="Source · index.html" lang="html" code={anatomyCode} />
-      <div class="notes">
-        <Card title="Layouts">
-          <p><code>&lt;deck-feature&gt;</code> and friends give you structure. Title, lead, body.</p>
-        </Card>
-        <Card title="Slots">
-          <p>Drop content where it goes. <code>slot="title"</code>, <code>slot="lead"</code>, <code>slot="left"</code>, <code>slot="right"</code>.</p>
-        </Card>
-        <Card title="Atoms">
-          <p>The pieces inside. <code>&lt;deck-code&gt;</code>, <code>&lt;deck-md&gt;</code>, <code>&lt;deck-callout&gt;</code>, <code>&lt;deck-card&gt;</code>, <code>&lt;deck-mermaid&gt;</code>.</p>
-        </Card>
-      </div>
-    </CardGrid>
+  <Section id="anatomy" num="03" eyebrow="Anatomy" title="The source explains the slide">
+    <AnatomyBento code={anatomyCode} />
   </Section>
 
   <!-- ── Library ────────────────────────────────────── -->
@@ -159,15 +154,7 @@ const quickstartCode = `<!doctype html>
 
   <!-- ── Quickstart ─────────────────────────────────── -->
   <Section id="quickstart" num="06" eyebrow="A concrete starting point" title="Source, checks, delivery">
-    <CodeBlock label="my-talk/index.html" lang="html" code={quickstartCode} />
-    <p class="more">
-      The source stays plain HTML. Serve it locally, then use the CLI to check
-      the deck, render screenshots, bundle a standalone file, or export a PDF.
-      The final HTML bundle runs offline.
-    </p>
-    <p class="more">
-      Want the guided version? &nbsp;<a href="/docs/cheatsheet">→ Start with a five-component deck</a>.
-    </p>
+    <QuickstartShowcase source={quickstartCode} preview={quickstartPreview} />
   </Section>
 
   <PluginShelf />

@@ -1,0 +1,56 @@
+---
+import CodeBlock from './CodeBlock.astro';
+interface Props { code: string; }
+const { code } = Astro.props;
+---
+
+<div class="anatomy">
+  <div class="source">
+    <p class="overline">What you write</p>
+    <CodeBlock label="index.html" lang="html" code={code} />
+  </div>
+  <div class="result" aria-label="Annotated rendering of the source">
+    <p class="overline on-dark">What Rikiki renders</p>
+    <div class="slide">
+      <div class="slide-copy">
+        <span class="eyebrow">Module</span>
+        <h3>Side effects</h3>
+        <p>A module can act on import.</p>
+      </div>
+      <pre><code>import './polyfill';</code></pre>
+    </div>
+    <ol class="legend">
+      <li><span>Layout</span><code>&lt;deck-feature&gt;</code> sets the composition.</li>
+      <li><span>Slots</span><code>title</code> and <code>lead</code> place the copy.</li>
+      <li><span>Atoms</span><code>&lt;deck-code&gt;</code> renders the content.</li>
+    </ol>
+  </div>
+</div>
+
+<style>
+  .anatomy { display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); gap:var(--rik-space-5); align-items:stretch; }
+  .source,.result { min-width:0; }
+  .overline { margin:0 0 var(--rik-space-2); color:var(--rik-text-default--faint); font:700 var(--rik-font-size-xs)/1 var(--rik-font-mono); letter-spacing:.15em; text-transform:uppercase; }
+  .source :global(.code) { height:calc(100% - 1.4rem); }
+  .source :global(.block),.source :global(pre) { height:100%; }
+  .result { padding:var(--rik-space-4); color:#fff; background:#0d0d0f; border-radius:var(--rik-radius-md); }
+  .on-dark { color:rgba(255,255,255,.5); }
+  .slide { display:grid; grid-template-columns:minmax(0,1fr) minmax(240px,.9fr); gap:var(--rik-space-5); align-items:center; min-height:260px; padding:var(--rik-space-4) 0; }
+  .eyebrow { color:#f07020; font:700 .72rem/1 var(--rik-font-mono); letter-spacing:.14em; text-transform:uppercase; }
+  h3 { margin:var(--rik-space-2) 0; color:#fff; font:900 clamp(2rem,3.2vw,3rem)/.95 var(--rik-font-display); letter-spacing:-.04em; }
+  .slide-copy p { margin:0; color:rgba(255,255,255,.62); line-height:1.45; }
+  pre { margin:0; padding:var(--rik-space-4); overflow:auto; color:#b8ec7c; background:#17171a; border-left:2px solid #00c8a0; font:var(--rik-font-size-body)/1.5 var(--rik-font-mono); }
+  .legend { display:grid; grid-template-columns:repeat(3,1fr); gap:0; margin:0; padding:var(--rik-space-3) 0 0; list-style:none; border-top:1px solid rgba(255,255,255,.14); }
+  .legend li { padding-right:var(--rik-space-3); color:rgba(255,255,255,.58); font-size:.84rem; line-height:1.45; }
+  .legend li + li { padding-left:var(--rik-space-3); border-left:1px solid rgba(255,255,255,.14); }
+  .legend span { display:block; margin-bottom:.35rem; color:#fff; font-weight:800; }
+  .legend code { color:#79dec9; font-size:.82em; }
+  @media (max-width:800px) {
+    .anatomy { grid-template-columns:1fr; }
+    .source :global(.code),.source :global(.block),.source :global(pre) { height:auto; }
+    .slide { grid-template-columns:1fr; min-height:0; }
+    .legend { grid-template-columns:1fr; }
+    .legend li { padding:var(--rik-space-2) 0; }
+    .legend li + li { padding-left:0; border-left:0; border-top:1px solid rgba(255,255,255,.14); }
+  }
+</style>
