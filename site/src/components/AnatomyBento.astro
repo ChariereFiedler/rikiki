@@ -39,6 +39,12 @@ const { code } = Astro.props;
   <li><span>03</span><strong>Package</strong><code>rikiki bundle</code></li>
   <li><span>04</span><strong>Deliver</strong><code>rikiki export</code></li>
 </ol>
+<ul class="proof" aria-label="Example Doctor and delivery results">
+  <li><strong>✓ 20</strong><span>slides rendered</span></li>
+  <li><strong>✓ 0</strong><span>accessibility errors</span></li>
+  <li><strong>✓ 19 min</strong><span>estimated duration</span></li>
+  <li><strong>✓ HTML + PDF</strong><span>ready to deliver</span></li>
+</ul>
 
 <style>
   .anatomy { display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); gap:var(--rik-space-5); align-items:stretch; }
@@ -75,6 +81,10 @@ const { code } = Astro.props;
   .delivery span { color:var(--rik-accent--strong); font:700 var(--rik-font-size-xs)/1 var(--rik-font-mono); }
   .delivery strong { color:var(--rik-text-default); font:800 1.05rem/1.2 var(--rik-font-display); }
   .delivery code { width:fit-content; color:var(--rik-text-default--muted); font:var(--rik-font-size-xs)/1.4 var(--rik-font-mono); }
+  .proof { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--rik-space-2); margin:var(--rik-space-3) 0 0; padding:0; list-style:none; }
+  .proof li { display:grid; gap:3px; }
+  .proof strong { color:var(--rik-status-success); font:800 var(--rik-font-size-sm)/1.3 var(--rik-font-mono); }
+  .proof span { color:var(--rik-text-default--faint); font-size:var(--rik-font-size-xs); }
   @media (max-width:800px) {
     .anatomy { grid-template-columns:1fr; }
     .source :global(.code),.source :global(.block),.source :global(pre) { height:auto; }
@@ -85,6 +95,10 @@ const { code } = Astro.props;
     .delivery { grid-template-columns:1fr 1fr; }
     .delivery li:nth-child(3) { border-left:0; }
     .delivery li:nth-child(n+3) { border-top:1px solid var(--rik-border-default); }
+    .proof { grid-template-columns:1fr 1fr; }
+    .proof li { gap:5px; padding:var(--rik-space-2) 0; }
+    .proof strong { font-size:var(--rik-font-size-body); }
+    .proof span { font-size:var(--rik-font-size-sm); line-height:1.4; }
   }
 </style>
 

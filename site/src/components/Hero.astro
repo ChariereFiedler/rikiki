@@ -16,14 +16,13 @@
     </p>
 
     <p class="lead">
-      Turn a brief into a presentation you can inspect, render, audit, bundle,
-      and hand over. Authors edit readable HTML; agents and CI check structure,
-      visuals, timing, and delivery.
+      Build presentations and embedded training from readable HTML. Let agents
+      draft them, run structural and visual checks, then deliver standalone HTML and PDF.
     </p>
 
     <div class="ctas">
-      <a class="btn primary" href="#workflow">See the workflow</a>
-      <a class="btn ghost" href="/demo/">Open the verified tour →</a>
+      <a class="btn primary" href="/docs/getting-started">Create your first deck</a>
+      <a class="btn ghost" href="#quickstart">Try the live editor →</a>
     </div>
 
     <ul class="meta">
@@ -39,9 +38,7 @@
   .hero {
     background: var(--rik-surface-inverse);
     color: var(--rik-text-inverse);
-    /* Extra bottom padding so the slide preview (which overlaps up by 80px
-       into this section) doesn't kiss the meta line. */
-    padding: var(--rik-space-7) var(--rik-space-5) calc(var(--rik-space-7) + 3rem);
+    padding: var(--rik-space-7) var(--rik-space-5);
     position: relative;
     overflow: hidden;
   }
@@ -137,7 +134,7 @@
 
   @media (max-width: 640px) {
     .hero {
-      padding: var(--rik-space-6) var(--rik-space-3) calc(var(--rik-space-6) + 2rem);
+      padding: var(--rik-space-6) var(--rik-space-3);
     }
     .title {
       font-size: clamp(2.8rem, 15vw, 4.5rem);

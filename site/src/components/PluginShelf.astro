@@ -3,8 +3,6 @@ const plugins = [
   { role: 'transitions',    name: 'deck-transition',  file: 'deck-transition.js',  kb: 1.7, activate: 'transition="slide"',     summary: 'Slide, fade, zoom, flip. Picks its own direction. Cross-fades old and new, no background flash.', href: '/docs/plugins#transition', glyph: 'transitions' },
   { role: 'presenter mode', name: 'deck-presenter',   file: 'deck-presenter.js',   kb: 2.9, activate: 'press P',                 summary: 'A popup with the current slide, the next one, your notes and a timer. Syncs over BroadcastChannel.',           href: '/docs/plugins#presenter',  glyph: 'presenter' },
   { role: 'syntax',         name: 'shiki',            file: 'shiki.js',            kb: 0.6, activate: 'installShiki()',          summary: 'Real syntax highlighting for deck-code. TextMate grammars, JSX, TSX, template literals.',           href: '/docs/plugins#shiki',      glyph: 'syntax' },
-  { role: 'click reveals',  name: 'click-stages',     file: 'click-stages.js',     kb: 0.8, activate: 'installClickStages()',    summary: 'Reveal elements one click at a time. data-click and data-anim. Builds on the step engine, reverses cleanly.', href: '/docs/plugins#click-stages', glyph: 'clicks' },
-  { role: 'speaker notes',  name: 'deck-notes',       file: 'deck-notes',          kb: 0.4, activate: '<deck-notes>',            summary: 'A hidden slot that surfaces in the presenter window. Free text, kept as written.',                          href: '/docs/plugins#notes',      glyph: 'notes' },
 ];
 const totalKb = plugins.reduce((s, p) => s + p.kb, 0).toFixed(1);
 const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck-timeline', 'deck-versus'];
@@ -13,7 +11,7 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
 <section id="plugins" class="shelf">
   <div class="inner">
     <header class="head">
-      <p class="eyebrow"><span class="num">07</span> Optional modules</p>
+      <p class="eyebrow"><span class="num">05</span> Optional modules</p>
       <h2>Bring only the pieces the deck needs.</h2>
       <p class="lede">
         The ~42 KB initial load ships none of these. Each one fetches on first use.
@@ -113,7 +111,7 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
   .shelf {
     background: var(--rik-surface-inverse);
     color: var(--rik-text-inverse);
-    padding: var(--rik-space-7) var(--rik-space-5);
+    padding: var(--rik-space-6) var(--rik-space-5);
     position: relative;
     overflow: hidden;
   }
@@ -327,9 +325,24 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
   .extras-list a:hover { color: var(--rik-accent); }
 
   @media (max-width: 600px) {
-    .plugin { grid-template-columns: 48px 36px 1fr; }
+    .shelf { padding-inline: var(--rik-space-3); }
+    .head { margin-bottom: var(--rik-space-4); }
+    .plugin {
+      grid-template-columns: 36px minmax(0, 1fr);
+      gap: var(--rik-space-3);
+      align-items: start;
+      padding: var(--rik-space-4) 0;
+    }
     .chev { display: none; }
-    .idx { font-size: 2rem; }
+    .glyph { display:none; }
+    .idx { font-size: 1rem; color:var(--rik-accent); text-align:left; padding-top:5px; }
     .body h3 { font-size: 1.25rem; }
+    .body > header { align-items:flex-start; }
+    .size { font-size:var(--rik-font-size-xs); }
+    .summary { font-size:var(--rik-font-size-sm); }
+    .summary { line-height:1.65; margin-block:8px 10px; color:rgba(255,255,255,.72); }
+    .how { max-width:100%; flex-wrap:wrap; gap:10px; }
+    .how-code { overflow-wrap:anywhere; }
+    .budget { line-height:1.45; border-radius:4px; }
   }
 </style>
