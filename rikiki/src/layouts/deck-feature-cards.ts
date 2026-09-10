@@ -18,12 +18,11 @@ export class DeckFeatureCards extends LitElement {
     ...slideBase,
     css`
     :host { justify-content: flex-start; }
-    /* The hero (code/chart) gets at least half the available height; .detail
-       (bullets + diagram) is capped at ~40%. Without these caps a tall mermaid
-       can grow to its intrinsic size and squeeze .hero to 0 (this is what
-       happens in overview clones, which render the diagrams from scratch). */
+    /* Let the hero use its measured content height, then give the remaining
+       canvas to the detail row. A percentage split leaves a dead band whenever
+       a short code block sits inside the reserved hero half. */
     .hero {
-      flex: var(--deck-feature-cards-hero-flex, 1 1 50%); min-height: 0;
+      flex: var(--deck-feature-cards-hero-flex, 0 1 auto); min-height: 0;
       display: flex; flex-direction: column;
       overflow: hidden;
     }
@@ -33,10 +32,10 @@ export class DeckFeatureCards extends LitElement {
     /* Customization tokens:
          --deck-feature-cards-gap (between hero and detail cards)
          --deck-feature-cards-col-gap (between left and right cards)
-         --deck-feature-cards-hero-flex (default '1 1 50%')
-         --deck-feature-cards-detail-flex (default '0 1 40%') */
+         --deck-feature-cards-hero-flex (default '0 1 auto')
+         --deck-feature-cards-detail-flex (default '1 1 auto') */
     .detail {
-      flex: var(--deck-feature-cards-detail-flex, 0 1 40%);
+      flex: var(--deck-feature-cards-detail-flex, 1 1 auto);
       min-height: 0;
       margin-top: var(--deck-feature-cards-gap, var(--rik-space-3));
       display: grid;
@@ -46,6 +45,7 @@ export class DeckFeatureCards extends LitElement {
     }
     .col {
       display: flex; flex-direction: column;
+      justify-content: flex-start;
       gap: var(--rik-space-2);
       min-width: 0;
       min-height: 0;

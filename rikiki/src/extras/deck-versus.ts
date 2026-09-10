@@ -25,9 +25,9 @@ export class DeckVersus extends LitElement {
     css`
     :host {
       display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items: start;
-      gap: var(--deck-versus-gap, var(--rik-space-5));
+      grid-template-columns: minmax(0, 1fr) 64px minmax(0, 1fr);
+      align-items: stretch;
+      gap: var(--deck-versus-gap, var(--rik-space-3));
       font-family: var(--rik-font-sans);
     }
     :host(:not([pivot])) {
@@ -38,8 +38,8 @@ export class DeckVersus extends LitElement {
        metres and turn a comparison into a pair of grey blocks. */
     .side {
       min-width: 0;
-      padding-top: var(--rik-space-3);
-      border-top: var(--deck-versus-rule-width, 3px) solid
+      padding: var(--rik-space-4) 0;
+      border-block: var(--deck-versus-rule-width, 2px) solid
         var(--deck-versus-rule, var(--rik-text-default--faint));
       transition: border-color 0.2s ease, color 0.2s ease;
     }
@@ -61,10 +61,41 @@ export class DeckVersus extends LitElement {
        reading size. It used to be tracked out in the metadata voice, which
        made a three-letter word into a piece of chrome. */
     .pivot {
-      align-self: start;
-      padding-top: var(--rik-space-3);
-      color: var(--deck-versus-pivot-color, var(--rik-text-default--muted));
-      font-size: var(--deck-versus-pivot-size, var(--rik-font-size-body));
+      position: relative;
+      display: grid;
+      place-items: center;
+      align-self: stretch;
+      color: var(--deck-versus-pivot-color, var(--rik-accent--strong));
+      font: 800 var(--deck-versus-pivot-size, var(--rik-font-size-sm))/1 var(--rik-font-display);
+      text-align: center;
+      isolation: isolate;
+    }
+    .pivot::before {
+      content: '';
+      position: absolute;
+      inset-block: 0;
+      left: 50%;
+      width: 1px;
+      background: var(--deck-versus-rule, var(--rik-border-default));
+      z-index: -2;
+    }
+    .pivot::after {
+      content: '';
+      position: absolute;
+      width: 52px;
+      height: 52px;
+      border: 1px solid var(--deck-versus-rule, var(--rik-border-default));
+      border-radius: 50%;
+      background: var(--rik-surface-page);
+      z-index: -1;
+    }
+    ::slotted(h3) { margin: 0 0 var(--rik-space-2); color: var(--rik-text-default); font: 800 var(--rik-font-size-h3)/1.1 var(--rik-font-display); }
+    ::slotted(p) { margin: 0; color: var(--rik-text-default--muted); line-height: 1.5; }
+    @media (max-width: 640px) {
+      :host, :host(:not([pivot])) { grid-template-columns: 1fr; }
+      .pivot { min-height: 44px; }
+      .pivot::before { inset-block: 50%; inset-inline: 0; width: auto; height: 1px; }
+      .pivot::after { width: 44px; height: 44px; }
     }
     @media print {
       .side { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
