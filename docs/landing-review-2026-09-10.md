@@ -25,7 +25,42 @@ Build under review: working tree after the first rubric-driven correction.
 | Reduced motion | Pending | Carousel, theme preview, and transitions require verification. |
 | First-viewport comprehension | Pass | Product, workflow, outputs, and primary action are explicit. |
 
-Because gates remain pending, this review does not assign a final score.
+## Final gate result
+
+The final pass completed every gate:
+
+- zero page overflow at 320, 390, 768, 1440, and 1920 px;
+- zero page overflow with text enlarged to 200% at 320, 390, and 1280 px;
+- no browser or page errors;
+- every non-inline control is at least 24 by 24 px and primary controls are at
+  least 44 by 44 px;
+- complete keyboard traversal retains a visible focus indicator;
+- reduced-motion mode leaves no meaningful animation or transition;
+- the editor, Doctor output, carousel controls, theme picker, live token editor,
+  FAQ disclosures, and copy actions respond as expected;
+- landing contrast pairs meet WCAG AA after correcting faint text, light-surface
+  status text, labels, and accent text;
+- new component styles contain no raw color values; new color primitives live
+  in the palette and semantic tokens reference them;
+- local Chromium measurements recorded LCP at 168 ms mobile / 224 ms desktop
+  and CLS at 0.050 / 0.061. These are laboratory checks, not field p75 data.
+
+## Final weighted score
+
+| Category | Weight | Score |
+| --- | ---: | ---: |
+| Message and positioning | 18% | 9.4 |
+| Information architecture | 12% | 9.2 |
+| Visual hierarchy | 14% | 9.3 |
+| Composition and rhythm | 12% | 9.1 |
+| Product proof | 12% | 9.5 |
+| Conversion and orientation | 10% | 9.2 |
+| Interaction and feedback | 8% | 9.5 |
+| Responsive design | 8% | 9.1 |
+| Accessibility | 4% | 9.2 |
+| Performance and resilience | 2% | 9.0 |
+
+Weighted total: **9.29/10**. All gates pass and no category is below 8.0.
 
 ## Playground correction
 

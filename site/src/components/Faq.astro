@@ -68,6 +68,7 @@ const items = [
     letter-spacing: -0.025em;
     line-height: 1.05;
     margin: 0 0 var(--rik-space-5);
+    overflow-wrap:anywhere;
   }
   .list { display: flex; flex-direction: column; }
   details {
@@ -89,6 +90,7 @@ const items = [
     line-height: 1.35;
     transition: color var(--rik-motion-fast) var(--rik-motion__ease-out);
   }
+  .q { min-width:0; overflow-wrap:anywhere; }
   summary::-webkit-details-marker { display: none; }
   summary:hover { color: var(--rik-accent--strong); }
   .chev {
@@ -123,5 +125,10 @@ const items = [
     color: var(--rik-text-default);
     padding: 1px 6px;
     border-radius: 4px;
+    white-space:normal;
+    overflow-wrap:anywhere;
+  }
+  @media (max-width:640px) {
+    .faq { padding:var(--rik-space-6) var(--rik-space-3); }
   }
 </style>

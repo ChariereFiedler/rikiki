@@ -155,6 +155,7 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
     line-height: 1.05;
     margin: 0 0 var(--rik-space-3);
     max-width: 22ch;
+    overflow-wrap:anywhere;
   }
   .lede {
     font-size: var(--rik-font-size-lead);
@@ -204,7 +205,7 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
 
   .idx {
     font: 900 2.6rem/1 var(--rik-font-display);
-    color: var(--rik-text-inverse--ghost);
+    color: var(--rik-text-inverse--faint);
     letter-spacing: -0.03em;
     align-self: center;
     text-align: center;
@@ -246,6 +247,8 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
     padding: 4px 8px;
     border-radius: 4px;
     letter-spacing: 0;
+    white-space:normal;
+    overflow-wrap:anywhere;
   }
   .size {
     font-family: var(--rik-font-mono);
@@ -328,7 +331,7 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
     .shelf { padding-inline: var(--rik-space-3); }
     .head { margin-bottom: var(--rik-space-4); }
     .plugin {
-      grid-template-columns: 36px minmax(0, 1fr);
+      grid-template-columns: minmax(36px,auto) minmax(0, 1fr);
       gap: var(--rik-space-3);
       align-items: start;
       padding: var(--rik-space-4) 0;
@@ -337,12 +340,17 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
     .glyph { display:none; }
     .idx { font-size: 1rem; color:var(--rik-accent); text-align:left; padding-top:5px; }
     .body h3 { font-size: 1.25rem; }
+    .body h3,.role { overflow-wrap:anywhere; }
     .body > header { align-items:flex-start; }
     .size { font-size:var(--rik-font-size-xs); }
     .summary { font-size:var(--rik-font-size-sm); }
-    .summary { line-height:1.65; margin-block:8px 10px; color:rgba(255,255,255,.72); }
+    .summary { line-height:1.65; margin-block:8px 10px; color:var(--rik-text-inverse--muted); overflow-wrap:anywhere; }
     .how { max-width:100%; flex-wrap:wrap; gap:10px; }
     .how-code { overflow-wrap:anywhere; }
     .budget { line-height:1.45; border-radius:4px; }
+  }
+  @media (max-width:480px) {
+    .body > header { flex-direction:column; gap:8px; }
+    .size { align-self:flex-start; }
   }
 </style>

@@ -82,6 +82,7 @@
     letter-spacing: -0.035em;
     color: var(--rik-text-inverse);
     margin-bottom: var(--rik-space-4);
+    overflow-wrap:anywhere;
   }
   .title .accent { color: var(--rik-accent); }
   .tagline {
@@ -93,7 +94,7 @@
     line-height: 1.5;
   }
   .tagline strong { color: var(--rik-accent); font-weight: 700; }
-  .tagline .dot { color: var(--rik-text-inverse--ghost); margin: 0 4px; }
+  .tagline .dot { color: var(--rik-text-inverse--faint); margin: 0 4px; }
   .lead {
     font-size: var(--rik-font-size-lead);
     line-height: 1.55;
@@ -108,6 +109,7 @@
   .ctas { display: flex; gap: var(--rik-space-3); flex-wrap: wrap; margin-bottom: var(--rik-space-6); }
   .btn {
     display: inline-flex; align-items: center;
+    min-height: 44px;
     padding: 12px 22px;
     border-radius: var(--rik-radius-pill);
     font: 700 var(--rik-font-size-body)/1 var(--rik-font-sans);
@@ -131,6 +133,7 @@
     color: var(--rik-text-inverse--faint);
   }
   .meta strong { color: var(--rik-text-inverse); font-weight: 700; }
+  .meta li { min-width:0; overflow-wrap:anywhere; }
 
   @media (max-width: 640px) {
     .hero {

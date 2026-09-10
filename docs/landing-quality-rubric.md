@@ -35,6 +35,8 @@ Failure of one gate caps the total score at 7.9/10.
 8. Reduced-motion preference removes nonessential motion.
 9. The first viewport identifies the product, audience outcome, differentiator,
    and next action without relying on later sections.
+10. Components introduce no raw color values. New color data belongs to the
+    palette layer; component styles consume semantic tokens only.
 
 ## Weighted score
 
