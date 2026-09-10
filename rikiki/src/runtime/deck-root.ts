@@ -207,6 +207,16 @@ export class DeckRoot extends LitElement {
       border-radius: 6px;
       padding: 0;
     }
+    .nav-btn svg {
+      display: block;
+      width: 14px;
+      height: 14px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
     .nav-btn:hover:not(:disabled) { border-color: var(--rik-accent); }
     .nav-btn:disabled { opacity: 0.3; cursor: default; }
 
@@ -1381,21 +1391,21 @@ export class DeckRoot extends LitElement {
       return html`
         <div id="nav-arrows">
           <button class="nav-btn" aria-label="Previous chapter" title="Previous chapter" ?disabled=${!this.loop && this.current === 0}
-            @click=${() => (c > 0 ? this._goToCoords(c - 1, 0) : this._back())}>&lsaquo;</button>
+            @click=${() => (c > 0 ? this._goToCoords(c - 1, 0) : this._back())}><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m10 3-5 5 5 5" /></svg></button>
           <button class="nav-btn" aria-label="Previous slide in chapter" title="Up" ?disabled=${i === 0}
-            @click=${() => this._goToCoords(c, i - 1)}>&uarr;</button>
+            @click=${() => this._goToCoords(c, i - 1)}><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 10 5-5 5 5" /></svg></button>
           <button class="nav-btn" aria-label="Next slide in chapter" title="Down" ?disabled=${!chap || i + 1 >= chap.slides.length}
-            @click=${() => this._goToCoords(c, i + 1)}>&darr;</button>
+            @click=${() => this._goToCoords(c, i + 1)}><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5" /></svg></button>
           <button class="nav-btn" aria-label="Next chapter" title="Next chapter" ?disabled=${!this.loop && atEnd}
-            @click=${() => (c + 1 < this.chapters.length ? this._goToCoords(c + 1, 0) : this._advance())}>&rsaquo;</button>
+            @click=${() => (c + 1 < this.chapters.length ? this._goToCoords(c + 1, 0) : this._advance())}><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" /></svg></button>
         </div>`;
     }
     return html`
       <div id="nav-arrows">
         <button class="nav-btn" aria-label="Previous slide" title="Previous" ?disabled=${!this.loop && atStart}
-          @click=${() => this._back()}>&lsaquo;</button>
+          @click=${() => this._back()}><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m10 3-5 5 5 5" /></svg></button>
         <button class="nav-btn" aria-label="Next slide" title="Next" ?disabled=${!this.loop && atEnd}
-          @click=${() => this._advance()}>&rsaquo;</button>
+          @click=${() => this._advance()}><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" /></svg></button>
       </div>`;
   }
 
