@@ -1,6 +1,7 @@
 ---
 import Docs from '../../layouts/Docs.astro';
 import CodeBlock from '../../components/CodeBlock.astro';
+import ComponentPreview from '../../components/ComponentPreview.astro';
 
 const source = `<deck-feature eyebrow="Module">
   <h1 slot="title">Side effects</h1>
@@ -17,6 +18,10 @@ const minimal = `<deck-root>
   <deck-feature><h1 slot="title">Body</h1></deck-feature>
   <deck-takeaway>The point.</deck-takeaway>
 </deck-root>`;
+
+const minimalPreview = `<deck-cover><h1>Cover</h1></deck-cover>
+<deck-feature><h1 slot="title">Body</h1></deck-feature>
+<deck-takeaway>The point.</deck-takeaway>`;
 ---
 
 <Docs
@@ -51,6 +56,7 @@ const minimal = `<deck-root>
 </ol>
 
 <CodeBlock label="A typical hero slide" lang="html" code={source} />
+<ComponentPreview code={source} full />
 
 <h2 id="deck-root"><code>&lt;deck-root&gt;</code> · the wrapper</h2>
 <p>
@@ -60,6 +66,7 @@ const minimal = `<deck-root>
 </p>
 
 <CodeBlock label="The minimal deck" lang="html" code={minimal} />
+<ComponentPreview code={minimalPreview} full />
 
 <h2 id="sections">Sections &amp; 2D navigation</h2>
 <p>

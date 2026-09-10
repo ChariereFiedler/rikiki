@@ -1,6 +1,7 @@
 ---
 import Docs from '../../layouts/Docs.astro';
 import CodeBlock from '../../components/CodeBlock.astro';
+import ComponentPreview from '../../components/ComponentPreview.astro';
 
 const overrideExample = `<deck-cover style="--deck-cover-bg: navy;"><h1>Hello</h1></deck-cover>`;
 const globalOverride = `:root { --rik-accent: #007acc; }`;
@@ -50,6 +51,7 @@ const slotExample = `<deck-feature><h1 slot="title">Hello</h1></deck-feature>`;
   the shadow boundary.
 </p>
 <CodeBlock label="inline override" lang="html" code={overrideExample} />
+<ComponentPreview code={overrideExample} full />
 
 <h2 id="override-global">Pattern 2 · Override globally</h2>
 <p>
@@ -65,6 +67,7 @@ const slotExample = `<deck-feature><h1 slot="title">Hello</h1></deck-feature>`;
   content, code, and custom HTML always work like you would expect.
 </p>
 <CodeBlock label="slot example" lang="html" code={slotExample} />
+<ComponentPreview code={slotExample} full />
 
 <h2 id="rule">The one-line rule</h2>
 <p>

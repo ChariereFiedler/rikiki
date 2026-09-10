@@ -1,6 +1,7 @@
 ---
 import Docs from '../../layouts/Docs.astro';
 import CodeBlock from '../../components/CodeBlock.astro';
+import ComponentPreview from '../../components/ComponentPreview.astro';
 
 const transitionUsage = `<!-- Set on deck-root · the entire deck animates -->
 <deck-root transition="slide">
@@ -99,6 +100,34 @@ const stopwatch: DeckPlugin = {
 };
 
 document.querySelector('deck-root').use(stopwatch);`;
+
+const presenterPreview = `<deck-cover><h1>Hello</h1></deck-cover>
+<deck-feature>
+  <h1 slot="title">My slide</h1>
+  <p slot="lead">Audience sees this.</p>
+  <deck-notes>Speaker-only text. Mention the rollout date.</deck-notes>
+</deck-feature>`;
+
+const shikiPreview = `<deck-feature>
+  <h1 slot="title">Real syntax</h1>
+  <deck-code lang="ts" hero>const fn = &lt;T,&gt;(x: T): T =&gt; x;</deck-code>
+</deck-feature>
+<script type="module">
+  import { installShiki } from '/rikiki/dist/shiki.js';
+  await installShiki({ theme: 'one-dark-pro', langs: ['ts'] });
+</script>`;
+
+const clickStagesPreview = `<deck-feature>
+  <h1 slot="title">Build it up</h1>
+  <p data-click>Shows on the first click.</p>
+  <p data-click data-anim="slide-up">Then this one, sliding up.</p>
+  <p data-click="3" data-anim="scale">Jumps straight to click 3.</p>
+  <p data-click-hide>Here now, gone on the next click.</p>
+</deck-feature>
+<script type="module">
+  import { installClickStages } from '/rikiki/dist/click-stages.js';
+  installClickStages();
+</script>`;
 ---
 
 <Docs
@@ -271,6 +300,7 @@ document.querySelector('deck-root').use(stopwatch);`;
   <code>white-space: pre-wrap</code>.
 </p>
 <CodeBlock label="notes example" lang="html" code={presenterUsage} />
+<ComponentPreview code={presenterPreview} full />
 
 <h2 id="shiki">shiki · production code highlighting</h2>
 <p>
@@ -287,6 +317,7 @@ document.querySelector('deck-root').use(stopwatch);`;
   is paid only if you opt in.
 </p>
 <CodeBlock label="install shiki" lang="html" code={shikiUsage} />
+<ComponentPreview code={shikiPreview} full />
 <p>
   After install, every existing and future <code>deck-code</code> instance
   re-renders through Shiki. Languages that aren't loaded fall back to the
@@ -305,6 +336,7 @@ document.querySelector('deck-root').use(stopwatch);`;
   reveals and code <code>step-groups</code>.
 </p>
 <CodeBlock label="install click-stages" lang="html" code={clickStagesUsage} />
+<ComponentPreview code={clickStagesPreview} full />
 
 <h3 id="click-stages-attrs">Attributes</h3>
 <table class="opts">

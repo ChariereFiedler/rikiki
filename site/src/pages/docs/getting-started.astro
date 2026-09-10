@@ -1,6 +1,7 @@
 ---
 import Docs from '../../layouts/Docs.astro';
 import CodeBlock from '../../components/CodeBlock.astro';
+import ComponentPreview from '../../components/ComponentPreview.astro';
 
 const npmCmd = `mkdir my-talk
 cd my-talk
@@ -38,6 +39,14 @@ python3 -m http.server 7799
 # or
 npx serve .
 # ES modules require http://; do not double-click the file`;
+
+const minDeckPreview = `<deck-cover brand="my-talk">
+  <h1>Hello, <span class="accent">world</span>.</h1>
+</deck-cover>
+<deck-feature eyebrow="One slide">
+  <h1 slot="title">That's all you need.</h1>
+  <deck-md>Write **markdown**, drop &lt;deck-*&gt; blocks, navigate with arrows.</deck-md>
+</deck-feature>`;
 ---
 
 <Docs
@@ -78,6 +87,7 @@ npx serve .
   Edit the generated <code>index.html</code>. This minimal example uses the assets copied by <code>init</code>.
 </p>
 <CodeBlock label="my-talk/index.html" lang="html" code={minDeck} />
+<ComponentPreview code={minDeckPreview} full />
 
 <h2 id="serve">3 · Serve it</h2>
 <p>

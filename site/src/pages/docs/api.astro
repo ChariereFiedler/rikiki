@@ -1,6 +1,7 @@
 ---
 import Docs from '../../layouts/Docs.astro';
 import CodeBlock from '../../components/CodeBlock.astro';
+import ComponentPreview from '../../components/ComponentPreview.astro';
 
 const stepGroups = `<deck-code lang="js" hero step-groups='[[1,2],[3,4],[1,2,3,4,5]]'>
   const a = 1;
@@ -23,6 +24,10 @@ const carouselExample = `<!-- Carousel mode · auto-advance every 4 s, wrap at e
     <h1 slot="title">Slide 3</h1>
   </deck-feature>
 </deck-root>`;
+
+const carouselPreview = `<deck-feature><h1 slot="title">Slide 1</h1></deck-feature>
+<deck-feature><h1 slot="title">Slide 2</h1></deck-feature>
+<deck-feature><h1 slot="title">Slide 3</h1></deck-feature>`;
 ---
 
 <Docs
@@ -56,6 +61,7 @@ const carouselExample = `<!-- Carousel mode · auto-advance every 4 s, wrap at e
   The four attributes are mutually independent · you can use any subset.
 </p>
 <CodeBlock label="carousel" lang="html" code={carouselExample} />
+<ComponentPreview code={carouselPreview} full />
 <p>
   Behaviour notes:
 </p>
@@ -101,6 +107,7 @@ const carouselExample = `<!-- Carousel mode · auto-advance every 4 s, wrap at e
   highlight at that step. Step 0 = all lines visible at full opacity.
 </p>
 <CodeBlock label="A 3-step code reveal" lang="html" code={stepGroups} />
+<ComponentPreview code={stepGroups} />
 
 <h2 id="root-tokens">Customization tokens</h2>
 <p>

@@ -618,7 +618,7 @@ const optionalComponents: OptionalComponent[] = [
     module: 'deck-versus.js',
     attrs: 'pivot: string · winner: left|right',
     slots: 'left / right: the two alternatives',
-    example: `<deck-versus pivot="Choose">
+    example: `<deck-versus pivot="OR" winner="right">
   <div slot="left">
     <h3>Source</h3>
     <p>Readable and editable.</p>
@@ -760,7 +760,7 @@ const optionalComponents: OptionalComponent[] = [
     )}
     <p class="block-head">Example</p>
     <CodeBlock lang="html" code={c.example} />
-    <ComponentPreview code={c.example} full={layoutTags.has(c.tag)} />
+    <ComponentPreview code={c.example} full={layoutTags.has(c.tag) || c.tag === 'deck-notes'} />
     {c.tokens && (
       <TokenReference tag={c.tag} tokens={c.tokens} />
     )}
@@ -809,7 +809,7 @@ const optionalComponents: OptionalComponent[] = [
     )}
     <p class="block-head">Example</p>
     <CodeBlock lang="html" code={c.example} />
-    <ComponentPreview code={c.example} full={layoutTags.has(c.tag)} />
+    <ComponentPreview code={c.example} full={layoutTags.has(c.tag) || c.tag === 'deck-notes'} />
     {c.tokens && (
       <TokenReference tag={c.tag} tokens={c.tokens} />
     )}

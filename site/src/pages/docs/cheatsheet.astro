@@ -1,6 +1,7 @@
 ---
 import Docs from '../../layouts/Docs.astro';
 import CodeBlock from '../../components/CodeBlock.astro';
+import ComponentPreview from '../../components/ComponentPreview.astro';
 
 const coverEx = `<deck-cover brand="my-talk · 2026" speaker="Jane">
   <h1>Hello, <span class="accent">world</span>.</h1>
@@ -71,6 +72,7 @@ const fullDeckEx = `<!doctype html>
 <h2 id="cover">1 · Cover</h2>
 <p>The opening slide. Title, optional sub-title, optional brand + speaker. Always first.</p>
 <CodeBlock label="cover" lang="html" code={coverEx} />
+<ComponentPreview code={coverEx} full />
 
 <h2 id="section">2 · Section</h2>
 <p>
@@ -81,6 +83,7 @@ const fullDeckEx = `<!doctype html>
   the slides inside. Without it, arrows stay linear.
 </p>
 <CodeBlock label="section" lang="html" code={sectionEx} />
+<ComponentPreview code={sectionEx} full />
 
 <h2 id="hero">3 · Hero with code</h2>
 <p>
@@ -88,6 +91,7 @@ const fullDeckEx = `<!doctype html>
   diagram, big number). 80 % of your slides will look like this.
 </p>
 <CodeBlock label="hero" lang="html" code={heroEx} />
+<ComponentPreview code={heroEx} full />
 
 <h2 id="split">4 · Split for comparison</h2>
 <p>
@@ -95,6 +99,7 @@ const fullDeckEx = `<!doctype html>
   for equal columns or <code>"1-2"</code> for an asymmetric split.
 </p>
 <CodeBlock label="split" lang="html" code={splitEx} />
+<ComponentPreview code={splitEx} full />
 
 <h2 id="hook">5 · Hook for the punch line</h2>
 <p>
@@ -102,10 +107,12 @@ const fullDeckEx = `<!doctype html>
   use this more than once or twice per deck · it loses weight if it's everywhere.
 </p>
 <CodeBlock label="hook" lang="html" code={hookEx} />
+<ComponentPreview code={hookEx} full />
 
 <h2 id="ship">Putting it together</h2>
 <p>That's a complete deck. Drop it in a file, open it, give the talk.</p>
 <CodeBlock label="my-talk/index.html" lang="html" code={fullDeckEx} />
+<ComponentPreview code={`${coverEx}\n${sectionEx}\n${heroEx}\n${splitEx}\n${hookEx}`} full />
 
 <h2 id="next">When you outgrow these five</h2>
 <ul>
