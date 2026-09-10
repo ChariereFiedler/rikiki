@@ -17,7 +17,7 @@
   --rik-palette-paper-100: #f0ede8;
   --rik-palette-paper-200: #e0dbd4;
 
-  --rik-palette-ink-500:   #7a7570;
+  --rik-palette-ink-500:   #6f6963;
   --rik-palette-ink-700:   #4a4540;
   --rik-palette-ink-900:   #2a2520;
 
@@ -25,8 +25,10 @@
   --rik-palette-night-800: #0a0e18;
   --rik-palette-night-700: #0f1422;
   --rik-palette-night-100: #e8e4f0;
+  --rik-palette-night-overlay: rgba(232, 228, 240, 0.08);
+  --rik-palette-night-border: rgba(232, 228, 240, 0.28);
 
-  --rik-palette-mango-700: #b65820;
+  --rik-palette-mango-700: #a34b16;
   --rik-palette-mango-500: #f07020;
   --rik-palette-mango-200: rgba(240, 112, 32, 0.50);
   --rik-palette-mango-100: rgba(240, 112, 32, 0.18);
@@ -36,6 +38,7 @@
   --rik-palette-ember-200: rgba(232, 72, 40, 0.45);
   --rik-palette-ember-100: rgba(232, 72, 40, 0.10);
 
+  --rik-palette-helico-700: #007b63;
   --rik-palette-helico-500: #00c8a0;
   --rik-palette-helico-200: rgba(0, 200, 160, 0.45);
   --rik-palette-helico-100: rgba(0, 200, 160, 0.10);
@@ -57,6 +60,7 @@
   --rik-surface-inverse:              var(--rik-palette-night-900);
   --rik-surface-inverse--soft:        var(--rik-palette-night-800);
   --rik-surface-inverse--soft-2:      var(--rik-palette-night-700);
+  --rik-surface-inverse__overlay:     var(--rik-palette-night-overlay);
 
   /* Text */
   --rik-text-default:                 var(--rik-palette-ink-900);
@@ -71,16 +75,18 @@
   --rik-border-default:               var(--rik-palette-paper-200);
   --rik-border-default--subtle:       rgba(42, 37, 32, 0.06);
   --rik-border-inverse:               rgba(232, 228, 240, 0.12);
+  --rik-border-inverse--strong:       var(--rik-palette-night-border);
 
   /* Accent (brand) */
   --rik-accent:                       var(--rik-palette-mango-500);
   --rik-accent--soft:                 var(--rik-palette-mango-100);
   --rik-accent--faint:                var(--rik-palette-mango-50);
   --rik-accent--strong:               var(--rik-palette-mango-700);
-  --rik-accent__on:                   var(--rik-palette-paper-0);
+  --rik-accent__on:                   var(--rik-palette-ink-900);
 
   /* Status */
   --rik-status-success:               var(--rik-palette-helico-500);
+  --rik-status-success-on-light:      var(--rik-palette-helico-700);
   --rik-status-success__bg:           var(--rik-palette-helico-100);
   --rik-status-success__border:       var(--rik-palette-helico-200);
   --rik-status-danger:                var(--rik-palette-ember-500);
@@ -189,12 +195,18 @@
     --rik-motion-base:                  0ms;
     --rik-motion-slow:                  0ms;
   }
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 body, h1, h2, h3, h4, p, ul, ol, li, blockquote, pre, figure, dl, dd { margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
 body {
   font-family: var(--rik-font-sans);
   color: var(--rik-text-default);

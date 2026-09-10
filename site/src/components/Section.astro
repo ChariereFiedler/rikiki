@@ -26,7 +26,7 @@ const { id, eyebrow, num, title, tone = 'paper' } = Astro.props;
 </section>
 
 <style>
-  .section { padding: var(--rik-space-7) var(--rik-space-5); scroll-margin-top:72px; }
+  .section { padding: var(--rik-space-7) var(--rik-space-5); }
   @media (max-width: 640px) {
     /* Tighten the side padding on phones · 36px each side on a 375px
        viewport ate 19% of the width and left code blocks no room. */
@@ -72,6 +72,7 @@ const { id, eyebrow, num, title, tone = 'paper' } = Astro.props;
     align-self: flex-start;
     max-width: 24ch;
     text-wrap: balance;
+    overflow-wrap:anywhere;
   }
   .dark .title { color: var(--rik-text-inverse); }
   .body { margin-top: var(--rik-space-4); }

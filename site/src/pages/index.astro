@@ -119,6 +119,7 @@ const anatomyCode = `<deck-feature eyebrow="Module">
   .swipe-hint { display:none; color:var(--rik-text-default--faint); font:700 var(--rik-font-size-xs)/1.4 var(--rik-font-mono); text-transform:uppercase; letter-spacing:.1em; }
   .component-groups { display:grid; grid-template-columns:repeat(3,1fr) auto; align-items:end; gap:var(--rik-space-4); margin-top:var(--rik-space-4); padding-top:var(--rik-space-3); border-top:1px solid var(--rik-border-default); }
   .component-groups p { display:grid; gap:4px; margin:0; }
+  .component-groups > * { min-width:0; }
   .component-groups strong { color:var(--rik-text-default); font-size:var(--rik-font-size-sm); }
   .component-groups span { color:var(--rik-text-default--faint); font-size:var(--rik-font-size-sm); }
   .component-groups a { color:var(--rik-accent--strong); font-weight:800; text-decoration:none; white-space:nowrap; }
@@ -141,8 +142,9 @@ const anatomyCode = `<deck-feature eyebrow="Module">
       overflow-x:auto !important;
       scroll-snap-type:x mandatory;
       scrollbar-width:none;
-      margin-inline:calc(var(--rik-space-3) * -1);
-      padding:0 var(--rik-space-3) var(--rik-space-3);
+      max-width:100%;
+      contain:inline-size paint;
+      padding:0 0 var(--rik-space-3);
     }
     .layout-grid::-webkit-scrollbar { display:none; }
     .layout-grid li { flex:0 0 min(82vw,320px); scroll-snap-align:center; }
@@ -190,9 +192,11 @@ const anatomyCode = `<deck-feature eyebrow="Module">
     .more {
       font-size: var(--rik-font-size-body);
     }
+    .more code { overflow-wrap:anywhere; white-space:normal; }
     .inline-cta { align-items:flex-start; flex-direction:column; }
     .component-groups { grid-template-columns:1fr; gap:var(--rik-space-3); }
     .component-groups a { grid-column:1 / -1; margin-top:var(--rik-space-2); }
     .component-groups p { padding-bottom:var(--rik-space-2); border-bottom:1px solid var(--rik-border-default); }
+    .component-groups span,.component-groups a { overflow-wrap:anywhere; white-space:normal; }
   }
 </style>

@@ -86,6 +86,16 @@ const siliceumFrame = frame('/rikiki/themes/siliceum.css');
     </button>
   </div>
 
+  <div class="token-editor">
+    <div>
+      <span class="token-label">Live token</span>
+      <strong>Change the accent in the rendered deck</strong>
+    </div>
+    <label><code>--rik-accent</code><input type="color" data-token="--rik-accent" aria-label="Deck accent color" /></label>
+    <button type="button" data-token-reset>Reset</button>
+    <a href="/docs/theming">Customize every token →</a>
+  </div>
+
   <figure class="preview">
     <figcaption>
       <span>Live preview</span>
@@ -100,6 +110,9 @@ const siliceumFrame = frame('/rikiki/themes/siliceum.css');
 <script is:inline define:vars={{ rikikiFrame, siliceumFrame }}>
   const map = { rikiki: rikikiFrame, siliceum: siliceumFrame };
   const iframe = document.getElementById('theme-preview-frame');
+  const accent = document.querySelector('.theme-swap [data-token="--rik-accent"]');
+  const defaultAccent = getComputedStyle(document.documentElement).getPropertyValue('--rik-accent').trim();
+  if (accent) accent.value = defaultAccent;
   document.querySelectorAll('.theme-swap .tile').forEach((btn) => {
     btn.addEventListener('click', () => {
       const t = btn.dataset.theme;
@@ -129,6 +142,13 @@ const siliceumFrame = frame('/rikiki/themes/siliceum.css');
       });
     });
   });
+  accent?.addEventListener('input', () => {
+    try { iframe?.contentDocument?.documentElement.style.setProperty('--rik-accent', accent.value); } catch (e) { /* noop */ }
+  });
+  document.querySelector('.theme-swap [data-token-reset]')?.addEventListener('click', () => {
+    accent.value = defaultAccent;
+    try { iframe?.contentDocument?.documentElement.style.removeProperty('--rik-accent'); } catch (e) { /* noop */ }
+  });
 </script>
 
 <style>
@@ -136,6 +156,15 @@ const siliceumFrame = frame('/rikiki/themes/siliceum.css');
     display: flex; flex-direction: column;
     gap: var(--rik-space-4);
   }
+  .token-editor { display:grid; grid-template-columns:minmax(0,1fr) auto auto auto; align-items:center; gap:var(--rik-space-3); padding:var(--rik-space-3); border:1px solid var(--rik-border-default); background:var(--rik-surface-raised--strong); }
+  .token-editor > div { display:grid; gap:3px; }
+  .token-label { color:var(--rik-accent--strong); font:700 var(--rik-font-size-xs)/1 var(--rik-font-mono); letter-spacing:.1em; text-transform:uppercase; }
+  .token-editor strong { color:var(--rik-text-default); font-size:var(--rik-font-size-sm); }
+  .token-editor label { display:flex; align-items:center; gap:10px; }
+  .token-editor code { font:var(--rik-font-size-sm)/1 var(--rik-font-mono); }
+  .token-editor input { width:44px; height:44px; padding:3px; border:1px solid var(--rik-border-default); background:transparent; cursor:pointer; }
+  .token-editor button { min-height:44px; padding:0 12px; border:1px solid var(--rik-border-default); background:transparent; cursor:pointer; }
+  .token-editor a { color:var(--rik-accent--strong); font-weight:800; text-decoration:none; white-space:nowrap; }
 
   /* ── Picker · two theme tiles side by side ────── */
   .picker {
@@ -144,6 +173,18 @@ const siliceumFrame = frame('/rikiki/themes/siliceum.css');
     gap: var(--rik-space-3);
   }
   @media (max-width: 720px) { .picker { grid-template-columns: 1fr; } }
+  @media (max-width: 720px) {
+    .token-editor { grid-template-columns:minmax(0,1fr); }
+    .token-editor > * { grid-column:1; min-width:0; }
+    .token-editor label { flex-wrap:wrap; }
+    .token-editor code,.token-editor a { overflow-wrap:anywhere; white-space:normal; }
+    .token-editor button { justify-self:start; }
+    .tile { grid-template-columns:auto 1fr; }
+    .tile .link { grid-column:2; justify-self:start; }
+    .tile .link { max-width:100%; white-space:normal; overflow-wrap:anywhere; }
+    .name,.desc { overflow-wrap:anywhere; }
+    figcaption { align-items:flex-start; flex-direction:column; line-height:1.4; }
+  }
 
   .tile {
     appearance: none;
@@ -162,6 +203,7 @@ const siliceumFrame = frame('/rikiki/themes/siliceum.css');
                 box-shadow var(--rik-motion-fast) var(--rik-motion__ease-out),
                 border-color var(--rik-motion-fast) var(--rik-motion__ease-out);
   }
+  .tile > * { min-width:0; }
   .tile:hover { transform: translateY(-2px); box-shadow: var(--rik-elevation-2); }
   .tile.is-active {
     border-color: var(--rik-accent);

@@ -4,7 +4,7 @@
 
 <nav class="nav">
   <a href="/" class="brand" aria-label="Home">
-    <span class="brand-mark">●</span>
+    <span class="brand-mark" aria-hidden="true">●</span>
     <span class="brand-name">rikiki</span>
   </a>
 
@@ -56,5 +56,9 @@
   .links .cta:hover { color: var(--rik-surface-inverse); }
   @media (max-width: 640px) {
     .links a:not(:first-child):not(.cta) { display: none; }
+  }
+  @media (max-width: 400px) {
+    .nav { padding-inline:var(--rik-space-3); }
+    .links a:not(.cta) { display:none; }
   }
 </style>
