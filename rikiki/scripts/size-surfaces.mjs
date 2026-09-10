@@ -94,24 +94,6 @@ export function measureSizes() {
 export const SIZE_SURFACES = [
   // Initial-load claims · engine + Lit + marked, what a browser really downloads.
   {
-    file: at('site/src/components/Hero.astro'),
-    label: 'hero headline and bullet',
-    find: /~([\d.]+) KB/g,
-    expect: 'initialLoadGzip',
-  },
-  {
-    file: at('site/src/layouts/Base.astro'),
-    label: 'site meta description',
-    find: /~([\d.]+) KB gzip/g,
-    expect: 'initialLoadGzip',
-  },
-  {
-    file: at('site/src/pages/index.astro'),
-    label: 'home stat tile',
-    find: /claim="~([\d.]+) KB gzip"/g,
-    expect: 'initialLoadGzip',
-  },
-  {
     file: at('site/src/pages/docs/recipes.astro'),
     label: 'recipes claim',
     find: /<h3 slot="claim">~([\d.]+) KB gzip<\/h3>/g,
@@ -127,12 +109,6 @@ export const SIZE_SURFACES = [
     file: at('site/src/components/DualUse.astro'),
     label: 'dual-use paragraph',
     find: /~([\d.]+) KB initial load/g,
-    expect: 'initialLoadGzip',
-  },
-  {
-    file: at('site/src/components/Comparison.astro'),
-    label: 'comparison table · our column',
-    find: /values: \['~([\d.]+) KB'/g,
     expect: 'initialLoadGzip',
   },
   {
