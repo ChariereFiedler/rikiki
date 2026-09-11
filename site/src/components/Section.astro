@@ -5,7 +5,7 @@ interface Props {
   /** Two-digit section number rendered inside the eyebrow chip. */
   num?: string;
   title: string;
-  tone?: 'paper' | 'dark';
+  tone?: 'paper' | 'tint' | 'dark';
 }
 const { id, eyebrow, num, title, tone = 'paper' } = Astro.props;
 ---
@@ -35,6 +35,10 @@ const { id, eyebrow, num, title, tone = 'paper' } = Astro.props;
   .section.dark {
     background: var(--rik-surface-inverse);
     color: var(--rik-text-inverse);
+  }
+  .section.tint {
+    background: var(--rik-surface-tint--strong);
+    border-block: 1px solid var(--rik-border-default);
   }
   .inner { max-width: 1080px; margin: 0 auto; }
 

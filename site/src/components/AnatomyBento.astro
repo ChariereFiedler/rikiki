@@ -8,7 +8,10 @@ const { code } = Astro.props;
     <p class="overline">What you write</p>
     <div class="editor">
       <header><span>index.html</span><span class="editing">Editable</span></header>
-      <textarea aria-label="Editable slide source" spellcheck="false">{code}</textarea>
+      <div class="editing-surface">
+        <pre class="highlight" aria-hidden="true"><code></code></pre>
+        <textarea aria-label="Editable slide source" spellcheck="false">{code}</textarea>
+      </div>
     </div>
     <div class="doctor" role="status" aria-live="polite">
       <header><span><i></i> Simplified markup hints</span><code>interactive example</code></header>
@@ -23,7 +26,7 @@ const { code } = Astro.props;
         <h3 data-render="title">Side effects</h3>
         <p data-render="lead">A module can act on import.</p>
       </div>
-      <pre><code data-render="code">import './polyfill';</code></pre>
+      <pre class="rendered-code"><code data-render="code"><span class="syn-keyword">import</span> <span class="syn-string">'./polyfill'</span>;</code></pre>
     </div>
     <ol class="legend">
       <li><span>Layout</span><code>&lt;deck-feature&gt;</code> sets the composition.</li>
@@ -44,12 +47,20 @@ const { code } = Astro.props;
   .anatomy { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--rik-space-4); align-items:stretch; }
   .source,.result { min-width:0; }
   .overline { margin:0 0 var(--rik-space-2); color:var(--rik-text-default--faint); font:700 var(--rik-font-size-xs)/1 var(--rik-font-mono); letter-spacing:.15em; text-transform:uppercase; }
-  .editor { overflow:hidden; background:#0d0d0f; border-radius:var(--rik-radius-md) var(--rik-radius-md) 0 0; }
+  .editor { overflow:hidden; background:var(--rik-code__bg); border:1px solid var(--rik-border-inverse); border-radius:var(--rik-radius-md) var(--rik-radius-md) 0 0; box-shadow:0 14px 30px rgba(25,20,17,.12); }
   .editor header,.doctor header { display:flex; flex-wrap:wrap; justify-content:space-between; gap:var(--rik-space-2); padding:11px 14px; color:var(--rik-text-inverse--faint); border-bottom:1px solid var(--rik-border-inverse); font:700 .68rem/1 var(--rik-font-mono); letter-spacing:.1em; text-transform:uppercase; }
   .editor header > *,.doctor header > * { min-width:0; overflow-wrap:anywhere; }
   .editing { color:#79dec9; }
-  textarea { display:block; box-sizing:border-box; width:100%; min-height:320px; resize:vertical; padding:var(--rik-space-4); border:0; outline:0; color:#e8e4f0; background:#0d0d0f; font:clamp(.76rem,1.1vw,.9rem)/1.65 var(--rik-font-mono); tab-size:2; }
-  textarea:focus { box-shadow:inset 0 0 0 2px #00c8a0; }
+  .editing-surface { position:relative; min-height:320px; }
+  textarea,.highlight { box-sizing:border-box; width:100%; min-height:320px; margin:0; padding:var(--rik-space-4); border:0; font:clamp(.76rem,1.1vw,.9rem)/1.65 var(--rik-font-mono); tab-size:2; white-space:pre-wrap; overflow-wrap:normal; }
+  .highlight { position:absolute; inset:0; overflow:hidden; color:var(--rik-text-inverse); background:transparent; pointer-events:none; }
+  textarea { position:relative; display:block; resize:vertical; outline:0; color:transparent; caret-color:var(--rik-text-inverse); background:transparent; -webkit-text-fill-color:transparent; }
+  textarea::selection { color:transparent; background:rgba(0,200,160,.25); }
+  textarea:focus { box-shadow:inset 0 0 0 2px var(--rik-status-success); }
+  .highlight :global(.syn-tag) { color:var(--rik-code__syntax-keyword); }
+  .highlight :global(.syn-attr) { color:var(--rik-code__syntax-type); }
+  .highlight :global(.syn-string) { color:var(--rik-code__syntax-string); }
+  .highlight :global(.syn-comment) { color:var(--rik-text-inverse--faint); font-style:italic; }
   .doctor { overflow:hidden; color:#d8d4df; background:#17171a; border-radius:0 0 var(--rik-radius-md) var(--rik-radius-md); }
   .doctor header { border-top:1px solid rgba(255,255,255,.08); border-bottom:0; }
   .doctor header span { color:#fff; }
@@ -58,19 +69,21 @@ const { code } = Astro.props;
   .doctor-output p { margin:2px 0; }
   .doctor-output .ok { color:#79dec9; }
   .doctor-output .error { color:#ff8d72; }
-  .result { display:grid; grid-template-rows:auto 1fr auto; min-width:0; overflow:hidden; padding:var(--rik-space-4); color:var(--rik-code__text); background:var(--rik-code__bg); border-radius:var(--rik-radius-md); }
-  .on-dark { color:rgba(255,255,255,.5); }
+  .result { display:grid; grid-template-rows:auto 1fr auto; min-width:0; overflow:hidden; padding:var(--rik-space-4); color:var(--rik-text-default); background:var(--rik-surface-raised); border:1px solid var(--rik-border-default); border-radius:var(--rik-radius-md); box-shadow:0 14px 30px rgba(25,20,17,.08); }
+  .on-dark { color:var(--rik-text-default--faint); }
   .slide { display:grid; grid-template-columns:minmax(0,1fr) minmax(210px,.85fr); gap:var(--rik-space-4); align-items:center; min-height:220px; padding:var(--rik-space-3) 0; }
   .eyebrow { color:#f07020; font:700 .72rem/1 var(--rik-font-mono); letter-spacing:.14em; text-transform:uppercase; }
-  h3 { margin:var(--rik-space-2) 0; color:var(--rik-text-inverse); font:900 clamp(2rem,3.2vw,3rem)/.95 var(--rik-font-display); letter-spacing:-.04em; overflow-wrap:anywhere; }
-  .slide-copy p { margin:0; color:rgba(255,255,255,.62); line-height:1.45; }
-  pre { min-width:0; margin:0; padding:var(--rik-space-4); overflow:auto; color:var(--rik-code__syntax-string); background:var(--rik-surface-inverse--soft-2); border-left:2px solid var(--rik-status-success); font:var(--rik-font-size-body)/1.5 var(--rik-font-mono); }
-  pre code { white-space:pre-wrap; overflow-wrap:anywhere; }
-  .legend { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); min-width:0; gap:0; margin:0; padding:var(--rik-space-3) 0 0; list-style:none; border-top:1px solid var(--rik-border-inverse); }
-  .legend li { padding-right:var(--rik-space-3); color:rgba(255,255,255,.58); font-size:.84rem; line-height:1.45; }
-  .legend li + li { padding-left:var(--rik-space-3); border-left:1px solid rgba(255,255,255,.14); }
-  .legend span { display:block; margin-bottom:.35rem; color:#fff; font-weight:800; }
-  .legend code { color:#79dec9; font-size:.82em; }
+  h3 { margin:var(--rik-space-2) 0; color:var(--rik-text-default); font:900 clamp(2rem,3.2vw,3rem)/.95 var(--rik-font-display); letter-spacing:-.04em; overflow-wrap:anywhere; }
+  .slide-copy p { margin:0; color:var(--rik-text-default--muted); line-height:1.45; }
+  .rendered-code { min-width:0; margin:0; padding:var(--rik-space-4); overflow:auto; color:var(--rik-text-inverse); background:var(--rik-code__bg); border-radius:var(--rik-radius-sm); font:var(--rik-font-size-body)/1.5 var(--rik-font-mono); box-shadow:inset 3px 0 0 var(--rik-status-success); }
+  .rendered-code code { white-space:pre-wrap; overflow-wrap:anywhere; }
+  .rendered-code :global(.syn-keyword) { color:var(--rik-code__syntax-keyword); }
+  .rendered-code :global(.syn-string) { color:var(--rik-code__syntax-string); }
+  .legend { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); min-width:0; gap:0; margin:0; padding:var(--rik-space-3) 0 0; list-style:none; border-top:1px solid var(--rik-border-default); }
+  .legend li { padding-right:var(--rik-space-3); color:var(--rik-text-default--muted); font-size:.84rem; line-height:1.45; }
+  .legend li + li { padding-left:var(--rik-space-3); border-left:1px solid var(--rik-border-default); }
+  .legend span { display:block; margin-bottom:.35rem; color:var(--rik-text-default); font-weight:800; }
+  .legend code { color:var(--rik-status-success-on-light); font-size:.82em; }
   .delivery { display:grid; grid-template-columns:repeat(4,1fr); margin:var(--rik-space-3) 0 0; padding:0; list-style:none; border:1px solid var(--rik-border-default); }
   .delivery li { display:grid; grid-template-columns:1fr auto; align-items:center; gap:5px 12px; padding:var(--rik-space-3); }
   .delivery li + li { border-left:1px solid var(--rik-border-default); }
@@ -83,7 +96,7 @@ const { code } = Astro.props;
     .slide { grid-template-columns:1fr; min-height:0; }
     .legend { grid-template-columns:1fr; }
     .legend li { padding:var(--rik-space-2) 0; }
-    .legend li + li { padding-left:0; border-left:0; border-top:1px solid rgba(255,255,255,.14); }
+    .legend li + li { padding-left:0; border-left:0; border-top:1px solid var(--rik-border-default); }
     .delivery { grid-template-columns:1fr 1fr; }
     .delivery li:nth-child(3) { border-left:0; }
     .delivery li:nth-child(n+3) { border-top:1px solid var(--rik-border-default); }
@@ -98,8 +111,29 @@ const { code } = Astro.props;
 <script is:inline>
   document.querySelectorAll('.anatomy').forEach((root) => {
     const input = root.querySelector('textarea');
+    const highlight = root.querySelector('.highlight code');
     const output = root.querySelector('.doctor-output');
-    if (!input || !output) return;
+    if (!input || !highlight || !output) return;
+    const escape = (value) => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+    const highlightMarkup = (value) => {
+      const parts = value.split(/(<!--[\s\S]*?-->|<\/?[\w-]+(?:\s+[\s\S]*?)?>|'[^'\n]*'|"[^"\n]*")/g);
+      return parts.map((part) => {
+        const safe = escape(part);
+        if (part.startsWith('<!--')) return `<span class="syn-comment">${safe}</span>`;
+        if (part.startsWith('<')) {
+          const attributes = safe.replace(/\s([\w-]+)(=)("[^"]*"|'[^']*')/g,
+            ' <span class="syn-attr">$1</span>$2<span class="syn-string">$3</span>');
+          return attributes.replace(/^(&lt;\/?)([\w-]+)/, '$1<span class="syn-tag">$2</span>');
+        }
+        if (/^['"]/.test(part)) return `<span class="syn-string">${safe}</span>`;
+        return safe.replace(/\b(import|export|from|const|let|function|return|await)\b/g, '<span class="syn-tag">$1</span>');
+      }).join('');
+    };
+    const highlightCode = (value) => value.split(/((?:'[^'\n]*'|"[^"\n]*"))/g).map((part) => {
+      const safe = escape(part);
+      if (/^['"]/.test(part)) return `<span class="syn-string">${safe}</span>`;
+      return safe.replace(/\b(import|export|from|const|let|function|return|await)\b/g, '<span class="syn-keyword">$1</span>');
+    }).join('');
     const text = (pattern, fallback) => input.value.match(pattern)?.[1]?.trim() || fallback;
     const line = (needle) => input.value.slice(0, Math.max(0, input.value.indexOf(needle))).split('\n').length;
     const render = () => {
@@ -113,12 +147,18 @@ const { code } = Astro.props;
       root.querySelector('[data-render="eyebrow"]').textContent = text(/<deck-feature[^>]*eyebrow=["']([^"']+)/, 'Slide');
       root.querySelector('[data-render="title"]').textContent = text(/<h1\s+slot=["']title["'][^>]*>([^<]*)<\/h1>/, 'Untitled slide');
       root.querySelector('[data-render="lead"]').textContent = text(/<p\s+slot=["']lead["'][^>]*>([\s\S]*?)<\/p>/, '').replace(/\s+/g, ' ');
-      root.querySelector('[data-render="code"]').textContent = text(/<deck-code[^>]*>([\s\S]*?)<\/deck-code>/, '');
+      const code = text(/<deck-code[^>]*>([\s\S]*?)<\/deck-code>/, '');
+      root.querySelector('[data-render="code"]').innerHTML = highlightCode(code);
+      highlight.innerHTML = highlightMarkup(input.value) + '\n';
       output.innerHTML = problems.length
         ? problems.map((message) => `<p class="error">× ${message}</p>`).join('')
         : '<p class="ok">✓ simplified markup hints passed</p><p>Run the CLI for browser, layout and timing checks.</p>';
     };
     input.addEventListener('input', render);
+    input.addEventListener('scroll', () => {
+      highlight.parentElement.scrollTop = input.scrollTop;
+      highlight.parentElement.scrollLeft = input.scrollLeft;
+    });
     input.addEventListener('keydown', (event) => {
       if (event.key !== 'Tab') return;
       event.preventDefault();
