@@ -9,7 +9,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { ExpectedError } from './cli-error.mjs';
-import { SLIDE_TITLE_READER, waitForStillFrame, withDeck } from './browser.mjs';
+import { SLIDE_TITLE_READER, advanceStep, goToSlide, withDeck } from './browser.mjs';
 
 export const MANIFEST_SCHEMA = 1;
 
@@ -69,47 +69,6 @@ export function selectSlides(outline, selector) {
     );
   }
   return [...chosen.values()].sort((a, b) => a.index - b.index);
-}
-
-/** Go to slide `index` (1-based) and report the state actually reached. */
-async function goToSlide(page, index) {
-  await page.evaluate((i) => {
-    window.location.hash = `#${i}`;
-  }, index);
-  await page.waitForFunction(
-    (i) => document.querySelector('deck-root')?.current === i - 1,
-    index,
-    { timeout: 5_000 },
-  );
-  await page.evaluate(() => document.fonts.ready);
-  await waitForStillFrame(page);
-}
-
-/** Advance one step inside the current slide · false when there is none left. */
-async function advanceStep(page) {
-  const before = await page.evaluate(() => {
-    const root = document.querySelector('deck-root');
-    return { slide: root.current, step: root.step };
-  });
-  await page.keyboard.press('ArrowRight');
-  try {
-    await page.waitForFunction(
-      (b) => {
-        const root = document.querySelector('deck-root');
-        return root.current !== b.slide || root.step !== b.step;
-      },
-      before,
-      { timeout: 2_000 },
-    );
-  } catch {
-    return false; // the deck did not move · this was the last state
-  }
-  await waitForStillFrame(page);
-  const after = await page.evaluate(() => {
-    const root = document.querySelector('deck-root');
-    return { slide: root.current, step: root.step };
-  });
-  return after.slide === before.slide;
 }
 
 /** The gallery is a rikiki-free page on purpose · it has to open from a file
