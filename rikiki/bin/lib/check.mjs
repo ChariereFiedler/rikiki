@@ -14,6 +14,7 @@
 import { basename } from 'node:path';
 import { readFileSync } from 'node:fs';
 import { SLIDE_TITLE_READER, waitForStillFrame, withDeck } from './browser.mjs';
+import { GRAPH_GEOMETRY_READER } from './graph-hit.mjs';
 import { measureSlides } from './visual.mjs';
 import { scanExternal } from './scan-external.mjs';
 
@@ -55,8 +56,12 @@ const diagnostic = (code, severity, message, extra = {}) => ({
 });
 
 /** Everything the page can tell us about itself, in one round trip. */
-const inspectPage = ({ limits, titleReader }) => {
+const inspectPage = ({ limits, titleReader, graphGeometry }) => {
   const titleOf = new Function('return ' + titleReader)();
+  /** `parseGraphPath` and `polylineHitsRect` from bin/lib/graph-hit.mjs · this
+   *  function runs in the page, so they arrive as source and are rebuilt here.
+   *  They are unit tested on the node side. */
+  const geometry = new Function('return ' + graphGeometry)();
   const root = document.querySelector('deck-root');
   const slides = root
     ? Array.from(root.children).filter((el) => el.tagName.toLowerCase().startsWith('deck-'))
@@ -254,29 +259,12 @@ const inspectPage = ({ limits, titleReader }) => {
   }
 
   // Graph failures are geometric: valid markup can still place a node outside
-  // the drawing area or route a straight edge through an unrelated node. Read
-  // the painted boxes after layout rather than trying to infer them from `at`.
+  // the drawing area, drop one on top of another, or route an edge through a
+  // node it does not connect. Read the painted boxes after layout, and the
+  // polyline the component says it painted, rather than inferring either from
+  // the authored `at`.
   const graphIssues = [];
-  const segmentHitsRect = (a, b, r) => {
-    let t0 = 0;
-    let t1 = 1;
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    for (const [p, q] of [
-      [-dx, a.x - r.left],
-      [dx, r.right - a.x],
-      [-dy, a.y - r.top],
-      [dy, r.bottom - a.y],
-    ]) {
-      if (p === 0 && q < 0) return false;
-      if (p === 0) continue;
-      const t = q / p;
-      if (p < 0) t0 = Math.max(t0, t);
-      else t1 = Math.min(t1, t);
-      if (t0 > t1) return false;
-    }
-    return true;
-  };
+  const centreOf = ({ box }) => ({ x: (box.left + box.right) / 2, y: (box.top + box.bottom) / 2 });
   for (const graph of document.querySelectorAll('deck-graph')) {
     const graphBox = graph.getBoundingClientRect();
     if (!graphBox.width || !graphBox.height) continue;
@@ -299,21 +287,46 @@ const inspectPage = ({ limits, titleReader }) => {
         graphIssues.push({ kind: 'node-out', slide: slideIndex, graph: pathOf(graph), node: pathOf(node), pixels: Math.round(pixels), overflow });
       }
     }
+    // Two nodes on top of each other hide each other's words. The boxes are
+    // already measured for the edge geometry; nobody was comparing them.
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i];
+        const b = nodes[j];
+        const x = Math.min(a.box.right, b.box.right) - Math.max(a.box.left, b.box.left);
+        const y = Math.min(a.box.bottom, b.box.bottom) - Math.max(a.box.top, b.box.top);
+        if (x > limits.clipPx && y > limits.clipPx) {
+          graphIssues.push({ kind: 'node-overlap', slide: slideIndex, graph: pathOf(graph), node: pathOf(a.node), other: pathOf(b.node), a: a.id || null, b: b.id || null, overlap: { x: Math.round(x), y: Math.round(y) } });
+        }
+      }
+    }
+
+    // An edge is a band of ink, not a mathematical line. Half the stroke width
+    // on each side of the centre line paints, so a line that misses a node by
+    // one pixel still crosses it on screen · that half width is the tolerance,
+    // and it replaces an inset of 2px that was narrower than the ink it was
+    // meant to excuse.
+    const painted = graph.shadowRoot?.querySelector('.edge');
+    const strokeWidth = painted ? Number.parseFloat(getComputedStyle(painted).strokeWidth) : Number.NaN;
+    const inkMargin = (Number.isFinite(strokeWidth) ? strokeWidth : 4) / 2;
+
     const byId = new Map(nodes.filter(({ id }) => id).map((entry) => [entry.id, entry]));
     for (const edge of graph.querySelectorAll('deck-edge')) {
       const from = byId.get(edge.getAttribute('from') ?? '');
       const to = byId.get(edge.getAttribute('to') ?? '');
       if (!from || !to) continue;
-      const centre = ({ box }) => ({ x: (box.left + box.right) / 2, y: (box.top + box.bottom) / 2 });
-      const a = centre(from);
-      const b = centre(to);
+      // What deck-graph publishes is what deck-graph painted, orthogonal bends
+      // and boundary anchors included. A runtime older than this attribute
+      // publishes nothing: fall back to the straight centre-to-centre segment,
+      // which is right for `route="straight"` and only approximates an ortho
+      // route.
+      const published = geometry.parseGraphPath(edge.getAttribute('data-path'));
+      const points = published.length
+        ? published.map((p) => ({ x: p.x + graphBox.left, y: p.y + graphBox.top }))
+        : [centreOf(from), centreOf(to)];
       for (const candidate of nodes) {
         if (candidate === from || candidate === to) continue;
-        // Ignore a tangent on the visual halo; report an edge that enters the
-        // node's actual content box.
-        const inset = 2;
-        const r = { left: candidate.box.left + inset, right: candidate.box.right - inset, top: candidate.box.top + inset, bottom: candidate.box.bottom - inset };
-        if (r.left < r.right && r.top < r.bottom && segmentHitsRect(a, b, r)) {
+        if (geometry.polylineHitsRect(points, candidate.box, inkMargin)) {
           graphIssues.push({ kind: 'edge-crosses-node', slide: slideIndex, graph: pathOf(graph), edge: pathOf(edge), node: pathOf(candidate.node), from: from.id, to: to.id });
         }
       }
@@ -456,6 +469,15 @@ function diagnose(page, source, limits) {
           suggestion: 'move the node inward with `at`, shorten its note, or constrain it with `width` / `--deck-node-size`',
         }),
       );
+    } else if (issue.kind === 'node-overlap') {
+      const name = (id, path) => (id ? `"${id}"` : path);
+      found.push(
+        diagnostic('GRAPH_NODE_OVERLAPS_NODE', SEVERITY.error, `the ${name(issue.a, issue.node)} and ${name(issue.b, issue.other)} nodes overlap by ${issue.overlap.x}x${issue.overlap.y}px`, {
+          ...where,
+          measurement: { overlapPx: issue.overlap, nodes: [issue.node, issue.other] },
+          suggestion: 'move one of them with `at`, or narrow both with `width` / `--deck-node-size` · a node hidden behind another is a node nobody reads',
+        }),
+      );
     } else if (issue.kind === 'edge-crosses-node') {
       found.push(
         diagnostic('GRAPH_EDGE_CROSSES_NODE', SEVERITY.warning, `the ${issue.from} → ${issue.to} edge passes under another node`, {
@@ -558,8 +580,8 @@ export async function checkDeck(deckPath, { timeoutMs = 30_000, width = 1920, he
     deckPath,
     async ({ page, settled, missing, errors }) => {
       const observed = settled
-        ? await page.evaluate(inspectPage, { limits, titleReader: SLIDE_TITLE_READER })
-        : await page.evaluate(inspectPage, { limits, titleReader: SLIDE_TITLE_READER }).catch(() => ({
+        ? await page.evaluate(inspectPage, { limits, titleReader: SLIDE_TITLE_READER, graphGeometry: GRAPH_GEOMETRY_READER })
+        : await page.evaluate(inspectPage, { limits, titleReader: SLIDE_TITLE_READER, graphGeometry: GRAPH_GEOMETRY_READER }).catch(() => ({
             hasRoot: false,
             runtimeLoaded: false,
             slides: [],

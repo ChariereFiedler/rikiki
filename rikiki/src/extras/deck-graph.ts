@@ -271,10 +271,71 @@ export class DeckGraph extends LitElement {
     this._tick++;
   }
 
+  /**
+   * The polyline every edge actually paints, in graph-relative CSS pixels.
+   *
+   * One source for the SVG and for the `data-path` published in `updated()` ·
+   * `rikiki check` used to re-derive a centre-to-centre segment of its own and
+   * report on a line nobody painted.
+   */
+  private _polylines(): Map<HTMLElement, PixelPoint[]> {
+    const paths = new Map<HTMLElement, PixelPoint[]>();
+    const { w, h } = this._box;
+    if (!w) return paths;
+    const at = (el: Element | null) =>
+      el ? { x: Number(el.getAttribute('data-x')), y: Number(el.getAttribute('data-y')) } : null;
+    for (const edge of this._edges) {
+      const fromId = edge.getAttribute('from') ?? '';
+      const toId = edge.getAttribute('to') ?? '';
+      const from = at(this.querySelector(`#${CSS.escape(fromId)}`));
+      const to = at(this.querySelector(`#${CSS.escape(toId)}`));
+      if (!from || !to) continue;
+      // Percentages are the author's language; pixels are the drawing's. The
+      // percentage geometry is the fallback for a node not measured yet.
+      const geom = edgeGeometry(from, to);
+      const fromBox = this._nodeBoxes.get(fromId);
+      const toBox = this._nodeBoxes.get(toId);
+      const fromCentre = fromBox
+        ? centre(fromBox)
+        : { x: (geom.x1 / 100) * w, y: (geom.y1 / 100) * h };
+      const toCentre = toBox ? centre(toBox) : { x: (geom.x2 / 100) * w, y: (geom.y2 / 100) * h };
+      const ortho = (edge.getAttribute('route') ?? 'straight').toLowerCase() === 'ortho';
+      const bendX = (fromCentre.x + toCentre.x) / 2;
+      const start = fromBox
+        ? meetRect(fromBox, ortho ? { x: bendX, y: fromCentre.y } : toCentre)
+        : fromCentre;
+      const end = toBox
+        ? meetRect(toBox, ortho ? { x: bendX, y: toCentre.y } : fromCentre)
+        : toCentre;
+      paths.set(
+        edge,
+        ortho ? [start, { x: bendX, y: start.y }, { x: bendX, y: end.y }, end] : [start, end],
+      );
+    }
+    return paths;
+  }
+
+  override updated(): void {
+    // Publish what was painted. A checker outside the component cannot
+    // re-derive an orthogonal route or a boundary anchor, and a check that
+    // guesses the geometry is a check that misses a visible crossing.
+    const paths = this._polylines();
+    for (const edge of this._edges) {
+      const points = paths.get(edge);
+      if (!points) edge.removeAttribute('data-path');
+      else
+        edge.setAttribute(
+          'data-path',
+          points.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' '),
+        );
+    }
+  }
+
   override render() {
     // Recomputed whenever _tick changes · the geometry is derived from the
     // nodes' resolved positions, which the author or the arrangement set.
     void this._tick;
+    const paths = this._polylines();
     const at = (el: Element | null) =>
       el ? { x: Number(el.getAttribute('data-x')), y: Number(el.getAttribute('data-y')) } : null;
 
@@ -287,13 +348,6 @@ export class DeckGraph extends LitElement {
     });
 
     const { w, h } = this._box;
-    // Percentages are the author's language; pixels are the drawing's.
-    const px = (g: { x1: number; y1: number; x2: number; y2: number }) => ({
-      x1: (g.x1 / 100) * w,
-      y1: (g.y1 / 100) * h,
-      x2: (g.x2 / 100) * w,
-      y2: (g.y2 / 100) * h,
-    });
 
     return html`
       <svg viewBox="0 0 ${w || 1} ${h || 1}" aria-hidden="true">
@@ -310,20 +364,9 @@ export class DeckGraph extends LitElement {
             <path class="head" d="M0 0 L10 5 L0 10 z" />
           </marker>
         </defs>
-        ${edges.map(({ edge, fromId, toId, geom }) => {
-          if (!geom || !w) return '';
-          const fallback = px(geom);
-          const fromBox = this._nodeBoxes.get(fromId);
-          const toBox = this._nodeBoxes.get(toId);
-          const fromCentre = fromBox ? centre(fromBox) : { x: fallback.x1, y: fallback.y1 };
-          const toCentre = toBox ? centre(toBox) : { x: fallback.x2, y: fallback.y2 };
-          const route = (edge.getAttribute('route') ?? 'straight').toLowerCase();
-          const bend =
-            route === 'ortho' ? { x: (fromCentre.x + toCentre.x) / 2, y: fromCentre.y } : toCentre;
-          const lastBend =
-            route === 'ortho' ? { x: (fromCentre.x + toCentre.x) / 2, y: toCentre.y } : fromCentre;
-          const start = fromBox ? meetRect(fromBox, bend) : fromCentre;
-          const end = toBox ? meetRect(toBox, lastBend) : toCentre;
+        ${this._edges.map((edge) => {
+          const points = paths.get(edge);
+          if (!points) return '';
           // `svg` and not `html` · a nested html`` fragment is parsed in the
           // HTML namespace, so its <line> becomes an unknown element that is
           // never painted. It reports the right coordinates and draws nothing.
@@ -334,22 +377,23 @@ export class DeckGraph extends LitElement {
             end: arrow === 'end' || arrow === 'both' ? 'url(#arrow)' : '',
             start: arrow === 'start' || arrow === 'both' ? 'url(#arrow)' : '',
           };
-          return route === 'ortho'
+          const [first, second] = points as [PixelPoint, PixelPoint];
+          return points.length > 2
             ? svg`<path
                 class="edge"
                 ?data-dashed=${edge.hasAttribute('dashed')}
                 data-route="ortho"
-                d="M ${start.x} ${start.y} H ${bend.x} V ${end.y} H ${end.x}"
+                d=${points.map((p, i) => `${i ? 'L' : 'M'} ${p.x} ${p.y}`).join(' ')}
                 marker-end=${common.end}
                 marker-start=${common.start}
               />`
             : svg`<line
                 class="edge"
                 ?data-dashed=${edge.hasAttribute('dashed')}
-                x1=${start.x}
-                y1=${start.y}
-                x2=${end.x}
-                y2=${end.y}
+                x1=${first.x}
+                y1=${first.y}
+                x2=${second.x}
+                y2=${second.y}
                 marker-end=${common.end}
                 marker-start=${common.start}
               />`;

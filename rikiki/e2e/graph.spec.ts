@@ -105,8 +105,48 @@ test('an orthogonal edge and label offset are author controlled', async ({ page 
     };
   });
   expect(result.route).toBe('ortho');
-  expect(result.path).toMatch(/H .* V .* H/);
+  // Four points: out of the source, across, down, into the target.
+  expect(result.path).toMatch(/^M [-\d.]+ [-\d.]+( L [-\d.]+ [-\d.]+){3}$/);
   expect(result.labelTop).toMatch(/px$/);
+});
+
+// `rikiki check` tests the line that was painted rather than re-deriving one of
+// its own, so the published path is a contract and not an internal detail.
+test('every edge publishes the polyline it paints as data-path', async ({ page }) => {
+  await gotoSlideWith(page, 'gr');
+  const published = await page.evaluate(async () => {
+    const graph = document.getElementById('gr')!;
+    const edges = [...graph.querySelectorAll('deck-edge')];
+    edges[0]!.setAttribute('route', 'ortho');
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const box = graph.getBoundingClientRect();
+    return {
+      box: { width: box.width, height: box.height },
+      paths: edges.map((e) => e.getAttribute('data-path')),
+      painted: graph.shadowRoot!.querySelector('path.edge')!.getAttribute('d'),
+    };
+  });
+  expect(published.paths.every((p) => p !== null), 'every edge is published').toBe(true);
+  const points = (path: string) => path.split(' ').map((pair) => pair.split(',').map(Number));
+  // The orthogonal route publishes its bends; a straight edge publishes two ends.
+  expect(points(published.paths[0]!)).toHaveLength(4);
+  for (const path of published.paths.slice(1)) expect(points(path!)).toHaveLength(2);
+  // Graph-relative CSS pixels · inside the drawing area, not viewport coordinates.
+  for (const [x, y] of points(published.paths.join(' '))) {
+    expect(x!).toBeGreaterThanOrEqual(0);
+    expect(x!).toBeLessThanOrEqual(published.box.width);
+    expect(y!).toBeGreaterThanOrEqual(0);
+    expect(y!).toBeLessThanOrEqual(published.box.height);
+  }
+  // What is published is what is painted.
+  const painted = published
+    .painted!.replace(/^M | L /g, ' ')
+    .trim()
+    .split(/\s+/)
+    .map(Number);
+  expect(points(published.paths[0]!).flat().map((n) => Number(n!.toFixed(2)))).toEqual(
+    painted.map((n) => Number(n.toFixed(2))),
+  );
 });
 
 test('a node accepts an explicit CSS width', async ({ page }) => {

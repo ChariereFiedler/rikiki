@@ -23,6 +23,15 @@ export declare class DeckGraph extends LitElement {
     private _place;
     /** Called by deck-root on every step change. */
     applyStep(step: number): void;
+    /**
+     * The polyline every edge actually paints, in graph-relative CSS pixels.
+     *
+     * One source for the SVG and for the `data-path` published in `updated()` ·
+     * `rikiki check` used to re-derive a centre-to-centre segment of its own and
+     * report on a line nobody painted.
+     */
+    private _polylines;
+    updated(): void;
     render(): import("lit-html").TemplateResult<1>;
 }
 export declare class DeckNode extends LitElement {
