@@ -86,3 +86,17 @@ declare global {
 - To render an em-dash glyph (e.g. a citation) without a literal em-dash byte
   in source, use its escape: `\u2014` in a JS/TS template literal, or
   `content: '\2014'` in CSS. A literal em-dash in source trips the dash-linter.
+- **A component may render another component's tag without importing its
+  module, but never both.** `esbuild` flattens `dist/` per entry point, so
+  each bundle carries its own copy of everything it imports; if two loaded
+  bundles both import the same `customElements.define`, the second one
+  throws and the whole module's evaluation aborts \u2014 including any element
+  defined *after* that point in the same file. Two existing components rely
+  on the tag being registered elsewhere instead of importing it: `deck-figure`
+  renders `<deck-source>` trusting it's a core atom index.ts always registers
+  (\u00a76), and `deck-graph`/`deck-flow` render `<deck-icon>` trusting the deck
+  author loaded `dist/deck-icon.js` themselves (documented in-component as
+  "needs dist/deck-icon.js loaded too"). If your component nests a tag from
+  another bucket or another opt-in module, do the same \u2014 use the tag, add a
+  one-line comment saying what must already be loaded and why, and do **not**
+  `import` that module's file.
