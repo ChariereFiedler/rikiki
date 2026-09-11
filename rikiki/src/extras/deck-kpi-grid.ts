@@ -5,9 +5,16 @@
 //   <deck-kpi value="3" label="engines" note="chromium, firefox, webkit"></deck-kpi>
 // </deck-kpi-grid>
 //
-// Several figures that must read as one family. deck-stat is built to stand
+// Several figures that must read as ONE FAMILY. deck-stat is built to stand
 // alone and claims the slide; three of them side by side needed hand layout and
 // came out looking like three separate decisions.
+//
+// The family is built by the grid, not by the figures. The grid owns three rows
+// · value, label, note · and every deck-kpi adopts them through
+// `grid-template-rows: subgrid`, so all the values share one row box and one
+// baseline, all the labels sit on one line, and a column without a note costs
+// no height anywhere else. Before that, each figure was its own little
+// paragraph with a ragged bottom edge.
 //
 // OPT-IN · <script type="module" src="dist/deck-kpi-grid.js"></script>
 // ════════════════════════════════════════════════════════════════
@@ -18,6 +25,8 @@ import { signature } from './signature.js';
 
 export type DeckKpiTone = 'default' | 'accent' | 'ok' | 'warn' | 'danger' | 'muted';
 
+/** The tone as written on paper · the `__text` ramps, tuned for contrast on the
+ *  page surface. Used by the figures that carry no mass. */
 const TONES: Record<DeckKpiTone, string> = {
   default: 'var(--rik-text-default)',
   accent: 'var(--rik-accent__text)',
@@ -27,33 +36,94 @@ const TONES: Record<DeckKpiTone, string> = {
   muted: 'var(--rik-text-default--faint)',
 };
 
+/** The same tone as a MARK on the night block · the saturated base ramps. The
+ *  `__text` variants above are paper-tuned and one of them, siliceum's
+ *  `--rik-accent__text`, is a dark olive that vanishes against the inverse
+ *  surface. A stroke on a dark block is a different contrast problem from ink
+ *  on paper, so it gets its own map rather than a shared approximation. */
+const MARKS: Record<DeckKpiTone, string> = {
+  default: 'var(--rik-text-inverse)',
+  accent: 'var(--rik-accent)',
+  ok: 'var(--rik-status-success)',
+  warn: 'var(--rik-status-warn)',
+  danger: 'var(--rik-status-danger)',
+  muted: 'var(--rik-text-inverse--faint)',
+};
+
 @customElement('deck-kpi-grid')
 export class DeckKpiGrid extends LitElement {
   /* Customization tokens:
-       --deck-kpi-grid-gap    space between figures
-       --deck-kpi-grid-cols   column count (overrides the cols attribute)
-       --deck-kpi-grid-rule   the divider between figures                   */
+       --deck-kpi-grid-gap        space between figures
+       --deck-kpi-grid-row-gap    space between a figure and its label
+       --deck-kpi-grid-cols       column count (overrides the cols attribute)
+       --deck-kpi-grid-rule       the divider drawn by `ruled`
+       --deck-kpi-grid-rule-width its weight                                */
   static override styles = css`
     :host {
       display: grid;
       grid-template-columns: repeat(var(--deck-kpi-grid-cols, var(--_cols, 3)), minmax(0, 1fr));
-      gap: var(--deck-kpi-grid-gap, var(--rik-space-6));
-      align-items: start;
+      /* The three rows every figure adopts. Their heights come from the
+         tallest value, the tallest label and the tallest note across the whole
+         row · that is what makes the figures one family rather than three
+         columns that happen to be adjacent. */
+      grid-template-rows: auto auto auto;
+      column-gap: var(--deck-kpi-grid-gap, var(--rik-space-6));
+      row-gap: var(--deck-kpi-grid-row-gap, var(--rik-space-2));
+      align-items: stretch;
+      /* The mass has padding, so the ink of a marked figure would sit inset
+         against an unmarked one. Every figure therefore carries the same
+         padding, and the row is pulled back by exactly that amount: the ink of
+         the first column lands on the slide's text edge and the night block
+         bleeds into the margin instead of being politely contained. */
+      margin-inline-start: calc(
+        -1 *
+          (var(--deck-kpi-block-pad-x, var(--rik-space-3)) +
+            var(--deck-kpi-mark-width, var(--rik-space-hair)))
+      );
     }
-    /* The ruled attribute draws a line between figures. It survives as an
-       opt-in because a
-       dense row of four sometimes needs it, but the default is space: at
-       projection distance a hairline between two columns is not seen, it is
-       inferred, and the gap does the same job for free. */
-    :host([ruled]) ::slotted(deck-kpi:not(:first-child)) {
-      border-left: 1px solid var(--deck-kpi-grid-rule, var(--rik-border-default));
-      padding-left: var(--deck-kpi-grid-gap, var(--rik-space-5));
+    /* Hand the subgrid down. A custom property crosses into the shadow root of
+       each figure, which a selector cannot; a deck-kpi used on its own never
+       receives it and keeps its own rows. */
+    ::slotted(deck-kpi) {
+      --_kpi-rows: subgrid;
+      grid-row: 1 / -1;
+    }
+    /* The ruled attribute draws a divider between figures · opt-in, because at
+       projection distance the gap already separates two columns and a line that
+       is only inferred is decoration. Where it IS asked for it has to be seen,
+       so the default weight is 2px and the default colour is ink rather than
+       the paper-on-paper hairline that was invisible on a wall.
+
+       It is handed to the figures as a custom property instead of being written
+       with ::slotted(deck-kpi:not(:first-child)): Chromium does not match a
+       structural pseudo-class inside ::slotted(), so that selector silently did
+       nothing · which is why the divider never appeared. Each figure draws its
+       own left edge and cancels it with :host(:first-child), which is evaluated
+       in the light tree and does work. */
+    :host([ruled]) {
+      --_kpi-rule: var(--deck-kpi-grid-rule-width, 2px) solid
+        var(--deck-kpi-grid-rule, var(--rik-text-default--faint));
+      --_kpi-rule-pad: var(--deck-kpi-grid-gap, var(--rik-space-5));
+    }
+    @media (max-width: 640px) {
+      :host {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: none;
+      }
+      :host([ruled]) {
+        --_kpi-rule: 0 solid transparent;
+        --_kpi-rule-pad: 0px;
+      }
+      ::slotted(deck-kpi) {
+        --_kpi-rows: none;
+        grid-row: auto;
+      }
     }
   `;
 
   @property({ type: String, reflect: true }) cols?: string;
 
-  /** Draw a hairline between the figures. */
+  /** Draw a divider between the figures. */
   @property({ type: Boolean, reflect: true }) ruled = false;
 
   override willUpdate(): void {
@@ -70,29 +140,98 @@ export class DeckKpiGrid extends LitElement {
 export class DeckKpi extends LitElement {
   /* Customization tokens:
        --deck-kpi-value-size / --deck-kpi-value-color
-       --deck-kpi-label-color / --deck-kpi-note-color                       */
+       --deck-kpi-label-color / --deck-kpi-note-color
+       --deck-kpi-mass / --deck-kpi-mass-text
+       --deck-kpi-mark-width / --deck-kpi-block-pad-x / --deck-kpi-block-pad-y */
   static override styles = [
     signature,
     css`
       :host {
-        display: flex;
-        flex-direction: column;
-        gap: var(--rik-space-2);
+        display: grid;
+        /* Handed down by deck-kpi-grid; none when the figure stands alone. */
+        grid-template-rows: var(--_kpi-rows, none);
+        row-gap: var(--deck-kpi-grid-row-gap, var(--rik-space-2));
+        align-content: start;
         min-width: 0;
+        /* The ruled divider, handed down by the grid · absent by default. */
+        border-left: var(--_kpi-rule, 0 solid transparent);
+        padding-left: var(--_kpi-rule-pad, 0px);
+      }
+      :host(:first-child) {
+        border-left: 0;
+        padding-left: 0;
       }
       /* The figure IS the design · at ten metres a number is either large
-         enough to read or it is decoration, and there is no middle. */
+         enough to read or it is decoration, and there is no middle. It scales
+         with the slide and with how many figures share the row, so three fill
+         it and six shrink instead of colliding. */
       .value {
+        align-self: end;
+        /* The block hugs the digits instead of stretching to the column. A
+           mass the width of its cell is the card kit wearing a dark coat, and
+           it makes an unmarked neighbour look small at the same type size. */
+        justify-self: start;
+        max-width: 100%;
+        font-size: var(
+          --deck-kpi-value-size,
+          clamp(2.25rem, calc(18cqw / var(--_cols, 3)), 7rem)
+        );
         color: var(--deck-kpi-value-color, var(--_tone));
+        /* Identical box metrics on every figure, marked or not · that is what
+           keeps the values on one baseline and their ink on one left edge.
+           An unmarked figure paints nothing: transparent stroke, no fill. */
+        box-sizing: border-box;
+        padding: var(--deck-kpi-block-pad-y, var(--rik-space-2))
+          var(--deck-kpi-block-pad-x, var(--rik-space-3));
+        border-left: var(--deck-kpi-mark-width, var(--rik-space-hair)) solid transparent;
+        border-radius: var(--rik-radius-sm);
+      }
+      /* The one mass · the marked figure, and only it. default and muted
+         are deliberately absent from this list: they colour the ink and paint
+         nothing, which is rule 1 of ADR-002 · a component with nothing marked
+         has no mass at all. The night surface is the
+         only fill this palette has that survives the room (18.9:1 against the
+         page under both themes); the tone rides on it as a stroke rather than
+         recolouring the digits, because a teal number on paper is a different
+         colour, not more emphasis. */
+      :host([tone='accent']) .value,
+      :host([tone='ok']) .value,
+      :host([tone='warn']) .value,
+      :host([tone='danger']) .value {
+        background: var(--deck-kpi-mass, var(--rik-surface-inverse));
+        border-left-color: var(--_mark);
+        color: var(--deck-kpi-value-color, var(--deck-kpi-mass-text, var(--rik-text-inverse)));
       }
       /* The label is a sentence, not a tag. It used to be a tracked-out mono
          micro-label, which is unreadable across a room and is one of the
-         clearest marks of a generated slide. */
-      .label {
-        color: var(--deck-kpi-label-color, var(--rik-text-default));
-      }
+         clearest marks of a generated slide. It sits tight under the figure and
+         lines up with its ink. */
+      .label,
       .note {
+        padding-inline-start: calc(
+          var(--deck-kpi-block-pad-x, var(--rik-space-3)) +
+            var(--deck-kpi-mark-width, var(--rik-space-hair))
+        );
+      }
+      .label {
+        align-self: start;
+        color: var(--deck-kpi-label-color, var(--rik-text-default));
+        font-weight: 600;
+      }
+      /* The note is separated by a gap and by colour, never by a third size. */
+      .note {
+        align-self: start;
+        padding-top: var(--rik-space-1);
         color: var(--deck-kpi-note-color, var(--rik-text-default--muted));
+      }
+      ::slotted(*) {
+        grid-column: 1;
+      }
+      @media print {
+        .value {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
       }
     `,
   ];
@@ -104,7 +243,9 @@ export class DeckKpi extends LitElement {
   @property({ type: String, reflect: true }) tone: DeckKpiTone = 'default';
 
   override willUpdate(): void {
-    this.style.setProperty('--_tone', TONES[this.tone] ?? TONES.default);
+    const tone = TONES[this.tone] ? this.tone : 'default';
+    this.style.setProperty('--_tone', TONES[tone]);
+    this.style.setProperty('--_mark', MARKS[tone]);
   }
 
   override render() {

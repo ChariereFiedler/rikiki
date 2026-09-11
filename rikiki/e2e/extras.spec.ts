@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { createDeckPage } from './pages/deck.page';
+import { THEMES, useTheme } from './support/theme';
 
 // Opt-in components · they live outside dist/index.js, so a deck that does not
 // use them pays nothing. These tests cover both halves of that bargain: they
@@ -251,3 +252,76 @@ test('a marker sits on the image, not on the letterbox beside it', async ({ page
 
   expect(inside, 'every marker lands on the screenshot').toEqual([true, true, true]);
 });
+
+// ════════════════════════════════════════════════════════════════
+// The redesigned figure row and persona · what the eye is promised
+//
+// Both components were rejected as unfinished, and the two things that make
+// them read as designed rather than assembled are geometric, so they are
+// asserted rather than looked at: the figures of one grid sit on ONE baseline,
+// and the persona's portrait block is the inverse surface rather than faint
+// type on paper. Neither survives a refactor by accident.
+// ════════════════════════════════════════════════════════════════
+
+const MORE = '/rikiki/decks/tests/extras-more.html';
+
+for (const theme of THEMES) {
+  test(`the figures of a grid share one baseline under ${theme}`, async ({ page }) => {
+    const deck = createDeckPage(page);
+    await deck.goto(`${MORE}#3`);
+    await useTheme(page, theme);
+
+    const bottoms = await page.evaluate(() =>
+      [...document.getElementById('kpis')!.children].map((kpi) => {
+        const value = kpi.shadowRoot!.querySelector('.value')!.getBoundingClientRect();
+        return { id: kpi.id, bottom: value.bottom, height: value.height };
+      }),
+    );
+    expect(bottoms).toHaveLength(3);
+    const first = bottoms[0]!;
+    for (const figure of bottoms.slice(1)) {
+      expect(
+        Math.abs(figure.bottom - first.bottom),
+        `${figure.id} sits ${figure.bottom - first.bottom}px off the baseline of ${first.id}`,
+      ).toBeLessThanOrEqual(1);
+    }
+    // A shared baseline reached by shrinking one figure would satisfy the line
+    // above and break the family · the figures are one size as well as one row.
+    for (const figure of bottoms.slice(1)) {
+      expect(Math.abs(figure.height - first.height)).toBeLessThanOrEqual(1);
+    }
+  });
+
+  test(`the persona portrait block is the inverse surface under ${theme}`, async ({ page }) => {
+    const deck = createDeckPage(page);
+    await deck.goto(`${MORE}#5`);
+    await useTheme(page, theme);
+
+    const painted = await page.evaluate(() => {
+      const persona = document.getElementById('who')!;
+      const avatar = persona.shadowRoot!.querySelector('.avatar')!;
+      const probe = document.createElement('div');
+      probe.style.background = 'var(--rik-surface-inverse)';
+      probe.style.color = 'var(--rik-text-inverse)';
+      persona.parentElement!.append(probe);
+      const expected = getComputedStyle(probe);
+      const inverse = { background: expected.backgroundColor, text: expected.color };
+      probe.remove();
+      const style = getComputedStyle(avatar);
+      const box = avatar.getBoundingClientRect();
+      return {
+        background: style.backgroundColor,
+        color: style.color,
+        inverse,
+        side: Math.min(box.width, box.height),
+      };
+    });
+
+    expect(painted.background, 'the block is the inverse surface, not a pale tint').toBe(
+      painted.inverse.background,
+    );
+    expect(painted.color, 'the initials are the inverse ink').toBe(painted.inverse.text);
+    // A 4px square would satisfy the colours and carry nothing across a room.
+    expect(painted.side, 'the block is a surface, not a swatch').toBeGreaterThan(64);
+  });
+}
