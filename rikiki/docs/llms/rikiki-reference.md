@@ -290,8 +290,8 @@ badge back sets `--deck-eyebrow-bg`, `--deck-eyebrow-color`,
   `less`. **Any other value** (`python`, `rust`, `bash`, `go`, `sql`, …) is **not
   an error and produces no warning** — the block is silently colored with the JS
   rules, so the result looks plausible but is wrong. For any language outside the
-  list above, install the Shiki plugin (see below); it adds Shiki's full set of
-  grammars and is the only way to highlight non-built-in languages correctly.
+  list above, add or rebuild a compatible highlighter. Rikiki's optional Shiki
+  plugin covers a curated subset described below.
 - `hero` · centers the block vertically as the slide's focal element.
 - `nested` · lighter border, no shadow (for use inside a `deck-card`).
 - `step-groups` · a JSON array attribute that turns the snippet into a stepped
@@ -299,9 +299,8 @@ badge back sets `--deck-eyebrow-bg`, `--deck-eyebrow-color`,
 
 Highlighting is done client-side with a built-in regex highlighter (no build
 step), limited to the languages listed under `lang` above. An opt-in **Shiki
-plugin** upgrades every `deck-code` block to Shiki's full grammar/theme set —
-**required** whenever a deck uses a language the built-in highlighter does not
-understand.
+plugin upgrades every `deck-code` block to TextMate highlighting for a curated
+set of common web languages.
 
 ### Shiki plugin (optional, opt-in)
 
@@ -314,7 +313,7 @@ the rikiki bundle:
 <script type="module" src="./dist/index.js"></script>
 <script type="module">
   import { installShiki } from './dist/shiki.js';
-  await installShiki({ theme: 'one-dark-pro', langs: ['ts', 'tsx', 'html', 'css'] });
+  await installShiki({ theme: 'one-dark-pro', langs: ['ts', 'js', 'html', 'css'] });
 </script>
 ```
 
@@ -322,13 +321,15 @@ API:
 
 ```ts
 async function installShiki(opts?: {
-  theme?: string;    // any Shiki theme name (https://shiki.style/themes) · default 'one-dark-pro'
-  langs?: string[];  // grammars to preload · default ['ts', 'js', 'html', 'css', 'json']
+  theme?: 'one-dark-pro';
+  langs?: Array<'ts' | 'typescript' | 'js' | 'javascript' | 'html' | 'css' | 'json'>;
 }): Promise<void>
 ```
 
-- Any Shiki theme/language works (not just the built-in highlighter's set); set
-  `langs` to whatever your deck uses.
+- The offline artifact contains only `one-dark-pro` and the TypeScript,
+  JavaScript, HTML, CSS and JSON grammars. Set `langs` to the subset your deck
+  uses. Supporting another grammar or theme requires rebuilding the vendor
+  entry with an explicit import.
 - Shiki owns the palette under this plugin: it colors each token with an inline
   style from the chosen `theme`, so pick a `theme` that suits your code
   background (e.g. `one-dark-pro` on a dark deck). The `--deck-code-syntax-*`
@@ -338,9 +339,8 @@ async function installShiki(opts?: {
 - **How it hooks in:** it registers a highlighter on the shared `<deck-code>`
   class via `setDeckCodeHighlighter` (resolved through `customElements.get`), so
   it never patches the component's internals · see *Writing a plugin* below.
-- **Trade-off:** the vendored Shiki bundle is large (every grammar + theme, JS
-  engine, no wasm). That is why it is opt-in and lazy · the core bundle stays
-  ~42 KB gzip.
+- **Trade-off:** the curated runtime is about 113 KB when gzip-compressed. It remains opt-in and
+  lazy, so the core bundle stays ~42 KB gzip.
 
 ---
 
@@ -1156,7 +1156,7 @@ and an archive. Nothing is fetched at runtime: scripts, styles, fonts and images
 are all inside. The presenter works from it too.
 
 - A deck using `<deck-mermaid>` needs `--with-mermaid` (+~3 MB).
-- A deck using Shiki needs `--with-shiki` (+~9 MB).
+- A deck using Shiki needs `--with-shiki` (about +0.7 MB raw, 113 KB compressed).
 - Without the flag the command **fails** and names the missing runtime · it will
   not hand you a file that renders an empty diagram offline.
 - `rikiki init --standalone` produces a starter with the same guarantees.

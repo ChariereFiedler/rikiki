@@ -45,7 +45,7 @@ const shikiUsage = `<!doctype html>
     import { installShiki } from './rikiki/dist/shiki.js';
     await installShiki({
       theme: 'one-dark-pro',
-      langs: ['ts', 'tsx', 'html', 'css', 'json'],
+      langs: ['ts', 'js', 'html', 'css', 'json'],
     });
   </script>
 </head>
@@ -163,7 +163,7 @@ const clickStagesPreview = `<deck-feature>
     </tr>
     <tr>
       <td><a href="#shiki"><code>shiki</code></a></td>
-      <td>~0.6 KB + vendored Shiki</td>
+      <td>~0.4 KB + 113 KB runtime</td>
       <td>Explicit <code>import + installShiki()</code></td>
       <td>Production-grade syntax highlighting for <code>deck-code</code></td>
     </tr>
@@ -310,18 +310,22 @@ const clickStagesPreview = `<deck-feature>
 </p>
 <p>
   Opt in to <a href="https://shiki.style" rel="noopener">Shiki</a> when you
-  need real syntax highlighting · TextMate grammars, full theme set, JSX/TSX,
-  template literal interpolation. The vendored Shiki bundle is large (every
-  grammar + theme, JS engine, no wasm) · the plugin loads it from
-  <code>dist/vendor/shiki.js</code> on first use (offline, no CDN), so the cost
-  is paid only if you opt in.
+  need TextMate-quality highlighting for TypeScript, JavaScript, HTML, CSS or
+  JSON. Rikiki vendors only those five grammars and the
+  <code>one-dark-pro</code> theme, keeping the optional runtime near 113 KB gzip.
+  The plugin loads <code>dist/vendor/shiki.js</code> on first use (offline, no
+  CDN), so a deck that does not install it pays no cost.
 </p>
 <CodeBlock label="install shiki" lang="html" code={shikiUsage} />
 <ComponentPreview code={shikiPreview} full />
 <p>
   After install, every existing and future <code>deck-code</code> instance
-  re-renders through Shiki. Languages that aren't loaded fall back to the
-  regex highlighter so the deck never breaks. Under the hood it registers a
+  re-renders through Shiki. Request one or more of <code>ts</code>,
+  <code>typescript</code>, <code>js</code>, <code>javascript</code>,
+  <code>html</code>, <code>css</code> and <code>json</code>; unsupported names are
+  rejected during installation instead of silently growing the bundle. A code
+  block whose language was not preloaded falls back to the regex highlighter.
+  Under the hood it registers a
   highlighter through <code>deck-code</code>'s public
   <code>setDeckCodeHighlighter</code> hook (see <a href="#writing">Writing a
   plugin</a>) rather than patching the component.

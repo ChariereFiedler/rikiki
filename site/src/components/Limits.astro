@@ -15,22 +15,22 @@
 
     <ul class="grid">
       <li>
-        <strong>You want a WYSIWYG editor.</strong>
-        Rikiki uses HTML source and a browser preview. It has no visual builder.
+        <span class="icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M4 19.5V16l11-11 3.5 3.5-11 11H4Z"/><path d="m13.5 6.5 3.5 3.5M4 22h16"/></svg></span>
+        <div><strong>You want a WYSIWYG editor.</strong>Rikiki uses HTML source and a browser preview. It has no visual builder.</div>
       </li>
       <li>
-        <strong>You need PowerPoint-style animation on shapes.</strong>
-        It supports slide-level fade, slide, zoom and flip transitions, not free-form timelines.
+        <span class="icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M4 7h11M4 12h16M4 17h8"/><path d="m15 4 3 3-3 3M12 14l3 3-3 3"/></svg></span>
+        <div><strong>You need PowerPoint-style animation on shapes.</strong>It supports slide-level fade, slide, zoom and flip transitions, not free-form timelines.</div>
       </li>
       <li>
-        <strong>You want a hosted SaaS.</strong>
-        Rikiki creates static files that you host with your existing web infrastructure.
+        <span class="icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .5-8 6 6 0 0 0-11.4-1.5A4.8 4.8 0 0 0 7 18Z"/><path d="M12 12v9m-3-3 3 3 3-3"/></svg></span>
+        <div><strong>You want a hosted SaaS.</strong>Rikiki creates static files that you host with your existing web infrastructure.</div>
       </li>
       <li>
-        <strong>You need PowerPoint export.</strong>
-        Rikiki exports standalone HTML and PDF. It does not export <code>.pptx</code> files.
+        <span class="icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6Z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></span>
+        <div><strong>You need PowerPoint export.</strong>Rikiki exports standalone HTML and PDF. It does not export <code>.pptx</code> files.</div>
       </li>
-      <li><strong>Your environment forbids Web Components.</strong> Custom Elements and Shadow DOM are part of the runtime.</li>
+      <li><span class="icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M17.5 14v7M14 17.5h7"/></svg></span><div><strong>Your environment forbids Web Components.</strong>Custom Elements and Shadow DOM are part of the runtime.</div></li>
     </ul>
   </div>
 </section>
@@ -82,12 +82,19 @@
   }
   @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
   .grid li {
+    display:grid;
+    grid-template-columns:38px minmax(0,1fr);
+    gap:var(--rik-space-3);
+    align-items:start;
     font-size: var(--rik-font-size-body);
     line-height: 1.6;
     color: var(--rik-text-default--muted);
     padding: var(--rik-space-3) 0;
     border-top: 1px solid var(--rik-border-default);
   }
+  .icon { display:grid; place-items:center; width:36px; height:36px; color:var(--rik-accent--strong); background:var(--rik-surface-tint); border:1px solid var(--rik-border-default); border-radius:50%; }
+  .icon { overflow:hidden; }
+  .icon :global(svg) { display:block; width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
   .grid li strong {
     display: block;
     margin-bottom: 4px;

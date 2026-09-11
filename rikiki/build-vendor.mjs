@@ -13,7 +13,7 @@
 //   dist/vendor/mermaid.min.js  · upstream UMD bundle, sets window.mermaid
 
 import { build } from 'esbuild';
-import { mkdirSync, copyFileSync } from 'node:fs';
+import { mkdirSync, copyFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
@@ -60,17 +60,40 @@ const marked = await build({
   outfile: resolve(VENDOR, 'marked.js'),
 });
 
-// shiki · bundle the highlighter with the pure-JS regex engine so the whole
-// thing (core + grammars + themes) is one self-contained file with no wasm to
-// fetch. The default createHighlighter wires the JS engine in automatically.
+// Shiki · import the core and the exact grammars/theme Rikiki supports by
+// default. Importing from bare `shiki` pulls every grammar and theme into the
+// graph. Direct modules keep this offline bundle prunable by esbuild.
 const shiki = await build({
   ...common,
+  supported: { 'template-literal': false },
   stdin: {
     contents: `
-      import { createHighlighter as base } from 'shiki';
+      import { createHighlighterCore } from 'shiki/core';
       import { createJavaScriptRegexEngine } from 'shiki/engine/javascript';
+      import typescript from 'shiki/langs/typescript.mjs';
+      import javascript from 'shiki/langs/javascript.mjs';
+      import html from 'shiki/langs/html.mjs';
+      import css from 'shiki/langs/css.mjs';
+      import json from 'shiki/langs/json.mjs';
+      import oneDarkPro from 'shiki/themes/one-dark-pro.mjs';
+
+      const languages = { ts: typescript, typescript, js: javascript, javascript, html, css, json };
+      const themes = { 'one-dark-pro': oneDarkPro };
+
       export function createHighlighter(opts = {}) {
-        return base({ ...opts, engine: opts.engine ?? createJavaScriptRegexEngine() });
+        const requestedLangs = opts.langs ?? ['ts', 'js', 'html', 'css', 'json'];
+        const requestedThemes = opts.themes ?? ['one-dark-pro'];
+        const langs = requestedLangs.map((lang) => languages[lang]).filter(Boolean);
+        const selectedThemes = requestedThemes.map((theme) => themes[theme]).filter(Boolean);
+        if (langs.length !== requestedLangs.length)
+          throw new Error('Rikiki Shiki bundle supports: ts, typescript, js, javascript, html, css, json');
+        if (selectedThemes.length !== requestedThemes.length)
+          throw new Error('Rikiki Shiki bundle supports the one-dark-pro theme');
+        return createHighlighterCore({
+          langs,
+          themes: selectedThemes,
+          engine: opts.engine ?? createJavaScriptRegexEngine(),
+        });
       }
     `,
     resolveDir: __dirname,
@@ -78,6 +101,8 @@ const shiki = await build({
   },
   outfile: resolve(VENDOR, 'shiki.js'),
 });
+const shikiFile = resolve(VENDOR, 'shiki.js');
+writeFileSync(shikiFile, `${readFileSync(shikiFile, 'utf8').trimEnd()}\n`);
 
 // mermaid · ship the upstream self-contained UMD bundle verbatim. It registers
 // window.mermaid on load · deck-mermaid injects it as a <script> on first use.

@@ -1,7 +1,7 @@
 interface InstallOpts {
-    /** Shiki theme name (https://shiki.style/themes) · default 'one-dark-pro'. */
+    /** Bundled theme · currently 'one-dark-pro'. */
     theme?: string;
-    /** Languages to preload · default ['ts', 'js', 'html', 'css', 'json']. */
+    /** Bundled languages · ts, js, html, css and json (long aliases accepted). */
     langs?: string[];
 }
 export declare function installShiki(opts?: InstallOpts): Promise<void>;
