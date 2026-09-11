@@ -11,6 +11,10 @@
 // in the overview thumbnail and in the PDF export. Marks reveal one per step,
 // through the engine's own step mechanism · no plugin.
 //
+// Add `leader offset="28,-24"` to keep every badge away from the point it
+// identifies. Use `offsets="28,-24|-28,-24"` when each mark needs a different
+// direction. Offsets are CSS pixels in the rendered slide canvas.
+//
 // OPT-IN · not imported by src/index.ts. Load it next to the bundle:
 //   <script type="module" src="dist/deck-annotate.js"></script>
 // ════════════════════════════════════════════════════════════════
@@ -29,6 +33,8 @@ export class DeckAnnotate extends LitElement {
        --deck-annotate-mark-color    the number inside it
        --deck-annotate-mark-size     its diameter
        --deck-annotate-mark-ring     halo that lifts it off the screenshot
+       --deck-annotate-leader        leader line colour
+       --deck-annotate-leader-width  leader line thickness
        --deck-annotate-legend-color  the caption list
        --deck-annotate-legend-size   its type size
        --deck-annotate-gap           space between image and legend           */
@@ -77,7 +83,7 @@ export class DeckAnnotate extends LitElement {
          the letterboxed rectangle, --mx and --my the author percentages. */
       left: calc(var(--img-x, 0%) + var(--mx) * var(--img-w, 1));
       top: calc(var(--img-y, 0%) + var(--my) * var(--img-h, 1));
-      transform: translate(-50%, -50%);
+      transform: translate(calc(-50% + var(--mark-dx, 0px)), calc(-50% + var(--mark-dy, 0px)));
       width: var(--deck-annotate-mark-size, 2.2rem);
       height: var(--deck-annotate-mark-size, 2.2rem);
       border-radius: var(--rik-radius-pill);
@@ -94,6 +100,20 @@ export class DeckAnnotate extends LitElement {
     .mark[hidden] {
       display: none;
     }
+    .leader {
+      position: absolute;
+      left: calc(var(--img-x, 0%) + var(--mx) * var(--img-w, 1));
+      top: calc(var(--img-y, 0%) + var(--my) * var(--img-h, 1));
+      width: var(--leader-length, 0px);
+      height: var(--deck-annotate-leader-width, 2px);
+      transform: translateY(-50%) rotate(var(--leader-angle, 0deg));
+      transform-origin: left center;
+      background: var(--deck-annotate-leader, var(--rik-accent));
+      border-radius: var(--rik-radius-pill);
+      box-shadow: 0 0 0 1px var(--deck-annotate-mark-ring, var(--rik-surface-page));
+      pointer-events: none;
+    }
+    .leader[hidden] { display: none; }
     @media (prefers-reduced-motion: reduce) {
       .mark { transition: none; }
     }
@@ -146,11 +166,33 @@ export class DeckAnnotate extends LitElement {
   /** Drop the caption list under the image. */
   @property({ type: Boolean, attribute: 'no-legend' }) noLegend = false;
 
+  /** Draw a line from the precise target coordinate to the displaced badge. */
+  @property({ type: Boolean, reflect: true }) leader = false;
+
+  /** Default badge displacement as `x,y` CSS pixels, for example `28,-24`. */
+  @property({ type: String }) offset = '0,0';
+
+  /** Per-mark displacements separated by `|`; missing entries use `offset`. */
+  @property({ type: String }) offsets?: string;
+
   /** Current step, mirrored from the slide by deck-root's step machinery. */
   @state() private _step = 0;
 
   private get _marks() {
     return placeMarks(parseMarks(this.marks));
+  }
+
+  private _parseOffset(value: string | null | undefined): readonly [number, number] | null {
+    if (!value) return null;
+    const [rawX, rawY] = value.split(',');
+    const x = Number(rawX?.trim());
+    const y = Number(rawY?.trim());
+    return Number.isFinite(x) && Number.isFinite(y) ? [x, y] : null;
+  }
+
+  private _offsetFor(index: number): readonly [number, number] {
+    const individual = this.offsets?.split('|')[index];
+    return this._parseOffset(individual) ?? this._parseOffset(this.offset) ?? [0, 0];
   }
 
   /** The engine reads the step count off the SLIDE (`steps` / `data-steps`), so
@@ -228,16 +270,21 @@ export class DeckAnnotate extends LitElement {
       <div class="frame" part="frame">
         ${this.src ? html`<img src=${this.src} alt=${this.alt} part="image" />` : ''}
         ${this.src ? html`<span class="edge" part="edge" aria-hidden="true"></span>` : ''}
-        ${marks.map(
-          (m) => html`<span
-            class="mark"
-            part="mark"
-            ?hidden=${m.n > shown}
-            style="--mx:${m.x}%;--my:${m.y}%"
-            aria-hidden="true"
-            >${m.n}</span
-          >`,
-        )}
+        ${marks.map((m, index) => {
+          const [dx, dy] = this._offsetFor(index);
+          const length = Math.hypot(dx, dy);
+          const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+          const style = `--mx:${m.x}%;--my:${m.y}%;--mark-dx:${dx}px;--mark-dy:${dy}px;--leader-length:${length}px;--leader-angle:${angle}deg`;
+          const hidden = m.n > shown;
+          return html`
+            ${
+              this.leader && length > 0
+                ? html`<span class="leader" part="leader" ?hidden=${hidden} style=${style} aria-hidden="true"></span>`
+                : ''
+            }
+            <span class="mark" part="mark" ?hidden=${hidden} style=${style} aria-hidden="true">${m.n}</span>
+          `;
+        })}
       </div>
       ${
         this.noLegend || marks.length === 0

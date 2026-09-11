@@ -9,8 +9,12 @@ export declare class DeckStepList extends LitElement {
 }
 export declare class DeckStep extends LitElement {
     static styles: import("lit").CSSResult;
+    /** Sequence number shown before the step label. */
     n?: string;
+    /** Supporting explanation associated with this step. */
     note?: string;
+    /** Put the note `inline` (default) or `below` its label. */
+    notePosition: 'inline' | 'below';
     render(): import("lit-html").TemplateResult<1>;
 }
 declare global {

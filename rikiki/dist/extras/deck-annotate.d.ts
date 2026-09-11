@@ -11,9 +11,17 @@ export declare class DeckAnnotate extends LitElement {
     allAtOnce: boolean;
     /** Drop the caption list under the image. */
     noLegend: boolean;
+    /** Draw a line from the precise target coordinate to the displaced badge. */
+    leader: boolean;
+    /** Default badge displacement as `x,y` CSS pixels, for example `28,-24`. */
+    offset: string;
+    /** Per-mark displacements separated by `|`; missing entries use `offset`. */
+    offsets?: string;
     /** Current step, mirrored from the slide by deck-root's step machinery. */
     private _step;
     private get _marks();
+    private _parseOffset;
+    private _offsetFor;
     /** The engine reads the step count off the SLIDE (`steps` / `data-steps`), so
      *  the component publishes what it needs onto its own slide · one step per
      *  mark. It only ever raises the count, never lowers one the author set. */

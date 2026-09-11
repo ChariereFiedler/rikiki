@@ -22,6 +22,7 @@ const DECKS = [
   '/rikiki/decks/tests/extensions.html',
   '/rikiki/decks/tests/extras-optin.html',
   '/rikiki/decks/tests/morph-back.html',
+  '/rikiki/decks/tests/figure.html',
   // The public examples · served in production from site/public symlinks, and
   // previously covered by nothing at all.
   '/examples/rikiki-tour/index.html',
