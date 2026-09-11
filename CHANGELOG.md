@@ -5,6 +5,46 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- **`deck-figure` · a screenshot, diagram or chart with its own caption and
+  source.** OPT-IN, native `<figure>`/`<figcaption>` under the hood, so the
+  image, its explanation and its credit stay one semantic unit instead of a
+  `deck-image` with prose bolted beside it. `alt` is required unless the image
+  is declared `decorative`; skip either and the element flags itself with
+  `data-missing-alt` rather than silently shipping an unlabelled image.
+  `caption` and `source` (with an optional `source-href`) print as one
+  baseline-aligned line, `source` in mono type so it reads as a credit and not
+  as more caption.
+- **`deck-graph` edges now stop at the node's painted edge, not a fixed
+  percentage gap.** A wide or boxed node could swallow the arrowhead entirely,
+  because the old geometry aimed at a point short of the node regardless of
+  its actual size. Edges are now measured against each node's real
+  `getBoundingClientRect()` and meet its boundary. Three attributes come with
+  it: `route="ortho"` on `deck-edge` for a right-angle path around nodes a
+  straight line would cross, `label-offset="x,y"` to nudge an edge label off a
+  crowded midpoint, and `width` on `deck-node` to force a label to wrap before
+  it collides with its neighbour.
+- **New attributes across five opt-in components.** `deck-annotate` gains
+  `leader` with `offset`/`offsets` (`x,y` CSS pixels, `|`-separated per mark)
+  to draw a line from the exact point being called out to a badge displaced
+  away from it, for screenshots where the badge itself would cover the detail.
+  `deck-persona` gains `compact` (a smaller portrait and type for a supporting
+  persona) and `inline` (name, role and context on one wrapping row instead of
+  the opening third of a slide). `deck-versus` gains `slide` to use the same
+  before/after vocabulary as a complete slide, with its own `title`/`lead`
+  slots and an `eyebrow`, instead of composing `deck-split` and two
+  `deck-card`. `deck-callout` gains `on-dark` so a callout dropped into a
+  cover, section or takeaway inherits readable inverse text and surface
+  instead of the light-theme defaults going invisible. `deck-step` gains
+  `note-position="below"` to keep a step's supporting note under its label
+  instead of squeezed into the gutter between steps.
+- **`rikiki check` gains two graph-specific codes.** `GRAPH_NODE_OUT_OF_BOUNDS`
+  (error) fires when a node's painted box sits outside its `deck-graph`
+  canvas; `GRAPH_EDGE_CROSSES_NODE` (warning) fires when a straight edge's
+  path enters another node's content box on its way between the two it
+  connects. Both are read off the rendered layout, the same geometry the
+  arrowhead fix above relies on, not inferred from the authored `at`
+  coordinates.
 
 ## [1.0.0] - 2026-09-09
 ### Added

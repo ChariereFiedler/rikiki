@@ -250,7 +250,7 @@ badge back sets `--deck-eyebrow-bg`, `--deck-eyebrow-color`,
 
 | Tag | Purpose | Key attributes | Slots / children |
 |-----|---------|----------------|------------------|
-| `deck-callout` | Highlighted note box | `type` (`info`/`warn`/`danger`/`ok`) | default (text / `deck-md`) |
+| `deck-callout` | Highlighted note box | `type` (`info`/`warn`/`danger`/`ok`), `on-dark` (inverse text on a dark raised surface, for a dark slide) | default (text / `deck-md`) |
 | `deck-card` | Tinted card | `color` (`yellow`/`orange`/`green`/`red`), `center`, `compact` | default (`<h3>` + body) |
 | `deck-md` | Render Markdown (GFM) · also expands `::: cards` blocks into a tinted card grid | · | default = raw Markdown text |
 | `deck-mermaid` | Render a Mermaid diagram (uses the optional vendored Mermaid runtime) | `compact` | default = Mermaid source |
@@ -260,8 +260,8 @@ badge back sets `--deck-eyebrow-bg`, `--deck-eyebrow-color`,
 | `deck-tier-list` | Tier ladder | · | `deck-tier`, `deck-tier-arrow` children |
 | `deck-tier` | One tier row | `name`, `speed`, `severity` (`muted`/`warn`/`ok`/`hot`), `hot` | default = description text |
 | `deck-tier-arrow` | Separator note between tiers | · | default = text |
-| `deck-step-list` | Numbered step ladder | `direction` (`column` default, `row` for a chain across the width), `no-connectors` | `deck-step` children |
-| `deck-step` | One step row | `n`, `note` | default = label |
+| `deck-step-list` | Numbered step ladder | `direction` (`column` default, `row` for a chain across the width), `no-connectors` | `deck-step` children (each one carries its own `note-position`) |
+| `deck-step` | One step row | `n`, `note`, `note-position` (`inline` default / `below`, the note under the label rather than beside it) | default = label |
 | `deck-shortcut-list` | Shortcut grid | `cols` (column count, e.g. `1`), `col-gap` (1..6) | `deck-shortcut` children |
 | `deck-shortcut` | One keyboard-shortcut row | `keys` (space-separated), `label`, `note`, `tone` (`accent`/`ok`) | default = note |
 | `deck-kbd` | Inline key chip | `tone` (`accent`/`ok`) | default = key text |
@@ -340,7 +340,7 @@ async function installShiki(opts?: {
   class via `setDeckCodeHighlighter` (resolved through `customElements.get`), so
   it never patches the component's internals · see *Writing a plugin* below.
 - **Trade-off:** the curated runtime is about 113 KB when gzip-compressed. It remains opt-in and
-  lazy, so the core bundle stays ~42 KB gzip.
+  lazy, so the core bundle stays ~43 KB gzip.
 
 ---
 
@@ -718,6 +718,8 @@ an `element` path that reaches into the Shadow DOM (`deck-feature#detail
 | `UNKNOWN_ATTRIBUTE` | warning | an attribute the element neither reads nor styles on · the value is dropped |
 | `DUPLICATE_SLIDE_ID` | warning | two slides answer to the same name |
 | `EXTERNAL_DEPENDENCY` | warning | the deck fetches from the network at runtime |
+| `GRAPH_NODE_OUT_OF_BOUNDS` | error | a `deck-node` is painted outside its `deck-graph` canvas · move it inward with `at`, shorten its note, or constrain it with `width` |
+| `GRAPH_EDGE_CROSSES_NODE` | warning | a `deck-edge` passes under a node it does not connect · move the obstructing node, or route the edge around it |
 
 The report also carries `notChecked`, which names what was **not** looked at:
 revealed steps, accessibility, wording and facts, other viewports, text inside
@@ -1295,15 +1297,16 @@ and the rest of the deck is unaffected.
 | `deck-checklist` / `deck-check` | What works and what does not, told apart by shape as well as colour | list: `cols` · item: `no` | item default = the text |
 | `deck-kpi-grid` / `deck-kpi` | Several figures that read as one family | grid: `cols`, `ruled` · figure: `value`, `label`, `note`, `tone` | · |
 | `deck-pull` | An excerpt lifted out of a dense slide · text wraps around it when floated | `side` (`full`/`left`/`right`) | default = the excerpt |
-| `deck-persona` | Who is speaking, or who the case study is about | `name`, `person-role` (**not** `role`), `org`, `context`, `src` (a portrait; initials stand in without one), `on-dark` | · |
-| `deck-versus` | A directed comparison as a BLOCK inside a slide (`deck-split` covers the case where the comparison is the whole slide) | `pivot`, `winner` (`left`/`right`) | `left`, `right` |
+| `deck-persona` | Who is speaking, or who the case study is about | `name`, `person-role` (**not** `role`), `org`, `context`, `src` (a portrait; initials stand in without one), `on-dark`, `compact` (smaller portrait, type and spacing, for a supporting persona), `inline` (name, role and context on one wrapping row) | · |
+| `deck-versus` | A directed comparison as a BLOCK inside a slide (`deck-split` covers the case where the comparison is the whole slide) | `pivot`, `winner` (`left`/`right`), `slide` (make the comparison a deck-root slide of its own, with `title` and `lead` slots), `eyebrow` (context label above the title, slide mode only) | `title`, `lead`, `left`, `right` |
 | `deck-flow` / `deck-flow-step` | A chain across the width · numbered stages, and only the active one takes the block | flow: `cols`, `reveal` · stage: `label`, `note` | stage default = extra content |
 | `deck-timeline` / `deck-milestone` | A trajectory in time, on an axis | timeline: `direction` (`row`/`column`), `reveal` · milestone: `date`, `label`, `note`, `tone` | · |
-| `deck-graph` / `deck-node` / `deck-edge` / `deck-group` / `deck-lane` | Nodes, edges, regions and bands · the primitive behind every boxes-and-arrows slide | graph: `layout` (`free`/`row`/`column`), `reveal` · node: `at` (`x,y` in percent), `label`, `note`, `boxed`, `tone`, `icon` · edge: `from`, `to`, `label`, `dashed`, `arrow` (`end` default / `start` / `both` / `none`) · group: `at` (`x,y,w,h`), `label`, `solid` · lane: `at` (`top,height`), `label` | node default = extra content |
+| `deck-graph` / `deck-node` / `deck-edge` / `deck-group` / `deck-lane` | Nodes, edges, regions and bands · the primitive behind every boxes-and-arrows slide | graph: `layout` (`free`/`row`/`column`), `reveal` · node: `at` (`x,y` in percent), `label`, `note`, `boxed`, `tone`, `icon`, `width` (an explicit CSS width such as `18ch` or `240px`, so a long label wraps instead of colliding) · edge: `from`, `to`, `label`, `dashed`, `arrow` (`end` default / `start` / `both` / `none`), `route` (`straight` default / `ortho` for right-angle segments), `label-offset` (`x,y` in pixels, moves the label off the line) · group: `at` (`x,y,w,h`), `label`, `solid` · lane: `at` (`top,height`), `label` | node default = extra content |
 | `deck-table` | A hand-authored table with the hierarchy `deck-csv` has · the table stays in your light DOM, so its cells may carry markup | `highlight-rows`, `highlight-cols`, `reveal` | default = your `<table>` |
-| `deck-annotate` | A screenshot the speaker can point at · numbered markers positioned in percent, revealed one per step through the engine's own step mechanism | `src`, `alt`, `marks` (`x,y,label` triples separated by `\|`, coordinates in percent), `all-at-once`, `no-legend` | · |
+| `deck-annotate` | A screenshot the speaker can point at · numbered markers positioned in percent, revealed one per step through the engine's own step mechanism | `src`, `alt`, `marks` (`x,y,label` triples separated by `\|`, coordinates in percent), `all-at-once`, `no-legend`, `leader` (draw a line from the target point to a displaced badge), `offset` (`x,y` in pixels, the default displacement), `offsets` (per-mark displacements separated by `\|`; a missing entry falls back to `offset`) | · |
 | `deck-agenda` | The running order and where the talk is · reads the deck's own chapter structure, so adding a `deck-section` grows a line | `no-numbers`, `no-jump` | · |
 | `deck-quote` | Someone else's words, attributed · distinct from `deck-punch`, which is the speaker's own line | `author`, `author-role` (**not** `role`, which belongs to ARIA), `size` (`lead`/`big`/`mega`), `plain` (drop the rule beside the quote), `on-dark`, `no-mark` | default = the quoted text |
+| `deck-figure` | A screenshot, a diagram or a chart as content · the image keeps its ratio, and its caption and credit stay attached to it semantically | `src`, `alt` (required unless `decorative`), `caption`, `source`, `source-href` (turns the credit into a link), `decorative` (the image carries no information · produces `alt=""`) | `image`, `caption`, `source` |
 
 Tokens follow the usual per-component convention and every default routes to a
 semantic `--rik-*` token, so both shipped themes are covered:
@@ -1313,7 +1316,8 @@ semantic `--rik-*` token, so both shipped themes are covered:
 `--deck-quote-rule`, `--deck-quote-mark-color`, `--deck-quote-author-color`,
 `--deck-quote-role-color`, `--deck-quote-max-width`;
 `--deck-annotate-mark-bg`, `--deck-annotate-mark-color`, `--deck-annotate-mark-size`,
-`--deck-annotate-mark-ring`, `--deck-annotate-radius`, `--deck-annotate-legend-color`;
+`--deck-annotate-mark-ring`, `--deck-annotate-radius`, `--deck-annotate-legend-color`,
+`--deck-annotate-leader`, `--deck-annotate-leader-width`;
 `--deck-agenda-current-color`, `--deck-agenda-done-color`, `--deck-agenda-rule`,
 `--deck-agenda-marker`, `--deck-agenda-size`, `--deck-agenda-gap`;
 `--deck-icon-size`, `--deck-icon-color`, `--deck-icon-stroke`;
@@ -1322,14 +1326,19 @@ semantic `--rik-*` token, so both shipped themes are covered:
 `--deck-kpi-value-size`, `--deck-kpi-grid-cols`, `--deck-kpi-grid-rule`;
 `--deck-pull-rule`, `--deck-pull-size`, `--deck-pull-width`, `--deck-pull-font`;
 `--deck-persona-avatar-size`, `--deck-persona-name-color`,
-`--deck-persona-initials-color`, `--deck-persona-rule`;
-`--deck-versus-winner-ring`, `--deck-versus-loser-opacity`, `--deck-versus-pivot-color`;
+`--deck-persona-initials-color`, `--deck-persona-rule`,
+`--deck-persona-compact-name-size`;
+`--deck-versus-winner-ring`, `--deck-versus-loser-opacity`, `--deck-versus-pivot-color`,
+`--deck-versus-slide-bg`, `--deck-versus-eyebrow-color`, `--deck-versus-side-align`;
 `--deck-flow-gap`, `--deck-flow-step-accent`;
 `--deck-timeline-axis`, `--deck-milestone-dot`;
 `--deck-graph-edge`, `--deck-graph-edge-width`, `--deck-graph-ratio`, `--deck-node-rule`,
 `--deck-node-bg`, `--deck-group-border`, `--deck-lane-rule`;
 `--deck-table-mark-bg`, `--deck-table-mark-color`, `--deck-table-col-color`,
-`--deck-table-col-on-mark`.
+`--deck-table-col-on-mark`;
+`--deck-figure-gap`, `--deck-figure-radius`, `--deck-figure-border`, `--deck-figure-bg`,
+`--deck-figure-image-fit`, `--deck-figure-image-position`, `--deck-figure-max-height`,
+`--deck-figure-caption-color`, `--deck-figure-source-color`.
 
 Five are shared and change every component here at once: `--rik-extras-mass`
 and `--rik-extras-mass-text` (the one filled area), `--rik-extras-statement` and
