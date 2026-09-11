@@ -76,27 +76,20 @@ export class DeckKpiGrid extends LitElement {
        projection distance the gap already separates two columns and a line that
        is only inferred is decoration. Where it IS asked for it has to be seen,
        so the default weight is 2px and the default colour is ink rather than
-       the paper-on-paper hairline that was invisible on a wall.
-
-       It is handed to the figures as a custom property instead of being written
-       with ::slotted(deck-kpi:not(:first-child)): Chromium does not match a
-       structural pseudo-class inside ::slotted(), so that selector silently did
-       nothing · which is why the divider never appeared. Each figure draws its
-       own left edge and cancels it with :host(:first-child), which is evaluated
-       in the light tree and does work. */
-    :host([ruled]) {
-      --_kpi-rule: var(--deck-kpi-grid-rule-width, 2px) solid
+       the paper-on-paper hairline that was invisible on a wall. */
+    :host([ruled]) ::slotted(deck-kpi:not(:first-child)) {
+      border-left: var(--deck-kpi-grid-rule-width, 2px) solid
         var(--deck-kpi-grid-rule, var(--rik-text-default--faint));
-      --_kpi-rule-pad: var(--deck-kpi-grid-gap, var(--rik-space-5));
+      padding-left: var(--deck-kpi-grid-gap, var(--rik-space-5));
     }
     @media (max-width: 640px) {
       :host {
         grid-template-columns: minmax(0, 1fr);
         grid-template-rows: none;
       }
-      :host([ruled]) {
-        --_kpi-rule: 0 solid transparent;
-        --_kpi-rule-pad: 0px;
+      :host([ruled]) ::slotted(deck-kpi:not(:first-child)) {
+        border-left: 0;
+        padding-left: 0;
       }
       ::slotted(deck-kpi) {
         --_kpi-rows: none;
@@ -137,13 +130,6 @@ export class DeckKpi extends LitElement {
         row-gap: var(--deck-kpi-grid-row-gap, var(--rik-space-2));
         align-content: start;
         min-width: 0;
-        /* The ruled divider, handed down by the grid · absent by default. */
-        border-left: var(--_kpi-rule, 0 solid transparent);
-        padding-left: var(--_kpi-rule-pad, 0px);
-      }
-      :host(:first-child) {
-        border-left: 0;
-        padding-left: 0;
       }
       /* The figure IS the design · at ten metres a number is either large
          enough to read or it is decoration, and there is no middle. It scales

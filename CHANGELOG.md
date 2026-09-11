@@ -172,10 +172,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ok`, `warn` or `danger` puts the figure on the inverse surface with inverse
   digits, and says the tone in the colour of the label under it rather than
   recolouring the figure · a coloured number on paper is a different colour, not
-  more emphasis; `default` and `muted` paint nothing at all. `ruled` draws a divider that can
-  actually be seen: it was written with
-  `::slotted(deck-kpi:not(:first-child))`, which Chromium does not match, so the
-  attribute had never drawn anything. No attribute changed.
+  more emphasis; `default` and `muted` paint nothing at all. `ruled` draws a divider that
+  can actually be seen: its 1px `--rik-border-default` hairline was invisible at
+  projection distance, so it is now a `--deck-kpi-grid-rule-width` (default 2px)
+  in ink. It had also never rendered at all, for the unrelated build reason
+  recorded under Fixed above. No attribute changed.
 - **`deck-persona` · the portrait block is the one mass.** The initials were
   faint grey type parked left of the name, attached to nothing. They now sit in
   a square of the inverse surface in inverse ink at statement scale, or the

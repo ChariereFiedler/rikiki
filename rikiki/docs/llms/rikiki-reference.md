@@ -1342,7 +1342,9 @@ semantic `--rik-*` token, so both shipped themes are covered:
 `--deck-check-no-color`, `--deck-checklist-rule`;
 `--deck-kpi-value-size`, `--deck-kpi-value-color`, `--deck-kpi-label-color`,
 `--deck-kpi-note-color`, `--deck-kpi-mass`, `--deck-kpi-mass-text`,
-`--deck-kpi-block-pad-x`, `--deck-kpi-block-pad-y`,
+`--deck-kpi-block-pad-x` (set it on the grid or above, never on one figure ·
+the grid offsets itself by this value so the first column's ink lands on the
+slide's text edge), `--deck-kpi-block-pad-y`,
 `--deck-kpi-grid-cols`, `--deck-kpi-grid-gap`, `--deck-kpi-grid-row-gap`,
 `--deck-kpi-grid-rule`, `--deck-kpi-grid-rule-width`;
 `--deck-pull-rule`, `--deck-pull-size`, `--deck-pull-width`, `--deck-pull-font`;
