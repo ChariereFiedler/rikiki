@@ -681,6 +681,71 @@ which is what you edit against.
 The command waits for the elements to upgrade, the fonts to load, the diagrams
 to draw and every animation to finish before each shot. It does not sleep.
 
+#### `--baseline <dir>` · what moved since last time
+
+```bash
+npx rikiki render talk.html --out after/ --baseline before/
+npx rikiki render talk.html --out after/ --baseline before/ --json > diff.json
+npx rikiki render talk.html --out after/ --baseline before/ --threshold 0
+```
+
+The deck is rendered as usual, then every PNG that has a same-named file in
+`<dir>` is compared to it, in the browser that just took the pictures: both
+images go on a canvas and `getImageData` counts the pixels whose worst channel
+moved by more than 32 of 255. A file only one side has is reported as `added`
+or `missing`, never as a diff; two captures of different sizes are `resized`,
+with both sizes and no pixel count, because a ratio across a resize means
+nothing.
+
+Human output goes to stderr, one line per changed slide, most changed first:
+
+```
+rikiki · diff · 1 slide(s) changed · most changed first
+    ·   9.21% 01-intro.png · Le titre de la slide · box 101,383 1204×323
+rikiki · diff · 1 changed · 11 stable · 0 added · 0 missing · 0 resized · baseline before/
+```
+
+`--json` writes the whole report to stdout and nothing else; the same report is
+always written to `diff.json`, beside `manifest.json`:
+
+```json
+{
+  "schema": "rikiki.render-diff/1",
+  "baseline": "/abs/path/to/before",
+  "threshold": 0.5,
+  "slides": [
+    {
+      "file": "01-intro.png",
+      "slide": 1, "id": "intro", "title": "…", "step": 0,
+      "status": "changed",
+      "changedRatio": 0.0921, "changedPixels": 190941, "totalPixels": 2073600,
+      "box": { "left": 101, "top": 383, "width": 1204, "height": 323 }
+    },
+    { "file": "04-wide.png", "status": "resized",
+      "baselineSize": { "width": 1920, "height": 1080 }, "size": { "width": 1280, "height": 720 } },
+    { "file": "09-gone.png", "status": "missing" }
+  ],
+  "summary": { "changed": 1, "stable": 11, "added": 0, "missing": 1, "resized": 1 }
+}
+```
+
+`slides` is ranked by `changedRatio` descending, so the loudest slide is the
+first thing read; the entries nobody could measure (`added`, `missing`,
+`resized`) keep to the end, where the report names them one by one. `box` is
+the smallest rect containing every changed pixel · it is where to look.
+
+`--threshold` is a percentage of a slide's pixels: at or above it a slide is
+`changed`, below it `stable`. The default `0.5` is there because re-rendering
+an unchanged deck still repaints its anti-aliasing, and a report where 57 of 64
+slides are "changed" hides the seven that really moved. `--threshold 0` lists
+every slide where a single pixel moved; a slide where nothing moved stays
+`stable` even then.
+
+Exit code is 1 when at least one slide is `changed`, `missing` or `resized`, 0
+otherwise · a slide the baseline never had is news, not a regression. A
+`--baseline` pointing at a directory that is not there stops before the render,
+with exit 2.
+
 ### `rikiki check` · measurements
 
 ```bash

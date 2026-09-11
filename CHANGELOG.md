@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **`rikiki render --baseline <dir>` says what moved since an earlier render.**
+  Each fresh PNG is compared to the same-named capture in `<dir>`, in the
+  browser that just took the pictures (both images on a canvas,
+  `getImageData`, a pixel counted when its worst channel moves by more than 32
+  of 255) · no image library, no new dependency. Slides are ranked by
+  `changedRatio`, each with the bounding box of what moved; a file only one
+  side has is `added` or `missing`, two captures of different sizes are
+  `resized`. `--threshold` (percent of pixels, default `0.5`) is what keeps
+  anti-aliasing noise out of the report · `--threshold 0` lists every pixel
+  change. `--json` writes the report to stdout, and it is always written to
+  `diff.json` beside `manifest.json`. Exit 1 on a changed, missing or resized
+  slide; exit 2 on a baseline directory that is not there.
 - **`rikiki check --steps` measures every revealed state of a slide, not just
   its opening one.** Each slide is walked from its opening state through
   every state `advanceStep` (`ArrowRight`) reaches, running the same

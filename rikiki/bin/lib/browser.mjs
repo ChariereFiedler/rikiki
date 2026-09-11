@@ -227,7 +227,7 @@ async function settle(page, timeoutMs) {
 /**
  * Open a deck in a real browser and hand it to `fn`.
  *
- * `fn` receives `{ page, origin, url, settled, missing, errors }`, where
+ * `fn` receives `{ page, browser, origin, url, settled, missing, errors }`, where
  * `missing` lists the requests the page could not load and `errors` the
  * exceptions it threw. The browser and the server are closed on the way out,
  * including when `fn` throws.
@@ -261,7 +261,7 @@ export async function withDeck(deckPath, fn, { timeoutMs = 30_000, viewport } = 
       errors.push(e instanceof Error ? e.message : String(e));
     }
     const settled = loaded && (await settle(page, timeoutMs));
-    return await fn({ page, origin: server.origin, url, settled, missing, errors });
+    return await fn({ page, browser, origin: server.origin, url, settled, missing, errors });
   } finally {
     await browser.close().catch(() => {});
     await server.close().catch(() => {});

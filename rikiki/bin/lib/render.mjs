@@ -10,6 +10,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { ExpectedError } from './cli-error.mjs';
 import { SLIDE_TITLE_READER, advanceStep, goToSlide, withDeck } from './browser.mjs';
+import { diffRender } from './diff.mjs';
 
 export const MANIFEST_SCHEMA = 1;
 
@@ -121,13 +122,18 @@ const escapeHtml = (s) =>
  * @param {boolean} [options.steps]     also capture each revealed state
  * @param {number} [options.width]      canvas width in CSS pixels
  * @param {number} [options.height]     canvas height
- * @returns {Promise<{manifest: object, manifestPath: string, galleryPath: string}>}
+ * @param {string} [options.baseline]   earlier captures to compare this render against
+ * @param {number} [options.threshold]  percent of pixels · at or above is `changed`
+ * @returns {Promise<{manifest: object, manifestPath: string, galleryPath: string, diff?: object, diffPath?: string}>}
  */
-export async function renderDeck(deckPath, { outDir, slides, steps = false, width = 1920, height = 1080 } = {}) {
+export async function renderDeck(
+  deckPath,
+  { outDir, slides, steps = false, width = 1920, height = 1080, baseline, threshold } = {},
+) {
   const canvas = { width, height };
   return withDeck(
     deckPath,
-    async ({ page, settled, missing, errors }) => {
+    async ({ page, browser, settled, missing, errors }) => {
       if (!settled) {
         throw new ExpectedError(
           `render · ${basename(deckPath)} never showed a slide.\n` +
@@ -171,7 +177,18 @@ export async function renderDeck(deckPath, { outDir, slides, steps = false, widt
       const galleryPath = join(outDir, 'index.html');
       writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
       writeFileSync(galleryPath, galleryHtml(basename(deckPath), canvas, shots));
-      return { manifest, manifestPath, galleryPath };
+      if (!baseline) return { manifest, manifestPath, galleryPath };
+
+      // The comparison rides the browser that just took the pictures · a
+      // second launch to read two PNGs would cost more than the diff itself.
+      const { report, diffPath } = await diffRender({
+        browser,
+        outDir,
+        baselineDir: baseline,
+        threshold,
+        shots,
+      });
+      return { manifest, manifestPath, galleryPath, diff: report, diffPath };
     },
     { viewport: canvas },
   );
