@@ -248,11 +248,14 @@ const atoms: Component[] = [
   {
     tag: 'deck-callout',
     summary: 'Boxed note with icon · info / warn / danger / ok.',
-    attrs: [{ name: 'type', type: 'info | warn | danger | ok' }],
+    attrs: [
+      { name: 'type',    type: 'info | warn | danger | ok' },
+      { name: 'on-dark', type: 'boolean', note: 'Readable surface and inverse text inside a dark layout' },
+    ],
     example: `<deck-callout type="warn">
   <strong>Heads up ·</strong> this changes the public API.
 </deck-callout>`,
-    tokens: ['--deck-callout-bg', '--deck-callout-border', '--deck-callout-stroke', '--deck-callout-radius', '--deck-callout-padding-x', '--deck-callout-padding-y'],
+    tokens: ['--deck-callout-bg', '--deck-callout-border', '--deck-callout-stroke', '--deck-callout-radius', '--deck-callout-padding-x', '--deck-callout-padding-y', '--deck-callout-color', '--deck-callout-strong-color', '--deck-callout-code-bg'],
   },
   {
     tag: 'deck-card',
@@ -345,6 +348,7 @@ const atoms: Component[] = [
     attrs: [
       { name: 'n',    type: 'string', note: 'Number or letter' },
       { name: 'note', type: 'string', note: 'Right-aligned chip' },
+      { name: 'note-position', type: 'inline | below', note: 'On deck-step · below puts the note under its label' },
     ],
     example: `<deck-step-list>
   <deck-step n="1" note="opens the deck">Cover</deck-step>
@@ -471,11 +475,11 @@ const optionalComponents: OptionalComponent[] = [
     tag: 'deck-annotate',
     summary: 'Image or screenshot with numbered marks, progressive reveal, and an optional legend.',
     module: 'deck-annotate.js',
-    attrs: 'src: URL · alt: string · marks: JSON/string mark data · all-at-once · no-legend',
+    attrs: 'src: URL · alt: string · marks: JSON/string mark data · all-at-once · no-legend · leader · offset: x,y pixel displacement · offsets: one x,y pair per mark, separated by |',
     slots: 'default: optional legend content when marks do not provide one',
     example: '<deck-annotate src="/screen.png" alt="Product screen" marks="1:42,18,2:74,55"></deck-annotate>',
     preview: '<deck-annotate src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'900\' height=\'480\'%3E%3Crect width=\'900\' height=\'480\' fill=\'%23161c2e\'/%3E%3Crect x=\'55\' y=\'55\' width=\'790\' height=\'72\' rx=\'12\' fill=\'%23263249\'/%3E%3Crect x=\'55\' y=\'155\' width=\'360\' height=\'270\' rx=\'12\' fill=\'%23f07020\'/%3E%3Crect x=\'445\' y=\'155\' width=\'400\' height=\'120\' rx=\'12\' fill=\'%2300c8a0\'/%3E%3Crect x=\'445\' y=\'305\' width=\'400\' height=\'120\' rx=\'12\' fill=\'%23e8e4f0\'/%3E%3C/svg%3E" alt="Product screen" marks="1:42,42,2:74,28"></deck-annotate>',
-    tokens: '--deck-annotate-radius · --deck-annotate-border · --deck-annotate-mark-bg · --deck-annotate-mark-color · --deck-annotate-mark-size · --deck-annotate-mark-ring · --deck-annotate-legend-color · --deck-annotate-legend-size · --deck-annotate-gap',
+    tokens: '--deck-annotate-radius · --deck-annotate-border · --deck-annotate-mark-bg · --deck-annotate-mark-color · --deck-annotate-mark-size · --deck-annotate-mark-ring · --deck-annotate-leader · --deck-annotate-leader-width · --deck-annotate-legend-color · --deck-annotate-legend-size · --deck-annotate-gap',
   },
   {
     tag: 'deck-bar',
@@ -499,6 +503,21 @@ const optionalComponents: OptionalComponent[] = [
     tokens: '--deck-checklist-gap · --deck-checklist-cols · --deck-checklist-rule · --deck-check-yes · --deck-check-no · --deck-check-size · --deck-check-gap · --deck-check-color',
   },
   {
+    tag: 'deck-figure',
+    summary: 'Screenshot, diagram or chart with its caption and source credit attached to the image.',
+    module: 'deck-figure.js',
+    attrs: 'src: image URL · alt: text alternative, required unless decorative · caption: string · source: string · source-href: URL · decorative',
+    slots: 'image: media used when src is absent · caption: rich caption content · source: rich credit content',
+    example: `<deck-figure
+  src="/build-duration.png"
+  alt="Build duration by pipeline stage"
+  caption="The cache removes most of the install cost."
+  source="CI benchmark"
+></deck-figure>`,
+    preview: '<deck-figure src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'900\' height=\'480\'%3E%3Crect width=\'900\' height=\'480\' fill=\'%23161c2e\'/%3E%3Crect x=\'80\' y=\'96\' width=\'520\' height=\'48\' rx=\'8\' fill=\'%23f07020\'/%3E%3Crect x=\'80\' y=\'176\' width=\'340\' height=\'48\' rx=\'8\' fill=\'%2300c8a0\'/%3E%3Crect x=\'80\' y=\'256\' width=\'690\' height=\'48\' rx=\'8\' fill=\'%23263249\'/%3E%3Crect x=\'80\' y=\'336\' width=\'180\' height=\'48\' rx=\'8\' fill=\'%23e8e4f0\'/%3E%3C/svg%3E" alt="Build duration by pipeline stage" caption="The cache removes most of the install cost." source="CI benchmark"></deck-figure>',
+    tokens: '--deck-figure-gap · --deck-figure-image-fit · --deck-figure-image-position · --deck-figure-radius · --deck-figure-border · --deck-figure-bg · --deck-figure-caption-color · --deck-figure-source-color · --deck-figure-max-height',
+  },
+  {
     tag: 'deck-flow',
     summary: 'Stage based process diagram with labels, notes, connectors, and reveal states.',
     module: 'deck-flow.js',
@@ -518,7 +537,7 @@ const optionalComponents: OptionalComponent[] = [
     tag: 'deck-graph',
     summary: 'Positioned node and edge graph for architecture, dependencies, or relationships.',
     module: 'deck-graph.js',
-    attrs: 'layout: free|row|column · reveal · deck-node at · label · note · boxed · tone · icon · deck-group at · label · solid · deck-lane at · label · deck-edge from · to · label · dashed',
+    attrs: 'layout: free|row|column · reveal · deck-node at · label · note · width: CSS width for long labels · boxed · tone · icon · deck-group at · label · solid · deck-lane at · label · deck-edge from · to · label · dashed · route: straight|ortho · label-offset: x,y pixel offset for the label',
     slots: 'default: deck-node, deck-group, deck-lane, and deck-edge children',
     example: `<deck-graph layout="row">
   <deck-node id="source" label="Brief"></deck-node>
@@ -554,10 +573,10 @@ const optionalComponents: OptionalComponent[] = [
     tag: 'deck-persona',
     summary: 'Audience or user framing block with avatar, name, role, organisation, and context.',
     module: 'deck-persona.js',
-    attrs: 'name: string · person-role: string · org: string · context: string · src: image URL · on-dark',
+    attrs: 'name: string · person-role: string · org: string · context: string · src: image URL · on-dark · compact · inline',
     slots: 'default: additional context content',
     example: '<deck-persona name="Alex" person-role="Staff engineer" org="Siliceum" context="Needs a deck that survives handover"></deck-persona>',
-    tokens: '--deck-persona-avatar-size · --deck-persona-initials-color · --deck-persona-rule · --deck-persona-name-color · --deck-persona-role-color · --deck-persona-context-color · --deck-persona-gap',
+    tokens: '--deck-persona-avatar-size · --deck-persona-initials-color · --deck-persona-rule · --deck-persona-name-color · --deck-persona-role-color · --deck-persona-context-color · --deck-persona-gap · --deck-persona-compact-name-size',
   },
   {
     tag: 'deck-pull',
@@ -616,8 +635,8 @@ const optionalComponents: OptionalComponent[] = [
     tag: 'deck-versus',
     summary: 'Two sided decision layout with a central pivot and an optional winner.',
     module: 'deck-versus.js',
-    attrs: 'pivot: string · winner: left|right',
-    slots: 'left / right: the two alternatives',
+    attrs: 'pivot: string · winner: left|right · slide · eyebrow: string, slide mode only',
+    slots: 'left / right: the two alternatives · title / lead: heading and lead paragraph, slide mode only',
     example: `<deck-versus pivot="OR" winner="right">
   <div slot="left">
     <h3>Source</h3>
@@ -628,7 +647,7 @@ const optionalComponents: OptionalComponent[] = [
     <p>Checked and deliverable.</p>
   </div>
 </deck-versus>`,
-    tokens: '--deck-versus-gap · --deck-versus-pivot-color · --deck-versus-pivot-size · --deck-versus-rule · --deck-versus-winner-rule · --deck-versus-loser-color',
+    tokens: '--deck-versus-gap · --deck-versus-pivot-color · --deck-versus-pivot-size · --deck-versus-rule · --deck-versus-winner-rule · --deck-versus-loser-color · --deck-versus-eyebrow-color · --deck-versus-slide-bg · --deck-versus-side-align',
   },
 ];
 ---
@@ -636,7 +655,7 @@ const optionalComponents: OptionalComponent[] = [
 <Docs
   title="Component library"
   eyebrow="Reference"
-  description="Every <deck-*> element · attributes, slots, tokens, live preview. The default bundle has 35 core components; 22 optional elements are documented below."
+  description="Every <deck-*> element · attributes, slots, tokens, live preview. The default bundle has 35 core components; 23 optional elements are documented below."
 >
 
 <h2 id="mental-model">Mental model · which one do I need?</h2>
@@ -691,8 +710,8 @@ const optionalComponents: OptionalComponent[] = [
 
 
 <p>
-  This catalogue details <strong>8 layouts</strong> and <strong>35 building blocks</strong>:
-  21 from the default bundle and 14 optional components. Layouts define a
+  This catalogue details <strong>8 layouts</strong> and <strong>36 building blocks</strong>:
+  21 from the default bundle and 15 optional components. Layouts define a
   slide's overall structure; the building blocks fill the slots. Both
   groups follow the same design-token contract · override
   <code>--deck-&lt;tag&gt;-*</code> on the host to retheme a single instance,

@@ -214,7 +214,10 @@ thing. Three habits separate a deck that argues from one that recites:
 - **Draw the flow.** A pipeline, a fan-out, a set of layers: `deck-graph` with
   positioned nodes says in one look what three bullets say badly. Reserve
   `deck-flow` for what is genuinely a sequence · one source with three outputs
-  is a fan-out, and numbering it is a lie about the content.
+  is a fan-out, and numbering it is a lie about the content. If an edge's
+  straight line would pass under a node it does not connect, add
+  `route="ortho"` on that `deck-edge` rather than repositioning nodes around
+  it.
 
 ### Choosing the element
 
@@ -230,6 +233,7 @@ the core bundle.
 | Several figures as one family | `deck-kpi-grid` + `deck-kpi` (opt-in) |
 | An ordered process | `deck-flow` + `deck-flow-step` (opt-in) |
 | How the parts sit together | `deck-graph` + `deck-node` / `deck-edge` (opt-in) |
+| A screenshot, diagram or chart with a caption and a source | `deck-figure` (opt-in) |
 | What works and what does not | `deck-checklist` + `deck-check` (opt-in) |
 | A trajectory in time | `deck-timeline` + `deck-milestone` (opt-in) |
 | Code, explained | `deck-code lang="…" hero` |
