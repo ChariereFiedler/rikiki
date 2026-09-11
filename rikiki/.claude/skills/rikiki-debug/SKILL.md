@@ -39,6 +39,7 @@ source of truth for tags, attributes, and tokens.
 | Livereload silent | `?live` missing from the URL, or the static server doesn't see file changes |
 | Bundled single-file deck unstyled | `rikiki bundle` resolves a plain relative ref against the deck's own dir; the `rikiki/(dist\|themes\|tokens.css)` convention is what triggers the package-root fallback. A deck pointing outside its dir (`../../dist/index.js`) won't inline — repoint at `rikiki/…`-style paths. See reference §9 |
 | A `deck-graph` node sits outside its canvas | `check` reports `GRAPH_NODE_OUT_OF_BOUNDS` (error) · move the node inward with `at`, shorten its note, or constrain it with `width` / `--deck-node-size` |
+| Two `deck-graph` nodes are painted on top of each other | `check` reports `GRAPH_NODE_OVERLAPS_NODE` (error) · move one with `at`, or narrow both with `width` / `--deck-node-size` |
 | A `deck-graph` arrow or line passes under an unrelated node | `check` reports `GRAPH_EDGE_CROSSES_NODE` (warning) · move the obstructing node or split the route into a clear path; an orthogonal route (`route="ortho"` on `deck-edge`) is preferable when available |
 
 ## Measure first

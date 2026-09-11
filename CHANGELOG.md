@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **`rikiki check` reports two graph nodes painted on top of each other.**
+  `GRAPH_NODE_OVERLAPS_NODE` (error) fires when two `deck-node` of the same
+  `deck-graph` intersect by more than 4px on both axes, naming both ids and
+  the overlap in pixels. `GRAPH_NODE_OUT_OF_BOUNDS` already measured a node
+  against its canvas; nobody was measuring the nodes against each other, and a
+  node hidden behind another is a node nobody reads.
 - **`deck-figure` · a screenshot, diagram or chart with its own caption and
   source.** OPT-IN, native `<figure>`/`<figcaption>` under the hood, so the
   image, its explanation and its credit stay one semantic unit instead of a
@@ -45,6 +51,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   connects. Both are read off the rendered layout, the same geometry the
   arrowhead fix above relies on, not inferred from the authored `at`
   coordinates.
+
+### Fixed
+- **`GRAPH_EDGE_CROSSES_NODE` no longer misses a visible crossing.** The check
+  re-derived a centre-to-centre segment of its own, tested it as a
+  mathematical line against the node box shrunk by 2px, and ignored
+  `route="ortho"` entirely · an edge running a pixel outside a node's corner,
+  which a 4px stroke paints straight over, was reported as clean.
+  `deck-graph` now publishes the polyline it actually paints on each
+  `deck-edge` as `data-path` (graph-relative CSS pixels, bends included), and
+  the check tests that polyline, widened by half the stroke, against every
+  node it does not connect. A runtime older than the attribute still falls
+  back to the straight centre-to-centre test.
 
 ## [1.0.0] - 2026-09-09
 ### Added

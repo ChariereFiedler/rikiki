@@ -402,6 +402,67 @@ test.describe('graph geometry', () => {
     expect(found.measurement.obstructingNode).toContain('deck-node#blocker');
     expect(found.element).toContain('deck-edge');
   });
+
+  test('reports an edge that only clips a corner of an unrelated node', () => {
+    // The reported regression, at the coordinates it was reported at: the
+    // t4 to t5 edge runs along the bottom-right corner of t3, close enough
+    // that a 4px stroke paints over it. The old check compared a zero width
+    // centre-to-centre segment against the node box shrunk by 2px, and so
+    // said nothing at all about a crossing visible from the back of a room.
+    //
+    // The boxes are pinned rather than grown from a label and a note: the
+    // whole point is a near-tangent, and a near-tangent that drifts with font
+    // metrics is a flaky test. 288x202 is what the reported nodes measured.
+    const box = 'style="width:288px;height:202px"';
+    deck('graph-corner', `<script type="module" src="rikiki/dist/deck-graph.js"></script>
+      <deck-feature id="graph-corner"><h1 slot="title">Graph</h1>
+        <deck-graph>
+          <deck-node id="t3" at="55,24" boxed label="Identify" ${box}></deck-node>
+          <deck-node id="t4" at="80,24" boxed label="Query" ${box}></deck-node>
+          <deck-node id="t5" at="16,76" boxed label="Confront" ${box}></deck-node>
+          <deck-edge from="t4" to="t5"></deck-edge>
+        </deck-graph>
+      </deck-feature>`);
+    const r = report('graph-corner');
+    const found = r.json.diagnostics.find((d: any) => d.code === 'GRAPH_EDGE_CROSSES_NODE');
+    expect(found, r.stdout).toBeTruthy();
+    expect(found.measurement.obstructingNode).toContain('deck-node#t3');
+    expect(found.measurement.from).toBe('t4');
+    expect(found.measurement.to).toBe('t5');
+  });
+
+  test('reports two nodes painted on top of each other', () => {
+    deck('graph-overlap', `<script type="module" src="rikiki/dist/deck-graph.js"></script>
+      <deck-feature id="graph-overlap"><h1 slot="title">Graph</h1>
+        <deck-graph>
+          <deck-node id="near" at="50,50" boxed label="A source nobody can read"></deck-node>
+          <deck-node id="over" at="52,50" boxed label="Because of this one"></deck-node>
+        </deck-graph>
+      </deck-feature>`);
+    const r = report('graph-overlap');
+    const found = r.json.diagnostics.find((d: any) => d.code === 'GRAPH_NODE_OVERLAPS_NODE');
+    expect(found, r.stdout).toBeTruthy();
+    expect(found.severity).toBe('error');
+    expect(found.slideId).toBe('graph-overlap');
+    expect(found.message).toContain('"near"');
+    expect(found.message).toContain('"over"');
+    expect(found.measurement.overlapPx.x).toBeGreaterThan(4);
+    expect(found.measurement.overlapPx.y).toBeGreaterThan(4);
+  });
+
+  test('leaves two nodes that merely sit side by side', () => {
+    deck('graph-apart', `<script type="module" src="rikiki/dist/deck-graph.js"></script>
+      <deck-feature id="graph-apart"><h1 slot="title">Graph</h1>
+        <deck-graph>
+          <deck-node id="left" at="20,50" boxed label="Left"></deck-node>
+          <deck-node id="right" at="80,50" boxed label="Right"></deck-node>
+        </deck-graph>
+      </deck-feature>`);
+    const r = report('graph-apart');
+    expect(r.json.diagnostics.map((d: any) => d.code), r.stdout).not.toContain(
+      'GRAPH_NODE_OVERLAPS_NODE',
+    );
+  });
 });
 
 test('text is measured inside the elements that re-render the author\'s words', () => {
