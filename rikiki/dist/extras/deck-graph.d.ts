@@ -9,7 +9,9 @@ export declare class DeckGraph extends LitElement {
     private _tick;
     /** The element's pixel box · the SVG coordinate space. */
     private _box;
+    private _nodeBoxes;
     private _ro?;
+    private _mo?;
     private get _nodes();
     private get _edges();
     firstUpdated(): void;
@@ -30,12 +32,16 @@ export declare class DeckNode extends LitElement {
     label?: string;
     /** A mono micro-label under the name · a protocol, a count, a latency. */
     note?: string;
+    /** Explicit CSS width (`18ch`, `240px`, …) for labels that must wrap before
+     * they collide with a neighbouring node. */
+    width?: string;
     /** Draw the node as a filled block rather than type under a rule. */
     boxed: boolean;
     /** Fill colour of a boxed node. */
     tone?: 'accent' | 'ok' | 'warn' | 'danger';
     /** A glyph above the label · needs dist/deck-icon.js loaded too. */
     icon?: string;
+    protected updated(): void;
     render(): import("lit-html").TemplateResult<1>;
 }
 export declare class DeckGroup extends LitElement {
@@ -60,6 +66,10 @@ export declare class DeckEdge extends LitElement {
     to?: string;
     label?: string;
     dashed: boolean;
+    /** `straight` by default; `ortho` draws right-angle segments. */
+    route: 'straight' | 'ortho';
+    /** `x,y` pixel offset for the edge label, e.g. `label-offset="0,-16"`. */
+    labelOffset?: string;
     render(): import("lit-html").TemplateResult<1>;
 }
 declare global {

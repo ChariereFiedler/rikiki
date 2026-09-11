@@ -253,6 +253,73 @@ const inspectPage = ({ limits, titleReader }) => {
     }
   }
 
+  // Graph failures are geometric: valid markup can still place a node outside
+  // the drawing area or route a straight edge through an unrelated node. Read
+  // the painted boxes after layout rather than trying to infer them from `at`.
+  const graphIssues = [];
+  const segmentHitsRect = (a, b, r) => {
+    let t0 = 0;
+    let t1 = 1;
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    for (const [p, q] of [
+      [-dx, a.x - r.left],
+      [dx, r.right - a.x],
+      [-dy, a.y - r.top],
+      [dy, r.bottom - a.y],
+    ]) {
+      if (p === 0 && q < 0) return false;
+      if (p === 0) continue;
+      const t = q / p;
+      if (p < 0) t0 = Math.max(t0, t);
+      else t1 = Math.min(t1, t);
+      if (t0 > t1) return false;
+    }
+    return true;
+  };
+  for (const graph of document.querySelectorAll('deck-graph')) {
+    const graphBox = graph.getBoundingClientRect();
+    if (!graphBox.width || !graphBox.height) continue;
+    const slide = slides.find((candidate) => candidate.contains(graph));
+    const slideIndex = slide ? slides.indexOf(slide) + 1 : null;
+    const nodes = [...graph.querySelectorAll('deck-node')].map((node) => ({
+      node,
+      id: node.id,
+      box: node.getBoundingClientRect(),
+    }));
+    for (const { node, box } of nodes) {
+      const overflow = {
+        left: Math.max(0, graphBox.left - box.left),
+        right: Math.max(0, box.right - graphBox.right),
+        top: Math.max(0, graphBox.top - box.top),
+        bottom: Math.max(0, box.bottom - graphBox.bottom),
+      };
+      const pixels = Math.max(...Object.values(overflow));
+      if (pixels > limits.clipPx) {
+        graphIssues.push({ kind: 'node-out', slide: slideIndex, graph: pathOf(graph), node: pathOf(node), pixels: Math.round(pixels), overflow });
+      }
+    }
+    const byId = new Map(nodes.filter(({ id }) => id).map((entry) => [entry.id, entry]));
+    for (const edge of graph.querySelectorAll('deck-edge')) {
+      const from = byId.get(edge.getAttribute('from') ?? '');
+      const to = byId.get(edge.getAttribute('to') ?? '');
+      if (!from || !to) continue;
+      const centre = ({ box }) => ({ x: (box.left + box.right) / 2, y: (box.top + box.bottom) / 2 });
+      const a = centre(from);
+      const b = centre(to);
+      for (const candidate of nodes) {
+        if (candidate === from || candidate === to) continue;
+        // Ignore a tangent on the visual halo; report an edge that enters the
+        // node's actual content box.
+        const inset = 2;
+        const r = { left: candidate.box.left + inset, right: candidate.box.right - inset, top: candidate.box.top + inset, bottom: candidate.box.bottom - inset };
+        if (r.left < r.right && r.top < r.bottom && segmentHitsRect(a, b, r)) {
+          graphIssues.push({ kind: 'edge-crosses-node', slide: slideIndex, graph: pathOf(graph), edge: pathOf(edge), node: pathOf(candidate.node), from: from.id, to: to.id });
+        }
+      }
+    }
+  }
+
   // What the deck says it lasts, and what it gives someone to say. Notes are
   // the script; the projected words are read, not spoken, so they count for
   // little. This is an order of magnitude, never a verdict.
@@ -273,6 +340,7 @@ const inspectPage = ({ limits, titleReader }) => {
     unknown,
     strayAttributes,
     unslotted,
+    graphIssues,
   };
 };
 
@@ -370,6 +438,34 @@ function diagnose(page, source, limits) {
         suggestion: `this element reads ${stray.observed.length ? stray.observed.join(', ') : 'no attribute'} · everything else goes in its content`,
       }),
     );
+  }
+
+  for (const issue of page.runtimeLoaded ? page.graphIssues ?? [] : []) {
+    const outline = issue.slide ? page.slides[issue.slide - 1] : null;
+    const where = {
+      slide: issue.slide ?? undefined,
+      slideId: outline?.id ?? null,
+      slideTag: outline?.tag ?? null,
+      element: issue.node,
+    };
+    if (issue.kind === 'node-out') {
+      found.push(
+        diagnostic('GRAPH_NODE_OUT_OF_BOUNDS', SEVERITY.error, `a graph node sits ${issue.pixels}px outside its canvas`, {
+          ...where,
+          measurement: { overflowPx: issue.pixels, sides: issue.overflow },
+          suggestion: 'move the node inward with `at`, shorten its note, or constrain it with `width` / `--deck-node-size`',
+        }),
+      );
+    } else if (issue.kind === 'edge-crosses-node') {
+      found.push(
+        diagnostic('GRAPH_EDGE_CROSSES_NODE', SEVERITY.warning, `the ${issue.from} → ${issue.to} edge passes under another node`, {
+          ...where,
+          element: issue.edge,
+          measurement: { obstructingNode: issue.node, from: issue.from, to: issue.to },
+          suggestion: 'move the obstructing node or split the route into a clear path; an orthogonal route is preferable when available',
+        }),
+      );
+    }
   }
 
   const ids = page.slides.map((s) => s.id).filter(Boolean);

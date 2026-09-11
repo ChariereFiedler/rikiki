@@ -65,10 +65,15 @@ test('an edge connects the two nodes it names', async ({ page }) => {
     return {
       from: centre('n-client'),
       to: centre('n-edge'),
+      target: (() => {
+        const r = document.getElementById('n-edge')!.getBoundingClientRect();
+        return { left: r.left - box.left, right: r.right - box.left };
+      })(),
       line: {
         x1: Number(line.getAttribute('x1')),
         x2: Number(line.getAttribute('x2')),
         y1: Number(line.getAttribute('y1')),
+        markerEnd: line.getAttribute('marker-end'),
       },
     };
   });
@@ -77,7 +82,42 @@ test('an edge connects the two nodes it names', async ({ page }) => {
   // not strike through their labels.
   expect(geometry.line.x1).toBeGreaterThan(geometry.from.x);
   expect(geometry.line.x2).toBeLessThan(geometry.to.x);
+  expect(geometry.line.x2, 'arrow tip meets the target boundary instead of hiding below it')
+    .toBeCloseTo(geometry.target.left, 0);
+  expect(geometry.line.markerEnd).toBe('url(#arrow)');
   expect(Math.abs(geometry.line.y1 - geometry.from.y)).toBeLessThan(30);
+});
+
+test('an orthogonal edge and label offset are author controlled', async ({ page }) => {
+  await gotoSlideWith(page, 'gr');
+  const result = await page.evaluate(async () => {
+    const graph = document.getElementById('gr')!;
+    const edge = graph.querySelector('deck-edge')!;
+    edge.setAttribute('route', 'ortho');
+    edge.setAttribute('label-offset', '0,-18');
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const path = graph.shadowRoot!.querySelector('path.edge');
+    const label = graph.shadowRoot!.querySelector<HTMLElement>('.edge-label');
+    return {
+      route: path?.getAttribute('data-route'),
+      path: path?.getAttribute('d'),
+      labelTop: label?.style.top,
+    };
+  });
+  expect(result.route).toBe('ortho');
+  expect(result.path).toMatch(/H .* V .* H/);
+  expect(result.labelTop).toMatch(/px$/);
+});
+
+test('a node accepts an explicit CSS width', async ({ page }) => {
+  await gotoSlideWith(page, 'gr');
+  const width = await page.evaluate(async () => {
+    const node = document.getElementById('n-client')!;
+    node.setAttribute('width', '240px');
+    await (node as any).updateComplete;
+    return Math.round((node as HTMLElement).offsetWidth);
+  });
+  expect(width).toBe(240);
 });
 
 test('a dashed edge is dashed, and only that one', async ({ page }) => {
