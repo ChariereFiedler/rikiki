@@ -317,3 +317,60 @@ Covers A5 and A7, documentation only.
   placement, with the reason in one sentence. Add a pointer to
   `GRAPH_NODE_OVERLAPS_NODE` as the net for hand placement.
 - CHANGELOG: nothing for A5; a one-line Docs entry for the record recipe.
+
+### Task 10 · Redesign `deck-kpi-grid` and `deck-persona`
+
+Added on 2026-09-12 at the user's request: both components look unfinished.
+Observed at 1920×1080 under the `rikiki` theme, in `decks/tests/extras-more.html`
+slides 3 and 5 and `examples/showcase/index.html` slides 13 and 22:
+
+- `deck-kpi-grid`: three figures at roughly 80 px float in the middle third of
+  an empty slide. Nothing makes them one family: no shared baseline is visible,
+  the label sits a full line below the figure, the optional `ruled` hairline is
+  invisible at distance, and `tone="accent"` only colours the digits, which
+  under `siliceum` (accent contrast 1.48) is no emphasis at all. The row reads
+  as three unrelated numbers pasted on a page.
+- `deck-persona`: the initials are faint grey type parked left of the name,
+  attached to nothing; name, role and context stack as three lines of the same
+  weight family. It reads as an unstyled contact card, not as someone being
+  introduced.
+
+**Process, binding.** Load `frontend-design`, then `rikiki-visual-design`,
+then `rikiki-component`. Write the design plan first (what carries emphasis,
+the two sizes, where the one mass goes), review it against the four rules of
+`docs/design/adr-002-extras-visual-direction.md`, then code. Take screenshots
+under both themes before and after (`node scripts/shots.mjs` or `rikiki render`
+on the fixture deck) and save them in the plan workspace; the controller looks
+at them.
+
+**Direction, inside ADR-002.**
+- `deck-kpi`: the figure is the statement and must be large enough to own its
+  column: scale the value with the slide (container units) so three figures
+  fill the row, and align all values of a grid on one baseline so they read as
+  one family. The label sits tight under the figure at reading size; the note
+  stays quiet under it. A marked figure (`tone` other than `default` and
+  `muted`) is the one mass: an inverse block behind that figure with
+  `--rik-text-inverse` digits, the tone as a mark on the block (a left stroke
+  or the label colour), never a pale tint. Keep `ruled` working. Keep every
+  attribute; no new attribute unless the direction cannot be expressed without
+  one, and say why.
+- `deck-persona`: the portrait block is the one mass: a square of the inverse
+  surface holding the initials in `--rik-text-inverse` at statement scale, or
+  the photo, so the person has a place on the slide. The name is the statement
+  next to it, aligned on the block's top edge; the role line reads under it;
+  the context is the quiet line and gets a top gap that separates it from the
+  identity. `compact` and `inline` shrink the block and the name consistently.
+  `on-dark` inverts the block (paper surface, ink initials).
+- Both must hold in the overview grid, the presenter view and the PDF export
+  (`print-color-adjust: exact` where a fill carries meaning), under both
+  themes, with every value a token and per-instance knobs as `--deck-*`.
+
+**Tests.** `e2e/component-context-variants.spec.ts` and `e2e/extras.spec.ts`
+keep passing; `e2e/emphasis.spec.ts` covers the new mass (extend it if it only
+lists components by tag). Add an e2e that asserts the values of a three-figure
+grid share a baseline (same bottom coordinate within 1 px) and that the persona
+initials block has the inverse surface background.
+
+**Docs.** Reference section 20 rows for both components and their token lists;
+CHANGELOG Changed entry for each. Update the tour and the showcase only if an
+attribute changed.
