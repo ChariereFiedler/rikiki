@@ -5,39 +5,32 @@
 
 <section id="limits" class="limits">
   <div class="inner">
-    <p class="eyebrow">Honest limits</p>
-    <h2>Not the right tool when…</h2>
+    <p class="eyebrow">Fit check</p>
+    <h2>Know when Rikiki fits.</h2>
     <p class="lede">
-      Rikiki is opinionated. Here's what it deliberately doesn't do,
-      so you can rule it out fast.
+      Choose it for versioned HTML, technical presentations and files you can
+      deliver yourself. These requirements point elsewhere.
     </p>
+    <p class="release"><strong>Current release: v1.0.0</strong><span>Released 9 September 2026</span><a href="/docs/changelog">Read the changelog →</a></p>
 
     <ul class="grid">
       <li>
         <strong>You want a WYSIWYG editor.</strong>
-        Rikiki is write HTML, open in a browser. There's no builder UI,
-        and there won't be one.
+        Rikiki uses HTML source and a browser preview. It has no visual builder.
       </li>
       <li>
         <strong>You need PowerPoint-style animation on shapes.</strong>
-        Per-element timelines are outside this core.
-        You get slide-level transitions (fade, slide, zoom, flip). That's the lot.
+        It supports slide-level fade, slide, zoom and flip transitions, not free-form timelines.
       </li>
       <li>
         <strong>You want a hosted SaaS.</strong>
-        There isn't one. You host the static files yourself. S3, GitHub Pages,
-        an nginx alias, whatever you've got.
+        Rikiki creates static files that you host with your existing web infrastructure.
       </li>
       <li>
         <strong>You need PowerPoint export.</strong>
-        Rikiki gives you HTML. <code>.pptx</code> output isn't on the roadmap.
-        Export to PDF instead · <code>rikiki export</code>, or print from Chromium with backgrounds on.
+        Rikiki exports standalone HTML and PDF. It does not export <code>.pptx</code> files.
       </li>
-      <li>
-        <strong>You're allergic to Web Components.</strong>
-        Custom Elements and Shadow DOM are the core. If your team policy
-        bans them, walk away.
-      </li>
+      <li><strong>Your environment forbids Web Components.</strong> Custom Elements and Shadow DOM are part of the runtime.</li>
     </ul>
   </div>
 </section>
@@ -76,6 +69,9 @@
     max-width: 65ch;
     margin: 0 0 var(--rik-space-6);
   }
+  .release { display:flex; flex-wrap:wrap; gap:var(--rik-space-2) var(--rik-space-4); margin:calc(-1 * var(--rik-space-3)) 0 var(--rik-space-5); color:var(--rik-text-default--faint); font:var(--rik-font-size-sm)/1.4 var(--rik-font-mono); }
+  .release strong { color:var(--rik-text-default); }
+  .release a { color:var(--rik-accent--strong); font-weight:800; text-decoration:none; }
   .grid {
     list-style: none;
     padding: 0;

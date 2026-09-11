@@ -13,7 +13,7 @@
     <a href="/docs/components">Components</a>
     <a href="/docs/theming">Theming</a>
     <a href="/docs/changelog">Changelog</a>
-    <a href="https://gitlab.com/tordu-jardin/rikiki" class="cta">Source ↗</a>
+    <a href="https://gitlab.com/tordu-jardin/rikiki" class="cta"><span class="wide">View source on GitLab ↗</span><span class="short">GitLab ↗</span></a>
   </div>
 </nav>
 
@@ -54,11 +54,14 @@
     font-weight: 700;
   }
   .links .cta:hover { color: var(--rik-surface-inverse); }
+  .short { display: none; }
   @media (max-width: 640px) {
     .links a:not(:first-child):not(.cta) { display: none; }
   }
   @media (max-width: 400px) {
     .nav { padding-inline:var(--rik-space-3); }
     .links a:not(.cta) { display:none; }
+    .wide { display:none; }
+    .short { display:inline; }
   }
 </style>

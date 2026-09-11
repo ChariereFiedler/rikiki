@@ -1,14 +1,14 @@
 <div class="agent-loop" aria-label="LLM authoring and verification loop">
   <div class="loop-label">
     <span>Agent workflow</span>
-    <strong>Brief in. Evidence out.</strong>
+    <strong>Brief → HTML → diagnostics → files</strong>
   </div>
   <ol>
     <li><span class="loop-num">01</span><strong>Brief</strong><code>prompt.md</code></li>
     <li><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">02</span><strong>Reference</strong><code>llms.txt</code></li>
     <li><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">03</span><strong>Deck</strong><code>index.html</code></li>
-    <li class="doctor"><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">04</span><strong>Doctor</strong><code>rikiki check</code></li>
-    <li><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">05</span><strong>Delivery</strong><code>HTML · PDF</code></li>
+    <li class="doctor"><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">04</span><strong>CLI check</strong><code>rikiki check</code></li>
+    <li><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">05</span><strong>Delivery</strong><code>reviewed files</code></li>
   </ol>
   <a href="/rikiki/docs/llms/rikiki-workflow.md">Open the complete agent workflow →</a>
 </div>
@@ -56,8 +56,8 @@
   }
   .doctor {
     margin: -8px 0; padding-top: 8px; padding-bottom: 8px;
-    border: 1px solid rgba(0, 200, 160, .5);
-    background: rgba(0, 200, 160, .1); border-radius: var(--rik-radius-sm);
+    border: 1px solid var(--rik-status-success);
+    background: var(--rik-surface-inverse__overlay); border-radius: var(--rik-radius-sm);
   }
   .agent-loop > a {
     color: var(--rik-accent); font-size: var(--rik-font-size-sm);

@@ -1,8 +1,8 @@
 ---
 const items = [
   {
-    q: 'Do I need to know Lit to write a deck?',
-    a: 'No. You write HTML tags. Lit is what built the components under the hood. What you touch is plain HTML and CSS custom properties. No decorators, no template literals, no extending classes.',
+    q: 'What do I need to know to create a deck?',
+    a: 'HTML and CSS are enough. Write the supplied custom elements, then change CSS variables for your brand. Lit is an implementation detail; deck authors do not write Lit classes or templates.',
   },
   {
     q: 'Can I print my deck to PDF?',
@@ -10,15 +10,27 @@ const items = [
   },
   {
     q: 'Is there a presenter mode with notes?',
-    a: 'Yes. Wrap notes in <code>&lt;deck-notes&gt;</code> inside any slide, then press P during the talk. A popup opens with the current and next slide, the notes, a timer and a slide counter. Sync runs over BroadcastChannel. No network call.',
+    a: 'Yes. Wrap notes in <code>&lt;deck-notes&gt;</code> inside any slide, then press P during the talk. A popup opens with the current and next slide, the notes, a timer and a slide counter. The two windows synchronize locally through BroadcastChannel; no external service is involved.',
   },
   {
     q: 'How do I theme a deck for my brand?',
-    a: 'Copy <code>themes/rikiki.css</code>, change the values, link it instead of the default. ~140 CSS custom properties, in two layers (palette, then semantic). For a one-off, override the <code>--deck-*-*</code> tokens inline on the element.',
+    a: 'Copy <code>themes/rikiki.css</code>, change the palette and semantic CSS variables, then link your file instead of the default theme. For one component instance, override its documented <code>--deck-*</code> variables directly.',
   },
   {
-    q: 'Why also pitch carousels?',
-    a: 'Because <code>autoplay loop swipe</code> on <code>&lt;deck-root&gt;</code> turns the same engine into a touch-friendly carousel. Same components, same theming, same ~42 KB initial load. The dual use falls out of building on web standards.',
+    q: 'Can I embed a deck in documentation or training?',
+    a: 'Yes. Put <code>&lt;deck-root&gt;</code> in a page and add <code>autoplay loop swipe</code> for a touch-friendly carousel with the same ~42 KB initial load. Keyboard input stays scoped to the deck while it has focus.',
+  },
+  {
+    q: 'What does the Doctor check?',
+    a: '<code>rikiki check</code> loads every slide in Chromium and reports structural, runtime, timing and visual-layout risks. It does not test contrast, focus order or screen-reader output, so keep an accessibility review in your release process.',
+  },
+  {
+    q: 'What requires Node.js?',
+    a: 'The deck runs in a browser. Node.js is required for the CLI commands that initialize, inspect, render, bundle or export it. PDF export and browser-based checks also require the optional Playwright dependency.',
+  },
+  {
+    q: 'Which browsers are tested?',
+    a: 'The base rendering, navigation, scaling and offline-bundle contract is tested in Chromium, Firefox and WebKit. PDF export and multi-screen presenter features are Chromium-specific.',
   },
 ];
 ---
@@ -26,7 +38,7 @@ const items = [
 <section id="faq" class="faq">
   <div class="inner">
     <p class="eyebrow">FAQ</p>
-    <h2>Common questions</h2>
+    <h2>Check the requirements before you start.</h2>
 
     <div class="list">
       {items.map((it) => (

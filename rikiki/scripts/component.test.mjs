@@ -40,6 +40,11 @@ describe('the component count is derived, not typed', () => {
       );
     }
   });
+
+  it('the landing optional count agrees with the opt-in registry', () => {
+    const hero = readFileSync(resolve(REPO_ROOT, 'site/src/components/Hero.astro'), 'utf8');
+    expect(hero).toContain(`${optIn.length} optional`);
+  });
 });
 
 describe('every element is documented where an author will look', () => {

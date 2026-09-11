@@ -1,24 +1,31 @@
 ---
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { gzipSync } from 'node:zlib';
+const packageDir = resolve(process.cwd(), '../rikiki');
+const measuredKb = (path: string) => {
+  const kb = gzipSync(readFileSync(resolve(packageDir, path)), { level: 9 }).length / 1024;
+  return kb < 10 ? Math.round(kb * 10) / 10 : Math.round(kb);
+};
 const plugins = [
-  { role: 'transitions',    name: 'deck-transition',  file: 'deck-transition.js',  kb: 1.7, activate: 'transition="slide"',     summary: 'Slide, fade, zoom, flip. Picks its own direction. Cross-fades old and new, no background flash.', href: '/docs/plugins#transition', glyph: 'transitions' },
-  { role: 'presenter mode', name: 'deck-presenter',   file: 'deck-presenter.js',   kb: 2.9, activate: 'press P',                 summary: 'A popup with the current slide, the next one, your notes and a timer. Syncs over BroadcastChannel.',           href: '/docs/plugins#presenter',  glyph: 'presenter' },
-  { role: 'syntax',         name: 'shiki',            file: 'shiki.js',            kb: 0.6, activate: 'installShiki()',          summary: 'Real syntax highlighting for deck-code. TextMate grammars, JSX, TSX, template literals.',           href: '/docs/plugins#shiki',      glyph: 'syntax' },
+  { role: 'transitions', file: 'deck-transition.js', size: `${measuredKb('dist/deck-transition.js')} KB`, activate: 'transition="slide"', summary: 'Add slide, fade, zoom or flip transitions only when a deck asks for them.', href: '/docs/plugins#transition', glyph: 'transitions' },
+  { role: 'presenter mode', file: 'deck-presenter.js', size: `${measuredKb('dist/deck-presenter.js')} KB`, activate: 'press P', summary: 'Open the current slide, next slide, notes and timer in a synchronized presenter window.', href: '/docs/plugins#presenter', glyph: 'presenter' },
+  { role: 'syntax highlighting', file: 'shiki.js', size: `${measuredKb('dist/shiki.js')} KB loader + ${measuredKb('dist/vendor/shiki.js')} KB engine`, activate: 'installShiki()', summary: 'Load TextMate syntax highlighting and its vendored engine on first use, with no CDN request.', href: '/docs/plugins#shiki', glyph: 'syntax' },
 ];
-const totalKb = plugins.reduce((s, p) => s + p.kb, 0).toFixed(1);
 const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck-timeline', 'deck-versus'];
 ---
 
 <section id="plugins" class="shelf">
   <div class="inner">
     <header class="head">
-      <p class="eyebrow"><span class="num">05</span> Optional modules</p>
+      <p class="eyebrow"><span class="num">06</span> Optional modules</p>
       <h2>Bring only the pieces the deck needs.</h2>
       <p class="lede">
-        The ~42 KB initial load ships none of these. Each one fetches on first use.
-        A deck that never asks for a feature never pays for it.
+        The ~42 KB initial load excludes these modules. In a source deck, imported
+        modules load when their feature starts. A standalone bundle packages them locally.
       </p>
-      <p class="budget" aria-label="Total weight if every plugin opts in">
-        Total if you enable everything · <strong>~{totalKb} KB gzip</strong> on top of core
+      <p class="budget">
+        Sizes below are measured from the current gzip-compressed build artifacts.
       </p>
     </header>
 
@@ -74,7 +81,7 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
                   <span class="role">{p.role}</span>
                   <code class="file">{p.file}</code>
                 </h3>
-                <span class="size"><strong>{p.kb}</strong> KB gz</span>
+                <span class="size"><strong>{p.size}</strong> gzip</span>
               </header>
               <p class="summary">{p.summary}</p>
               <p class="how">

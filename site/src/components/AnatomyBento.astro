@@ -11,7 +11,7 @@ const { code } = Astro.props;
       <textarea aria-label="Editable slide source" spellcheck="false">{code}</textarea>
     </div>
     <div class="doctor" role="status" aria-live="polite">
-      <header><span><i></i> Doctor</span><code>$ rikiki check --watch</code></header>
+      <header><span><i></i> Simplified markup hints</span><code>interactive example</code></header>
       <div class="doctor-output"></div>
     </div>
   </div>
@@ -27,17 +27,17 @@ const { code } = Astro.props;
     </div>
     <ol class="legend">
       <li><span>Layout</span><code>&lt;deck-feature&gt;</code> sets the composition.</li>
-      <li><span>Slots</span><code>title</code> and <code>lead</code> place the copy.</li>
-      <li><span>Atoms</span><code>&lt;deck-code&gt;</code> renders the content.</li>
+      <li><span>Content fields</span><code>title</code> and <code>lead</code> place the copy.</li>
+      <li><span>Content component</span><code>&lt;deck-code&gt;</code> renders the code.</li>
     </ol>
   </div>
 </div>
 
 <ol class="delivery" aria-label="Verified delivery workflow">
-  <li><span>01 · Inspect</span><code>rikiki check</code><strong>0 errors</strong></li>
-  <li><span>02 · Review</span><code>rikiki render</code><strong>20 slides</strong></li>
-  <li><span>03 · Package</span><code>rikiki bundle</code><strong>offline HTML</strong></li>
-  <li><span>04 · Deliver</span><code>rikiki export</code><strong>PDF · 19 min</strong></li>
+  <li><span>01 · Inspect</span><code>npx rikiki check deck.html</code><strong>diagnostic report</strong></li>
+  <li><span>02 · Review</span><code>npx rikiki render deck.html</code><strong>PNGs + gallery</strong></li>
+  <li><span>03 · Package</span><code>npx rikiki bundle deck.html</code><strong>standalone HTML</strong></li>
+  <li><span>04 · Deliver</span><code>npx rikiki export deck.html</code><strong>PDF created</strong></li>
 </ol>
 
 <style>
@@ -104,11 +104,11 @@ const { code } = Astro.props;
     const line = (needle) => input.value.slice(0, Math.max(0, input.value.indexOf(needle))).split('\n').length;
     const render = () => {
       const problems = [];
-      if (!/<deck-feature\b/.test(input.value)) problems.push(`L${line('<deck-feature')} E101 missing slide layout`);
-      if (!/<h1\s+slot=["']title["']>/.test(input.value)) problems.push(`L${line('<h1')} E203 title slot is required`);
+      if (!/<deck-feature\b/.test(input.value)) problems.push(`Line ${line('<deck-feature')} · add a slide layout`);
+      if (!/<h1\b[^>]*\bslot=["']title["'][^>]*>/.test(input.value)) problems.push(`Line ${line('<h1')} · add a title slot`);
       const opens = (input.value.match(/<deck-code\b/g) || []).length;
       const closes = (input.value.match(/<\/deck-code>/g) || []).length;
-      if (opens !== closes) problems.push(`E112 deck-code is not closed`);
+      if (opens !== closes) problems.push('Close the deck-code element');
 
       root.querySelector('[data-render="eyebrow"]').textContent = text(/<deck-feature[^>]*eyebrow=["']([^"']+)/, 'Slide');
       root.querySelector('[data-render="title"]').textContent = text(/<h1\s+slot=["']title["'][^>]*>([^<]*)<\/h1>/, 'Untitled slide');
@@ -116,7 +116,7 @@ const { code } = Astro.props;
       root.querySelector('[data-render="code"]').textContent = text(/<deck-code[^>]*>([\s\S]*?)<\/deck-code>/, '');
       output.innerHTML = problems.length
         ? problems.map((message) => `<p class="error">× ${message}</p>`).join('')
-        : '<p class="ok">✓ structure · runtime · accessibility</p><p>✓ 1 slide checked · 0 errors · fresh</p>';
+        : '<p class="ok">✓ simplified markup hints passed</p><p>Run the CLI for browser, layout and timing checks.</p>';
     };
     input.addEventListener('input', render);
     input.addEventListener('keydown', (event) => {
