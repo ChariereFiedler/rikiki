@@ -14,6 +14,7 @@
 import { basename } from 'node:path';
 import { readFileSync } from 'node:fs';
 import { SLIDE_TITLE_READER, waitForStillFrame, withDeck } from './browser.mjs';
+import { BOX_GEOMETRY_READER } from './box-geometry.mjs';
 import { GRAPH_GEOMETRY_READER } from './graph-hit.mjs';
 import { measureSlides } from './visual.mjs';
 import { scanExternal } from './scan-external.mjs';
@@ -46,6 +47,13 @@ const LIMITS = {
   tailBand: 0.3,
   // How far the ink may sit above centre before the slide reads as top-heavy.
   verticalBias: -0.1,
+  // Below this a box is a label or an icon, not a block worth comparing
+  // against its neighbours · an <em> inside an <h1> must never count.
+  paintedBoxMinWidth: 40,
+  paintedBoxMinHeight: 20,
+  // Two boxes sharing a few pixels at a corner is normal layout slop; sharing
+  // this many on both axes is one painted over the other.
+  siblingOverlapPx: 8,
 };
 
 const diagnostic = (code, severity, message, extra = {}) => ({
@@ -56,12 +64,15 @@ const diagnostic = (code, severity, message, extra = {}) => ({
 });
 
 /** Everything the page can tell us about itself, in one round trip. */
-const inspectPage = ({ limits, titleReader, graphGeometry }) => {
+const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry }) => {
   const titleOf = new Function('return ' + titleReader)();
   /** `parseGraphPath` and `polylineHitsRect` from bin/lib/graph-hit.mjs · this
    *  function runs in the page, so they arrive as source and are rebuilt here.
    *  They are unit tested on the node side. */
   const geometry = new Function('return ' + graphGeometry)();
+  /** `escapeOf`, `overlapOf` and `encloses` from bin/lib/box-geometry.mjs ·
+   *  same reason, same node-side tests. */
+  const boxGeom = new Function('return ' + boxGeometry)();
   const root = document.querySelector('deck-root');
   const slides = root
     ? Array.from(root.children).filter((el) => el.tagName.toLowerCase().startsWith('deck-'))
@@ -113,6 +124,128 @@ const inspectPage = ({ limits, titleReader, graphGeometry }) => {
     if (slide.shadowRoot) collect(slide.shadowRoot);
     collect(slide);
     return found;
+  };
+
+  /** The nearest enclosing `deck-*` custom element, walking up from `el`
+   *  itself excluded · shadow boundaries crossed via the host. */
+  const nearestDeckAncestor = (el) => {
+    let node = el.parentElement ?? el.getRootNode()?.host ?? null;
+    while (node) {
+      const tag = node.tagName?.toLowerCase();
+      if (tag?.startsWith('deck-')) return tag;
+      node = node.parentElement ?? node.getRootNode()?.host ?? null;
+    }
+    return null;
+  };
+
+  /** Is `node` `ancestorEl` itself, or reached by walking up from it? Shadow
+   *  boundaries crossed via the host, same as `pathOf`. */
+  const containsAcrossShadow = (ancestorEl, node) => {
+    let current = node;
+    while (current) {
+      if (current === ancestorEl) return true;
+      current = current.parentElement ?? current.getRootNode()?.host ?? null;
+    }
+    return false;
+  };
+
+  const textHead = (el) => (el.textContent ?? '').trim().replace(/\s+/g, ' ').slice(0, 36);
+
+  /** Every box worth comparing against its neighbours: rendered, in normal
+   *  flow, big enough to be more than a label, and carrying words · light DOM
+   *  and shadow alike, same walk as `clippersIn`. `deck-notes` is never shown,
+   *  and `deck-annotate` / `deck-graph` paint marks and nodes on top of each
+   *  other by design and have their own codes, so their internals are not
+   *  painted boxes here. */
+  const paintedBoxesIn = (slide) => {
+    const boxes = [{ el: slide, rect: slide.getBoundingClientRect() }];
+    const seen = new Set();
+    const collect = (root) => {
+      for (const el of root.querySelectorAll('*')) {
+        if (seen.has(el)) continue;
+        seen.add(el);
+        if (el.shadowRoot) collect(el.shadowRoot);
+        if (el.tagName.toLowerCase() === 'deck-notes') continue;
+        if (el.closest?.('deck-notes')) continue;
+        const host = nearestDeckAncestor(el);
+        if (host === 'deck-annotate' || host === 'deck-graph') continue;
+        const style = getComputedStyle(el);
+        if (style.display === 'none' || style.visibility === 'hidden') continue;
+        if (style.position === 'absolute' || style.position === 'fixed') continue;
+        // An inline run (em, strong, a plain link inside a sentence) is not a
+        // box an author laid out · its rect follows the line box of the font
+        // actually used for that run, which an italic or bold face can offset
+        // from its parent's by a dozen px on nothing but metrics. Comparing it
+        // against its container reports the font, not a defect.
+        if (style.display === 'inline') continue;
+        const rect = el.getBoundingClientRect();
+        if (!(rect.width > limits.paintedBoxMinWidth && rect.height > limits.paintedBoxMinHeight)) continue;
+        if (!el.textContent?.trim()) continue;
+        boxes.push({ el, rect });
+      }
+    };
+    collect(slide);
+    return boxes;
+  };
+
+  /** The worst `CONTENT_ESCAPES_BOX` offender on a slide: a painted box whose
+   *  rect leaves its nearest painted ancestor by more than `clipPx`, skipping
+   *  any ancestor that already clips · that is `CONTENT_CLIPPED`'s job. */
+  const worstEscape = (boxes) => {
+    const boxSet = new Set(boxes.map((b) => b.el));
+    let worst = null;
+    for (const box of boxes) {
+      if (box.el === boxes[0].el) continue; // the slide itself has no ancestor here
+      let ancestorEl = box.el.parentElement ?? box.el.getRootNode()?.host ?? null;
+      while (ancestorEl && !boxSet.has(ancestorEl)) {
+        ancestorEl = ancestorEl.parentElement ?? ancestorEl.getRootNode()?.host ?? null;
+      }
+      if (!ancestorEl) continue;
+      const overflow = getComputedStyle(ancestorEl).overflow;
+      if (overflow === 'hidden' || overflow === 'clip') continue;
+      const ancestorBox = boxes.find((b) => b.el === ancestorEl);
+      const escape = boxGeom.escapeOf(box.rect, ancestorBox.rect);
+      if (escape.pixels > limits.clipPx && escape.pixels > (worst?.pixels ?? 0)) {
+        worst = {
+          pixels: Math.round(escape.pixels),
+          path: pathOf(box.el),
+          text: textHead(box.el),
+          containerPath: pathOf(ancestorEl),
+          containerText: textHead(ancestorEl),
+        };
+      }
+    }
+    return worst;
+  };
+
+  /** The worst `CONTENT_OVERLAPS_SIBLING` offender on a slide: two painted
+   *  boxes, neither containing the other in the DOM and neither enclosing the
+   *  other, whose rects intersect by more than `siblingOverlapPx` on both
+   *  axes. Ranked by overlapping area. */
+  const worstOverlap = (boxes) => {
+    let worst = null;
+    for (let i = 1; i < boxes.length; i++) {
+      for (let j = i + 1; j < boxes.length; j++) {
+        const a = boxes[i];
+        const b = boxes[j];
+        if (containsAcrossShadow(a.el, b.el) || containsAcrossShadow(b.el, a.el)) continue;
+        const overlap = boxGeom.overlapOf(a.rect, b.rect);
+        if (overlap.x <= limits.siblingOverlapPx || overlap.y <= limits.siblingOverlapPx) continue;
+        if (boxGeom.encloses(a.rect, b.rect) || boxGeom.encloses(b.rect, a.rect)) continue;
+        const area = overlap.x * overlap.y;
+        if (area > (worst?.area ?? 0)) {
+          worst = {
+            area,
+            overlap: { x: Math.round(overlap.x), y: Math.round(overlap.y) },
+            pathA: pathOf(a.el),
+            textA: textHead(a.el),
+            pathB: pathOf(b.el),
+            textB: textHead(b.el),
+          };
+        }
+      }
+    }
+    return worst;
   };
 
   const measured = slides.map((slide, index) => {
@@ -172,6 +305,12 @@ const inspectPage = ({ limits, titleReader, graphGeometry }) => {
     };
     walk(slide);
 
+    // Nothing clips, yet the paint still runs outside its box or over a
+    // sibling: most layouts do not set overflow hidden anywhere, so a box
+    // that is simply too small for its content just paints past its own
+    // edges, silently.
+    const boxes = paintedBoxesIn(slide);
+
     return {
       index: index + 1,
       id: slide.id || null,
@@ -181,6 +320,8 @@ const inspectPage = ({ limits, titleReader, graphGeometry }) => {
       fillRatio: box.height ? Math.round((spanned / box.height) * 100) / 100 : 0,
       tiny: tiny.slice(0, 3),
       steps: Number.parseInt(slide.getAttribute('steps') ?? slide.dataset?.steps ?? '0', 10) || 0,
+      escapesBox: worstEscape(boxes),
+      overlapsSibling: worstOverlap(boxes),
     };
   });
 
@@ -527,6 +668,28 @@ function diagnose(page, source, limits) {
         }),
       );
     }
+    if (slide.escapesBox) {
+      const e = slide.escapesBox;
+      found.push(
+        diagnostic('CONTENT_ESCAPES_BOX', SEVERITY.error, `"${e.text}" spills ${e.pixels}px past its box · "${e.containerText}"`, {
+          ...where,
+          element: e.path,
+          measurement: { escapePx: e.pixels, container: e.containerPath, containerText: e.containerText },
+          suggestion: 'nothing clips here, so the box is simply too small for what is inside it · shorten the text, or give the box more room',
+        }),
+      );
+    }
+    if (slide.overlapsSibling) {
+      const o = slide.overlapsSibling;
+      found.push(
+        diagnostic('CONTENT_OVERLAPS_SIBLING', SEVERITY.error, `"${o.textA}" overlaps "${o.textB}" by ${o.overlap.x}x${o.overlap.y}px`, {
+          ...where,
+          element: o.pathA,
+          measurement: { overlapPx: o.overlap, other: o.pathB, otherText: o.textB },
+          suggestion: 'two unrelated blocks paint over each other · give the earlier one a fixed height, or the layout more room to breathe',
+        }),
+      );
+    }
     for (const t of slide.tiny) {
       found.push(
         diagnostic('TEXT_TOO_SMALL', SEVERITY.warning, `text renders at ${t.px}px · the back row will not read it`, {
@@ -580,8 +743,8 @@ export async function checkDeck(deckPath, { timeoutMs = 30_000, width = 1920, he
     deckPath,
     async ({ page, settled, missing, errors }) => {
       const observed = settled
-        ? await page.evaluate(inspectPage, { limits, titleReader: SLIDE_TITLE_READER, graphGeometry: GRAPH_GEOMETRY_READER })
-        : await page.evaluate(inspectPage, { limits, titleReader: SLIDE_TITLE_READER, graphGeometry: GRAPH_GEOMETRY_READER }).catch(() => ({
+        ? await page.evaluate(inspectPage, { limits, titleReader: SLIDE_TITLE_READER, graphGeometry: GRAPH_GEOMETRY_READER, boxGeometry: BOX_GEOMETRY_READER })
+        : await page.evaluate(inspectPage, { limits, titleReader: SLIDE_TITLE_READER, graphGeometry: GRAPH_GEOMETRY_READER, boxGeometry: BOX_GEOMETRY_READER }).catch(() => ({
             hasRoot: false,
             runtimeLoaded: false,
             slides: [],
