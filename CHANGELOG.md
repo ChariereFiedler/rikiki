@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **`rikiki check --steps` measures every revealed state of a slide, not just
+  its opening one.** Each slide is walked from its opening state through
+  every state `advanceStep` (`ArrowRight`) reaches, running the same
+  diagnostics on each; every diagnostic carries a `state` (`0` for the
+  opening one) in the JSON and `· state N` on the human line, and a
+  diagnostic identical on code, slide and path/message across several states
+  of one slide is reported once, at the lowest state it held. `render` and
+  `check` now share one walker (`goToSlide` / `advanceStep`, moved into
+  `bin/lib/browser.mjs`) instead of each driving the deck on its own.
 - **`rikiki check` reports content that paints outside its box or on top of a
   sibling.** `CONTENT_ESCAPES_BOX` (error) fires when a painted box leaves its
   nearest painted ancestor by more than 4px on any side and nothing clips it;

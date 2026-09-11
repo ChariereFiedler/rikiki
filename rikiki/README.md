@@ -29,6 +29,7 @@ npx rikiki render talk.html            # one PNG per slide + a gallery + a manif
 npx rikiki render talk.html --steps    # every revealed state, not just the first
 npx rikiki check talk.html             # what is wrong, where, and what to try
 npx rikiki check talk.html --json      # the same, as a versioned report
+npx rikiki check talk.html --steps     # measure every revealed state, not just the first
 ```
 
 `check` reports a runtime that never loaded, a file that did not arrive, a
@@ -36,6 +37,9 @@ misspelled `deck-*` element that renders as nothing, content the slide clips
 away, text too small for a room, and duplicate slide ids. It exits 0 when
 nothing blocks, 1 on defects, 2 when it could not look at the deck at all. It
 also lists what it did **not** check, because silence would read as approval.
+Under `--steps`, each slide is measured in its opening state and in every
+state its own reveals step through, and each diagnostic says which one
+(`state: 2`).
 
 ## For LLMs / coding assistants
 
