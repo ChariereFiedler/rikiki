@@ -11,6 +11,8 @@ import DualUse from '../components/DualUse.astro';
 import PluginShelf from '../components/PluginShelf.astro';
 import Faq from '../components/Faq.astro';
 import AnatomyBento from '../components/AnatomyBento.astro';
+import Limits from '../components/Limits.astro';
+import AgentLoop from '../components/AgentLoop.astro';
 
 const anatomyCode = `<deck-feature eyebrow="Module">
   <h1 slot="title">Side effects</h1>
@@ -28,45 +30,43 @@ const anatomyCode = `<deck-feature eyebrow="Module">
   <Nav />
   <Hero />
 
-  <Section id="quickstart" num="01" eyebrow="Live playground" title="Write. Verify. Present.">
-    <p class="section-lead">Edit readable HTML, watch the slide respond, and get Doctor feedback while you work. An agent can draft the same source and use the report to revise it.</p>
+  <Section id="quickstart" num="01" eyebrow="Interactive example" title="Write. Inspect. Deliver.">
+    <p class="section-lead">Edit the HTML and watch the slide respond. The panel below simulates three fast checks; the full <code>rikiki check</code> command measures every slide in a browser and reports structural, runtime and visual risks.</p>
     <AnatomyBento code={anatomyCode} />
-    <div class="inline-cta"><a href="/docs/getting-started">Create your first deck →</a><span>One folder · standalone HTML · PDF</span></div>
+    <div class="inline-cta"><a href="/docs/getting-started">Create your first deck →</a><span>Install once, then run the commands shown above.</span></div>
   </Section>
 
-  <DualUse />
-
   <!-- ── Library ────────────────────────────────────── -->
-  <Section id="library" num="03" eyebrow="Reusable parts" title="Compose with purpose-built layouts">
+  <Section id="library" num="02" eyebrow="Reusable parts" title="Compose with purpose-built layouts">
     <ul class="layout-grid">
       <li>
         <LayoutPreview type="cover" />
-        <h3>&lt;deck-cover&gt;</h3>
+        <h3>Open the deck <code>&lt;deck-cover&gt;</code></h3>
         <p>The opener. XL title on dark, brand mark if you want one, meta block.</p>
       </li>
       <li>
         <LayoutPreview type="section" />
-        <h3>&lt;deck-section&gt;</h3>
+        <h3>Start a section <code>&lt;deck-section&gt;</code></h3>
         <p>A chapter break. Number and centered title on dark.</p>
       </li>
       <li>
         <LayoutPreview type="hero" />
-        <h3>&lt;deck-feature&gt;</h3>
+        <h3>Focus one idea <code>&lt;deck-feature&gt;</code></h3>
         <p>One thing in focus. Code, a table, a mermaid diagram, a big stat.</p>
       </li>
       <li>
         <LayoutPreview type="split" />
-        <h3>&lt;deck-split&gt;</h3>
+        <h3>Compare columns <code>&lt;deck-split&gt;</code></h3>
         <p>Two columns or three. <code>cols="1-1"</code>, <code>"1-2"</code>, <code>"3"</code>.</p>
       </li>
       <li>
         <LayoutPreview type="hero-detail" />
-        <h3>&lt;deck-feature-cards&gt;</h3>
+        <h3>Add supporting detail <code>&lt;deck-feature-cards&gt;</code></h3>
         <p>Hero up top, two detail cards under it.</p>
       </li>
       <li>
         <LayoutPreview type="hook" />
-        <h3>&lt;deck-takeaway&gt;</h3>
+        <h3>Land the message <code>&lt;deck-takeaway&gt;</code></h3>
         <p>The line they remember. Centered, on dark.</p>
       </li>
     </ul>
@@ -80,22 +80,30 @@ const anatomyCode = `<deck-feature eyebrow="Module">
   </Section>
 
   <!-- ── Themes ─────────────────────────────────────── -->
-  <Section id="themes" num="04" eyebrow="Design system" title="Brand the same source with tokens">
+  <Section id="themes" num="03" eyebrow="Design system" title="Brand the same source with tokens">
     <ThemeSwap />
     <p class="more">
-      Every component reads its colors, type and spacing from CSS custom
-      properties. Want a third theme? Copy <code>themes/rikiki.css</code>,
-      change the values, ship it.
+      Theme tokens control the main colors, type and spacing of deck components.
+      Copy <code>themes/rikiki.css</code>, keep its structure and adjust the values
+      for your brand.
     </p>
   </Section>
 
+  <Section id="agents" num="04" eyebrow="Coding-agent workflow" title="Give an agent a contract, then check its work">
+    <p class="section-lead">Rikiki ships a component reference and an authoring workflow for coding agents. Give your own agent a brief and <code>llms.txt</code>; it writes the same HTML you review, while <code>rikiki check</code> returns actionable diagnostics for the next revision. Rikiki supplies the contract and checks, not an AI service.</p>
+    <AgentLoop />
+  </Section>
+
+  <DualUse />
+
   <PluginShelf />
+  <Limits />
   <Faq />
 
   <Hook
-    kicker="The whole point"
-    punch={`Source <span class="accent">→</span> proof.`}
-    caption="A deck should be readable at the start, verifiable in review, and complete when it reaches the room."
+    kicker="Ready to try it"
+    punch={`Create a checked, <span class="accent">standalone deck.</span>`}
+    caption="Review the diagnostics and slide images before you deliver the offline HTML and PDF."
   />
 
   <Footer />

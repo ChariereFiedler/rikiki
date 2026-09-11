@@ -49,6 +49,7 @@ export const LAZY_MODULES = {
   'deck-help': 'dist/deck-help.js',
   'click-stages': 'dist/click-stages.js',
   'deck-mermaid': 'dist/deck-mermaid.js',
+  shiki: 'dist/shiki.js',
 };
 
 /** Vendored third-party payloads · big, optional, and never part of "core". */
@@ -103,6 +104,12 @@ export const SIZE_SURFACES = [
     file: at('site/src/components/PluginShelf.astro'),
     label: 'plugin shelf intro',
     find: /~([\d.]+) KB initial load/g,
+    expect: 'initialLoadGzip',
+  },
+  {
+    file: at('site/src/components/Hero.astro'),
+    label: 'home hero initial JavaScript load',
+    find: /<strong>([\d.]+) KB<\/strong> initial JavaScript load/g,
     expect: 'initialLoadGzip',
   },
   {
