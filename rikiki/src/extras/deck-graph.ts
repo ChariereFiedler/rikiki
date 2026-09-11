@@ -30,6 +30,38 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { arrange, edgeGeometry } from '../shared/graph-layout.js';
 import { signature } from './signature.js';
 
+interface PixelPoint {
+  x: number;
+  y: number;
+}
+interface PixelRect extends PixelPoint {
+  width: number;
+  height: number;
+}
+
+const centre = (rect: PixelRect): PixelPoint => ({
+  x: rect.x + rect.width / 2,
+  y: rect.y + rect.height / 2,
+});
+
+/** Meet a node at its painted boundary. The old fixed percentage gap could
+ * still leave an arrow head behind a wide boxed node. */
+function meetRect(rect: PixelRect, toward: PixelPoint): PixelPoint {
+  const origin = centre(rect);
+  const dx = toward.x - origin.x;
+  const dy = toward.y - origin.y;
+  if (!dx && !dy) return origin;
+  const tx = dx ? rect.width / 2 / Math.abs(dx) : Number.POSITIVE_INFINITY;
+  const ty = dy ? rect.height / 2 / Math.abs(dy) : Number.POSITIVE_INFINITY;
+  const t = Math.min(tx, ty);
+  return { x: origin.x + dx * t, y: origin.y + dy * t };
+}
+
+function parseOffset(raw: string | null): PixelPoint {
+  const [x = 0, y = 0] = (raw ?? '').split(',').map((value) => Number(value.trim()));
+  return { x: Number.isFinite(x) ? x : 0, y: Number.isFinite(y) ? y : 0 };
+}
+
 @customElement('deck-graph')
 export class DeckGraph extends LitElement {
   /* Customization tokens:
@@ -119,7 +151,9 @@ export class DeckGraph extends LitElement {
   @state() private _tick = 0;
   /** The element's pixel box · the SVG coordinate space. */
   @state() private _box = { w: 0, h: 0 };
+  @state() private _nodeBoxes = new Map<string, PixelRect>();
   private _ro?: ResizeObserver;
+  private _mo?: MutationObserver;
 
   private get _nodes(): HTMLElement[] {
     return [...this.querySelectorAll<HTMLElement>('deck-node')];
@@ -133,6 +167,14 @@ export class DeckGraph extends LitElement {
     // Edge geometry is in pixels, so it is recomputed whenever the box changes.
     this._ro = new ResizeObserver(() => this._measure());
     this._ro.observe(this);
+    for (const node of this._nodes) this._ro?.observe(node);
+    this._mo = new MutationObserver(() => this._place());
+    this._mo.observe(this, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['at', 'from', 'to', 'route', 'label', 'label-offset', 'width', 'boxed'],
+    });
     this._measure();
   }
 
@@ -140,11 +182,26 @@ export class DeckGraph extends LitElement {
     super.disconnectedCallback();
     this._ro?.disconnect();
     this._ro = undefined;
+    this._mo?.disconnect();
+    this._mo = undefined;
   }
 
   private _measure(): void {
     const r = this.getBoundingClientRect();
-    if (r.width && r.height) this._box = { w: r.width, h: r.height };
+    if (!r.width || !r.height) return;
+    const boxes = new Map<string, PixelRect>();
+    for (const node of this._nodes) {
+      if (!node.id) continue;
+      const nr = node.getBoundingClientRect();
+      boxes.set(node.id, {
+        x: nr.left - r.left,
+        y: nr.top - r.top,
+        width: nr.width,
+        height: nr.height,
+      });
+    }
+    this._box = { w: r.width, h: r.height };
+    this._nodeBoxes = boxes;
   }
 
   override connectedCallback(): void {
@@ -198,6 +255,10 @@ export class DeckGraph extends LitElement {
       lane.style.setProperty('--lh', `${h}%`);
     }
     this._tick++;
+    requestAnimationFrame(() => {
+      for (const node of this._nodes) this._ro?.observe(node);
+      this._measure();
+    });
   }
 
   /** Called by deck-root on every step change. */
@@ -218,9 +279,11 @@ export class DeckGraph extends LitElement {
       el ? { x: Number(el.getAttribute('data-x')), y: Number(el.getAttribute('data-y')) } : null;
 
     const edges = this._edges.map((edge) => {
-      const from = at(this.querySelector(`#${CSS.escape(edge.getAttribute('from') ?? '')}`));
-      const to = at(this.querySelector(`#${CSS.escape(edge.getAttribute('to') ?? '')}`));
-      return { edge, geom: from && to ? edgeGeometry(from, to) : null };
+      const fromId = edge.getAttribute('from') ?? '';
+      const toId = edge.getAttribute('to') ?? '';
+      const from = at(this.querySelector(`#${CSS.escape(fromId)}`));
+      const to = at(this.querySelector(`#${CSS.escape(toId)}`));
+      return { edge, fromId, toId, geom: from && to ? edgeGeometry(from, to) : null };
     });
 
     const { w, h } = this._box;
@@ -247,36 +310,72 @@ export class DeckGraph extends LitElement {
             <path class="head" d="M0 0 L10 5 L0 10 z" />
           </marker>
         </defs>
-        ${edges.map(({ edge, geom }) => {
+        ${edges.map(({ edge, fromId, toId, geom }) => {
           if (!geom || !w) return '';
-          const p = px(geom);
+          const fallback = px(geom);
+          const fromBox = this._nodeBoxes.get(fromId);
+          const toBox = this._nodeBoxes.get(toId);
+          const fromCentre = fromBox ? centre(fromBox) : { x: fallback.x1, y: fallback.y1 };
+          const toCentre = toBox ? centre(toBox) : { x: fallback.x2, y: fallback.y2 };
+          const route = (edge.getAttribute('route') ?? 'straight').toLowerCase();
+          const bend =
+            route === 'ortho' ? { x: (fromCentre.x + toCentre.x) / 2, y: fromCentre.y } : toCentre;
+          const lastBend =
+            route === 'ortho' ? { x: (fromCentre.x + toCentre.x) / 2, y: toCentre.y } : fromCentre;
+          const start = fromBox ? meetRect(fromBox, bend) : fromCentre;
+          const end = toBox ? meetRect(toBox, lastBend) : toCentre;
           // `svg` and not `html` · a nested html`` fragment is parsed in the
           // HTML namespace, so its <line> becomes an unknown element that is
           // never painted. It reports the right coordinates and draws nothing.
           // The arrow is the direction · a line with no head reads as a
           // relation, and most of these diagrams describe a flow.
           const arrow = (edge.getAttribute('arrow') ?? 'end').toLowerCase();
-          return svg`<line
-            class="edge"
-            ?data-dashed=${edge.hasAttribute('dashed')}
-            x1=${p.x1}
-            y1=${p.y1}
-            x2=${p.x2}
-            y2=${p.y2}
-            marker-end=${arrow === 'end' || arrow === 'both' ? 'url(#arrow)' : ''}
-            marker-start=${arrow === 'start' || arrow === 'both' ? 'url(#arrow)' : ''}
-          />`;
+          const common = {
+            end: arrow === 'end' || arrow === 'both' ? 'url(#arrow)' : '',
+            start: arrow === 'start' || arrow === 'both' ? 'url(#arrow)' : '',
+          };
+          return route === 'ortho'
+            ? svg`<path
+                class="edge"
+                ?data-dashed=${edge.hasAttribute('dashed')}
+                data-route="ortho"
+                d="M ${start.x} ${start.y} H ${bend.x} V ${end.y} H ${end.x}"
+                marker-end=${common.end}
+                marker-start=${common.start}
+              />`
+            : svg`<line
+                class="edge"
+                ?data-dashed=${edge.hasAttribute('dashed')}
+                x1=${start.x}
+                y1=${start.y}
+                x2=${end.x}
+                y2=${end.y}
+                marker-end=${common.end}
+                marker-start=${common.start}
+              />`;
         })}
       </svg>
-      ${edges.map(({ edge, geom }) =>
-        geom && edge.getAttribute('label')
+      ${edges.map(({ edge, fromId, toId, geom }) => {
+        const fromBox = this._nodeBoxes.get(fromId);
+        const toBox = this._nodeBoxes.get(toId);
+        const offset = parseOffset(edge.getAttribute('label-offset'));
+        const midpoint =
+          fromBox && toBox
+            ? {
+                x: (centre(fromBox).x + centre(toBox).x) / 2,
+                y: (centre(fromBox).y + centre(toBox).y) / 2,
+              }
+            : geom
+              ? { x: (geom.mx / 100) * w, y: (geom.my / 100) * h }
+              : null;
+        return midpoint && edge.getAttribute('label')
           ? html`<span
               class="tag edge-label"
-              style="left:${geom.mx}%;top:${geom.my}%"
+              style="left:${midpoint.x + offset.x}px;top:${midpoint.y + offset.y}px"
               >${edge.getAttribute('label')}</span
             >`
-          : '',
-      )}
+          : '';
+      })}
       <slot @slotchange=${() => this._place()}></slot>
     `;
   }
@@ -300,7 +399,8 @@ export class DeckNode extends LitElement {
       align-items: center;
       gap: var(--rik-space-1);
       text-align: center;
-      max-width: var(--deck-node-size, 14ch);
+      max-width: var(--deck-node-width, var(--deck-node-size, 14ch));
+      width: var(--deck-node-width, auto);
       transition: opacity 0.2s ease;
     }
     :host([pending]) {
@@ -318,7 +418,7 @@ export class DeckNode extends LitElement {
       color: var(--deck-node-boxed-color, var(--rik-text-inverse));
       padding: var(--rik-space-3) var(--rik-space-4);
       border-radius: var(--rik-radius-md);
-      max-width: var(--deck-node-size, 18ch);
+      max-width: var(--deck-node-width, var(--deck-node-size, 18ch));
     }
     :host([boxed]) .label,
     :host([boxed]) .note {
@@ -381,6 +481,10 @@ export class DeckNode extends LitElement {
   /** A mono micro-label under the name · a protocol, a count, a latency. */
   @property({ type: String }) note?: string;
 
+  /** Explicit CSS width (`18ch`, `240px`, …) for labels that must wrap before
+   * they collide with a neighbouring node. */
+  @property({ type: String, reflect: true }) width?: string;
+
   /** Draw the node as a filled block rather than type under a rule. */
   @property({ type: Boolean, reflect: true }) boxed = false;
 
@@ -389,6 +493,11 @@ export class DeckNode extends LitElement {
 
   /** A glyph above the label · needs dist/deck-icon.js loaded too. */
   @property({ type: String }) icon?: string;
+
+  protected override updated(): void {
+    if (this.width) this.style.setProperty('--deck-node-width', this.width);
+    else this.style.removeProperty('--deck-node-width');
+  }
 
   override render() {
     return html`
@@ -523,6 +632,10 @@ export class DeckEdge extends LitElement {
   @property({ type: String }) to?: string;
   @property({ type: String }) label?: string;
   @property({ type: Boolean }) dashed = false;
+  /** `straight` by default; `ortho` draws right-angle segments. */
+  @property({ type: String, reflect: true }) route: 'straight' | 'ortho' = 'straight';
+  /** `x,y` pixel offset for the edge label, e.g. `label-offset="0,-16"`. */
+  @property({ type: String, attribute: 'label-offset' }) labelOffset?: string;
 
   override render() {
     return html``;

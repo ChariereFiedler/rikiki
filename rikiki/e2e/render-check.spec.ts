@@ -366,6 +366,44 @@ test.describe('an attribute a component does not read', () => {
   });
 });
 
+test.describe('graph geometry', () => {
+  test('reports a node that leaves the graph canvas', () => {
+    deck('graph-out', `<script type="module" src="rikiki/dist/deck-graph.js"></script>
+      <deck-feature id="graph-out"><h1 slot="title">Graph</h1>
+        <deck-graph>
+          <deck-node id="outside" at="1,50" boxed label="A node with a useful long label"></deck-node>
+          <deck-node id="inside" at="75,50" boxed label="Inside"></deck-node>
+          <deck-edge from="outside" to="inside"></deck-edge>
+        </deck-graph>
+      </deck-feature>`);
+    const r = report('graph-out');
+    const found = r.json.diagnostics.find((d: any) => d.code === 'GRAPH_NODE_OUT_OF_BOUNDS');
+    expect(found, r.stdout).toBeTruthy();
+    expect(found.severity).toBe('error');
+    expect(found.slideId).toBe('graph-out');
+    expect(found.measurement.overflowPx).toBeGreaterThan(4);
+    expect(found.element).toContain('deck-node#outside');
+  });
+
+  test('reports a straight edge that crosses an unrelated node', () => {
+    deck('graph-cross', `<script type="module" src="rikiki/dist/deck-graph.js"></script>
+      <deck-feature id="graph-cross"><h1 slot="title">Graph</h1>
+        <deck-graph>
+          <deck-node id="a" at="15,50" boxed label="A"></deck-node>
+          <deck-node id="blocker" at="50,50" boxed label="Blocked"></deck-node>
+          <deck-node id="c" at="85,50" boxed label="C"></deck-node>
+          <deck-edge from="a" to="c" label="request"></deck-edge>
+        </deck-graph>
+      </deck-feature>`);
+    const r = report('graph-cross');
+    const found = r.json.diagnostics.find((d: any) => d.code === 'GRAPH_EDGE_CROSSES_NODE');
+    expect(found, r.stdout).toBeTruthy();
+    expect(found.severity).toBe('warning');
+    expect(found.measurement.obstructingNode).toContain('deck-node#blocker');
+    expect(found.element).toContain('deck-edge');
+  });
+});
+
 test('text is measured inside the elements that re-render the author\'s words', () => {
   // Slotted content stays in the light DOM and is measured there. deck-md and
   // deck-code are different: they rebuild the author's own text into their
