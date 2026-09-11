@@ -11,6 +11,10 @@ export declare class DeckPersona extends LitElement {
      *  still looks deliberate. */
     src?: string;
     onDark: boolean;
+    /** Reduce portrait, type and spacing for a supporting persona. */
+    compact: boolean;
+    /** Place name, role and context in a wrapping horizontal line. */
+    inline: boolean;
     private get _initials();
     /** The job and the company, written as a phrase.
      *

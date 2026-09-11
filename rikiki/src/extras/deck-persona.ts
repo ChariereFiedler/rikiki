@@ -8,6 +8,8 @@
 // follow.
 //
 // OPT-IN · <script type="module" src="dist/deck-persona.js"></script>
+// Add `compact` for supporting personas, and `inline` when identity metadata
+// should occupy one short row rather than the opening third of a slide.
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, css, html } from 'lit';
@@ -20,7 +22,8 @@ export class DeckPersona extends LitElement {
        --deck-persona-avatar-size / --deck-persona-initials-color
        --deck-persona-rule
        --deck-persona-name-color / --deck-persona-role-color
-       --deck-persona-context-color / --deck-persona-gap                     */
+       --deck-persona-context-color / --deck-persona-gap
+       --deck-persona-compact-name-size                                     */
   static override styles = [
     signature,
     css`
@@ -85,6 +88,36 @@ export class DeckPersona extends LitElement {
       :host([on-dark]) .name { color: var(--rik-text-inverse); }
       :host([on-dark]) .role,
       :host([on-dark]) .context { color: var(--rik-text-inverse--muted); }
+
+      :host([compact]),
+      :host([inline]) {
+        --deck-persona-avatar-size: 3.25rem;
+        --deck-persona-gap: var(--rik-space-3);
+      }
+      :host([compact]) .name,
+      :host([inline]) .name {
+        font-size: var(--deck-persona-compact-name-size, var(--rik-font-size-title));
+      }
+      :host([compact]) .context,
+      :host([inline]) .context {
+        margin-top: 0;
+        font-size: var(--rik-font-size-sm);
+      }
+
+      :host([inline]) {
+        align-items: center;
+      }
+      :host([inline]) .who {
+        flex: 1 1 auto;
+        flex-direction: row;
+        align-items: baseline;
+        flex-wrap: wrap;
+        column-gap: var(--rik-space-2);
+        row-gap: var(--rik-space-1);
+      }
+      :host([inline]) .context {
+        margin-top: 0;
+      }
     `,
   ];
 
@@ -103,6 +136,12 @@ export class DeckPersona extends LitElement {
   @property({ type: String, reflect: true }) src?: string;
 
   @property({ type: Boolean, reflect: true, attribute: 'on-dark' }) onDark = false;
+
+  /** Reduce portrait, type and spacing for a supporting persona. */
+  @property({ type: Boolean, reflect: true }) compact = false;
+
+  /** Place name, role and context in a wrapping horizontal line. */
+  @property({ type: Boolean, reflect: true }) inline = false;
 
   private get _initials(): string {
     return (this.name ?? '')

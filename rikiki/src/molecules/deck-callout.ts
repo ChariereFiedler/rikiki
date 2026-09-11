@@ -11,6 +11,9 @@
 //   --deck-callout-radius        border radius
 //   --deck-callout-padding-y     vertical padding
 //   --deck-callout-padding-x     horizontal padding
+//   --deck-callout-color         body text colour
+//   --deck-callout-strong-color  emphasized text colour
+//   --deck-callout-code-bg       inline-code background
 //
 // By default, the `type` attribute maps to the theme's semantic
 // surface/border tokens, so a theme switch updates every callout in
@@ -44,7 +47,7 @@ export class DeckCallout extends LitElement {
       border: 1px solid var(--deck-callout-border, var(--rik-status-info__border));
       box-shadow: var(--rik-elevation-2);
       align-items: center;
-      color: var(--rik-text-default--muted);
+      color: var(--deck-callout-color, var(--rik-text-default--muted));
       font-family: var(--rik-font-sans);
       font-size: var(--rik-font-size-body); line-height: 1.55;
     }
@@ -53,6 +56,21 @@ export class DeckCallout extends LitElement {
     :host([type="warn"])   { --deck-callout-bg: var(--rik-status-warn__bg);   --deck-callout-border: var(--rik-status-warn__border);   --deck-callout-stroke: var(--rik-status-warn); }
     :host([type="danger"]) { --deck-callout-bg: var(--rik-status-danger__bg);    --deck-callout-border: var(--rik-status-danger__border);    --deck-callout-stroke: var(--rik-status-danger); }
     :host([type="ok"])     { --deck-callout-bg: var(--rik-status-success__bg);     --deck-callout-border: var(--rik-status-success__border);     --deck-callout-stroke: var(--rik-status-success); }
+
+    /* A callout inside a cover, section or takeaway inherits a dark context.
+       The on-dark variant gives it a readable surface and explicitly
+       switches every text-bearing descendant to inverse theme tokens. */
+    :host([on-dark]) {
+      --deck-callout-bg: var(--rik-surface-inverse--soft-2);
+      --deck-callout-border: var(--rik-border-inverse);
+      --deck-callout-color: var(--rik-text-inverse--muted);
+      --deck-callout-strong-color: var(--rik-text-inverse);
+      --deck-callout-code-bg: var(--rik-surface-inverse__overlay);
+      box-shadow: none;
+    }
+    :host([on-dark]) .icon-box {
+      background: var(--rik-surface-inverse__overlay);
+    }
 
     .icon-box {
       flex-shrink: 0;
@@ -68,15 +86,18 @@ export class DeckCallout extends LitElement {
     }
     .content { flex: 1; }
     ::slotted(p) { margin: 0; }
-    ::slotted(strong) { color: var(--rik-text-default); font-weight: 700; }
+    ::slotted(strong) { color: var(--deck-callout-strong-color, var(--rik-text-default)); font-weight: 700; }
     ::slotted(code) {
       font-family: var(--rik-font-mono); font-size: var(--rik-font-size-mono-sm);
-      background: var(--rik-surface-tint); padding: 2px 6px;
-      border-radius: var(--rik-radius-sm); color: var(--rik-text-default);
+      background: var(--deck-callout-code-bg, var(--rik-surface-tint)); padding: 2px 6px;
+      border-radius: var(--rik-radius-sm); color: var(--deck-callout-strong-color, var(--rik-text-default));
     }
   `;
 
   @property({ type: String }) type?: DeckCalloutType;
+
+  /** Use inverse text and a dark raised surface inside dark slide layouts. */
+  @property({ type: Boolean, reflect: true, attribute: 'on-dark' }) onDark = false;
 
   override render() {
     const t: DeckCalloutType = this.type ?? 'info';

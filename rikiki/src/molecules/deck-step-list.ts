@@ -4,6 +4,11 @@
 //   <deck-step n="2" note="leaf">icon.ts</deck-step>
 //   ...
 // </deck-step-list>
+//
+// A step with supporting copy can opt into a stable two-line composition:
+//   <deck-step n="1" note="What the check measures" note-position="below">
+//     Inspect
+//   </deck-step>
 // ════════════════════════════════════════════════════════════════
 
 import { LitElement, html, css } from 'lit';
@@ -104,10 +109,44 @@ export class DeckStep extends LitElement {
       color: var(--deck-step-note-color, var(--rik-text-default--muted, var(--rik-text-default--faint)));
       font-size: var(--rik-font-size-sm);
     }
+    /* Keep the note below its own label. In a five-step row this gives each
+       item a predictable reading order and prevents notes from collapsing
+       into a narrow gutter between neighbouring steps. */
+    :host([note-position='below']) {
+      display: grid;
+      grid-template-columns: minmax(var(--deck-step-num-size, 1.6em), auto) minmax(0, 1fr);
+      grid-template-rows: auto auto;
+      column-gap: var(--rik-space-3);
+      row-gap: var(--deck-step-note-gap, var(--rik-space-1));
+      align-items: baseline;
+    }
+    :host([note-position='below']) .step-num {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+    }
+    :host([note-position='below']) .label {
+      grid-column: 2;
+      grid-row: 1;
+    }
+    :host([note-position='below']) .note {
+      grid-column: 2;
+      grid-row: 2;
+      min-width: 0;
+      margin: 0;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
   `;
 
+  /** Sequence number shown before the step label. */
   @property({ type: String }) n?: string;
+
+  /** Supporting explanation associated with this step. */
   @property({ type: String }) note?: string;
+
+  /** Put the note `inline` (default) or `below` its label. */
+  @property({ type: String, reflect: true, attribute: 'note-position' })
+  notePosition: 'inline' | 'below' = 'inline';
 
   override render() {
     return html`

@@ -4,9 +4,15 @@
 //   <div slot="right"><h3>Reviewed in CI</h3><p>Twelve minutes.</p></div>
 // </deck-versus>
 //
-// A comparison that is not a slide layout. deck-split (with `pivot` / `winner`)
-// covers the case where the comparison IS the slide; this one is a block you
-// drop inside a slide that already has a title and other content.
+// A comparison block by default. Add `slide` to use the same vocabulary as a
+// complete slide, without assembling deck-split and two deck-card elements:
+//
+// <deck-versus slide eyebrow="Before / after" pivot="→" winner="right">
+//   <h1 slot="title">The review loop</h1>
+//   <p slot="lead">Same evidence, less waiting.</p>
+//   <section slot="left">...</section>
+//   <section slot="right">...</section>
+// </deck-versus>
 //
 // OPT-IN · <script type="module" src="dist/deck-versus.js"></script>
 // ════════════════════════════════════════════════════════════════
@@ -29,6 +35,46 @@ export class DeckVersus extends LitElement {
       align-items: stretch;
       gap: var(--deck-versus-gap, var(--rik-space-3));
       font-family: var(--rik-font-sans);
+    }
+    :host([slide]) {
+      display: none;
+      position: absolute;
+      inset: 0;
+      box-sizing: border-box;
+      grid-template-columns: minmax(0, 1fr) 80px minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+      align-content: stretch;
+      gap: var(--rik-space-3) var(--deck-versus-gap, var(--rik-space-4));
+      padding: var(--rik-slide-padding-y) var(--rik-slide-padding-x);
+      overflow: hidden;
+      background: var(--deck-versus-slide-bg, var(--rik-surface-page));
+      color: var(--rik-text-default);
+    }
+    :host([slide][active]) { display: grid; }
+    :host([slide]:not([pivot])) { grid-template-columns: 1fr 1fr; }
+    .heading { display: none; }
+    :host([slide]) .heading {
+      display: flex;
+      grid-column: 1 / -1;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--rik-space-2);
+      min-width: 0;
+    }
+    .eyebrow {
+      color: var(--deck-versus-eyebrow-color, var(--rik-accent__text));
+      font-size: var(--rik-font-size-body);
+      font-weight: 600;
+    }
+    .title, .lead { min-width: 0; }
+    :host([slide]) .side,
+    :host([slide]) .pivot { grid-row: 2; min-height: 0; }
+    :host([slide]) .side {
+      display: flex;
+      flex-direction: column;
+      justify-content: var(--deck-versus-side-align, center);
+      overflow: hidden;
+      padding-block: var(--rik-space-4);
     }
     :host(:not([pivot])) {
       grid-template-columns: 1fr 1fr;
@@ -91,8 +137,31 @@ export class DeckVersus extends LitElement {
     }
     ::slotted(h3) { margin: 0 0 var(--rik-space-2); color: var(--rik-text-default); font: 800 var(--rik-font-size-h3)/1.1 var(--rik-font-display); }
     ::slotted(p) { margin: 0; color: var(--rik-text-default--muted); line-height: 1.5; }
+    ::slotted([slot='title']) {
+      display: inline-block;
+      margin: 0;
+      padding-bottom: var(--rik-space-2);
+      border-bottom: 3px solid var(--rik-accent);
+      color: var(--rik-text-default);
+      font: 800 var(--rik-font-size-h1)/1.1 var(--rik-font-display);
+      letter-spacing: -0.022em;
+    }
+    ::slotted([slot='lead']) {
+      max-width: 75ch;
+      margin: 0;
+      color: var(--rik-text-default--muted);
+      font-size: var(--rik-font-size-lead);
+      line-height: 1.5;
+    }
     @media (max-width: 640px) {
       :host, :host(:not([pivot])) { grid-template-columns: 1fr; }
+      :host([slide]), :host([slide]:not([pivot])) {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto minmax(0, 1fr) auto minmax(0, 1fr);
+      }
+      :host([slide]) .side.left { grid-row: 2; }
+      :host([slide]) .pivot { grid-row: 3; }
+      :host([slide]) .side.right { grid-row: 4; }
       .pivot { min-height: 44px; }
       .pivot::before { inset-block: 50%; inset-inline: 0; width: auto; height: 1px; }
       .pivot::after { width: 44px; height: 44px; }
@@ -109,8 +178,19 @@ export class DeckVersus extends LitElement {
   /** Which side carries the accent. */
   @property({ type: String, reflect: true }) winner?: 'left' | 'right';
 
+  /** Make this comparison a direct deck-root slide. */
+  @property({ type: Boolean, reflect: true }) slide = false;
+
+  /** Optional context label shown above the title in slide mode. */
+  @property({ type: String }) eyebrow?: string;
+
   override render() {
     return html`
+      <div class="heading">
+        ${this.eyebrow ? html`<span class="eyebrow" part="eyebrow">${this.eyebrow}</span>` : ''}
+        <div class="title" part="title"><slot name="title"></slot></div>
+        <div class="lead" part="lead"><slot name="lead"></slot></div>
+      </div>
       <div class="side left" part="left"><slot name="left"></slot></div>
       ${this.pivot ? html`<span class="pivot reading" part="pivot" aria-hidden="true">${this.pivot}</span>` : ''}
       <div class="side right" part="right"><slot name="right"></slot></div>

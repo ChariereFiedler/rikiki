@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · figures and comparisons</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-figure.js"></script>
+<script type="module" src="../../dist/deck-versus.js"></script>
+</head>
+<body>
+<deck-root no-hint no-arrows>
+
+  <deck-feature id="s-figure" eyebrow="evidence" spread="center">
+    <h1 slot="title">A figure carries its own caption</h1>
+    <deck-figure
+      id="fig"
+      src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='450' viewBox='0 0 800 450'%3E%3Crect width='800' height='450' fill='%23dcd6cc'/%3E%3C/svg%3E"
+      alt="Build time falls from 18 to 7 minutes once the cache is warm"
+      caption="The cache removes most of the install cost."
+      source="CI benchmark · 11 September 2026"
+      source-href="https://example.invalid/benchmark"
+    ></deck-figure>
+  </deck-feature>
+
+  <deck-feature id="s-figure-decorative" eyebrow="texture" spread="center">
+    <h1 slot="title">A decorative figure says so</h1>
+    <deck-figure
+      id="fig-decorative"
+      decorative
+      src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='200' viewBox='0 0 800 200'%3E%3Crect width='800' height='200' fill='%23c9c2b6'/%3E%3C/svg%3E"
+    ></deck-figure>
+  </deck-feature>
+
+  <deck-feature id="s-versus-inline" eyebrow="comparison" spread="center">
+    <h1 slot="title">A comparison inside a slide</h1>
+    <deck-versus id="vs-inline" pivot="OR" winner="right">
+      <div slot="left"><h3>Poll the registry</h3><p>Simple, and always late.</p></div>
+      <div slot="right"><h3>Subscribe to the event</h3><p>One path, no drift.</p></div>
+    </deck-versus>
+  </deck-feature>
+
+  <deck-versus id="vs-slide" slide eyebrow="the decision" pivot="OR" winner="right">
+    <h1 slot="title">Poll, or subscribe</h1>
+    <div slot="left"><h3>Poll the registry</h3><p>Simple, and always late.</p></div>
+    <div slot="right"><h3>Subscribe to the event</h3><p>One path, no drift.</p></div>
+  </deck-versus>
+
+</deck-root>
+</body>
+</html>
