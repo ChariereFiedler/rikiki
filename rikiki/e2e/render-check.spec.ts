@@ -62,6 +62,12 @@ const report = (name: string) => {
   const run = cli(['check', `${name}.html`, '--json']);
   return { ...run, json: JSON.parse(run.stdout) };
 };
+// The pixel pass is not needed for a DOM/geometry assertion, and it is the
+// slowest thing `check` does.
+const reportFast = (name: string) => {
+  const run = cli(['check', `${name}.html`, '--json', '--no-visual']);
+  return { ...run, json: JSON.parse(run.stdout) };
+};
 const codes = (r: { json: any }) => r.json.diagnostics.map((d: any) => d.code);
 
 test.describe('render', () => {
@@ -514,6 +520,71 @@ test.describe('content no slot takes', () => {
       <deck-notes>ce que je dirai</deck-notes></deck-feature>`);
     const r = report('notes');
     expect(r.json.diagnostics.filter((d: any) => d.code === 'CONTENT_NOT_RENDERED')).toEqual([]);
+  });
+});
+
+test.describe('painted box geometry', () => {
+  test('reports content that spills past its box and over the slide below it', () => {
+    // Two cards in a grid row fixed too short for their paragraph, followed
+    // by a callout: this is the reported defect verbatim. The slide itself
+    // has room to spare below, so nothing clips · the last sentence of each
+    // card paints past its own box and over the callout, and only comparing
+    // painted rects catches it.
+    const para =
+      "Une phrase assez longue pour remplir la carte. Une deuxieme phrase qui pousse le texte encore plus bas dans la carte. Une troisieme phrase qui continue d'allonger le paragraphe pour forcer un debordement bien visible au-dela de la bordure de la carte, vers le bas.";
+    deck(
+      'spill',
+      `<deck-feature id="clash"><h1 slot="title">Deux options</h1>
+         <deck-grid cols="2" rows="140px">
+           <deck-card id="a" color="yellow"><h3>Option A</h3><p>${para}</p></deck-card>
+           <deck-card id="b" color="green"><h3>Option B</h3><p>${para}</p></deck-card>
+         </deck-grid>
+         <deck-callout type="info">Ce texte de synthese doit rester lisible meme si les cartes au-dessus debordent un peu trop bas.</deck-callout>
+       </deck-feature>`,
+    );
+    const r = reportFast('spill');
+    expect(codes(r), r.stdout).not.toContain('CONTENT_CLIPPED');
+
+    const escape = r.json.diagnostics.find((d: any) => d.code === 'CONTENT_ESCAPES_BOX');
+    expect(escape, r.stdout).toBeTruthy();
+    expect(escape.severity).toBe('error');
+    expect(escape.slideId).toBe('clash');
+    expect(escape.element).toContain('deck-card');
+    expect(escape.measurement.escapePx).toBeGreaterThan(4);
+
+    const overlap = r.json.diagnostics.find((d: any) => d.code === 'CONTENT_OVERLAPS_SIBLING');
+    expect(overlap, r.stdout).toBeTruthy();
+    expect(overlap.severity).toBe('error');
+    expect(overlap.slideId).toBe('clash');
+    expect(overlap.measurement.overlapPx.x).toBeGreaterThan(8);
+    expect(overlap.measurement.overlapPx.y).toBeGreaterThan(8);
+  });
+
+  test('leaves a well-sized slide alone', () => {
+    deck(
+      'wellsized',
+      `<deck-feature id="ok"><h1 slot="title">Deux options</h1>
+         <deck-grid cols="2">
+           <deck-card id="a" color="yellow"><h3>Option A</h3><p>Une phrase courte.</p></deck-card>
+           <deck-card id="b" color="green"><h3>Option B</h3><p>Une autre phrase courte.</p></deck-card>
+         </deck-grid>
+         <deck-callout type="info">Une synthese courte.</deck-callout>
+       </deck-feature>`,
+    );
+    const r = reportFast('wellsized');
+    expect(codes(r), r.stdout).not.toContain('CONTENT_ESCAPES_BOX');
+    expect(codes(r), r.stdout).not.toContain('CONTENT_OVERLAPS_SIBLING');
+  });
+
+  test('does not flag an <em> sitting inside its own <h1>', () => {
+    // An inline mark inside a heading paints a rect that differs from the
+    // heading's own by sub-pixel line-box rounding, and is well under the
+    // 40x20 painted-box floor besides · neither should ever read as an
+    // escape or an overlap.
+    deck('em-title', `<deck-cover id="em"><h1>Un <em>mot</em> important</h1></deck-cover>`);
+    const r = reportFast('em-title');
+    expect(codes(r), r.stdout).not.toContain('CONTENT_ESCAPES_BOX');
+    expect(codes(r), r.stdout).not.toContain('CONTENT_OVERLAPS_SIBLING');
   });
 });
 

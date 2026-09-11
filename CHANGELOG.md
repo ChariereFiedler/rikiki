@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **`rikiki check` reports content that paints outside its box or on top of a
+  sibling.** `CONTENT_ESCAPES_BOX` (error) fires when a painted box leaves its
+  nearest painted ancestor by more than 4px on any side and nothing clips it;
+  `CONTENT_OVERLAPS_SIBLING` (error) fires when two unrelated painted boxes
+  intersect by more than 8px on both axes. `CONTENT_CLIPPED` only sees an
+  ancestor whose overflow is hidden, and most layouts never set that: a box
+  simply too small for its content just paints past its own edges instead,
+  silently, and the last sentence of a card can land on the callout below it
+  with nothing in the report to say so.
 - **`rikiki check` reports two graph nodes painted on top of each other.**
   `GRAPH_NODE_OVERLAPS_NODE` (error) fires when two `deck-node` of the same
   `deck-graph` intersect by more than 4px on both axes, naming both ids and
