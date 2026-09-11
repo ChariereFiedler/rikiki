@@ -156,6 +156,50 @@ export async function waitForStillFrame(page, deadlineMs = 2_000) {
     .catch(() => {});
 }
 
+/** Go to slide `index` (1-based) and report the state actually reached.
+ *  Shared by `render` and `check` · both walk a deck the same way. */
+export async function goToSlide(page, index) {
+  await page.evaluate((i) => {
+    window.location.hash = `#${i}`;
+  }, index);
+  await page.waitForFunction(
+    (i) => document.querySelector('deck-root')?.current === i - 1,
+    index,
+    { timeout: 5_000 },
+  );
+  await page.evaluate(() => document.fonts.ready);
+  await waitForStillFrame(page);
+}
+
+/** Advance one step inside the current slide · false when there is none left
+ *  (either the last state of the deck, or the step moved on to the next
+ *  slide). */
+export async function advanceStep(page) {
+  const before = await page.evaluate(() => {
+    const root = document.querySelector('deck-root');
+    return { slide: root.current, step: root.step };
+  });
+  await page.keyboard.press('ArrowRight');
+  try {
+    await page.waitForFunction(
+      (b) => {
+        const root = document.querySelector('deck-root');
+        return root.current !== b.slide || root.step !== b.step;
+      },
+      before,
+      { timeout: 2_000 },
+    );
+  } catch {
+    return false; // the deck did not move · this was the last state
+  }
+  await waitForStillFrame(page);
+  const after = await page.evaluate(() => {
+    const root = document.querySelector('deck-root');
+    return { slide: root.current, step: root.step };
+  });
+  return after.slide === before.slide;
+}
+
 /** Wait for the deck to be worth looking at: upgraded, on a slide, fonts and
  *  diagrams settled. Returns false when it never got there. */
 async function settle(page, timeoutMs) {
