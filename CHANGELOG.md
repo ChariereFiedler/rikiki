@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **`deck-source` atom** for crediting evidence blocks. Place it under any
+  `deck-csv`, `deck-table`, `deck-bar`, `deck-kpi-grid`, `deck-annotate`, or
+  plain prose · `<deck-source href="…">Word, p. 12</deck-source>` renders the
+  credit line, linked when `href` is set. It is a core atom, not an opt-in
+  module. `deck-figure` now renders one internally for its own `source` /
+  `source-href` attributes, so both paths share one implementation; its
+  `--deck-figure-source-color` token keeps working, forwarded to the new
+  `--deck-source-color`.
 - **`rikiki render --baseline <dir>` says what moved since an earlier render.**
   Each fresh PNG is compared to the same-named capture in `<dir>`, in the
   browser that just took the pictures (both images on a canvas,

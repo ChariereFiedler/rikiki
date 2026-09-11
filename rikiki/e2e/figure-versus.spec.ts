@@ -35,7 +35,9 @@ test('deck-figure keeps image, caption and linked source in native figure semant
       figure: root.querySelector('figure') !== null,
       alt: root.querySelector('img')?.getAttribute('alt'),
       caption: root.querySelector('figcaption')?.textContent?.replace(/\s+/g, ' ').trim(),
-      sourceHref: root.querySelector('cite a')?.getAttribute('href'),
+      // The credit is a nested deck-source, rendering its own <cite> in its
+      // own shadow root · pierce it explicitly rather than the outer root.
+      sourceHref: root.querySelector('deck-source')?.shadowRoot?.querySelector('a')?.getAttribute('href'),
       invalid: host.hasAttribute('data-missing-alt'),
     };
   });

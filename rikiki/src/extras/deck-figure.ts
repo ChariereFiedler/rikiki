@@ -14,6 +14,11 @@ import { LitElement, css, html, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { signature } from './signature.js';
 
+// deck-source is a core atom, registered by dist/index.js · every opt-in
+// module is documented as "loaded next to the bundle" (§20), so it is always
+// present by the time a deck reaches this one. Importing it here too would
+// register 'deck-source' a second time and throw when both bundles load.
+
 @customElement('deck-figure')
 export class DeckFigure extends LitElement {
   /* Customization tokens:
@@ -64,17 +69,20 @@ export class DeckFigure extends LitElement {
         font-size: var(--rik-font-size-sm);
         line-height: 1.5;
       }
-      .source {
-        color: var(--deck-figure-source-color, var(--rik-text-default--faint));
-        font-family: var(--rik-font-mono);
-        font-size: var(--rik-font-size-xs);
-        font-style: normal;
+      /* deck-source renders the actual credit · these two rules forward the
+         figure's own token and restore the single-line, baseline-aligned
+         look this figcaption grid needs (deck-source's own default is a
+         block line under a block, not a column beside a caption). */
+      deck-source {
+        --deck-source-color: var(--deck-figure-source-color, var(--rik-text-default--faint));
+        --deck-source-gap: 0;
+      }
+      deck-source::part(source) {
         white-space: nowrap;
       }
-      .source a { color: inherit; text-underline-offset: 0.18em; }
       @media (max-width: 640px) {
         figcaption { grid-template-columns: 1fr; }
-        .source { white-space: normal; }
+        deck-source::part(source) { white-space: normal; }
       }
     `,
   ];
@@ -135,15 +143,9 @@ export class DeckFigure extends LitElement {
               <span class="caption"><slot name="caption">${this.caption ?? ''}</slot></span>
               ${
                 this._hasSource
-                  ? html`<cite class="source" part="source">
-                    ${
-                      this.sourceHref
-                        ? html`<a href=${this.sourceHref}
-                          ><slot name="source">${this.source ?? ''}</slot></a
-                        >`
-                        : html`<slot name="source">${this.source ?? ''}</slot>`
-                    }
-                  </cite>`
+                  ? html`<deck-source part="source" href=${this.sourceHref ?? nothing}
+                      ><slot name="source">${this.source ?? ''}</slot></deck-source
+                    >`
                   : nothing
               }
             </figcaption>`

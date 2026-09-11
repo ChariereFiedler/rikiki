@@ -425,6 +425,22 @@ const atoms: Component[] = [
     tokens: ['--deck-kicker-color', '--deck-kicker-on-dark-color', '--deck-kicker-font-size', '--deck-kicker-tracking', '--deck-kicker-margin'],
   },
   {
+    tag: 'deck-source',
+    summary: 'A source or credit line, placed under any evidence block · deck-csv, deck-table, deck-bar, deck-kpi-grid, deck-annotate, or plain prose.',
+    attrs: [
+      { name: 'href', type: 'string', note: 'Turns the credit into a link' },
+    ],
+    slots: [
+      { name: '(default)', note: 'The credit text, e.g. "Word, p. 12"' },
+    ],
+    example: `<deck-csv>
+  Region; Users
+  EMEA; 12 040
+</deck-csv>
+<deck-source href="https://example.com/report">Annual report, p. 4</deck-source>`,
+    tokens: ['--deck-source-color', '--deck-source-gap'],
+  },
+  {
     tag: 'deck-notes',
     summary: 'Speaker notes for a slide · hidden by default, surfaced in the presenter window (press P). Free-form text content.',
     slots: [
@@ -655,7 +671,7 @@ const optionalComponents: OptionalComponent[] = [
 <Docs
   title="Component library"
   eyebrow="Reference"
-  description="Every <deck-*> element · attributes, slots, tokens, live preview. The default bundle has 35 core components; 23 optional elements are documented below."
+  description="Every <deck-*> element · attributes, slots, tokens, live preview. The default bundle has 36 core components; 23 optional elements are documented below."
 >
 
 <h2 id="mental-model">Mental model · which one do I need?</h2>
@@ -710,7 +726,7 @@ const optionalComponents: OptionalComponent[] = [
 
 
 <p>
-  This catalogue details <strong>8 layouts</strong> and <strong>36 building blocks</strong>:
+  This catalogue details <strong>8 layouts</strong> and <strong>37 building blocks</strong>:
   21 from the default bundle and 15 optional components. Layouts define a
   slide's overall structure; the building blocks fill the slots. Both
   groups follow the same design-token contract · override
