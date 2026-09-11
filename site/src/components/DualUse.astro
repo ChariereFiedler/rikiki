@@ -114,8 +114,22 @@ const carousel = `<!doctype html><html><head><meta charset="UTF-8">
     const iframe = viewport.querySelector('iframe');
     if (!iframe) return;
     const fit = () => { iframe.style.transform = `scale(${viewport.clientWidth / 1920})`; };
+    const hideShortcutHints = () => {
+      const shadow = iframe.contentDocument?.querySelector('deck-root')?.shadowRoot;
+      if (!shadow || shadow.querySelector('[data-embed-chrome]')) return;
+      const style = document.createElement('style');
+      style.dataset.embedChrome = '';
+      style.textContent = '#kb-hint{display:none!important}';
+      shadow.append(style);
+    };
     fit();
     new ResizeObserver(fit).observe(viewport);
+    const prepareEmbeddedDeck = () => {
+      iframe.contentWindow?.customElements.whenDefined('deck-root').then(() => requestAnimationFrame(hideShortcutHints));
+    };
+    iframe.addEventListener('load', prepareEmbeddedDeck);
+    prepareEmbeddedDeck();
+    hideShortcutHints();
     const embed = viewport.closest('.embed');
     const current = embed?.querySelector('[data-carousel-current]');
     const move = (key) => {

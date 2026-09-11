@@ -63,6 +63,7 @@ export const VENDORS = {
 export const BUDGETS = {
   initialLoadGzip: 45 * 1024,
   standaloneGzip: 55 * 1024,
+  shikiVendorGzip: 150 * 1024,
 };
 
 /** Measure every artifact the docs quote · the single call both the test and

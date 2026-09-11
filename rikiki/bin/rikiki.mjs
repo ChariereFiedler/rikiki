@@ -51,7 +51,7 @@ Options:
   --force              init: overwrite an existing deck
   --theme rikiki|siliceum   theme · siliceum inlines its local fonts (default: rikiki)
   --with-mermaid       inline the mermaid runtime (+~3 MB)
-  --with-shiki         inline the Shiki highlighter (+~9 MB)
+  --with-shiki         inline the curated Shiki highlighter (+~0.7 MB raw)
   --output, -o <file>  PDF path (export · default <deck>.pdf)
   --out <dir>          picture directory (render · default <deck>.shots/)
   --slides a,b         render: which slides · numbers (1-based) or ids

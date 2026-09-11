@@ -42,6 +42,13 @@ describe('v1.0 size budgets', () => {
     expect(initialPaths).not.toContain('dist/vendor/shiki.js');
     expect(sizes.vendors.mermaid).toBeGreaterThan(sizes.initialLoadGzip);
   });
+
+  it('the curated Shiki runtime stays below its optional-module budget', () => {
+    expect(
+      sizes.vendors.shiki,
+      `Shiki vendor is ${toKb(sizes.vendors.shiki)} KB gzip (budget ${toKb(BUDGETS.shikiVendorGzip)} KB)`,
+    ).toBeLessThanOrEqual(BUDGETS.shikiVendorGzip);
+  });
 });
 
 describe('published size figures match the artifacts', () => {

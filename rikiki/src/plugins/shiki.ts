@@ -4,7 +4,7 @@
 // Usage in a deck:
 //   <script type="module">
 //     import { installShiki } from './rikiki/dist/shiki.js';
-//     await installShiki({ theme: 'one-dark-pro', langs: ['ts', 'tsx', 'html', 'css'] });
+//     await installShiki({ theme: 'one-dark-pro', langs: ['ts', 'js', 'html', 'css'] });
 //   </script>
 //
 // After install, all <deck-code> instances re-render through Shiki,
@@ -17,16 +17,17 @@
 // private render path · the hook owns the markup and may decline (return null)
 // to fall back to the built-in regex highlighter.
 //
-// Trade-off: the vendored Shiki bundle is large (every grammar + theme, JS
-// engine, no wasm). That's why this is opt-in and lazy · the core stays small.
+// The vendored bundle contains the JS engine, one-dark-pro and the five default
+// grammars only. The explicit set prevents Shiki's complete catalogues from
+// entering the offline artifact.
 // ════════════════════════════════════════════════════════════════
 
 import { setDeckCodeHighlighter } from '../atoms/deck-code-highlighter.js';
 
 interface InstallOpts {
-  /** Shiki theme name (https://shiki.style/themes) · default 'one-dark-pro'. */
+  /** Bundled theme · currently 'one-dark-pro'. */
   theme?: string;
-  /** Languages to preload · default ['ts', 'js', 'html', 'css', 'json']. */
+  /** Bundled languages · ts, js, html, css and json (long aliases accepted). */
   langs?: string[];
 }
 
