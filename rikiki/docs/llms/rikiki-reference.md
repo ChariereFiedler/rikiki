@@ -687,7 +687,21 @@ to draw and every animation to finish before each shot. It does not sleep.
 npx rikiki check talk.html              # a readable report on stderr
 npx rikiki check talk.html --json       # the report on stdout, nothing else
 npx rikiki check talk.html --no-visual  # skip the pixel pass (one shot per slide)
+npx rikiki check talk.html --steps      # measure every revealed state, not just the first
 ```
+
+Without `--steps`, a stepped slide is only ever measured in its opening state
+· `advanceStep`'s own geometry rarely changes with it (rikiki reveals dim and
+highlight, it does not hide), but content wired to a step through other means
+can still defect only once revealed. With `--steps`, each slide is walked from
+its opening state through every state `advanceStep` reaches (`ArrowRight`),
+running the same diagnostics on each. Every diagnostic then carries a `state`
+(`0` for the opening state) both in the JSON and appended to the human line
+(`· state 2`). A diagnostic identical on code, slide and path/message across
+several states of one slide is reported once, at the lowest state it held.
+`statesInspected` counts every state actually measured, not just the slides.
+The pixel pass still measures only the opening state of each slide either way
+· `notChecked` says so.
 
 The pixel pass photographs each slide with the engine's own chrome hidden, and
 measures where the ink sits. It reports imbalance only · a slide whose content

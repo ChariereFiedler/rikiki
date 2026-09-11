@@ -13,7 +13,7 @@
 
 import { basename } from 'node:path';
 import { readFileSync } from 'node:fs';
-import { SLIDE_TITLE_READER, waitForStillFrame, withDeck } from './browser.mjs';
+import { SLIDE_TITLE_READER, advanceStep, goToSlide, waitForStillFrame, withDeck } from './browser.mjs';
 import { BOX_GEOMETRY_READER } from './box-geometry.mjs';
 import { GRAPH_GEOMETRY_READER } from './graph-hit.mjs';
 import { measureSlides } from './visual.mjs';
@@ -731,27 +731,72 @@ function diagnose(page, source, limits) {
   return found;
 }
 
+/** Two diagnostics identical on (code, slide, path or message) are the same
+ *  finding seen at a different moment · keep the earliest state it held. */
+function dedupeStateDiagnostics(diagnostics) {
+  const kept = new Map();
+  for (const d of diagnostics) {
+    const key = JSON.stringify([d.code, d.slide ?? null, d.element ?? d.message]);
+    const prior = kept.get(key);
+    if (!prior || d.state < prior.state) kept.set(key, d);
+  }
+  return [...kept.values()];
+}
+
+/** Walk every slide from its opening state through every state
+ *  `advanceStep` reaches, running `diagnose` on each and tagging the result
+ *  with the state it was measured in · 0 for the opening state. */
+async function diagnoseAllStates(page, slideCount, inspectOpts, source, limits) {
+  const found = [];
+  let statesInspected = 0;
+  for (let index = 1; index <= slideCount; index++) {
+    await goToSlide(page, index);
+    let state = 0;
+    for (;;) {
+      const snapshot = await page.evaluate(inspectPage, inspectOpts);
+      statesInspected += 1;
+      for (const d of diagnose(snapshot, source, limits)) found.push({ ...d, state });
+      if (!(await advanceStep(page))) break;
+      state += 1;
+    }
+  }
+  return { diagnostics: dedupeStateDiagnostics(found), statesInspected };
+}
+
 /**
  * Inspect a deck and report what is wrong with it.
  * @returns {Promise<object>} the versioned report.
  */
-export async function checkDeck(deckPath, { timeoutMs = 30_000, width = 1920, height = 1080, visual = true } = {}) {
+export async function checkDeck(
+  deckPath,
+  { timeoutMs = 30_000, width = 1920, height = 1080, visual = true, steps = false } = {},
+) {
   const source = readFileSync(deckPath, 'utf8');
   const limits = LIMITS;
 
   return withDeck(
     deckPath,
     async ({ page, settled, missing, errors }) => {
+      const inspectOpts = { limits, titleReader: SLIDE_TITLE_READER, graphGeometry: GRAPH_GEOMETRY_READER, boxGeometry: BOX_GEOMETRY_READER };
       const observed = settled
-        ? await page.evaluate(inspectPage, { limits, titleReader: SLIDE_TITLE_READER, graphGeometry: GRAPH_GEOMETRY_READER, boxGeometry: BOX_GEOMETRY_READER })
-        : await page.evaluate(inspectPage, { limits, titleReader: SLIDE_TITLE_READER, graphGeometry: GRAPH_GEOMETRY_READER, boxGeometry: BOX_GEOMETRY_READER }).catch(() => ({
+        ? await page.evaluate(inspectPage, inspectOpts)
+        : await page.evaluate(inspectPage, inspectOpts).catch(() => ({
             hasRoot: false,
             runtimeLoaded: false,
             slides: [],
             unknown: [],
           }));
 
-      const diagnostics = diagnose(observed, source, limits);
+      let diagnostics;
+      let statesInspected;
+      if (settled && steps && observed.slides.length) {
+        const walked = await diagnoseAllStates(page, observed.slides.length, inspectOpts, source, limits);
+        diagnostics = walked.diagnostics;
+        statesInspected = walked.statesInspected;
+      } else {
+        diagnostics = diagnose(observed, source, limits);
+        statesInspected = observed.slides.length;
+      }
 
       // The pixel pass needs a settled deck and one screenshot per slide · it
       // is the slowest thing here, so it is skippable.
@@ -806,7 +851,7 @@ export async function checkDeck(deckPath, { timeoutMs = 30_000, width = 1920, he
         deck: basename(deckPath),
         settled,
         slideCount: observed.slides.length,
-        statesInspected: observed.slides.length,
+        statesInspected,
         limits,
         visualMeasured,
         summary,
@@ -816,14 +861,16 @@ export async function checkDeck(deckPath, { timeoutMs = 30_000, width = 1920, he
           ...(observed.runtimeLoaded
             ? []
             : ['layout · the runtime never ran, so nothing about size or fit was measured']),
-          'revealed steps · only the opening state of each slide is measured',
+          ...(steps ? [] : ['revealed steps · only the opening state of each slide is measured']),
           'accessibility · no contrast, focus order or screen-reader check is run',
           'wording, facts and figures · nothing here reads the content',
           'what a speaker actually says · the length estimate reads the notes, not the room',
           'other viewports · the deck is measured at its own canvas size',
           'text inside a diagram · an SVG scales by its viewBox, which is not measured here',
           "a component's own chrome · only the text an author wrote is measured for size",
-          ...(visualMeasured ? [] : ['the pixels · the visual pass did not run']),
+          ...(visualMeasured
+            ? ['pixels of revealed states · the visual pass photographs only the opening state of each slide']
+            : ['the pixels · the visual pass did not run']),
         ],
       };
     },
@@ -837,7 +884,8 @@ export function formatReport(report) {
   const icon = { error: '✗', warning: '!' };
   for (const d of report.diagnostics) {
     const at = d.slide ? ` · slide ${d.slide}${d.slideId ? ` (#${d.slideId})` : ''}` : '';
-    lines.push(`${icon[d.severity] ?? '·'} ${d.code}${at}`);
+    const atState = d.state !== undefined ? ` · state ${d.state}` : '';
+    lines.push(`${icon[d.severity] ?? '·'} ${d.code}${at}${atState}`);
     lines.push(`    ${d.message}`);
     if (d.element) lines.push(`    at  ${d.element}`);
     if (d.suggestion) lines.push(`    try ${d.suggestion}`);

@@ -471,6 +471,62 @@ test.describe('graph geometry', () => {
   });
 });
 
+test.describe('check --steps', () => {
+  test('measures every revealed state, and reports a defect that only shows once stepped through', () => {
+    // deck-graph's own `reveal` only dims and highlights nodes as the deck
+    // steps through them · it never conceals or moves one (emphasis, not
+    // concealment). To get a defect that is genuinely absent from the
+    // opening state and present only once revealed, this rule hooks the
+    // `[active]` attribute deck-graph already toggles at the matching step
+    // and moves the third node off its canvas right when it lights up.
+    deck(
+      'graph-steps',
+      `<script type="module" src="rikiki/dist/deck-graph.js"></script>
+       <style>deck-node#c[active] { --nx: 500% !important; }</style>
+       <deck-feature id="graph-steps"><h1 slot="title">Graph</h1>
+         <deck-graph reveal>
+           <deck-node id="a" at="20,50" boxed label="A"></deck-node>
+           <deck-node id="b" at="50,50" boxed label="B"></deck-node>
+           <deck-node id="c" at="80,50" boxed label="C"></deck-node>
+         </deck-graph>
+       </deck-feature>`,
+    );
+
+    const plain = reportFast('graph-steps');
+    expect(codes(plain), plain.stdout).not.toContain('GRAPH_NODE_OUT_OF_BOUNDS');
+    expect(plain.json.notChecked.join(' ')).toMatch(/revealed steps/);
+
+    const run = cli(['check', 'graph-steps.html', '--json', '--no-visual', '--steps']);
+    const stepped = { ...run, json: JSON.parse(run.stdout) };
+    const found = stepped.json.diagnostics.find((d: any) => d.code === 'GRAPH_NODE_OUT_OF_BOUNDS');
+    expect(found, stepped.stdout).toBeTruthy();
+    expect(found.severity).toBe('error');
+    expect(found.state).toBeGreaterThan(0);
+    // Four states of one slide · the opening one plus each of the three the
+    // graph declares for itself.
+    expect(stepped.json.statesInspected).toBe(4);
+    // The generic "only the opening state" line would now be false · the
+    // pixel-specific one takes its place since the visual pass never walks
+    // the steps.
+    expect(stepped.json.notChecked.join(' ')).not.toMatch(/revealed steps · only the opening/);
+  });
+
+  test('collapses a defect seen at several states down to its first occurrence', () => {
+    // A duplicate id lives on the slide itself, unrelated to any step · every
+    // state re-measures it, and the report must still say it once.
+    deck(
+      'dedupe-steps',
+      `<deck-feature id="a" steps="1"><h1 slot="title">A</h1><p data-step-block="1">x</p></deck-feature>
+       <deck-takeaway id="a"><h1>B</h1></deck-takeaway>`,
+    );
+    const run = cli(['check', 'dedupe-steps.html', '--json', '--no-visual', '--steps']);
+    const stepped = { ...run, json: JSON.parse(run.stdout) };
+    const dupes = stepped.json.diagnostics.filter((d: any) => d.code === 'DUPLICATE_SLIDE_ID');
+    expect(dupes, stepped.stdout).toHaveLength(1);
+    expect(dupes[0].state).toBe(0);
+  });
+});
+
 test('text is measured inside the elements that re-render the author\'s words', () => {
   // Slotted content stays in the light DOM and is measured there. deck-md and
   // deck-code are different: they rebuild the author's own text into their
