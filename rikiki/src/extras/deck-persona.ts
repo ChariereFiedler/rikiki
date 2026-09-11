@@ -194,14 +194,15 @@ export class DeckPersona extends LitElement {
   }
 
   override render() {
+    // No photo and no name means no initials · an empty inverse square is a
+    // mass carrying nothing, which is the opposite of what the block is for.
+    const block = this.src
+      ? html`<span class="avatar" part="avatar" aria-hidden="true"><img src=${this.src} alt="" /></span>`
+      : this._initials
+        ? html`<span class="avatar" part="avatar" aria-hidden="true"><span class="statement">${this._initials}</span></span>`
+        : '';
     return html`
-      <span class="avatar" part="avatar" aria-hidden="true">
-        ${
-          this.src
-            ? html`<img src=${this.src} alt="" />`
-            : html`<span class="statement">${this._initials}</span>`
-        }
-      </span>
+      ${block}
       <span class="who">
         ${this.name ? html`<span class="name statement" part="name">${this.name}</span>` : ''}
         ${this._line ? html`<span class="role reading" part="role">${this._line}</span>` : ''}

@@ -325,3 +325,30 @@ for (const theme of THEMES) {
     expect(painted.side, 'the block is a surface, not a swatch').toBeGreaterThan(64);
   });
 }
+
+test('a persona with nothing to show in the block does not paint an empty square', async ({
+  page,
+}) => {
+  const deck = createDeckPage(page);
+  await deck.goto(`${MORE}#5`);
+
+  const blocks = await page.evaluate(async () => {
+    const persona = document.getElementById('who') as HTMLElement & {
+      updateComplete: Promise<unknown>;
+    };
+    const withName = Boolean(persona.shadowRoot!.querySelector('.avatar'));
+    persona.removeAttribute('name');
+    (persona as unknown as { name?: string }).name = undefined;
+    await persona.updateComplete;
+    const withoutName = Boolean(persona.shadowRoot!.querySelector('.avatar'));
+    persona.setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAAAAACw=');
+    await persona.updateComplete;
+    return { withName, withoutName, withSrc: Boolean(persona.shadowRoot!.querySelector('.avatar')) };
+  });
+
+  expect(blocks.withName, 'a named persona has its block').toBe(true);
+  // An inverse square holding nothing is a mass carrying nothing · the whole
+  // point of the block is that it stands for someone.
+  expect(blocks.withoutName, 'no initials and no photo means no block').toBe(false);
+  expect(blocks.withSrc, 'a photo brings the block back without a name').toBe(true);
+});
