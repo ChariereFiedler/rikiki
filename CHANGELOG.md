@@ -155,9 +155,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   without a note costs no height anywhere else. The value scales with the slide
   and with `cols` instead of being fixed at reading size. A `tone` of `accent`,
   `ok`, `warn` or `danger` puts the figure on the inverse surface with inverse
-  digits and the tone as a stroke on the block, rather than recolouring the
-  digits · a coloured number on paper is a different colour, not more emphasis;
-  `default` and `muted` paint nothing at all. `ruled` draws a divider that can
+  digits, and says the tone in the colour of the label under it rather than
+  recolouring the figure · a coloured number on paper is a different colour, not
+  more emphasis; `default` and `muted` paint nothing at all. `ruled` draws a divider that can
   actually be seen: it was written with
   `::slotted(deck-kpi:not(:first-child))`, which Chromium does not match, so the
   attribute had never drawn anything. No attribute changed.

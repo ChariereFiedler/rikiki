@@ -1312,7 +1312,7 @@ and the rest of the deck is unaffected.
 | `deck-bar` | A proportion, drawn · one value against a total, or a stack of categories on one track | `value`, `total`, `label`, `tone` (`accent`/`ok`/`warn`/`danger`/`info`/`muted`), `segments` (`label:value:tone` triples separated by `\|`), `no-value`, `no-legend` | · |
 | `deck-icon` | A symbol · one of 24 drawn glyphs by `name`, or any `<svg>` you slot in. Nothing is vendored; `rikiki bundle` keeps only the glyphs the deck writes | `name`, `size` (`sm`/`md`/`lg`/`xl`), `tone`, `label` (absent means decorative, and it is hidden from assistive technology) | default = a fallback `<svg>` |
 | `deck-checklist` / `deck-check` | What works and what does not, told apart by shape as well as colour | list: `cols` · item: `no` | item default = the text |
-| `deck-kpi-grid` / `deck-kpi` | Several figures that read as one family · the grid owns the value / label / note rows and every figure adopts them, so all the values share one baseline and all the labels sit on one line | grid: `cols`, `ruled` (a visible divider between figures) · figure: `value` (scales with the slide and with `cols`), `label`, `note`, `tone` (`accent`/`ok`/`warn`/`danger` put the figure on the inverse surface with the tone as a stroke; `default` and `muted` paint nothing) | · |
+| `deck-kpi-grid` / `deck-kpi` | Several figures that read as one family · the grid owns the value / label / note rows and every figure adopts them, so all the values share one baseline and all the labels sit on one line | grid: `cols`, `ruled` (a visible divider between figures) · figure: `value` (scales with the slide and with `cols`), `label`, `note`, `tone` (`accent`/`ok`/`warn`/`danger` put the figure on the inverse surface and colour its label with the tone; `default` and `muted` paint nothing) | · |
 | `deck-pull` | An excerpt lifted out of a dense slide · text wraps around it when floated | `side` (`full`/`left`/`right`) | default = the excerpt |
 | `deck-persona` | Who is speaking, or who the case study is about · the portrait block is the inverse surface, so the person has a place on the slide | `name`, `person-role` (**not** `role`), `org`, `context` (the quiet line, gapped away from the identity), `src` (a portrait; initials in inverse ink stand in without one), `on-dark` (the block flips to paper with ink initials), `compact` (shrinks the block and the name together, for a supporting persona), `inline` (name, role and context on one wrapping row) | · |
 | `deck-versus` | A directed comparison as a BLOCK inside a slide (`deck-split` covers the case where the comparison is the whole slide) | `pivot`, `winner` (`left`/`right`), `slide` (make the comparison a deck-root slide of its own, with `title` and `lead` slots), `eyebrow` (context label above the title, slide mode only) | `title`, `lead`, `left`, `right` |
@@ -1342,7 +1342,7 @@ semantic `--rik-*` token, so both shipped themes are covered:
 `--deck-check-no-color`, `--deck-checklist-rule`;
 `--deck-kpi-value-size`, `--deck-kpi-value-color`, `--deck-kpi-label-color`,
 `--deck-kpi-note-color`, `--deck-kpi-mass`, `--deck-kpi-mass-text`,
-`--deck-kpi-mark-width`, `--deck-kpi-block-pad-x`, `--deck-kpi-block-pad-y`,
+`--deck-kpi-block-pad-x`, `--deck-kpi-block-pad-y`,
 `--deck-kpi-grid-cols`, `--deck-kpi-grid-gap`, `--deck-kpi-grid-row-gap`,
 `--deck-kpi-grid-rule`, `--deck-kpi-grid-rule-width`;
 `--deck-pull-rule`, `--deck-pull-size`, `--deck-pull-width`, `--deck-pull-font`;

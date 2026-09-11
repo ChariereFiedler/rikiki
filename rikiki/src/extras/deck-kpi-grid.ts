@@ -26,7 +26,9 @@ import { signature } from './signature.js';
 export type DeckKpiTone = 'default' | 'accent' | 'ok' | 'warn' | 'danger' | 'muted';
 
 /** The tone as written on paper · the `__text` ramps, tuned for contrast on the
- *  page surface. Used by the figures that carry no mass. */
+ *  page surface. It colours the digits of a figure that carries no mass, and the
+ *  LABEL of one that does · a marked figure's digits are inverse ink on the
+ *  block, so the tone has to be said somewhere that is still on paper. */
 const TONES: Record<DeckKpiTone, string> = {
   default: 'var(--rik-text-default)',
   accent: 'var(--rik-accent__text)',
@@ -34,20 +36,6 @@ const TONES: Record<DeckKpiTone, string> = {
   warn: 'var(--rik-status-warn__text)',
   danger: 'var(--rik-status-danger__text)',
   muted: 'var(--rik-text-default--faint)',
-};
-
-/** The same tone as a MARK on the night block · the saturated base ramps. The
- *  `__text` variants above are paper-tuned and one of them, siliceum's
- *  `--rik-accent__text`, is a dark olive that vanishes against the inverse
- *  surface. A stroke on a dark block is a different contrast problem from ink
- *  on paper, so it gets its own map rather than a shared approximation. */
-const MARKS: Record<DeckKpiTone, string> = {
-  default: 'var(--rik-text-inverse)',
-  accent: 'var(--rik-accent)',
-  ok: 'var(--rik-status-success)',
-  warn: 'var(--rik-status-warn)',
-  danger: 'var(--rik-status-danger)',
-  muted: 'var(--rik-text-inverse--faint)',
 };
 
 @customElement('deck-kpi-grid')
@@ -75,11 +63,7 @@ export class DeckKpiGrid extends LitElement {
          padding, and the row is pulled back by exactly that amount: the ink of
          the first column lands on the slide's text edge and the night block
          bleeds into the margin instead of being politely contained. */
-      margin-inline-start: calc(
-        -1 *
-          (var(--deck-kpi-block-pad-x, var(--rik-space-3)) +
-            var(--deck-kpi-mark-width, var(--rik-space-hair)))
-      );
+      margin-inline-start: calc(-1 * var(--deck-kpi-block-pad-x, var(--rik-space-3)));
     }
     /* Hand the subgrid down. A custom property crosses into the shadow root of
        each figure, which a selector cannot; a deck-kpi used on its own never
@@ -142,7 +126,7 @@ export class DeckKpi extends LitElement {
        --deck-kpi-value-size / --deck-kpi-value-color
        --deck-kpi-label-color / --deck-kpi-note-color
        --deck-kpi-mass / --deck-kpi-mass-text
-       --deck-kpi-mark-width / --deck-kpi-block-pad-x / --deck-kpi-block-pad-y */
+       --deck-kpi-block-pad-x / --deck-kpi-block-pad-y                      */
   static override styles = [
     signature,
     css`
@@ -179,11 +163,10 @@ export class DeckKpi extends LitElement {
         color: var(--deck-kpi-value-color, var(--_tone));
         /* Identical box metrics on every figure, marked or not · that is what
            keeps the values on one baseline and their ink on one left edge.
-           An unmarked figure paints nothing: transparent stroke, no fill. */
+           An unmarked figure paints nothing at all. */
         box-sizing: border-box;
         padding: var(--deck-kpi-block-pad-y, var(--rik-space-2))
           var(--deck-kpi-block-pad-x, var(--rik-space-3));
-        border-left: var(--deck-kpi-mark-width, var(--rik-space-hair)) solid transparent;
         border-radius: var(--rik-radius-sm);
       }
       /* The one mass · the marked figure, and only it. default and muted
@@ -191,16 +174,28 @@ export class DeckKpi extends LitElement {
          nothing, which is rule 1 of ADR-002 · a component with nothing marked
          has no mass at all. The night surface is the
          only fill this palette has that survives the room (18.9:1 against the
-         page under both themes); the tone rides on it as a stroke rather than
-         recolouring the digits, because a teal number on paper is a different
-         colour, not more emphasis. */
+         page under both themes), and the block alone is the emphasis · the
+         tone is said by the label under it, on paper, where the tone ramps are
+         legible. It is deliberately NOT a coloured edge on one side of the
+         block: a single-sided stroke on a box that has a radius reads as a
+         rendering accident, not as a mark. */
       :host([tone='accent']) .value,
       :host([tone='ok']) .value,
       :host([tone='warn']) .value,
       :host([tone='danger']) .value {
         background: var(--deck-kpi-mass, var(--rik-surface-inverse));
-        border-left-color: var(--_mark);
         color: var(--deck-kpi-value-color, var(--deck-kpi-mass-text, var(--rik-text-inverse)));
+      }
+      /* The tone, carried by the label of the marked figure · the one place it
+         can be said in the tone's own colour without competing with the block.
+         Under siliceum the accent ramp is a muted olive and this reads as a
+         near-plain label, which is the correct outcome: the block is the
+         emphasis, the colour was only ever the name of the tone. */
+      :host([tone='accent']) .label,
+      :host([tone='ok']) .label,
+      :host([tone='warn']) .label,
+      :host([tone='danger']) .label {
+        color: var(--deck-kpi-label-color, var(--_tone));
       }
       /* The label is a sentence, not a tag. It used to be a tracked-out mono
          micro-label, which is unreadable across a room and is one of the
@@ -208,10 +203,7 @@ export class DeckKpi extends LitElement {
          lines up with its ink. */
       .label,
       .note {
-        padding-inline-start: calc(
-          var(--deck-kpi-block-pad-x, var(--rik-space-3)) +
-            var(--deck-kpi-mark-width, var(--rik-space-hair))
-        );
+        padding-inline-start: var(--deck-kpi-block-pad-x, var(--rik-space-3));
       }
       .label {
         align-self: start;
@@ -245,7 +237,6 @@ export class DeckKpi extends LitElement {
   override willUpdate(): void {
     const tone = TONES[this.tone] ? this.tone : 'default';
     this.style.setProperty('--_tone', TONES[tone]);
-    this.style.setProperty('--_mark', MARKS[tone]);
   }
 
   override render() {
