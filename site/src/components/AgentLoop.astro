@@ -3,6 +3,13 @@
     <span>Agent workflow</span>
     <strong>Brief → HTML → diagnostics → files</strong>
   </div>
+  <svg class="flow-lines" viewBox="0 0 1000 190" preserveAspectRatio="none" aria-hidden="true">
+    <path class="forward" d="M70 82 H930" />
+    <path class="feedback" d="M720 112 C720 170 500 170 500 112" />
+    <text class="feedback-label" x="610" y="177" text-anchor="middle">revise from diagnostics</text>
+    <circle class="packet" r="5"><animateMotion dur="5s" repeatCount="indefinite" path="M70 82 H930" /></circle>
+    <circle class="packet feedback-packet" r="4"><animateMotion dur="3s" repeatCount="indefinite" path="M720 112 C720 170 500 170 500 112" /></circle>
+  </svg>
   <ol>
     <li><span class="loop-num">01</span><strong>Brief</strong><code>prompt.md</code></li>
     <li><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">02</span><strong>Reference</strong><code>llms.txt</code></li>
@@ -15,6 +22,7 @@
 
 <style>
   .agent-loop {
+    position:relative;
     margin-top: var(--rik-space-6);
     padding: var(--rik-space-4);
     background: var(--rik-surface-inverse);
@@ -34,9 +42,18 @@
   }
   .loop-label strong { font-family: var(--rik-font-display); }
   ol {
+    position:relative; z-index:1;
     display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
     list-style: none; padding: var(--rik-space-4) 0; margin: 0;
   }
+  .flow-lines { position:absolute; z-index:0; left:var(--rik-space-4); right:var(--rik-space-4); top:65px; width:calc(100% - 48px); height:190px; overflow:visible; color:var(--rik-status-success); pointer-events:none; }
+  .flow-lines path { fill:none; vector-effect:non-scaling-stroke; }
+  .forward { stroke:var(--rik-border-inverse--strong); stroke-width:1; }
+  .feedback { stroke:var(--rik-status-success); stroke-width:1.5; stroke-dasharray:5 7; animation:flow-dash 1.2s linear infinite; }
+  .feedback-label { fill:var(--rik-status-success); font:700 11px var(--rik-font-mono); letter-spacing:.08em; text-transform:uppercase; }
+  .packet { fill:var(--rik-accent); filter:drop-shadow(0 0 5px var(--rik-accent)); }
+  .feedback-packet { fill:var(--rik-status-success); filter:drop-shadow(0 0 5px var(--rik-status-success)); }
+  @keyframes flow-dash { to { stroke-dashoffset:-12; } }
   li {
     position: relative; display: flex; flex-direction: column; gap: 4px;
     min-width: 0; padding: 0 var(--rik-space-3);
@@ -65,6 +82,7 @@
   }
   .agent-loop > a:hover { text-decoration: underline; }
   @media (max-width: 640px) {
+    .flow-lines { display:none; }
     .agent-loop { padding: var(--rik-space-3); }
     .loop-label { align-items: flex-start; flex-direction: column; }
     ol { grid-template-columns: 1fr; gap: 0; padding: var(--rik-space-3) 0; }
@@ -76,5 +94,9 @@
     li code { white-space: nowrap; }
     .loop-arrow { display: none; }
     .doctor { margin: 0; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    .packet { display:none; }
+    .feedback { animation:none; }
   }
 </style>

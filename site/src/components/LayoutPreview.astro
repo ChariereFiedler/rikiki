@@ -4,7 +4,7 @@
 // Heavy in iframes, but lazy-loaded so they only fetch when scrolled into
 // view · the home page itself ships no JS for this.
 interface Props {
-  type: 'cover' | 'section' | 'hero' | 'split' | 'hero-detail' | 'hook';
+  type: 'cover' | 'hero' | 'split' | 'bento' | 'data' | 'hook';
 }
 const type = Astro.props.type as Props['type'];
 
@@ -16,11 +16,6 @@ const decks: Record<Props['type'], string> = {
       <h1>Hello, <span class="accent">world</span>.</h1>
       <p class="sub">Sub-title or opening question.</p>
     </deck-cover>`,
-
-  section: `
-    <deck-section num="02">
-      <h1>Anatomy</h1>
-    </deck-section>`,
 
   hero: `
     <deck-feature eyebrow="Module">
@@ -37,13 +32,24 @@ const greet = (n) => \`Hi \${n}\`;</deck-code>
       <deck-card slot="right" color="green"><h3>Fix</h3><p>Ship plain HTML.</p></deck-card>
     </deck-split>`,
 
-  'hero-detail': `
-    <deck-feature-cards eyebrow="Deep dive">
-      <h1 slot="title">One thing at a time</h1>
-      <deck-code lang="ts" hero>function run() { return 42; }</deck-code>
-      <deck-card slot="left" color="yellow"><h3>What changes</h3></deck-card>
-      <deck-card slot="right" color="green"><h3>What stays</h3></deck-card>
-    </deck-feature-cards>`,
+  bento: `
+    <deck-bento eyebrow="System" cols="3" rows="2" gap="3">
+      <h1 slot="title">One canvas. Unequal ideas.</h1>
+      <deck-point col="1 / 3" row="1" tone="ok"><h3>Main signal</h3><p>Give the strongest idea room.</p></deck-point>
+      <deck-point col="3" row="1 / 3" tone="info"><h3>Context</h3><p>Keep detail nearby.</p></deck-point>
+      <deck-point col="1" row="2" tone="warn"><h3>Proof</h3></deck-point>
+      <deck-point col="2" row="2"><h3>Action</h3></deck-point>
+    </deck-bento>`,
+
+  data: `
+    <deck-feature eyebrow="Evidence">
+      <h1 slot="title">Make the result legible</h1>
+      <deck-kpi-grid cols="3" ruled>
+        <deck-kpi value="20" label="slides"></deck-kpi>
+        <deck-kpi value="0" label="errors" tone="ok"></deck-kpi>
+        <deck-kpi value="19 min" label="duration"></deck-kpi>
+      </deck-kpi-grid>
+    </deck-feature>`,
 
   hook: `
     <deck-takeaway kicker="The whole point">
@@ -54,10 +60,10 @@ const greet = (n) => \`Hi \${n}\`;</deck-code>
 
 const labels: Record<Props['type'], string> = {
   cover: 'deck-cover preview',
-  section: 'deck-section preview',
   hero: 'deck-feature preview',
   split: 'deck-split preview',
-  'hero-detail': 'deck-feature-cards preview',
+  bento: 'deck-bento preview',
+  data: 'deck-kpi-grid preview',
   hook: 'deck-takeaway preview',
 };
 
@@ -65,6 +71,7 @@ const srcdoc = `<!doctype html><html><head>
   <meta charset="UTF-8">
   <link rel="stylesheet" href="/rikiki/themes/rikiki.css">
   <script type="module" src="/rikiki/dist/index.js"></script>
+  ${type === 'data' ? '<script type="module" src="/rikiki/dist/deck-kpi-grid.js"><\/script>' : ''}
   <style>
     html, body { width: 100%; height: 100%; overflow: hidden; }
     body { display: flex; }
