@@ -7,6 +7,7 @@
 //   rikiki bundle <deck.html> [out.html|-] [--with-mermaid] [--with-shiki] [--no-fonts]
 //   rikiki assemble <deck.config.js> [out.html|-]
 //   rikiki render <deck.html> [--out dir] [--slides a,b] [--steps]
+//                             [--baseline dir] [--threshold pct] [--json]
 //   rikiki check <deck.html> [--json] [--no-visual]
 //   rikiki export <deck.html> [--output deck.pdf]
 //   rikiki skills [--dir <path>] [--force]
@@ -30,6 +31,7 @@ import { exportPdf } from './lib/export-pdf.mjs';
 import { ExpectedError, formatCliError } from './lib/cli-error.mjs';
 import { assembleDeck } from './lib/assemble.mjs';
 import { renderDeck } from './lib/render.mjs';
+import { DEFAULT_THRESHOLD, diffFailed, formatDiff } from './lib/diff.mjs';
 import { checkDeck, formatReport } from './lib/check.mjs';
 
 const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -56,8 +58,10 @@ Options:
   --out <dir>          picture directory (render · default <deck>.shots/)
   --slides a,b         render: which slides · numbers (1-based) or ids
   --steps              render: one picture per revealed state, not just the first
+  --baseline <dir>     render: compare this render to an earlier one, slide by slide
+  --threshold <pct>    render: percent of pixels that makes a slide changed (default 0.5)
   --width, --height    render/check: canvas size in pixels (default 1920×1080)
-  --json               check: write the report to stdout as JSON, notes to stderr
+  --json               check / render --baseline: write the report to stdout as JSON
   --no-visual          check: skip the pixel pass (one screenshot per slide)
   --steps              check: measure every revealed state of each slide, not just the first
   --no-fonts           drop fonts instead of inlining them (smaller, system fonts)
@@ -80,6 +84,17 @@ function pixels(values, flag, fallback) {
   const n = Number(values[flag]);
   if (!Number.isInteger(n) || n < 1) {
     throw new ExpectedError(`--${flag} must be a positive whole number of pixels`);
+  }
+  return n;
+}
+
+/** A percentage from the flags · anything that is not one is an error, not a
+ *  silent fallback to the default. `0` is a legitimate value. */
+function percent(values, flag, fallback) {
+  if (values[flag] === undefined) return fallback;
+  const n = Number(values[flag]);
+  if (!Number.isFinite(n) || n < 0 || n > 100) {
+    throw new ExpectedError(`--${flag} must be a percentage between 0 and 100`);
   }
   return n;
 }
@@ -290,16 +305,24 @@ async function cmdRender(argv) {
       steps: { type: 'boolean', default: false },
       width: { type: 'string' },
       height: { type: 'string' },
+      baseline: { type: 'string' },
+      threshold: { type: 'string' },
+      json: { type: 'boolean', default: false },
     },
   });
   const inputPath = deckArgument('render', positionals[0]);
   const outDir = resolve(process.cwd(), values.out ?? basename(inputPath, '.html') + '.shots');
-  const { manifest, galleryPath } = await renderDeck(inputPath, {
+  // Checked before the render, not after: a baseline that is not there is
+  // worth knowing before spending a browser on thirty screenshots.
+  const baseline = baselineArgument(values.baseline);
+  const { manifest, galleryPath, diff, diffPath } = await renderDeck(inputPath, {
     outDir,
     slides: values.slides,
     steps: values.steps,
     width: pixels(values, 'width', 1920),
     height: pixels(values, 'height', 1080),
+    baseline,
+    threshold: percent(values, 'threshold', DEFAULT_THRESHOLD),
   });
 
   for (const url of manifest.missing.slice(0, 5)) {
@@ -312,6 +335,25 @@ async function cmdRender(argv) {
     console.error('rikiki · note · stepped slides are shown in their opening state · pass --steps for the rest');
   }
   console.error(`rikiki · gallery ${galleryPath}`);
+
+  if (!diff) return;
+  // In --json mode stdout carries the report and nothing else, so a caller can
+  // pipe it straight into a tool · same contract as `check --json`.
+  if (values.json) process.stdout.write(JSON.stringify(diff, null, 2) + '\n');
+  else console.error(formatDiff(diff));
+  console.error(`rikiki · diff ${diffPath}`);
+  if (diffFailed(diff.summary)) process.exit(1);
+}
+
+/** Resolve `--baseline` · a directory that is not there is the one thing this
+ *  command cannot work around, so it stops rather than render into silence. */
+function baselineArgument(input) {
+  if (input === undefined) return undefined;
+  const dir = resolve(process.cwd(), input);
+  if (!existsSync(dir) || !statSync(dir).isDirectory()) {
+    throw new ExpectedError(`render · baseline directory not found: ${dir}`, { exitCode: 2 });
+  }
+  return dir;
 }
 
 /** Resolve a deck argument · shared by the commands that read one. */

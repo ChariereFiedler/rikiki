@@ -177,6 +177,82 @@ test.describe('render', () => {
     expect(bad.stderr).toMatch(/positive whole number of pixels/);
   });
 
+  test('compares a render to a baseline, and ranks what moved', () => {
+    const body = (title: string) =>
+      `<deck-cover id="intro"><h1>${title}</h1></deck-cover>
+       <deck-feature id="corps" spread="center"><h1 slot="title">Corps</h1><p>Une phrase stable.</p></deck-feature>`;
+
+    deck('base', body('Avant'));
+    expect(cli(['render', 'base.html', '--out', 'baseA']).status).toBe(0);
+
+    // The same deck rendered twice must read as stable · anti-aliasing alone
+    // has to stay under the default threshold, or the command cries wolf on
+    // every run and nobody looks at it twice.
+    const same = cli(['render', 'base.html', '--out', 'baseB', '--baseline', 'baseA', '--json']);
+    expect(same.status, same.stderr).toBe(0);
+    const stable = JSON.parse(same.stdout);
+    expect(stable.schema).toBe('rikiki.render-diff/1');
+    expect(stable.threshold).toBe(0.5);
+    expect(stable.summary).toEqual({ changed: 0, stable: 2, added: 0, missing: 0, resized: 0 });
+    expect(stable.slides.every((s: any) => s.status === 'stable')).toBe(true);
+    // The report is also a file beside the manifest · the next session reads it.
+    const onDisk = JSON.parse(readFileSync(join(workDir, 'baseB/diff.json'), 'utf8'));
+    expect(onDisk.summary).toEqual(stable.summary);
+
+    // One title changed · that slide must come first, and the run must fail.
+    deck('base', body('Après, tout autre'));
+    const moved = cli(['render', 'base.html', '--out', 'baseC', '--baseline', 'baseA', '--json']);
+    expect(moved.status).toBe(1);
+    const report = JSON.parse(moved.stdout);
+    expect(report.slides[0].file).toBe('01-intro.png');
+    expect(report.slides[0].status).toBe('changed');
+    expect(report.slides[0].id).toBe('intro');
+    expect(report.slides[0].changedRatio).toBeGreaterThan(0.005);
+    // The box points at the title, not at the whole slide.
+    expect(report.slides[0].box.height).toBeLessThan(1080);
+    expect(report.summary.changed).toBe(1);
+    expect(report.summary.stable).toBe(1);
+  });
+
+  test('reports a slide the baseline had and this render does not', () => {
+    deck('shrink', `<deck-cover id="un"><h1>Un</h1></deck-cover>
+       <deck-cover id="deux"><h1>Deux</h1></deck-cover>`);
+    expect(cli(['render', 'shrink.html', '--out', 'twoSlides']).status).toBe(0);
+
+    deck('shrink', `<deck-cover id="un"><h1>Un</h1></deck-cover>`);
+    const run = cli(['render', 'shrink.html', '--out', 'oneSlide', '--baseline', 'twoSlides']);
+    expect(run.status).toBe(1);
+    expect(run.stderr).toMatch(/missing 02-deux\.png/);
+    const report = JSON.parse(readFileSync(join(workDir, 'oneSlide/diff.json'), 'utf8'));
+    expect(report.summary).toEqual({ changed: 0, stable: 1, added: 0, missing: 1, resized: 0 });
+    // A missing file is never given a pixel count · there is nothing to count.
+    expect(report.slides.find((s: any) => s.status === 'missing').changedRatio).toBeUndefined();
+  });
+
+  test('reports a baseline rendered at another size as resized', () => {
+    deck('size', `<deck-cover id="un"><h1>Un</h1></deck-cover>`);
+    expect(cli(['render', 'size.html', '--out', 'big']).status).toBe(0);
+    const run = cli([
+      'render', 'size.html', '--out', 'smallerShots',
+      '--width', '1280', '--height', '720', '--baseline', 'big', '--json',
+    ]);
+    expect(run.status).toBe(1);
+    const [slide] = JSON.parse(run.stdout).slides;
+    expect(slide.status).toBe('resized');
+    expect(slide.baselineSize).toEqual({ width: 1920, height: 1080 });
+    expect(slide.size).toEqual({ width: 1280, height: 720 });
+    expect(slide.changedRatio).toBeUndefined();
+  });
+
+  test('stops on a baseline directory that is not there, before rendering', () => {
+    deck('nobase', `<deck-cover><h1>Un</h1></deck-cover>`);
+    const run = cli(['render', 'nobase.html', '--out', 'nobaseShots', '--baseline', 'nowhere']);
+    expect(run.status, 'a baseline that is not there is exit 2').toBe(2);
+    expect(run.stderr).toMatch(/baseline directory not found/);
+    expect(run.stderr, 'an expected error must not print a stack').not.toMatch(/ {4}at /);
+    expect(existsSync(join(workDir, 'nobaseShots')), 'nothing was rendered').toBe(false);
+  });
+
   test('refuses to photograph a deck that never showed a slide', () => {
     writeFileSync(join(workDir, 'dead.html'), '<!doctype html><html><body><p>no deck</p></body></html>');
     const run = cli(['render', 'dead.html', '--out', 'dead']);

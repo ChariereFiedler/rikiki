@@ -27,10 +27,18 @@ needing the optional peer `playwright`:
 ```sh
 npx rikiki render talk.html            # one PNG per slide + a gallery + a manifest
 npx rikiki render talk.html --steps    # every revealed state, not just the first
+npx rikiki render talk.html --out after/ --baseline before/   # what moved since last time
 npx rikiki check talk.html             # what is wrong, where, and what to try
 npx rikiki check talk.html --json      # the same, as a versioned report
 npx rikiki check talk.html --steps     # measure every revealed state, not just the first
 ```
+
+`render --baseline <dir>` compares the fresh pictures to an earlier set, slide
+by slide, and ranks them by how much changed, with the bounding box of what
+moved and a `diff.json` beside the manifest. It exits 1 on a slide that
+changed, disappeared or changed size. The default `--threshold 0.5` (percent of
+pixels) keeps anti-aliasing noise out of the report; `--threshold 0` lists
+every pixel change.
 
 `check` reports a runtime that never loaded, a file that did not arrive, a
 misspelled `deck-*` element that renders as nothing, content the slide clips
