@@ -147,6 +147,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   in the light DOM, but this element rebuilds the author's own text into its
   shadow tree, where the size check never looked.
 
+### Fixed
+- **The CSS-in-JS minifier silently deleted the descendant combinator in front
+  of a pseudo-class or pseudo-element.** `minify-templates.mjs` tightened the
+  whitespace around EVERY `:`, so `:host([banded]) ::slotted(*)` shipped as
+  `:host([banded])::slotted(*)` · valid CSS that matches nothing. Three shipped
+  rules were dead in `dist/` and nowhere else: `:host([banded]) ::slotted(*)`
+  in `deck-point` (a banded bento cell aligning its children to the top of the
+  band), and both `:host([direction='row']) ::slotted(*)` and the
+  `:not([no-connectors])) ::slotted(* + *)::before` connector in
+  `deck-step-list` (a horizontal step list sharing the width and drawing the
+  arrow between steps). The minifier now tracks whether it is inside a
+  declaration block, so a declaration colon still collapses and a selector
+  colon keeps the space in front of it; `scripts/minify-templates.test.mjs`
+  covers the three shapes and the four real selectors.
+
 ### Changed
 - **`deck-kpi-grid` / `deck-kpi` · the figures are one family, and the marked
   one is a mass.** The grid now owns three rows (value, label, note) and every
