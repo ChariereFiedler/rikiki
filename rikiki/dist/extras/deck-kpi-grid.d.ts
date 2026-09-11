@@ -3,7 +3,7 @@ export type DeckKpiTone = 'default' | 'accent' | 'ok' | 'warn' | 'danger' | 'mut
 export declare class DeckKpiGrid extends LitElement {
     static styles: import("lit").CSSResult;
     cols?: string;
-    /** Draw a hairline between the figures. */
+    /** Draw a divider between the figures. */
     ruled: boolean;
     willUpdate(): void;
     render(): import("lit-html").TemplateResult<1>;

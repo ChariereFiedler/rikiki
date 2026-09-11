@@ -33,14 +33,14 @@ import { THEMES, useTheme } from './support/theme';
 // and reporting success, which is exactly how the suite that preceded it missed
 // three visual defects in a row.
 const DECKS = [
-  { path: '/rikiki/decks/tests/extras-more.html', fills: 9 },
+  { path: '/rikiki/decks/tests/extras-more.html', fills: 10 },
   { path: '/rikiki/decks/tests/extensions.html', fills: 4 },
   // The public examples · nothing measured their emphasis until now, and they
   // are the decks a reader is pointed at. Their counts are ratchets like the
   // fixtures' above: adding a marked element raises the number, nothing lowers
   // it. They are deliberately not zero · a deck that marks nothing would sail
   // through this file while proving nothing.
-  { path: '/examples/showcase/index.html', fills: 14 },
+  { path: '/examples/showcase/index.html', fills: 17 },
 ];
 /* examples/bento is deliberately absent · it is a bundled deck, so its theme is
    inlined and there is no stylesheet link to swap. This file measures both
@@ -104,13 +104,15 @@ async function emphasised(page: import('@playwright/test').Page): Promise<Candid
       };
 
       // A state element does not always paint its own fill: a marked table row
-      // carries the attribute while its cells carry the band. When the element
-      // paints nothing, its painted children stand in for it · without this the
-      // canonical case, the emphasised row, is silently never measured.
+      // carries the attribute while its cells carry the band, and a marked
+      // figure carries `tone` on the host while the night block is painted by a
+      // node inside its shadow root. When the element paints nothing, its
+      // painted children stand in for it · without this the canonical cases,
+      // the emphasised row and the marked figure, are silently never measured.
       const painted = found.flatMap((el) =>
         paintsFill(getComputedStyle(el))
           ? [{ el, via: '' }]
-          : [...el.children]
+          : [...el.children, ...(el.shadowRoot?.children ?? [])]
               .filter((child) => paintsFill(getComputedStyle(child)))
               .map((child) => ({ el: child, via: `${el.tagName.toLowerCase()} > ` })),
       );

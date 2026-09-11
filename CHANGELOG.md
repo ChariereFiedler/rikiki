@@ -148,6 +148,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   shadow tree, where the size check never looked.
 
 ### Changed
+- **`deck-kpi-grid` / `deck-kpi` · the figures are one family, and the marked
+  one is a mass.** The grid now owns three rows (value, label, note) and every
+  figure adopts them with `grid-template-rows: subgrid`, so all the values share
+  one baseline and one size, all the labels sit on one line, and a column
+  without a note costs no height anywhere else. The value scales with the slide
+  and with `cols` instead of being fixed at reading size. A `tone` of `accent`,
+  `ok`, `warn` or `danger` puts the figure on the inverse surface with inverse
+  digits and the tone as a stroke on the block, rather than recolouring the
+  digits · a coloured number on paper is a different colour, not more emphasis;
+  `default` and `muted` paint nothing at all. `ruled` draws a divider that can
+  actually be seen: it was written with
+  `::slotted(deck-kpi:not(:first-child))`, which Chromium does not match, so the
+  attribute had never drawn anything. No attribute changed.
+- **`deck-persona` · the portrait block is the one mass.** The initials were
+  faint grey type parked left of the name, attached to nothing. They now sit in
+  a square of the inverse surface in inverse ink at statement scale, or the
+  photo fills the same square, so the person has a place on the slide; the name
+  lines up with the block's top edge, and the context is the quiet line, gapped
+  away from the identity rather than stacked flush against it. `compact` and
+  `inline` shrink the block and the name together instead of only the block, and
+  `on-dark` flips the block to paper with ink initials. No attribute changed.
 - **The authoring skill covers the whole job.** It carried the wiring; it now
   carries the seven steps from brief to delivery, the editorial contract, seven
   graphic composition decisions with the failure each one prevents, a table
