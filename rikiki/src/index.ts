@@ -49,6 +49,7 @@ import './atoms/deck-badge.js';
 import './atoms/deck-kicker.js';
 import './atoms/deck-punch.js';
 import './atoms/deck-code.js';
+import './atoms/deck-source.js';
 
 // Public extension API · the plugin hook contract (deckRoot.use) and the
 // deck-code highlighter hook, re-exported so authors import them from the one

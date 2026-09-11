@@ -282,6 +282,7 @@ badge back sets `--deck-eyebrow-bg`, `--deck-eyebrow-color`,
 | `deck-kicker` | Uppercase eyebrow label | `on-dark` | default = text |
 | `deck-punch` | Short punchy line | `tone` (`warn`/`danger`/`ok`/`info`/`muted`/`accent`; inherits text color if absent), `size` (`lead`/`big`/`mega`/`stat`/`display`), `weight` (`700`/`800`/`900`), `align` (`left`/`center`/`right`), `fit` (shrink to fit the box · overrides `size`/cqw fluid scaling), `fit-min`/`fit-max` (rem bounds, default 1/12) | default = text |
 | `deck-code` | Syntax-highlighted code | `lang`, `hero`, `nested`, `step-groups` | default = code text |
+| `deck-source` | A source or credit line, placed under any evidence block (`deck-csv`, `deck-table`, `deck-bar`, `deck-kpi-grid`, `deck-annotate`, or plain prose) | `href` (turns the credit into a link) | default = the credit text |
 
 ### deck-code details
 
@@ -1372,6 +1373,13 @@ script, so a standalone deck keeps them and stays offline. Forget the `<script>`
 and the tag stays an unknown element: it renders its text content, logs nothing,
 and the rest of the deck is unaffected.
 
+Every evidence block below (`deck-csv`, `deck-table`, `deck-bar`,
+`deck-kpi-grid`, `deck-annotate`, and plain prose) takes a `deck-source`
+underneath it for the credit line · `deck-source` is a core atom (§6), not an
+opt-in module, because so many of these need it. `deck-figure` renders one
+internally for its own `source` / `source-href` attributes, so the two
+authoring paths render identically and cannot drift.
+
 | Tag | Purpose | Key attributes | Slots |
 |-----|---------|----------------|-------|
 | `deck-bar` | A proportion, drawn · one value against a total, or a stack of categories on one track | `value`, `total`, `label`, `tone` (`accent`/`ok`/`warn`/`danger`/`info`/`muted`), `segments` (`label:value:tone` triples separated by `\|`), `no-value`, `no-legend` | · |
@@ -1429,7 +1437,9 @@ slide's text edge), `--deck-kpi-block-pad-y`,
 `--deck-table-col-on-mark`;
 `--deck-figure-gap`, `--deck-figure-radius`, `--deck-figure-border`, `--deck-figure-bg`,
 `--deck-figure-image-fit`, `--deck-figure-image-position`, `--deck-figure-max-height`,
-`--deck-figure-caption-color`, `--deck-figure-source-color`.
+`--deck-figure-caption-color`, `--deck-figure-source-color` (forwarded to the
+`deck-source` it renders internally, alongside `--deck-source-color` and
+`--deck-source-gap`, §6).
 
 Five are shared and change every component here at once: `--rik-extras-mass`
 and `--rik-extras-mass-text` (the one filled area), `--rik-extras-statement` and
