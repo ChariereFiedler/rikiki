@@ -38,6 +38,9 @@ try {
   writeFileSync(join(workspace, 'package.json'), '{"private":true}');
   run('npm', ['install', '--no-audit', '--no-fund', '--omit=optional', archive]);
   const cli = join(workspace, 'node_modules/rikiki-deck/bin/rikiki.mjs');
+  // npm drops a `bin` entry it considers invalid at publish time; the link is
+  // the proof that `npx rikiki` will resolve for a consumer.
+  assert(existsSync(join(workspace, 'node_modules/.bin/rikiki')), 'npm linked the rikiki bin');
   const invoke = (...args) => run(process.execPath, [cli, ...args]);
   invoke('init', 'talk.html');
   invoke('skills');
