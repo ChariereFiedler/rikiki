@@ -41,6 +41,13 @@ import {
 // present by the time a deck reaches this one. Importing it here too would
 // register 'deck-source' a second time and throw when both bundles load.
 
+/** Frames the geometry must hold still before the settle loop stops. */
+const SETTLE_STABLE_FRAMES = 3;
+
+/** Hard cap on that loop · about a second, after which the ResizeObserver is
+ *  on its own. Long enough for a web font to land, short enough to stay free. */
+const SETTLE_MAX_FRAMES = 60;
+
 @customElement('deck-annotate')
 export class DeckAnnotate extends LitElement {
   /* Customization tokens · every default routes to a semantic --rik-* token.
@@ -322,6 +329,13 @@ export class DeckAnnotate extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
     this._publishSteps();
+    // Re-attached · firstUpdated never runs a second time, so without this the
+    // observers dropped on disconnect would never come back and the published
+    // rectangle would stay frozen at whatever it was before the move.
+    if (this.hasUpdated) {
+      this._observe();
+      this._settle();
+    }
   }
 
   /** Called by deck-root on every step change · it walks the active slide and
@@ -332,15 +346,28 @@ export class DeckAnnotate extends LitElement {
 
   private _ro?: ResizeObserver;
 
+  /** Pending settle frame, so the loop is never started twice over. */
+  private _frame = 0;
+
+  /** Geometry the last SUCCESSFUL measurement was taken from · empty while
+   *  nothing could be measured yet, which keeps the settle loop retrying. */
+  private _measuredFrom = '';
+
   override firstUpdated(): void {
-    // The painted rectangle moves with the box · remeasure on resize, and once
-    // the image has decoded (naturalWidth is 0 before that).
-    this._ro = new ResizeObserver(() => this._measure());
-    const frame = this.renderRoot.querySelector('.frame');
-    if (frame) this._ro.observe(frame);
-    const img = this.renderRoot.querySelector('img');
-    img?.addEventListener('load', this._measure, { once: false });
-    this._measure();
+    this._observe();
+    // Web fonts land after first paint and change the legend height, which is
+    // what decides the frame height here · the same safety net deck-fit uses.
+    document.fonts?.ready?.then(() => {
+      if (this.isConnected) this._settle();
+    });
+    this._settle();
+  }
+
+  override updated(): void {
+    // Every render can move the picture : a revealed mark, a new src, a
+    // caption appearing under the legend.
+    this._watchImage();
+    this._settle();
   }
 
   override disconnectedCallback(): void {
@@ -349,6 +376,68 @@ export class DeckAnnotate extends LitElement {
     // leave one observer per pass.
     this._ro?.disconnect();
     this._ro = undefined;
+    if (this._frame) cancelAnimationFrame(this._frame);
+    this._frame = 0;
+  }
+
+  /** Watch everything whose size decides the painted rectangle.
+   *
+   *  The frame is what the picture is measured against, but its height is
+   *  decided by its siblings inside the figure : the legend and the caption.
+   *  Observing the host and the image as well means a reflow whose frame
+   *  notification never arrives is still caught by another one. */
+  private _observe(): void {
+    this._ro?.disconnect();
+    this._ro = new ResizeObserver(() => this._settle());
+    for (const selector of ['figure', '.frame']) {
+      const el = this.renderRoot.querySelector(selector);
+      if (el) this._ro.observe(el);
+    }
+    this._ro.observe(this);
+    this._watchImage();
+  }
+
+  /** Observe the image and hear its decode · both are no-ops when already
+   *  registered, so this is safe to call on every render. The image element
+   *  itself is recreated whenever `src` goes from unset to set. */
+  private _watchImage(): void {
+    const img = this.renderRoot.querySelector('img');
+    if (!img) return;
+    img.addEventListener('load', this._onLoad);
+    this._ro?.observe(img);
+  }
+
+  private _onLoad = (): void => {
+    this._settle();
+  };
+
+  /** Re-measure once per animation frame until the geometry has stopped
+   *  moving, then stop.
+   *
+   *  A ResizeObserver notification is the normal trigger, and on a loaded page
+   *  this loop ends after three frames. It exists because a notification is
+   *  not a guarantee : a slow engine can deliver the frame's growth while the
+   *  image still has no natural size (the measurement then bails and nothing
+   *  re-triggers it), and a dropped or coalesced notification leaves the last
+   *  published rectangle stale forever, which puts every marker in the wrong
+   *  place with no way back. */
+  private _settle(): void {
+    if (this._frame) cancelAnimationFrame(this._frame);
+    this._frame = this._scheduleSettle(0, 0);
+  }
+
+  private _scheduleSettle(frames: number, stable: number): number {
+    return requestAnimationFrame(() => {
+      this._frame = 0;
+      const before = this._measuredFrom;
+      this._measure();
+      // An empty signature means nothing could be measured yet (no natural
+      // size, or a box of zero) · that never counts as settled, so the loop
+      // keeps retrying instead of publishing a degenerate rectangle.
+      const steady = this._measuredFrom !== '' && this._measuredFrom === before ? stable + 1 : 0;
+      if (steady >= SETTLE_STABLE_FRAMES || frames + 1 >= SETTLE_MAX_FRAMES) return;
+      this._frame = this._scheduleSettle(frames + 1, steady);
+    });
   }
 
   /** Publish the letterboxed picture rectangle as percentages of the frame,
@@ -364,9 +453,11 @@ export class DeckAnnotate extends LitElement {
 
     // naturalWidth is 0 until the image has decoded · measuring then would
     // publish a ratio of zero and pile every marker in one corner.
+    this._measuredFrom = '';
     if (!frame || !img?.naturalWidth || !img.naturalHeight) return;
     const box = frame.getBoundingClientRect();
     if (!box.width || !box.height) return;
+    this._measuredFrom = `${box.width}x${box.height}/${img.naturalWidth}x${img.naturalHeight}`;
 
     const ratio = img.naturalWidth / img.naturalHeight;
     const boxRatio = box.width / box.height;

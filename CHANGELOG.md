@@ -5,6 +5,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- **`deck-annotate` never keeps a collapsed frame as the picture rectangle.**
+  The letterboxed rectangle the markers are placed against was measured from a
+  `ResizeObserver` on `.frame` plus the image's `load` event, and a single
+  missed or early notification froze it : a measurement taken while the frame
+  was still collapsed (or none at all) stayed published forever, and every
+  badge sat next to what it names. It now re-measures on a bounded animation
+  frame loop until the geometry holds still, observes the host, the figure and
+  the image as well as the frame, re-arms itself when the element is moved in
+  the DOM (`firstUpdated` runs once, so a re-attached figure had no observers
+  left), and settles again once web fonts land.
 
 ## [0.7.0] - 2026-09-12
 ### Added
