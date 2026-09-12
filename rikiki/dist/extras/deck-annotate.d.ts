@@ -49,8 +49,38 @@ export declare class DeckAnnotate extends LitElement {
      *  invokes this on each descendant that has it. No listener to clean up. */
     applyStep(step: number): void;
     private _ro?;
+    /** Pending settle frame, so the loop is never started twice over. */
+    private _frame;
+    /** Geometry the last SUCCESSFUL measurement was taken from · empty while
+     *  nothing could be measured yet, which keeps the settle loop retrying. */
+    private _measuredFrom;
     firstUpdated(): void;
+    updated(): void;
     disconnectedCallback(): void;
+    /** Watch everything whose size decides the painted rectangle.
+     *
+     *  The frame is what the picture is measured against, but its height is
+     *  decided by its siblings inside the figure : the legend and the caption.
+     *  Observing the host and the image as well means a reflow whose frame
+     *  notification never arrives is still caught by another one. */
+    private _observe;
+    /** Observe the image and hear its decode · both are no-ops when already
+     *  registered, so this is safe to call on every render. The image element
+     *  itself is recreated whenever `src` goes from unset to set. */
+    private _watchImage;
+    private _onLoad;
+    /** Re-measure once per animation frame until the geometry has stopped
+     *  moving, then stop.
+     *
+     *  A ResizeObserver notification is the normal trigger, and on a loaded page
+     *  this loop ends after three frames. It exists because a notification is
+     *  not a guarantee : a slow engine can deliver the frame's growth while the
+     *  image still has no natural size (the measurement then bails and nothing
+     *  re-triggers it), and a dropped or coalesced notification leaves the last
+     *  published rectangle stale forever, which puts every marker in the wrong
+     *  place with no way back. */
+    private _settle;
+    private _scheduleSettle;
     /** Publish the letterboxed picture rectangle as percentages of the frame,
      *  and the measured badge size and anchor gap a keyword offset needs. */
     private _measure;

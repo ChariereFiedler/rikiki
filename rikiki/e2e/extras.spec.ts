@@ -178,6 +178,80 @@ test('annotation marks are placed by percentage and revealed one per step', asyn
   expect(await placedPercent()).toBeLessThan(23);
 });
 
+test('the picture rectangle survives a late image and a move · it is never stale', async ({
+  page,
+}) => {
+  // The CI failure this covers : the marks were placed against a rectangle
+  // measured while the frame was still collapsed, and nothing ever measured
+  // again. Two transients that produce exactly that state, in one deck : a
+  // frame that starts at zero height and only grows once its image has a
+  // natural size, and an element moved in the DOM (which drops the observers
+  // firstUpdated installed, and firstUpdated never runs twice).
+  const deck = createDeckPage(page);
+  await deck.goto(`${DECK}#7`);
+
+  const SHOT =
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='200' viewBox='0 0 800 200'%3E%3Crect width='800' height='200' fill='%23dcd6cc'/%3E%3C/svg%3E";
+
+  await page.evaluate(async (src) => {
+    const twoFrames = () =>
+      new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const slide = document.getElementById('annotated-toggle')!;
+    const late = document.createElement('deck-annotate');
+    late.id = 'late-shot';
+    late.setAttribute('alt', 'A placeholder dashboard');
+    late.setAttribute('marks', '20,30,Queue depth|55,60,Latency spike');
+    late.setAttribute('all-at-once', '');
+    late.setAttribute('no-legend', '');
+    late.style.height = '200px';
+    slide.appendChild(late);
+    // No src yet : the frame has nothing to give it a height, which is the
+    // collapsed state the marks must never be measured against.
+    await twoFrames();
+    late.setAttribute('src', src);
+    await twoFrames();
+    // Moved · same element, new position in the tree.
+    late.remove();
+    slide.appendChild(late);
+    await twoFrames();
+    late.style.height = '120px';
+  }, SHOT);
+
+  // Published rectangle against the live one · they must agree, whichever
+  // notification did or did not arrive.
+  const drift = () =>
+    page.evaluate(() => {
+      const shadow = document.getElementById('late-shot')!.shadowRoot!;
+      const frame = shadow.querySelector('.frame') as HTMLElement;
+      const img = shadow.querySelector('img') as HTMLImageElement;
+      if (!img?.naturalWidth) return null;
+      const box = frame.getBoundingClientRect();
+      const ratio = img.naturalWidth / img.naturalHeight;
+      const boxRatio = box.width / box.height;
+      const truth = ratio > boxRatio ? 1 : (box.height * ratio) / box.width;
+      const published = Number(frame.style.getPropertyValue('--img-w'));
+      return Math.abs(published - truth) / truth;
+    });
+  await expect
+    .poll(drift, { message: 'the published picture rectangle matches the painted one' })
+    .toBeLessThan(0.02);
+
+  // And the geometry contract itself : the first mark sits at 20% of the
+  // PAINTED picture, not of the element box.
+  const placed = await page.evaluate(() => {
+    const shadow = document.getElementById('late-shot')!.shadowRoot!;
+    const img = shadow.querySelector('img') as HTMLImageElement;
+    const box = img.getBoundingClientRect();
+    const ratio = img.naturalWidth / img.naturalHeight;
+    const w = ratio > box.width / box.height ? box.width : box.height * ratio;
+    const left = box.left + (box.width - w) / 2;
+    const mark = (shadow.querySelector('.mark') as HTMLElement).getBoundingClientRect();
+    return Math.round(((mark.left + mark.width / 2 - left) / w) * 100);
+  });
+  expect(placed, 'the first mark is at 20% of the picture').toBeGreaterThan(17);
+  expect(placed, 'the first mark is at 20% of the picture').toBeLessThan(23);
+});
+
 test('an annotated slide asks the engine for one step per mark', async ({ page }) => {
   const deck = createDeckPage(page);
   await deck.goto(`${DECK}#4`);
