@@ -5,7 +5,7 @@
 > stylesheet, then the component bundle, then write a `<deck-root>` wrapping
 > `deck-*` slide elements. No build step to author or run a deck.
 
-This reference documents rikiki v1.0.0.
+This reference documents rikiki v0.7.0.
 
 The framework is opinionated:
 
@@ -54,15 +54,19 @@ Every command below works from an install, with no clone and no build step.
 - `npx rikiki bundle <deck>.html [out.html]` · folds theme, runtime and images
   into one self-contained file, curated to the components the deck uses. Needs
   the optional peer `rolldown`.
-- `npx rikiki render <deck>.html [--out dir] [--slides a,b] [--steps]` · one PNG
+- `npx rikiki render <deck>.html [--out dir] [--slides a,b] [--steps] [--baseline dir]` · one PNG
   per slide, a gallery and a `manifest.json` tying each picture to the slide it
-  came from. This is how an agent sees a deck. Needs the optional peer
-  `playwright`.
-- `npx rikiki check <deck>.html [--json]` · measures the deck in a browser and
+  came from. This is how an agent sees a deck. `--baseline <dir>` compares each
+  fresh picture to the same-named one of an earlier render and ranks the slides
+  by how much moved. Needs the optional peer `playwright`.
+- `npx rikiki check <deck>.html [--json] [--steps]` · measures the deck in a browser and
   reports what is wrong: a runtime that never loaded, a missing file, a
   misspelled `deck-*` element, content clipped by the slide, text too small for
-  a room. `--json` writes a versioned report to stdout and nothing else. Exit 0
-  clean, 1 defects found, 2 could not look. Needs `playwright`.
+  a room, content painting outside its box or over a sibling, graph nodes
+  overlapping each other. `--json` writes a versioned report to stdout and
+  nothing else; `--steps` measures every revealed state of a slide instead of
+  its opening one. Exit 0 clean, 1 defects found, 2 could not look. Needs
+  `playwright`.
 - `npx rikiki export <deck>.html [--output deck.pdf]` · one PDF page per slide.
   Needs the optional peer `playwright`.
 - `npx rikiki skills` · installs the three agent skills into `.claude/skills/`.
