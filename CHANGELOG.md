@@ -112,6 +112,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   coordinates.
 
 ### Fixed
+- **`rikiki check` measured only the slide that was on screen.** `deck-root`
+  lays out the active slide and hides the rest, and the default mode inspected
+  the document once · every other slide reported empty rects, so
+  `CONTENT_ESCAPES_BOX`, `CONTENT_OVERLAPS_SIBLING`, `GRAPH_NODE_OVERLAPS_NODE`,
+  `GRAPH_EDGE_CROSSES_NODE` and `GRAPH_NODE_OUT_OF_BOUNDS` (the last one since
+  it shipped, the others since this branch added them) fired only when the
+  defect happened to sit on slide 1. Default mode now walks the deck with the
+  same `goToSlide` walker `--steps` uses and measures each slide in its opening
+  state; `statesInspected` still reads the slide count, and no diagnostic
+  carries a `state` unless `--steps` was asked for. The inspection is scoped to
+  the slide being measured, and what does not depend on which slide is showing
+  (unknown tags, stray attributes, unslotted content, the notes word count) is
+  asked once for the whole document instead of once per state · `--steps` used
+  to re-walk every element of the deck on every state. A graph node's own label
+  no longer reads as a painted box either: it sits two levels under
+  `deck-graph`, and the exclusion only looked at the nearest `deck-*` ancestor,
+  so `GRAPH_NODE_OVERLAPS_NODE` came with a `CONTENT_OVERLAPS_SIBLING` saying
+  the same thing.
 - **`GRAPH_EDGE_CROSSES_NODE` no longer misses a visible crossing.** The check
   re-derived a centre-to-centre segment of its own, tested it as a
   mathematical line against the node box shrunk by 2px, and ignored

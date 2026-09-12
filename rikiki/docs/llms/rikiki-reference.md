@@ -756,6 +756,11 @@ npx rikiki check talk.html --no-visual  # skip the pixel pass (one shot per slid
 npx rikiki check talk.html --steps      # measure every revealed state, not just the first
 ```
 
+Every slide is measured, in its opening state, whatever the mode: `check`
+walks the deck one slide at a time, because `deck-root` lays out the slide on
+screen and hides the rest · measuring the document in one shot would read empty
+boxes for every slide but the first, and report a clean deck.
+
 Without `--steps`, a stepped slide is only ever measured in its opening state
 · `advanceStep`'s own geometry rarely changes with it (rikiki reveals dim and
 highlight, it does not hide), but content wired to a step through other means
@@ -765,7 +770,8 @@ running the same diagnostics on each. Every diagnostic then carries a `state`
 (`0` for the opening state) both in the JSON and appended to the human line
 (`· state 2`). A diagnostic identical on code, slide and path/message across
 several states of one slide is reported once, at the lowest state it held.
-`statesInspected` counts every state actually measured, not just the slides.
+`statesInspected` counts every state actually measured · without `--steps`
+that is one per slide, so it reads the slide count.
 The pixel pass still measures only the opening state of each slide either way
 · `notChecked` says so.
 

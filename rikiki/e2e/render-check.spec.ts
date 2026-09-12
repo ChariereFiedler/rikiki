@@ -741,6 +741,70 @@ test.describe('painted box geometry', () => {
   });
 });
 
+test.describe('every slide is measured, not only the one on screen', () => {
+  // deck-root shows the active slide and hides the rest, so a single
+  // inspection of the document measured empty rects everywhere but slide 1:
+  // the painted-box and graph codes fired only when the defect happened to
+  // sit on the opening slide. Default mode now walks the deck slide by slide.
+  const para =
+    "Une phrase assez longue pour remplir la carte. Une deuxieme phrase qui pousse le texte encore plus bas dans la carte. Une troisieme phrase qui continue d'allonger le paragraphe pour forcer un debordement bien visible au-dela de la bordure de la carte, vers le bas.";
+
+  const later = (r: { json: any; stdout: string }, code: string) => {
+    const found = r.json.diagnostics.find((d: any) => d.code === code);
+    expect(found, `${code} · ${r.stdout}`).toBeTruthy();
+    expect(found.slide, `${code} is reported on the slide it sits on`).toBeGreaterThan(1);
+    return found;
+  };
+
+  test('reports a defect that sits on a slide the deck does not open on', () => {
+    deck(
+      'late-defects',
+      `<script type="module" src="rikiki/dist/deck-graph.js"></script>
+       <deck-cover id="first"><h1>Une ouverture sans defaut</h1></deck-cover>
+       <deck-feature id="late-out"><h1 slot="title">Graph</h1>
+         <deck-graph>
+           <deck-node id="outside" at="1,50" boxed label="A node with a useful long label"></deck-node>
+           <deck-node id="inside" at="75,50" boxed label="Inside"></deck-node>
+           <deck-edge from="outside" to="inside"></deck-edge>
+         </deck-graph>
+       </deck-feature>
+       <deck-feature id="late-cross"><h1 slot="title">Graph</h1>
+         <deck-graph>
+           <deck-node id="a" at="15,50" boxed label="A"></deck-node>
+           <deck-node id="blocker" at="50,50" boxed label="Blocked"></deck-node>
+           <deck-node id="c" at="85,50" boxed label="C"></deck-node>
+           <deck-edge from="a" to="c" label="request"></deck-edge>
+         </deck-graph>
+       </deck-feature>
+       <deck-feature id="late-overlap"><h1 slot="title">Graph</h1>
+         <deck-graph>
+           <deck-node id="near" at="50,50" boxed label="A source nobody can read"></deck-node>
+           <deck-node id="over" at="52,50" boxed label="Because of this one"></deck-node>
+         </deck-graph>
+       </deck-feature>
+       <deck-feature id="late-spill"><h1 slot="title">Deux options</h1>
+         <deck-grid cols="2" rows="140px">
+           <deck-card id="a" color="yellow"><h3>Option A</h3><p>${para}</p></deck-card>
+           <deck-card id="b" color="green"><h3>Option B</h3><p>${para}</p></deck-card>
+         </deck-grid>
+         <deck-callout type="info">Ce texte de synthese doit rester lisible meme si les cartes au-dessus debordent un peu trop bas.</deck-callout>
+       </deck-feature>`,
+    );
+    const r = reportFast('late-defects');
+
+    expect(later(r, 'GRAPH_NODE_OUT_OF_BOUNDS').slideId).toBe('late-out');
+    expect(later(r, 'GRAPH_EDGE_CROSSES_NODE').slideId).toBe('late-cross');
+    expect(later(r, 'GRAPH_NODE_OVERLAPS_NODE').slideId).toBe('late-overlap');
+    expect(later(r, 'CONTENT_ESCAPES_BOX').slideId).toBe('late-spill');
+    expect(later(r, 'CONTENT_OVERLAPS_SIBLING').slideId).toBe('late-spill');
+
+    // One state per slide in default mode · the count keeps meaning the
+    // number of slides, and no diagnostic claims a state it never walked.
+    expect(r.json.statesInspected).toBe(r.json.slideCount);
+    expect(r.json.diagnostics.every((d: any) => d.state === undefined), r.stdout).toBe(true);
+  });
+});
+
 test.describe('the visual pass', () => {
   test('reports a slide whose content sits in the top with a dead band below', () => {
     // Measured on the pixels, not on the DOM: a box can be the right size and

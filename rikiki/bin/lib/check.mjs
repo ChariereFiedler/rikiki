@@ -63,8 +63,19 @@ const diagnostic = (code, severity, message, extra = {}) => ({
   ...extra,
 });
 
-/** Everything the page can tell us about itself, in one round trip. */
-const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry }) => {
+/** Everything the page can tell us about itself, in one round trip.
+ *
+ *  `only` is the 1-based slide to measure · `deck-root` lays out the slide on
+ *  screen and hides the rest, so measuring the whole document at once reads
+ *  empty rects everywhere but there. The caller walks the deck and names one
+ *  slide per call; `null` measures them all, which is right only on a page
+ *  that never settled.
+ *
+ *  `scanDocument` covers what does not depend on which slide is showing ·
+ *  unknown tags, stray attributes, unslotted content, the notes word count.
+ *  Asking for them once per slide would walk the whole document N times over
+ *  for the same answer. */
+const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, only = null, scanDocument = true }) => {
   const titleOf = new Function('return ' + titleReader)();
   /** `parseGraphPath` and `polylineHitsRect` from bin/lib/graph-hit.mjs · this
    *  function runs in the page, so they arrive as source and are rebuilt here.
@@ -126,17 +137,24 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry }) => {
     return found;
   };
 
-  /** The nearest enclosing `deck-*` custom element, walking up from `el`
-   *  itself excluded · shadow boundaries crossed via the host. */
-  const nearestDeckAncestor = (el) => {
+  /** Does `el` sit inside one of `tags`, at any depth? Shadow boundaries
+   *  crossed via the host, same walk as `pathOf`. Any depth and not just the
+   *  nearest one: a graph node's own label is two levels below `deck-graph`,
+   *  and stopping at the first `deck-*` ancestor let it through. */
+  const isInside = (el, tags) => {
     let node = el.parentElement ?? el.getRootNode()?.host ?? null;
     while (node) {
       const tag = node.tagName?.toLowerCase();
-      if (tag?.startsWith('deck-')) return tag;
+      if (tag && tags.has(tag)) return true;
       node = node.parentElement ?? node.getRootNode()?.host ?? null;
     }
-    return null;
+    return false;
   };
+
+  /** Components that paint marks and nodes over each other by design, and
+   *  report it under their own codes · nothing inside them is a painted box
+   *  to compare against its neighbours. */
+  const PAINTS_OVER_ITSELF = new Set(['deck-annotate', 'deck-graph']);
 
   /** Is `node` `ancestorEl` itself, or reached by walking up from it? Shadow
    *  boundaries crossed via the host, same as `pathOf`. */
@@ -167,8 +185,7 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry }) => {
         if (el.shadowRoot) collect(el.shadowRoot);
         if (el.tagName.toLowerCase() === 'deck-notes') continue;
         if (el.closest?.('deck-notes')) continue;
-        const host = nearestDeckAncestor(el);
-        if (host === 'deck-annotate' || host === 'deck-graph') continue;
+        if (isInside(el, PAINTS_OVER_ITSELF)) continue;
         const style = getComputedStyle(el);
         if (style.display === 'none' || style.visibility === 'hidden') continue;
         if (style.position === 'absolute' || style.position === 'fixed') continue;
@@ -249,6 +266,15 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry }) => {
   };
 
   const measured = slides.map((slide, index) => {
+    const outline = {
+      index: index + 1,
+      id: slide.id || null,
+      tag: slide.tagName.toLowerCase(),
+      title: titleOf(slide),
+      steps: Number.parseInt(slide.getAttribute('steps') ?? slide.dataset?.steps ?? '0', 10) || 0,
+    };
+    if (only !== null && outline.index !== only) return { ...outline, measured: false };
+
     const box = slide.getBoundingClientRect();
     let clipped = null;
     for (const el of clippersIn(slide)) {
@@ -312,14 +338,11 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry }) => {
     const boxes = paintedBoxesIn(slide);
 
     return {
-      index: index + 1,
-      id: slide.id || null,
-      tag: slide.tagName.toLowerCase(),
-      title: titleOf(slide),
+      ...outline,
+      measured: true,
       clipped,
       fillRatio: box.height ? Math.round((spanned / box.height) * 100) / 100 : 0,
       tiny: tiny.slice(0, 3),
-      steps: Number.parseInt(slide.getAttribute('steps') ?? slide.dataset?.steps ?? '0', 10) || 0,
       escapesBox: worstEscape(boxes),
       overlapsSibling: worstOverlap(boxes),
     };
@@ -355,7 +378,7 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry }) => {
 
   const strayAttributes = [];
   const styledCache = new Map();
-  for (const el of document.querySelectorAll('*')) {
+  for (const el of scanDocument ? document.querySelectorAll('*') : []) {
     const tag = el.tagName.toLowerCase();
     if (!tag.startsWith('deck-')) continue;
     const ctor = customElements.get(tag);
@@ -374,7 +397,7 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry }) => {
   // slot exists, or putting a block inside a component that only forwards
   // named slots, drops it silently and leaves the slide blank.
   const unslotted = [];
-  for (const el of document.querySelectorAll('*')) {
+  for (const el of scanDocument ? document.querySelectorAll('*') : []) {
     const parent = el.parentElement;
     if (!parent?.shadowRoot) continue;
     if (!parent.tagName.toLowerCase().startsWith('deck-')) continue;
@@ -392,7 +415,7 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry }) => {
   // A tag that was never defined renders as an empty inline box: the author
   // typed `deck-callot`, and the slide simply lost a block with no error.
   const unknown = [];
-  for (const el of document.querySelectorAll('*')) {
+  for (const el of scanDocument ? document.querySelectorAll('*') : []) {
     const tag = el.tagName.toLowerCase();
     if (tag.startsWith('deck-') && !customElements.get(tag)) {
       unknown.push({ tag, path: pathOf(el) });
@@ -406,7 +429,8 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry }) => {
   // the authored `at`.
   const graphIssues = [];
   const centreOf = ({ box }) => ({ x: (box.left + box.right) / 2, y: (box.top + box.bottom) / 2 });
-  for (const graph of document.querySelectorAll('deck-graph')) {
+  const graphScope = only === null ? document : slides[only - 1];
+  for (const graph of graphScope ? graphScope.querySelectorAll('deck-graph') : []) {
     const graphBox = graph.getBoundingClientRect();
     if (!graphBox.width || !graphBox.height) continue;
     const slide = slides.find((candidate) => candidate.contains(graph));
@@ -478,16 +502,17 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry }) => {
   // the script; the projected words are read, not spoken, so they count for
   // little. This is an order of magnitude, never a verdict.
   const coverEl = slides.find((el) => el.tagName.toLowerCase() === 'deck-cover');
-  const announced = coverEl?.getAttribute('duration') ?? null;
+  const announced = scanDocument ? coverEl?.getAttribute('duration') ?? null : null;
   const countWords = (text) => (text.match(/[\p{L}\p{N}'’-]+/gu) ?? []).length;
   let spokenWords = 0;
-  for (const el of document.querySelectorAll('deck-notes')) {
+  for (const el of scanDocument ? document.querySelectorAll('deck-notes') : []) {
     spokenWords += countWords(el.textContent ?? '');
   }
 
   return {
     announced,
     spokenWords,
+    scannedDocument: scanDocument,
     hasRoot: !!root,
     runtimeLoaded: !!customElements.get('deck-root'),
     slides: measured,
@@ -644,6 +669,7 @@ function diagnose(page, source, limits) {
   // Layout measurements read a styled deck. On a page whose runtime never ran,
   // every box is raw HTML: the numbers would be real and meaningless.
   for (const slide of page.runtimeLoaded ? page.slides : []) {
+    if (slide.measured === false) continue; // measured by another pass of the walk
     const where = { slide: slide.index, slideId: slide.id, slideTag: slide.tag };
     const clippedHere = slide.clipped && slide.clipped.pixels > limits.clipPx;
     if (clippedHere) {
@@ -719,8 +745,9 @@ function diagnose(page, source, limits) {
   }
 
   // Said about the file, not about the run: a deck that fetches from a CDN is
-  // fine on a network and empty on a plane.
-  for (const hit of scanExternal(source).filter((h) => /^https?:|^\/\//.test(h.ref))) {
+  // fine on a network and empty on a plane. It is about the source, so it is
+  // said on the pass that reads the whole document, not once per slide.
+  for (const hit of page.scannedDocument === false ? [] : scanExternal(source).filter((h) => /^https?:|^\/\//.test(h.ref))) {
     found.push(
       diagnostic('EXTERNAL_DEPENDENCY', SEVERITY.warning, `the deck fetches ${hit.ref} at runtime`, {
         suggestion: 'fine on a network · run `rikiki bundle` for a file that opens offline',
@@ -731,32 +758,47 @@ function diagnose(page, source, limits) {
   return found;
 }
 
-/** Two diagnostics identical on (code, slide, path or message) are the same
- *  finding seen at a different moment · keep the earliest state it held. */
+/** Two diagnostics identical on (code, slide, element, wording) are the same
+ *  finding seen at a different moment · keep the earliest state it held.
+ *
+ *  The wording counts because one element carries several findings of the same
+ *  code · two attributes it ignores are two diagnostics on the same path. The
+ *  numbers inside it do not: a measurement drifts by a pixel between states,
+ *  and that is still one finding. */
 function dedupeStateDiagnostics(diagnostics) {
   const kept = new Map();
   for (const d of diagnostics) {
-    const key = JSON.stringify([d.code, d.slide ?? null, d.element ?? d.message]);
+    const wording = String(d.message ?? '').replace(/[\d.]+/g, '#');
+    const key = JSON.stringify([d.code, d.slide ?? null, d.element ?? null, wording]);
     const prior = kept.get(key);
     if (!prior || d.state < prior.state) kept.set(key, d);
   }
   return [...kept.values()];
 }
 
-/** Walk every slide from its opening state through every state
- *  `advanceStep` reaches, running `diagnose` on each and tagging the result
- *  with the state it was measured in · 0 for the opening state. */
-async function diagnoseAllStates(page, slideCount, inspectOpts, source, limits) {
+/** Walk the deck slide by slide, running `diagnose` on each.
+ *
+ *  Both modes take this path: a slide is only laid out while it is on screen,
+ *  so even the opening state of slide 2 has to be navigated to before it can
+ *  be measured. With `steps`, each slide is also carried through every state
+ *  `advanceStep` reaches and the finding is tagged with the state it was
+ *  measured in · 0 for the opening state. Without it there is one state per
+ *  slide and nothing to tag.
+ *
+ *  Whatever does not depend on which slide is showing is asked once, on the
+ *  first pass, rather than once per state. */
+async function diagnoseAllStates(page, slideCount, inspectOpts, source, limits, { steps }) {
   const found = [];
   let statesInspected = 0;
   for (let index = 1; index <= slideCount; index++) {
     await goToSlide(page, index);
     let state = 0;
     for (;;) {
-      const snapshot = await page.evaluate(inspectPage, inspectOpts);
+      const scanDocument = index === 1 && state === 0;
+      const snapshot = await page.evaluate(inspectPage, { ...inspectOpts, only: index, scanDocument });
       statesInspected += 1;
-      for (const d of diagnose(snapshot, source, limits)) found.push({ ...d, state });
-      if (!(await advanceStep(page))) break;
+      for (const d of diagnose(snapshot, source, limits)) found.push(steps ? { ...d, state } : d);
+      if (!steps || !(await advanceStep(page))) break;
       state += 1;
     }
   }
@@ -789,11 +831,13 @@ export async function checkDeck(
 
       let diagnostics;
       let statesInspected;
-      if (settled && steps && observed.slides.length) {
-        const walked = await diagnoseAllStates(page, observed.slides.length, inspectOpts, source, limits);
+      if (settled && observed.slides.length) {
+        const walked = await diagnoseAllStates(page, observed.slides.length, inspectOpts, source, limits, { steps });
         diagnostics = walked.diagnostics;
         statesInspected = walked.statesInspected;
       } else {
+        // Nothing to walk: the deck never settled, or it holds no slide at
+        // all. The single document-wide pass is all there is to report.
         diagnostics = diagnose(observed, source, limits);
         statesInspected = observed.slides.length;
       }
