@@ -12,6 +12,7 @@
 <script type="module" src="../../rikiki/dist/deck-graph.js"></script>
 <script type="module" src="../../rikiki/dist/deck-icon.js"></script>
 <script type="module" src="../../rikiki/dist/deck-annotate.js"></script>
+<script type="module" src="../../rikiki/dist/deck-versus.js"></script>
 <script>
   // Live theme switch · used by the clickable cards on the Themes slide.
   // Choice is persisted in localStorage so a reload keeps it.
@@ -414,6 +415,16 @@
     source-href="https://example.com/grafana"
   ></deck-annotate>
 </deck-feature>
+
+<!-- ════════════════════════════════════════════════════════════════
+     16e · A comparison, as its own slide, with a footnote
+     ════════════════════════════════════════════════════════════════ -->
+<deck-versus eyebrow="Opt-in" slide pivot="OR" winner="right">
+  <h1 slot="title">Subscribing to the event beats polling the registry</h1>
+  <div slot="left"><h3>Poll the registry</h3><p>Simple, and always late.</p></div>
+  <div slot="right"><h3>Subscribe to the event</h3><p>One path, no drift.</p></div>
+  <deck-callout slot="footer" type="info">Rolls out behind a flag · reversible in one line.</deck-callout>
+</deck-versus>
 
 <deck-feature eyebrow="Opt-in" spread="center" data-steps="3">
   <h1 slot="title">A chain marks the stage you are on</h1>

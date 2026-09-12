@@ -128,3 +128,45 @@ test('deck-versus slide composes a complete active slide and stacks responsively
   });
   expect(mobile, 'the two sides stack rather than squeeze').toBe(true);
 });
+
+test('deck-versus slide footer renders below both sides, hidden without slide', async ({ page }) => {
+  await loadComponents(page);
+  await page.evaluate(() => {
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      `<deck-versus id="versus-footer" slide active pivot="→" winner="right">
+        <h1 slot="title">Review in minutes</h1>
+        <section slot="left"><h3>Before</h3><p>Four hours.</p></section>
+        <section slot="right"><h3>After</h3><p>Twelve minutes.</p></section>
+        <deck-callout id="footer-callout" slot="footer" type="info">Rolls out behind a flag.</deck-callout>
+      </deck-versus>`,
+    );
+  });
+
+  const slideMode = await page.evaluate(() => {
+    const host = document.getElementById('versus-footer')!;
+    const root = host.shadowRoot!;
+    const left = root.querySelector('.left')!.getBoundingClientRect();
+    const right = root.querySelector('.right')!.getBoundingClientRect();
+    const footer = root.querySelector('.footer')!.getBoundingClientRect();
+    const callout = document.getElementById('footer-callout')!.getBoundingClientRect();
+    return {
+      footerDisplay: getComputedStyle(root.querySelector('.footer')!).display,
+      footerBelowBothSides: footer.top >= left.bottom && footer.top >= right.bottom,
+      calloutRendered: callout.height > 0,
+    };
+  });
+  expect(slideMode).toEqual({ footerDisplay: 'block', footerBelowBothSides: true, calloutRendered: true });
+
+  const withoutSlide = await page.evaluate(() => {
+    const versus = document.createElement('deck-versus');
+    versus.innerHTML =
+      '<p slot="left">Before</p><p slot="right">After</p><deck-callout slot="footer" type="info">Note.</deck-callout>';
+    document.body.append(versus);
+    return (versus as unknown as { updateComplete: Promise<unknown> }).updateComplete.then(() => {
+      const footer = versus.shadowRoot!.querySelector('.footer')!;
+      return getComputedStyle(footer).display;
+    });
+  });
+  expect(withoutSlide, 'the footer is not displayed outside slide mode').toBe('none');
+});

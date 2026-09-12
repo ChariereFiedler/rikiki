@@ -12,6 +12,7 @@
 //   <p slot="lead">Same evidence, less waiting.</p>
 //   <section slot="left">...</section>
 //   <section slot="right">...</section>
+//   <deck-callout slot="footer" type="info">Rolls out behind a flag.</deck-callout>
 // </deck-versus>
 //
 // OPT-IN · <script type="module" src="dist/deck-versus.js"></script>
@@ -25,7 +26,8 @@ import { signature } from './signature.js';
 export class DeckVersus extends LitElement {
   /* Customization tokens:
        --deck-versus-gap / --deck-versus-pivot-color / --deck-versus-pivot-size
-       --deck-versus-rule / --deck-versus-winner-rule / --deck-versus-loser-color */
+       --deck-versus-rule / --deck-versus-winner-rule / --deck-versus-loser-color
+       --deck-versus-footer-gap (defaults to --rik-space-3) */
   static override styles = [
     signature,
     css`
@@ -42,7 +44,7 @@ export class DeckVersus extends LitElement {
       inset: 0;
       box-sizing: border-box;
       grid-template-columns: minmax(0, 1fr) 80px minmax(0, 1fr);
-      grid-template-rows: auto minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr) auto;
       align-content: stretch;
       gap: var(--rik-space-3) var(--deck-versus-gap, var(--rik-space-4));
       padding: var(--rik-slide-padding-y) var(--rik-slide-padding-x);
@@ -67,6 +69,20 @@ export class DeckVersus extends LitElement {
       font-weight: 600;
     }
     .title, .lead { min-width: 0; }
+    /* The footer · like title/lead, present only once the comparison owns
+       the whole slide. A slotted deck-callout keeps its own font-size, so it
+       renders at its normal size rather than shrinking to reading size. */
+    .footer { display: none; }
+    :host([slide]) .footer {
+      display: block;
+      grid-column: 1 / -1;
+      grid-row: 3;
+      margin-top: var(--deck-versus-footer-gap, var(--rik-space-3));
+      font-family: var(--rik-font-sans);
+      font-size: var(--rik-font-size-body);
+      color: var(--rik-text-default--muted);
+      line-height: 1.5;
+    }
     :host([slide]) .side,
     :host([slide]) .pivot { grid-row: 2; min-height: 0; }
     :host([slide]) .side {
@@ -157,11 +173,12 @@ export class DeckVersus extends LitElement {
       :host, :host(:not([pivot])) { grid-template-columns: 1fr; }
       :host([slide]), :host([slide]:not([pivot])) {
         grid-template-columns: 1fr;
-        grid-template-rows: auto minmax(0, 1fr) auto minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, 1fr) auto minmax(0, 1fr) auto;
       }
       :host([slide]) .side.left { grid-row: 2; }
       :host([slide]) .pivot { grid-row: 3; }
       :host([slide]) .side.right { grid-row: 4; }
+      :host([slide]) .footer { grid-row: 5; }
       .pivot { min-height: 44px; }
       .pivot::before { inset-block: 50%; inset-inline: 0; width: auto; height: 1px; }
       .pivot::after { width: 44px; height: 44px; }
@@ -194,6 +211,7 @@ export class DeckVersus extends LitElement {
       <div class="side left" part="left"><slot name="left"></slot></div>
       ${this.pivot ? html`<span class="pivot reading" part="pivot" aria-hidden="true">${this.pivot}</span>` : ''}
       <div class="side right" part="right"><slot name="right"></slot></div>
+      <div class="footer" part="footer"><slot name="footer"></slot></div>
     `;
   }
 }
