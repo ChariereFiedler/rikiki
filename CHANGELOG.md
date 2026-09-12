@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **`deck-versus` gains a `footer` slot in slide mode.** Renders full width
+  under both sides, at reading size, separated by `--deck-versus-footer-gap`
+  (defaults to `--rik-space-3`); a slotted `deck-callout` keeps its own size.
+  Hidden outside `slide`, like `title` and `lead`.
 - **`deck-annotate` badges accept a named anchor, not just pixels.** `offset`
   and `offsets` take `above`, `below`, `left` or `right` next to `x,y` CSS
   pixels, mixable in one list (`offsets="above|0,-40|right"`). A keyword

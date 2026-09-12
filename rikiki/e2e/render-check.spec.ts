@@ -29,15 +29,21 @@ test.beforeAll(() => {
 
 test.afterAll(() => rmSync(workDir, { recursive: true, force: true }));
 
-/** Write a deck into its own directory next to the shared runtime. */
-function deck(name: string, body: string): string {
+/** Write a deck into its own directory next to the shared runtime.
+    `modules` names opt-in scripts (e.g. `deck-versus`) to load beside the
+    core bundle, for a component that ships outside `dist/index.js`. */
+function deck(name: string, body: string, modules: string[] = []): string {
   const file = join(workDir, `${name}.html`);
+  const extraScripts = modules
+    .map((m) => `<script type="module" src="rikiki/dist/${m}.js"></script>`)
+    .join('\n');
   writeFileSync(
     file,
     `<!doctype html>
 <html lang="en"><head><meta charset="UTF-8">
 <link rel="stylesheet" href="rikiki/tokens.css">
 <script type="module" src="rikiki/dist/index.js"></script>
+${extraScripts}
 </head><body>
 <deck-root>
 ${body}
@@ -651,6 +657,21 @@ test.describe('content no slot takes', () => {
     deck('notes', `<deck-feature id="n"><h1 slot="title">T</h1><p>corps</p>
       <deck-notes>ce que je dirai</deck-notes></deck-feature>`);
     const r = report('notes');
+    expect(r.json.diagnostics.filter((d: any) => d.code === 'CONTENT_NOT_RENDERED')).toEqual([]);
+  });
+
+  test('does not fire on a deck-versus slide footer', () => {
+    deck(
+      'versus-footer',
+      `<deck-versus id="v" slide active pivot="OR" winner="right">
+         <h1 slot="title">T</h1>
+         <div slot="left">a</div>
+         <div slot="right">b</div>
+         <deck-callout slot="footer" type="info">note</deck-callout>
+       </deck-versus>`,
+      ['deck-versus'],
+    );
+    const r = reportFast('versus-footer');
     expect(r.json.diagnostics.filter((d: any) => d.code === 'CONTENT_NOT_RENDERED')).toEqual([]);
   });
 });
