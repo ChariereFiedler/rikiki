@@ -5,6 +5,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.7.0] - 2026-09-12
 ### Added
 - **`deck-versus` gains a `footer` slot in slide mode.** Renders full width
   under both sides, at reading size, separated by `--deck-versus-footer-gap`
@@ -110,6 +112,137 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   connects. Both are read off the rendered layout, the same geometry the
   arrowhead fix above relies on, not inferred from the authored `at`
   coordinates.
+- **`rikiki init` writes a deck you can edit, not only one you can ship.** The
+  default is now a source deck plus the runtime it loads, copied into `rikiki/`
+  beside it. It needs nothing but Node · the previous behaviour, a single
+  self-contained file, moved behind `--standalone` and still needs the optional
+  `rolldown` peer. `--force` is what overwrites an existing deck; without it the
+  command stops rather than replacing someone's work. mermaid and Shiki, ~12 MB
+  together, are copied only when the deck asks for them.
+- **`rikiki assemble` builds one deck from ordered partials.** The multi-file
+  assembler was documented for a year as `build/vite-deck.mjs`, a path `files`
+  never published: the instruction could not be followed from an install. It is
+  now a command of the CLI, with `-` for stdout, a title-derived default output,
+  a `lang` option, and a note on stderr when a configured href will not inline
+  at bundle time. Its `theme` and `bundle` default to the `rikiki/…` spelling
+  `init` writes, which is the one `bundle` rewrites.
+- **`rikiki render` · one picture per slide, plus a manifest.** An agent cannot
+  see a deck. This writes a PNG per slide, a dependency-free gallery, and a
+  versioned `manifest.json` tying each picture to the slide index, id and title
+  it came from. Slides are picked by number or id, the canvas size is explicit,
+  and `--steps` captures each revealed state instead of only the opening one,
+  which on a stepped slide is usually the emptiest. File names derived from a
+  slide id are always safe; the manifest keeps the id verbatim.
+- **`rikiki check` · what is wrong, where, and what to try.** Ten stable codes,
+  a severity, the slide, an element path that reaches into the Shadow DOM, the
+  measurement behind the finding and a suggestion. `--json` writes a versioned
+  report to stdout and nothing else, even when the deck is broken. Exit 0 clean,
+  1 defects, 2 could not look. The report names what was *not* checked, because
+  silence about a check that never ran reads as approval. It will not call empty
+  space a defect, and it does not claim to audit accessibility.
+- **One browser layer behind export, render and check.** Lazy Playwright, a
+  local server on a free port, the narrowest served root that still holds the
+  deck, error and missing-resource collection, a settle that waits on animations
+  rather than on a clock, and both resources closed even when the command fails.
+- **A working guide ships with the package.** `docs/llms/rikiki-workflow.md` is
+  the short path from a brief to a file someone can present: an editorial
+  contract to fill in before writing, a plan whose lines each carry a message
+  and its evidence, nine compositions by intent, the render-and-check loop, the
+  order to try fixes in, and the three delivery shapes. Every HTML block in it
+  is assembled into a deck and measured by `rikiki check` in the test suite, so
+  a renamed component breaks the docs before a reader does.
+- **`check` reports an attribute the element does not read.** `deck-metric`
+  takes its label from its content, so `label="Budget consumed"` was dropped in
+  silence and the slide rendered a number with nothing beside it. The new
+  `UNKNOWN_ATTRIBUTE` diagnostic compares what is written against what the
+  element observes *and* what its own stylesheet selects on, because an
+  attribute can act through CSS alone.
+- **`check` compares the announced duration with what there is to say.** A cover
+  that promises twenty minutes over notes carrying two gets a warning. Speech
+  runs at 100 to 130 words a minute on technical material, and those words live
+  in `<deck-notes>`, so the slide count was never the right proxy. Reported as
+  an estimate from the notes, never as a verdict.
+- **`check` reports content no slot takes.** A `deck-card` written inside a
+  `deck-feature-cards` that sits in another layout is dropped: the slide renders
+  blank and nothing said why. `CONTENT_NOT_RENDERED` names the element, the slot
+  it asked for and the slots the parent offers. Components that read their own
+  text rather than slot it, like `deck-code` and `deck-mermaid`, are left alone.
+- **Text inside `deck-code` is measured for size.** Slotted content is measured
+  in the light DOM, but this element rebuilds the author's own text into its
+  shadow tree, where the size check never looked.
+
+### Changed
+- **Documented the "single record, field by field" recipe.** §22 of the LLM
+  reference shows a `deck-table` with `highlight-rows` and `reveal` as the
+  composition for one entity's fields, instead of a new `deck-record`
+  component.
+- **`deck-kpi-grid` / `deck-kpi` · the figures are one family, and the marked
+  one is a mass.** The grid now owns three rows (value, label, note) and every
+  figure adopts them with `grid-template-rows: subgrid`, so all the values share
+  one baseline and one size, all the labels sit on one line, and a column
+  without a note costs no height anywhere else. The value keeps the statement
+  size it has always had · a fluid scale that grew with the viewport pushed a
+  row of three three-line metrics off the bottom of a slide that used to fit,
+  and it is reachable when a deck has room with
+  `--deck-kpi-value-size: clamp(2.25rem, 6cqw, 7rem)`. A `tone` of `accent`,
+  `ok`, `warn` or `danger` puts the figure on the inverse surface with inverse
+  digits, and says the tone in the colour of the label under it rather than
+  recolouring the figure · a coloured number on paper is a different colour, not
+  more emphasis; `default` and `muted` paint nothing at all. `ruled` draws a divider that
+  can actually be seen: its 1px `--rik-border-default` hairline was invisible at
+  projection distance, so it is now a `--deck-kpi-grid-rule-width` (default 2px)
+  in ink. It had also never rendered at all, for the unrelated build reason
+  recorded under Fixed above, so this is a visible change for a deck that
+  already carried the attribute: it gains the separators it asked for, and the
+  `--deck-kpi-grid-gap` of padding that keeps a figure off its own rule. No
+  attribute changed.
+- **`deck-persona` · the portrait block is the one mass.** The initials were
+  faint grey type parked left of the name, attached to nothing. They now sit in
+  a square of the inverse surface in inverse ink at statement scale, or the
+  photo fills the same square, so the person has a place on the slide; the name
+  lines up with the block's top edge, and the context is the quiet line, gapped
+  away from the identity rather than stacked flush against it. `compact` and
+  `inline` shrink the block and the name together instead of only the block, and
+  `on-dark` flips the block to paper with ink initials. No attribute changed.
+- **The authoring skill covers the whole job.** It carried the wiring; it now
+  carries the seven steps from brief to delivery, the editorial contract, seven
+  graphic composition decisions with the failure each one prevents, a table
+  mapping what a slide has to say to the element that says it, and the
+  presentation mode: what the speaker window shows, what belongs in the notes
+  rather than on the slide, and when a reveal is right.
+- **The guide states why assertion-evidence, rather than asserting it.** The
+  measured comprehension and recall results, and the two consequences that
+  follow: a bullet list read aloud costs the room, and cutting is a design act.
+- **The engine's rules moved out of the component.** A domain layer
+  (`src/domain/`) holds the slide/step position, the chapter outline, the 2D
+  coordinates, the loop, the deep-link grammar and the zoom/pan arithmetic; an
+  application layer (`src/application/`) holds the deep-link use case, the
+  keyboard map and the `mouse-nav` selection; one adapter
+  (`src/infrastructure/`) owns the URL. 165 of these run without a browser, so
+  "what does ArrowUp do in a 2D deck at the top of a chapter?" and "can the
+  reader drag the slide off screen at 4x?" are unit tests now. `deck-root` now asks it where to go and applies the
+  answer. The layering and its five gates are recorded in
+  `docs/design/adr-001-deck-navigation-domain.md`, and the dependency direction
+  is enforced by `scripts/architecture.test.mjs` rather than by convention. No
+  public API change.
+- **Print promises are now backed by tests.** `e2e/print.spec.ts` reads the
+  produced PDF back with poppler: page count, page geometry, text on every page,
+  no chrome, and a rasterised check that the backgrounds printed.
+- **`rolldown` is no longer a production dependency.** It serves the CLI only and
+  weighed ~55 MB of native bindings on every install · it is now an optional peer
+  loaded on first use, with an actionable message when it is missing.
+  `engines.node` is declared (`^20.19.0 || >=22.12.0`).
+- **Release tags run the same gates as `main`.** A tag pipeline previously ran
+  `publish-npm` alone · no typecheck, no lint, no browser suite, no `dist/` drift
+  guard. It now waits on all three check jobs and refuses a tag that disagrees
+  with `package.json`.
+- **Published sizes corrected.** The headline figure was `~14 KB gzip` for a
+  runtime that costs 38 KB gzip once Lit and marked are counted. Every occurrence
+  now states the measured initial load.
+- **The site build no longer downloads anything.** The post-build step that
+  fetched `marked` and `mermaid` from jsdelivr on every deploy, overwriting the
+  pinned vendored artifacts, is gone · its reason to exist disappeared when the
+  bundle started vendoring its dependencies locally.
 
 ### Fixed
 - **`rikiki check` measured only the slide that was on screen.** `deck-root`
@@ -162,118 +295,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   same loss under CSS nesting: `:host { & ::slotted(*) { … } }` tightened to
   `&::slotted(*)`, because a colon inside a declarations block was always read
   as a declaration colon even when its own run opened a nested rule.
-
-### Changed
-- **Documented the "single record, field by field" recipe.** §22 of the LLM
-  reference shows a `deck-table` with `highlight-rows` and `reveal` as the
-  composition for one entity's fields, instead of a new `deck-record`
-  component.
-- **`deck-kpi-grid` / `deck-kpi` · the figures are one family, and the marked
-  one is a mass.** The grid now owns three rows (value, label, note) and every
-  figure adopts them with `grid-template-rows: subgrid`, so all the values share
-  one baseline and one size, all the labels sit on one line, and a column
-  without a note costs no height anywhere else. The value keeps the statement
-  size it has always had · a fluid scale that grew with the viewport pushed a
-  row of three three-line metrics off the bottom of a slide that used to fit,
-  and it is reachable when a deck has room with
-  `--deck-kpi-value-size: clamp(2.25rem, 6cqw, 7rem)`. A `tone` of `accent`,
-  `ok`, `warn` or `danger` puts the figure on the inverse surface with inverse
-  digits, and says the tone in the colour of the label under it rather than
-  recolouring the figure · a coloured number on paper is a different colour, not
-  more emphasis; `default` and `muted` paint nothing at all. `ruled` draws a divider that
-  can actually be seen: its 1px `--rik-border-default` hairline was invisible at
-  projection distance, so it is now a `--deck-kpi-grid-rule-width` (default 2px)
-  in ink. It had also never rendered at all, for the unrelated build reason
-  recorded under Fixed above, so this is a visible change for a deck that
-  already carried the attribute: it gains the separators it asked for, and the
-  `--deck-kpi-grid-gap` of padding that keeps a figure off its own rule. No
-  attribute changed.
-- **`deck-persona` · the portrait block is the one mass.** The initials were
-  faint grey type parked left of the name, attached to nothing. They now sit in
-  a square of the inverse surface in inverse ink at statement scale, or the
-  photo fills the same square, so the person has a place on the slide; the name
-  lines up with the block's top edge, and the context is the quiet line, gapped
-  away from the identity rather than stacked flush against it. `compact` and
-  `inline` shrink the block and the name together instead of only the block, and
-  `on-dark` flips the block to paper with ink initials. No attribute changed.
-
-## [1.0.0] - 2026-09-09
-### Added
-- **`rikiki init` writes a deck you can edit, not only one you can ship.** The
-  default is now a source deck plus the runtime it loads, copied into `rikiki/`
-  beside it. It needs nothing but Node · the previous behaviour, a single
-  self-contained file, moved behind `--standalone` and still needs the optional
-  `rolldown` peer. `--force` is what overwrites an existing deck; without it the
-  command stops rather than replacing someone's work. mermaid and Shiki, ~12 MB
-  together, are copied only when the deck asks for them.
-- **`rikiki assemble` builds one deck from ordered partials.** The multi-file
-  assembler was documented for a year as `build/vite-deck.mjs`, a path `files`
-  never published: the instruction could not be followed from an install. It is
-  now a command of the CLI, with `-` for stdout, a title-derived default output,
-  a `lang` option, and a note on stderr when a configured href will not inline
-  at bundle time. Its `theme` and `bundle` default to the `rikiki/…` spelling
-  `init` writes, which is the one `bundle` rewrites.
-
-- **`rikiki render` · one picture per slide, plus a manifest.** An agent cannot
-  see a deck. This writes a PNG per slide, a dependency-free gallery, and a
-  versioned `manifest.json` tying each picture to the slide index, id and title
-  it came from. Slides are picked by number or id, the canvas size is explicit,
-  and `--steps` captures each revealed state instead of only the opening one,
-  which on a stepped slide is usually the emptiest. File names derived from a
-  slide id are always safe; the manifest keeps the id verbatim.
-- **`rikiki check` · what is wrong, where, and what to try.** Ten stable codes,
-  a severity, the slide, an element path that reaches into the Shadow DOM, the
-  measurement behind the finding and a suggestion. `--json` writes a versioned
-  report to stdout and nothing else, even when the deck is broken. Exit 0 clean,
-  1 defects, 2 could not look. The report names what was *not* checked, because
-  silence about a check that never ran reads as approval. It will not call empty
-  space a defect, and it does not claim to audit accessibility.
-- **One browser layer behind export, render and check.** Lazy Playwright, a
-  local server on a free port, the narrowest served root that still holds the
-  deck, error and missing-resource collection, a settle that waits on animations
-  rather than on a clock, and both resources closed even when the command fails.
-
-- **A working guide ships with the package.** `docs/llms/rikiki-workflow.md` is
-  the short path from a brief to a file someone can present: an editorial
-  contract to fill in before writing, a plan whose lines each carry a message
-  and its evidence, nine compositions by intent, the render-and-check loop, the
-  order to try fixes in, and the three delivery shapes. Every HTML block in it
-  is assembled into a deck and measured by `rikiki check` in the test suite, so
-  a renamed component breaks the docs before a reader does.
-
-- **`check` reports an attribute the element does not read.** `deck-metric`
-  takes its label from its content, so `label="Budget consumed"` was dropped in
-  silence and the slide rendered a number with nothing beside it. The new
-  `UNKNOWN_ATTRIBUTE` diagnostic compares what is written against what the
-  element observes *and* what its own stylesheet selects on, because an
-  attribute can act through CSS alone.
-
-- **`check` compares the announced duration with what there is to say.** A cover
-  that promises twenty minutes over notes carrying two gets a warning. Speech
-  runs at 100 to 130 words a minute on technical material, and those words live
-  in `<deck-notes>`, so the slide count was never the right proxy. Reported as
-  an estimate from the notes, never as a verdict.
-- **`check` reports content no slot takes.** A `deck-card` written inside a
-  `deck-feature-cards` that sits in another layout is dropped: the slide renders
-  blank and nothing said why. `CONTENT_NOT_RENDERED` names the element, the slot
-  it asked for and the slots the parent offers. Components that read their own
-  text rather than slot it, like `deck-code` and `deck-mermaid`, are left alone.
-- **Text inside `deck-code` is measured for size.** Slotted content is measured
-  in the light DOM, but this element rebuilds the author's own text into its
-  shadow tree, where the size check never looked.
-
-### Changed
-- **The authoring skill covers the whole job.** It carried the wiring; it now
-  carries the seven steps from brief to delivery, the editorial contract, seven
-  graphic composition decisions with the failure each one prevents, a table
-  mapping what a slide has to say to the element that says it, and the
-  presentation mode: what the speaker window shows, what belongs in the notes
-  rather than on the slide, and when a reveal is right.
-- **The guide states why assertion-evidence, rather than asserting it.** The
-  measured comprehension and recall results, and the two consequences that
-  follow: a bullet list read aloud costs the room, and cutting is a design act.
-
-### Fixed
 - **`deck-step` reads as a list, not as three stacked cards.** The label was in
   the mono face for no reason, the number sat in a 16px accent disc that read as
   a speck from the back of a room, and each row was a white card with a shadow ·
@@ -438,8 +459,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   measured from the artifacts it describes (`scripts/size.test.mjs`,
   `scripts/component.test.mjs`) and the install cost is asserted
   (`scripts/packaging.test.mjs`). A page that drifts fails the build.
-
-### Fixed
 - **Going back into a slide lost its steps when a morph deferred the move.**
   Crossing a `data-morph` pair backwards landed on step 0 instead of the slide's
   last step. The engine decided "previous slide" and "its last step" in two
@@ -468,39 +487,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`deck-cell` alignment axes.** `align` is horizontal and `justify` vertical
   (the cell is a column flex box) · documented, pinned by a test, and corrected
   in the showcase deck, which had them swapped.
-
-### Changed
-- **The engine's rules moved out of the component.** A domain layer
-  (`src/domain/`) holds the slide/step position, the chapter outline, the 2D
-  coordinates, the loop, the deep-link grammar and the zoom/pan arithmetic; an
-  application layer (`src/application/`) holds the deep-link use case, the
-  keyboard map and the `mouse-nav` selection; one adapter
-  (`src/infrastructure/`) owns the URL. 165 of these run without a browser, so
-  "what does ArrowUp do in a 2D deck at the top of a chapter?" and "can the
-  reader drag the slide off screen at 4x?" are unit tests now. `deck-root` now asks it where to go and applies the
-  answer. The layering and its five gates are recorded in
-  `docs/design/adr-001-deck-navigation-domain.md`, and the dependency direction
-  is enforced by `scripts/architecture.test.mjs` rather than by convention. No
-  public API change.
-- **Print promises are now backed by tests.** `e2e/print.spec.ts` reads the
-  produced PDF back with poppler: page count, page geometry, text on every page,
-  no chrome, and a rasterised check that the backgrounds printed.
-- **`rolldown` is no longer a production dependency.** It serves the CLI only and
-  weighed ~55 MB of native bindings on every install · it is now an optional peer
-  loaded on first use, with an actionable message when it is missing.
-  `engines.node` is declared (`^20.19.0 || >=22.12.0`).
-- **Release tags run the same gates as `main`.** A tag pipeline previously ran
-  `publish-npm` alone · no typecheck, no lint, no browser suite, no `dist/` drift
-  guard. It now waits on all three check jobs and refuses a tag that disagrees
-  with `package.json`.
-- **Published sizes corrected.** The headline figure was `~14 KB gzip` for a
-  runtime that costs 38 KB gzip once Lit and marked are counted. Every occurrence
-  now states the measured initial load.
-- **The site build no longer downloads anything.** The post-build step that
-  fetched `marked` and `mermaid` from jsdelivr on every deploy, overwriting the
-  pinned vendored artifacts, is gone · its reason to exist disappeared when the
-  bundle started vendoring its dependencies locally.
-
 
 ## [0.6.0] - 2026-06-19
 ### Added

@@ -2,7 +2,7 @@
 
 > A tiny Lit Web Components framework for technical presentations · zero-build for consumers, TypeScript for contributors.
 
-This documentation tracks rikiki v1.0.0.
+This documentation tracks rikiki v0.7.0.
 
 Serve the folder with any static HTTP server and open `index.html`. There is no consumer build step or toolchain to maintain; the shipped folder contains the runtime. Offline bundle tests verify that the delivered HTML loads without network requests · everything is Web standards (Custom Elements, Shadow DOM, ES Modules, CSS Custom Properties).
 
@@ -37,6 +37,9 @@ To author your own deck:
    <script type="module" src="../../rikiki/dist/index.js"></script>
    ```
 3. Write slides as `<deck-cover>`, `<deck-section>`, `<deck-feature>`, `<deck-split>`, `<deck-feature-cards>`, `<deck-takeaway>`, `<deck-photo>` · each is plain HTML with a few slots and attributes. See [`rikiki/docs/llms/rikiki-reference.md`](./rikiki/docs/llms/rikiki-reference.md) for the full tag/attribute/token list.
+4. Credit what you show with `<deck-source>`, and pair an image with its caption using `<deck-figure>`; `<deck-annotate>` badges take `above` / `below` / `left` / `right` anchors as well as pixel offsets, and `<deck-versus slide>` takes a `footer` slot under both sides.
+
+To see and measure the result: `npx rikiki render my-deck.html --steps` writes one picture per revealed state (`--baseline <dir>` says what moved since an earlier render), and `npx rikiki check my-deck.html --steps` reports what is wrong in every state, not only the opening one.
 
 ## Themes
 

@@ -6,7 +6,7 @@
 
 A tiny **Lit Web Components** framework for technical presentations. Drop a folder anywhere, open `index.html`, give the talk. No build step on the consumer side · the framework itself is built from TypeScript, but the output is plain ES modules you import directly.
 
-This documentation tracks rikiki v1.0.0.
+This documentation tracks rikiki v0.7.0.
 
 ## TL;DR
 
@@ -118,8 +118,12 @@ To re-theme: copy a theme file, change the values, that's it. All components fol
 | `<deck-callout type="info\|warn\|danger\|ok">` | Information callout |
 | `<deck-card color="yellow\|orange\|green\|red?">` | Tinted card |
 | `<deck-mermaid>` | Diagram via the vendored Mermaid runtime (opt-in bundle) |
+| `<deck-figure>` | An image with its own caption and credit (opt-in bundle) |
+| `<deck-source>` | The credit line under a table, chart, screenshot or quote |
 
 Plus `<deck-badge>`, `<deck-metric>`, `<deck-tier-list>`, `<deck-step-list>`, `<deck-kicker>`, `<deck-stack>`, `<deck-grid>`, `<deck-punch>`.
+
+Opt-in components add `<deck-annotate>` (numbered badges on a screenshot, placed by `above` / `below` / `left` / `right` anchors as well as pixel offsets) and `<deck-versus slide>` (a before/after slide with its own `title`, `lead` and `footer` slots).
 
 ## Common patterns
 

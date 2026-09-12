@@ -8,13 +8,36 @@ import Docs from '../../layouts/Docs.astro';
   description="Notable changes. Follows Keep a Changelog · the project is on semver."
 >
 
-<h2 id="v100">1.0.0 · 2026-09-09</h2>
+<h2 id="v070">0.7.0 · 2026-09-12</h2>
 
 <h3>Added</h3>
 <ul>
-  <li><strong>Agent-first delivery workflow.</strong> The package ships the authoring, diagnostic, visual review and delivery workflow needed to take a brief to a checked deck.</li>
-  <li><strong>Self-contained delivery.</strong> Bundles and PDF export are available from the installed CLI, with optional Mermaid and Shiki runtimes embedded only when requested.</li>
-  <li><strong>Runtime diagnostics.</strong> <code>check</code> reports structural, runtime, accessibility and visual risks with stable exit codes.</li>
+  <li><strong>Agent-first delivery workflow.</strong> The package ships the authoring, diagnostic, visual review and delivery workflow needed to take a brief to a checked deck · <code>init</code> writes a deck you can edit, <code>assemble</code> builds one from ordered partials, <code>render</code> writes one picture per slide with a manifest, and <code>check</code> says what is wrong, where, and what to try.</li>
+  <li><strong><code>rikiki check --steps</code>.</strong> Every revealed state of a slide is measured, not just its opening one; each diagnostic carries the state it held, and a defect identical across states is reported once.</li>
+  <li><strong><code>rikiki render --baseline &lt;dir&gt;</code>.</strong> Each fresh capture is compared to the same-named picture in an earlier render, in the browser that just took it. Slides are ranked by changed ratio with the bounding box of what moved; <code>--threshold</code> keeps anti-aliasing noise out of the report.</li>
+  <li><strong>Painted-box and graph checks.</strong> <code>CONTENT_ESCAPES_BOX</code> and <code>CONTENT_OVERLAPS_SIBLING</code> catch content that paints outside its box or over a sibling; <code>GRAPH_NODE_OUT_OF_BOUNDS</code>, <code>GRAPH_EDGE_CROSSES_NODE</code> and <code>GRAPH_NODE_OVERLAPS_NODE</code> measure a graph's nodes and edges against their canvas and against each other.</li>
+  <li><strong><code>deck-source</code>, <code>deck-figure</code> and a figure-shaped <code>deck-annotate</code>.</strong> A screenshot, diagram or chart now carries its own caption and credit as one semantic unit, and <code>deck-annotate</code> badges accept named anchors (<code>above</code>, <code>below</code>, <code>left</code>, <code>right</code>) next to pixel offsets.</li>
+  <li><strong><code>deck-versus</code> gains a <code>footer</code> slot in slide mode</strong>, rendered full width under both sides at reading size.</li>
+  <li><strong>Opt-in components.</strong> <code>deck-bar</code>, <code>deck-quote</code>, <code>deck-annotate</code>, <code>deck-agenda</code>, <code>deck-icon</code>, <code>deck-checklist</code>, <code>deck-kpi-grid</code>, <code>deck-pull</code>, <code>deck-persona</code>, <code>deck-versus</code>, <code>deck-flow</code>, <code>deck-timeline</code>, <code>deck-table</code> and <code>deck-graph</code> live outside the default bundle, so a deck that never uses them pays nothing.</li>
+  <li><strong>Runtime diagnostics.</strong> <code>check</code> reports structural, runtime, accessibility and visual risks with stable exit codes, and names what was <em>not</em> checked.</li>
+</ul>
+
+<h3>Changed</h3>
+<ul>
+  <li><strong><code>deck-kpi-grid</code> is one family of figures.</strong> The grid owns the value, label and note rows and every figure adopts them with <code>subgrid</code>, so all the values share one baseline and one size. A <code>tone</code> says itself in the label, not by recolouring the number, and <code>ruled</code> finally draws a divider that can be seen at projection distance.</li>
+  <li><strong><code>deck-persona</code> · the portrait block is the one mass.</strong> The initials sit in a square of the inverse surface at statement scale, or the photo fills the same square; <code>compact</code> and <code>inline</code> shrink the block and the name together.</li>
+  <li><strong>The engine's rules moved out of the component</strong> into a domain, application and infrastructure layering, enforced by a test rather than by convention. No public API change.</li>
+  <li><strong>The single-record recipe is documented</strong> as a <code>deck-table</code> composition rather than a new component.</li>
+</ul>
+
+<h3>Fixed</h3>
+<ul>
+  <li><strong><code>rikiki check</code> measured only the slide that was on screen.</strong> Every other slide reported empty rects, so the geometry diagnostics fired only when the defect happened to sit on slide 1. The default mode now walks the deck and measures each slide in its opening state, and a deck the walk cannot navigate stops with <code>NAVIGATION_STALLED</code> instead of killing the command.</li>
+  <li><strong><code>GRAPH_EDGE_CROSSES_NODE</code> no longer misses a visible crossing.</strong> <code>deck-graph</code> publishes the polyline it actually paints, bends included, and the check tests that polyline widened by half the stroke.</li>
+  <li><strong><code>deck-graph</code> edges stop at the node's painted edge</strong>, measured from its real box, so a wide node no longer swallows the arrowhead. <code>route="ortho"</code>, <code>label-offset</code> and a node <code>width</code> come with it.</li>
+  <li><strong>The CSS-in-JS minifier silently deleted the descendant combinator</strong> in front of a pseudo-class or pseudo-element, so three shipped rules were dead in <code>dist/</code> and nowhere else.</li>
+  <li><strong>Print, PDF export, accessibility and three browser engines.</strong> A real print stylesheet, a tagged and bookmarked PDF, an Axe pass over the reference decks with keyboard-operable chrome, and Firefox and WebKit passing the full base contract beside Chromium.</li>
+  <li><strong>Published claims are measured.</strong> Sizes, component counts and install cost are asserted from the artifacts they describe, and the built site no longer carries the whole package.</li>
 </ul>
 
 <h3>Measured runtime sizes · 2026-09-09</h3>
