@@ -3,7 +3,7 @@
 // colors). We highlight at build time here, not at runtime, since this is
 // purely a marketing snippet · no need to ship a highlighter.
 interface Props {
-  lang?: 'html' | 'js' | 'ts' | 'css';
+  lang?: 'html' | 'js' | 'ts' | 'css' | 'sh';
   code: string;
   label?: string;
 }
@@ -32,6 +32,16 @@ function highlight(src: string, lang: string): string {
     s = s.replace(/(['"`])((?:\\.|(?!\1)[^\\])*)\1/g, (m) => put('str', m));
     s = s.replace(/\b(const|let|var|function|return|if|else|class|extends|new|export|import|from|as|await|async|of|in|typeof|true|false|null|undefined)\b/g,
       (m) => put('kw', m));
+  } else if (lang === 'sh') {
+    // One command per line · `$` prompt, binary, sub-command, then the
+    // arguments (a file argument gets its own colour).
+    s = s.split('\n').map((line) => {
+      const m = line.match(/^(\$\s+)?(\S+)(\s+\S+)?(.*)$/);
+      if (!m) return line;
+      const [, prompt = '', bin, verb = '', rest = ''] = m;
+      const args = rest.replace(/(\S+)/g, (arg) => put(/\.[a-z]+$/.test(arg) ? 'ty' : 'str', arg));
+      return (prompt ? put('cmt', prompt.trimEnd()) + ' ' : '') + put('kw', bin) + verb.replace(/\S+/, (v) => put('fn', v)) + args;
+    }).join('\n');
   } else if (lang === 'css') {
     // Comments first
     s = s.replace(/(\/\*[\s\S]*?\*\/)/g, (m) => put('cmt', m));
@@ -126,14 +136,15 @@ const highlighted = highlight(code.trim(), lang);
     display: inline-flex;
     align-items: center;
     gap: var(--rik-space-2xs);
+    min-height: var(--rik-code-copy__height);
     padding: var(--rik-space-2xs) var(--rik-space-2);
-    background: var(--rik-surface-inverse--soft);
-    border: 1px solid var(--rik-border-inverse--strong);
+    background: var(--rik-code-copy__bg);
+    border: 1px solid var(--rik-code-copy__border);
     border-radius: var(--rik-control-radius);
-    color: var(--rik-text-inverse);
+    color: var(--rik-code-copy__text);
     font: 700 var(--rik-font-size-xs)/1 var(--rik-font-sans);
     cursor: pointer;
-    opacity: 0;
+    opacity: var(--rik-code-copy__opacity);
     transition: opacity 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   }
   .block:hover .copy,

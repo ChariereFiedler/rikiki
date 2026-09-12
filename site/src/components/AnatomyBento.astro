@@ -36,12 +36,12 @@ const { code } = Astro.props;
   </div>
 </div>
 
-<ol class="delivery" aria-label="Verified delivery workflow">
-  <li><span>01 · Start</span><code>npx rikiki init index.html</code><strong>starter deck</strong></li>
-  <li><span>02 · Inspect</span><code>npx rikiki check index.html</code><strong>diagnostic report</strong></li>
-  <li><span>03 · Review</span><code>npx rikiki render index.html</code><strong>PNGs + gallery</strong></li>
-  <li><span>04 · Package</span><code>npx rikiki bundle index.html</code><strong>standalone HTML</strong></li>
-  <li><span>05 · Deliver</span><code>npx rikiki export index.html</code><strong>PDF</strong></li>
+<ol class="delivery" aria-label="Delivery workflow, five commands in order">
+  <li><span>Start</span><code>npx rikiki init <span class="arg">index.html</span></code><strong>starter deck</strong></li>
+  <li><span>Inspect</span><code>npx rikiki check <span class="arg">index.html</span></code><strong>diagnostic report</strong></li>
+  <li><span>Review</span><code>npx rikiki render <span class="arg">index.html</span></code><strong>PNGs + gallery</strong></li>
+  <li><span>Package</span><code>npx rikiki bundle <span class="arg">index.html</span></code><strong>standalone HTML</strong></li>
+  <li><span>Deliver</span><code>npx rikiki export <span class="arg">index.html</span></code><strong>PDF</strong></li>
 </ol>
 
 <style>
@@ -87,14 +87,16 @@ const { code } = Astro.props;
   .legend li + li { padding-left:var(--rik-space-3); border-left:1px solid var(--rik-border-default); }
   .legend span { display:block; margin-bottom:.35rem; color:var(--rik-text-default); font-weight:800; }
   .legend code { color:var(--rik-text-default); }
-  /* Five steps on two rows · three, then two · each cell wide enough that
-     a command never wraps mid-command. */
-  .delivery { display:grid; grid-template-columns:repeat(6,1fr); gap:1px; margin:var(--rik-space-3) 0 0; padding:0; list-style:none; background:var(--rik-border-default); border:1px solid var(--rik-border-default); }
-  .delivery li { display:grid; grid-column:span 2; gap:var(--rik-space-2xs); min-width:0; padding:var(--rik-space-3); background:var(--rik-surface-page); }
-  .delivery li:nth-child(n+4) { grid-column:span 3; }
+  /* Five steps on one row · the order is the row. The result chip is the
+     only fill in the rail, so it is what the eye lands on. The command is
+     the verb only · every one of them takes the deck file. */
+  .delivery { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:1px; margin:var(--rik-space-3) 0 0; padding:0; list-style:none; background:var(--rik-border-default); border:1px solid var(--rik-border-default); }
+  .delivery li { display:grid; align-content:start; gap:var(--rik-space-1); min-width:0; padding:var(--rik-space-3); background:var(--rik-surface-page); }
   .delivery span { color:var(--rik-text-default--muted); font:600 var(--rik-font-size-sm)/1.3 var(--rik-font-sans); }
-  .delivery code { width:fit-content; max-width:100%; overflow-x:auto; color:var(--rik-text-default); font:var(--rik-font-size-sm)/1.4 var(--rik-font-mono); white-space:nowrap; background:transparent; padding:0; }
-  .delivery strong { color:var(--rik-text-default); font:700 var(--rik-font-size-sm)/1.3 var(--rik-font-sans); }
+  .delivery code { width:fit-content; max-width:100%; color:var(--rik-text-default); font:var(--rik-font-size-sm)/1.4 var(--rik-font-mono); white-space:nowrap; background:transparent; padding:0; }
+  /* The file argument sits on its own line so the command never breaks mid-token; the text is still one command. */
+  .delivery code .arg { display:block; }
+  .delivery strong { width:fit-content; max-width:100%; margin-top:var(--rik-space-1); padding:var(--rik-space-hair) var(--rik-space-2); color:var(--rik-text-inverse); background:var(--rik-surface-inverse); border-radius:var(--rik-radius-xs); font:700 var(--rik-font-size-sm)/1.3 var(--rik-font-sans); }
   @media (max-width:800px) {
     .anatomy { grid-template-columns:1fr; }
     .source :global(.code),.source :global(.block),.source :global(pre) { height:auto; }
@@ -103,7 +105,10 @@ const { code } = Astro.props;
     .legend li { padding:var(--rik-space-2) 0; }
     .legend li + li { padding-left:0; border-left:0; border-top:1px solid var(--rik-border-default); }
     .delivery { grid-template-columns:1fr; }
-    .delivery li,.delivery li:nth-child(n+4) { grid-column:auto; }
+    .delivery li { grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:var(--rik-space-2xs) var(--rik-space-3); }
+    .delivery span { grid-column:1; }
+    .delivery code { grid-column:1; }
+    .delivery strong { grid-column:2; grid-row:1 / span 2; margin-top:0; }
   }
 </style>
 

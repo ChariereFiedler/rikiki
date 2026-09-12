@@ -109,6 +109,8 @@
   --rik-focus-ring:                   var(--rik-accent);
   --rik-focus-ring--width:            2px;
   --rik-focus-ring--offset:           2px;
+  /* Rule widths · a strong rule opens a column or a block, the default rule separates items. */
+  --rik-rule--strong:                 3px;
   /* mango-500 on paper is 3.2:1 (fails WCAG AA); accent--strong is 4.6:1. */
   --rik-link:                         var(--rik-accent--strong);
   --rik-link--hover:                  var(--rik-accent);
@@ -145,6 +147,8 @@
   --rik-font-size-mega:               clamp(2rem, 4.5vw, 3.5rem);
   --rik-font-size-h1:                 clamp(2rem, 4vw, 2.8rem);
   --rik-font-size-h2:                 clamp(1.4rem, 2.2vw, 2rem);
+  /* Mass · a measured number set as the loudest thing in its row. */
+  --rik-font-size-mass:               clamp(1.75rem, 2.6vw, 2.2rem);
   --rik-font-size-lead:               1.15rem;
   --rik-font-size-body:               1rem;
   --rik-font-size-md:                 0.9375rem;
@@ -199,6 +203,17 @@
   --rik-code__syntax-type:            #ffcb6b;
   --rik-code__syntax-property:        #80cbc4;
   --rik-code__syntax-function:        #82aaff;
+
+  /* Copy affordance on a code block · quiet by default (revealed on hover),
+     a container that needs it as the visible call to action sets these to
+     the accent (see Hook.astro). */
+  /* Tall enough to be a real touch target next to the 44 px page button,
+     small enough to stay a control attached to the block it copies. */
+  --rik-code-copy__height:            36px;
+  --rik-code-copy__bg:                var(--rik-surface-inverse--soft);
+  --rik-code-copy__border:            var(--rik-border-inverse--strong);
+  --rik-code-copy__text:              var(--rik-text-inverse);
+  --rik-code-copy__opacity:           0;
 }
 
 /* The site is light-only by design. Authored dark sections (hero, hook,
