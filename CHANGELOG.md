@@ -166,8 +166,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   one is a mass.** The grid now owns three rows (value, label, note) and every
   figure adopts them with `grid-template-rows: subgrid`, so all the values share
   one baseline and one size, all the labels sit on one line, and a column
-  without a note costs no height anywhere else. The value scales with the slide
-  and with `cols` instead of being fixed at reading size. A `tone` of `accent`,
+  without a note costs no height anywhere else. The value keeps the statement
+  size it has always had · a fluid scale that grew with the viewport pushed a
+  row of three three-line metrics off the bottom of a slide that used to fit,
+  and it is reachable when a deck has room with
+  `--deck-kpi-value-size: clamp(2.25rem, 6cqw, 7rem)`. A `tone` of `accent`,
   `ok`, `warn` or `danger` puts the figure on the inverse surface with inverse
   digits, and says the tone in the colour of the label under it rather than
   recolouring the figure · a coloured number on paper is a different colour, not
@@ -175,7 +178,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   can actually be seen: its 1px `--rik-border-default` hairline was invisible at
   projection distance, so it is now a `--deck-kpi-grid-rule-width` (default 2px)
   in ink. It had also never rendered at all, for the unrelated build reason
-  recorded under Fixed above. No attribute changed.
+  recorded under Fixed above, so this is a visible change for a deck that
+  already carried the attribute: it gains the separators it asked for, and the
+  `--deck-kpi-grid-gap` of padding that keeps a figure off its own rule. No
+  attribute changed.
 - **`deck-persona` · the portrait block is the one mass.** The initials were
   faint grey type parked left of the name, attached to nothing. They now sit in
   a square of the inverse surface in inverse ink at statement scale, or the

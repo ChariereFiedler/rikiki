@@ -132,9 +132,13 @@ export class DeckKpi extends LitElement {
         min-width: 0;
       }
       /* The figure IS the design · at ten metres a number is either large
-         enough to read or it is decoration, and there is no middle. It scales
-         with the slide and with how many figures share the row, so three fill
-         it and six shrink instead of colliding. */
+         enough to read or it is decoration, and there is no middle. The size
+         is the one statement size of the extras signature, which is what a
+         slide that already fitted was laid out against · a row of three
+         three-line metrics inside a deck-feature is 32px from the bottom of
+         the canvas, and a scale that grows with the viewport pushed it off.
+         A deck with room to spare asks for the fluid one by the knob:
+           --deck-kpi-value-size: clamp(2.25rem, 6cqw, 7rem); */
       .value {
         align-self: end;
         /* The block hugs the digits instead of stretching to the column. A
@@ -142,10 +146,7 @@ export class DeckKpi extends LitElement {
            it makes an unmarked neighbour look small at the same type size. */
         justify-self: start;
         max-width: 100%;
-        font-size: var(
-          --deck-kpi-value-size,
-          clamp(2.25rem, calc(18cqw / var(--_cols, 3)), 7rem)
-        );
+        font-size: var(--deck-kpi-value-size, var(--rik-extras-statement, var(--rik-font-size-mega)));
         color: var(--deck-kpi-value-color, var(--_tone));
         /* Identical box metrics on every figure, marked or not · that is what
            keeps the values on one baseline and their ink on one left edge.
