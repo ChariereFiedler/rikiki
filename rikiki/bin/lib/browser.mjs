@@ -156,6 +156,11 @@ export async function waitForStillFrame(page, deadlineMs = 2_000) {
     .catch(() => {});
 }
 
+/** How long a deck may take to load and show its first slide. Generous on
+ *  purpose: a deck loads in well under a second, the margin is for a loaded
+ *  machine, and a deck that really never loads is reported, not retried. */
+export const PAGE_LOAD_TIMEOUT_MS = 60_000;
+
 /** How long a slide change may take before the walk gives up on it. A deck
  *  switches slides in milliseconds; the margin is for a loaded machine (a
  *  single-core CI runner took over 5 s once), not for the deck. */
@@ -239,7 +244,7 @@ async function settle(page, timeoutMs) {
  *
  * @returns {Promise<*>} whatever `fn` returns.
  */
-export async function withDeck(deckPath, fn, { timeoutMs = 30_000, viewport } = {}) {
+export async function withDeck(deckPath, fn, { timeoutMs = PAGE_LOAD_TIMEOUT_MS, viewport } = {}) {
   const chromium = await loadChromium();
   const { rootDir, urlPath } = deckLocation(deckPath);
   const server = await serveDir(rootDir);
