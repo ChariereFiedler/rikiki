@@ -5,6 +5,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.7.1] - 2026-09-12
 ### Fixed
 - **`deck-annotate` never keeps a collapsed frame as the picture rectangle.**
   The letterboxed rectangle the markers are placed against was measured from a
@@ -16,6 +18,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the image as well as the frame, re-arms itself when the element is moved in
   the DOM (`firstUpdated` runs once, so a re-attached figure had no observers
   left), and settles again once web fonts land.
+
+- **`deck-annotate` measures synchronously before its settle loop**, so the
+  first paint already places the badges against the picture; the animation
+  frame loop only re-measures when the geometry moves.
+- **The CLI walker gives a deck time on a busy machine.** A slide change may
+  take 15 s and a deck 60 s to load before `render`, `check` or `export`
+  gives up (shared constants in `bin/lib/browser.mjs`), instead of the 5 s
+  and 30 s that failed under load with no defect in the deck.
+- **`package.json` declares its `bin` path in the form npm keeps** and the
+  lockfile carries the `@emnapi` entries `npm ci` requires, so a fresh
+  install on a runner no longer fails before the tests.
+- **Bundled examples regenerated on the current runtime**, so the drift guard
+  in the browser suite passes on a clean checkout.
+
+### Changed
+- **CI runs the browser suite with one Playwright worker** and the smoke
+  test reads the deployed bundle from a file instead of a pipe, removing two
+  sources of false negatives.
+- **The site serves Markdown and text with an explicit UTF-8 charset**, so
+  the published LLM reference reads correctly in a browser.
+- **The site tells the product's story for two authors.** The landing opens
+  on the manifesto argument for a human author and a coding agent, shows the
+  example decks with thumbnails rendered by `rikiki render`, and its layout
+  library, command rail, module shelf and closing block carry their own
+  weight again; the docs gain a "Check and deliver" CLI page, a sidebar in
+  reading order with build-time counts, a changelog rendered from this file,
+  and a component catalogue guarded attribute by attribute.
 
 ## [0.7.0] - 2026-09-12
 ### Added

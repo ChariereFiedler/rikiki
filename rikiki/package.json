@@ -1,6 +1,6 @@
 {
   "name": "rikiki-deck",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "A tiny Lit Web Components framework for technical presentations · zero-build for consumers, TypeScript for contributors.",
   "author": "Cédric Chariere Fiedler <chariere.fiedler.cedric@gmail.com>",
   "homepage": "https://rikiki.tordu-jardin.fr",
