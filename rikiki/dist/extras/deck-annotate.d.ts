@@ -27,8 +27,18 @@ export declare class DeckAnnotate extends LitElement {
     private get _hasSource();
     /** Current step, mirrored from the slide by deck-root's step machinery. */
     private _step;
+    /** Rendered badge diameter, measured from `.mark` · 0 until `_measure()`
+     *  has run once, so a keyword offset sits on the target for one frame
+     *  rather than guessing a size. */
+    private _markSize;
+    /** Rendered `--deck-annotate-anchor-gap`, measured the same way. */
+    private _anchorGap;
     private get _marks();
-    private _parseOffset;
+    /** Turn a parsed offset into a pixel displacement · a keyword resolves to
+     *  the badge radius plus the gap, in the named direction, and always
+     *  forces the leader on since a badge moved on the author's say-so, not a
+     *  measured pixel value, needs the line back to what it annotates. */
+    private _displacementFor;
     private _offsetFor;
     /** The engine reads the step count off the SLIDE (`steps` / `data-steps`), so
      *  the component publishes what it needs onto its own slide · one step per
@@ -41,7 +51,8 @@ export declare class DeckAnnotate extends LitElement {
     private _ro?;
     firstUpdated(): void;
     disconnectedCallback(): void;
-    /** Publish the letterboxed picture rectangle as percentages of the frame. */
+    /** Publish the letterboxed picture rectangle as percentages of the frame,
+     *  and the measured badge size and anchor gap a keyword offset needs. */
     private _measure;
     render(): import("lit-html").TemplateResult<1>;
 }

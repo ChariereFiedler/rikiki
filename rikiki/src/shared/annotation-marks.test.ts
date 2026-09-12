@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { parseMarks, placeMarks, stepsForMarks, visibleCount } from './annotation-marks.js';
+import {
+  parseMarks,
+  parseOffset,
+  placeMarks,
+  stepsForMarks,
+  visibleCount,
+} from './annotation-marks.js';
 
 describe('parseMarks', () => {
   it('reads x,y,label triples', () => {
@@ -68,5 +74,41 @@ describe('progressive reveal', () => {
   it('asks the engine for one step per mark', () => {
     expect(stepsForMarks(3)).toBe(3);
     expect(stepsForMarks(0)).toBe(0);
+  });
+});
+
+describe('parseOffset', () => {
+  it('reads x,y CSS pixels', () => {
+    expect(parseOffset('28,-24')).toEqual({ kind: 'px', dx: 28, dy: -24 });
+  });
+
+  it('tolerates spacing around the pixel pair', () => {
+    expect(parseOffset(' 28 , -24 ')).toEqual({ kind: 'px', dx: 28, dy: -24 });
+  });
+
+  it('reads each named anchor side', () => {
+    expect(parseOffset('above')).toEqual({ kind: 'anchor', side: 'above' });
+    expect(parseOffset('below')).toEqual({ kind: 'anchor', side: 'below' });
+    expect(parseOffset('left')).toEqual({ kind: 'anchor', side: 'left' });
+    expect(parseOffset('right')).toEqual({ kind: 'anchor', side: 'right' });
+  });
+
+  it('falls back to 0,0 for an unreadable entry', () => {
+    expect(parseOffset('sideways')).toEqual({ kind: 'px', dx: 0, dy: 0 });
+    expect(parseOffset('28')).toEqual({ kind: 'px', dx: 0, dy: 0 });
+  });
+
+  it('falls back to 0,0 for a missing entry', () => {
+    expect(parseOffset(undefined)).toEqual({ kind: 'px', dx: 0, dy: 0 });
+    expect(parseOffset('')).toEqual({ kind: 'px', dx: 0, dy: 0 });
+  });
+
+  it('reads a mixed offsets list entry by entry', () => {
+    const entries = 'above|0,-40|right'.split('|').map(parseOffset);
+    expect(entries).toEqual([
+      { kind: 'anchor', side: 'above' },
+      { kind: 'px', dx: 0, dy: -40 },
+      { kind: 'anchor', side: 'right' },
+    ]);
   });
 });

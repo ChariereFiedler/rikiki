@@ -16,7 +16,10 @@
 //
 // Add `leader offset="28,-24"` to keep every badge away from the point it
 // identifies. Use `offsets="28,-24|-28,-24"` when each mark needs a different
-// direction. Offsets are CSS pixels in the rendered slide canvas.
+// direction. Offsets are CSS pixels in the rendered slide canvas, or one of
+// the keywords `above` / `below` / `left` / `right` : the component computes
+// the displacement from the rendered badge size and turns the leader on for
+// that mark, e.g. `offsets="above|0,-40|right"`.
 //
 // OPT-IN · not imported by src/index.ts. Load it next to the bundle:
 //   <script type="module" src="dist/deck-annotate.js"></script>
@@ -24,7 +27,14 @@
 
 import { LitElement, css, html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { parseMarks, placeMarks, stepsForMarks, visibleCount } from '../shared/annotation-marks.js';
+import {
+  type Offset,
+  parseMarks,
+  parseOffset,
+  placeMarks,
+  stepsForMarks,
+  visibleCount,
+} from '../shared/annotation-marks.js';
 
 // deck-source is a core atom, registered by dist/index.js · every opt-in
 // module is documented as "loaded next to the bundle" (§20), so it is always
@@ -43,6 +53,8 @@ export class DeckAnnotate extends LitElement {
        --deck-annotate-mark-ring     halo that lifts it off the screenshot
        --deck-annotate-leader        leader line colour
        --deck-annotate-leader-width  leader line thickness
+       --deck-annotate-anchor-gap    space between the target point and a
+                                      badge displaced by a keyword offset
        --deck-annotate-legend-color  the caption list
        --deck-annotate-legend-size   its type size
        --deck-annotate-gap           space between image, legend and caption ·
@@ -132,6 +144,24 @@ export class DeckAnnotate extends LitElement {
       pointer-events: none;
     }
     .leader[hidden] { display: none; }
+    /* Sized purely from their own token, never shown · _measure() reads their
+       rendered width to turn a keyword offset into a real pixel displacement,
+       the same way it reads the picture rect. visibility (not display) keeps
+       them in layout so they measure correctly even before any mark is
+       revealed. Positioned out of flow so they never shift anything else. */
+    .mark-size-probe,
+    .anchor-gap-probe {
+      position: absolute;
+      height: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .mark-size-probe {
+      width: var(--deck-annotate-mark-size, 2.2rem);
+    }
+    .anchor-gap-probe {
+      width: var(--deck-annotate-anchor-gap, var(--rik-space-2));
+    }
     @media (prefers-reduced-motion: reduce) {
       .mark { transition: none; }
     }
@@ -239,21 +269,39 @@ export class DeckAnnotate extends LitElement {
   /** Current step, mirrored from the slide by deck-root's step machinery. */
   @state() private _step = 0;
 
+  /** Rendered badge diameter, measured from `.mark` · 0 until `_measure()`
+   *  has run once, so a keyword offset sits on the target for one frame
+   *  rather than guessing a size. */
+  @state() private _markSize = 0;
+
+  /** Rendered `--deck-annotate-anchor-gap`, measured the same way. */
+  @state() private _anchorGap = 0;
+
   private get _marks() {
     return placeMarks(parseMarks(this.marks));
   }
 
-  private _parseOffset(value: string | null | undefined): readonly [number, number] | null {
-    if (!value) return null;
-    const [rawX, rawY] = value.split(',');
-    const x = Number(rawX?.trim());
-    const y = Number(rawY?.trim());
-    return Number.isFinite(x) && Number.isFinite(y) ? [x, y] : null;
+  /** Turn a parsed offset into a pixel displacement · a keyword resolves to
+   *  the badge radius plus the gap, in the named direction, and always
+   *  forces the leader on since a badge moved on the author's say-so, not a
+   *  measured pixel value, needs the line back to what it annotates. */
+  private _displacementFor(offset: Offset): { dx: number; dy: number; forceLeader: boolean } {
+    if (offset.kind === 'px') return { dx: offset.dx, dy: offset.dy, forceLeader: false };
+    const reach = this._markSize / 2 + this._anchorGap;
+    const bySide: Record<typeof offset.side, readonly [number, number]> = {
+      above: [0, -reach],
+      below: [0, reach],
+      left: [-reach, 0],
+      right: [reach, 0],
+    };
+    const [dx, dy] = bySide[offset.side];
+    return { dx, dy, forceLeader: true };
   }
 
-  private _offsetFor(index: number): readonly [number, number] {
-    const individual = this.offsets?.split('|')[index];
-    return this._parseOffset(individual) ?? this._parseOffset(this.offset) ?? [0, 0];
+  private _offsetFor(index: number): { dx: number; dy: number; forceLeader: boolean } {
+    const individual = this.offsets?.split('|')[index]?.trim();
+    const text = individual ? individual : this.offset;
+    return this._displacementFor(parseOffset(text));
   }
 
   /** The engine reads the step count off the SLIDE (`steps` / `data-steps`), so
@@ -303,10 +351,17 @@ export class DeckAnnotate extends LitElement {
     this._ro = undefined;
   }
 
-  /** Publish the letterboxed picture rectangle as percentages of the frame. */
+  /** Publish the letterboxed picture rectangle as percentages of the frame,
+   *  and the measured badge size and anchor gap a keyword offset needs. */
   private _measure = (): void => {
     const frame = this.renderRoot.querySelector('.frame') as HTMLElement | null;
     const img = this.renderRoot.querySelector('img') as HTMLImageElement | null;
+    const markProbe = this.renderRoot.querySelector('.mark-size-probe') as HTMLElement | null;
+    const gapProbe = this.renderRoot.querySelector('.anchor-gap-probe') as HTMLElement | null;
+    if (markProbe) this._markSize = markProbe.getBoundingClientRect().width;
+    if (gapProbe) this._anchorGap = gapProbe.getBoundingClientRect().width;
+    if (frame) frame.style.setProperty('--mark-size', `${this._markSize}px`);
+
     // naturalWidth is 0 until the image has decoded · measuring then would
     // publish a ratio of zero and pile every marker in one corner.
     if (!frame || !img?.naturalWidth || !img.naturalHeight) return;
@@ -332,15 +387,17 @@ export class DeckAnnotate extends LitElement {
         <div class="frame" part="frame">
           ${this.src ? html`<img src=${this.src} alt=${this.alt} part="image" />` : ''}
           ${this.src ? html`<span class="edge" part="edge" aria-hidden="true"></span>` : ''}
+          <span class="mark-size-probe" aria-hidden="true"></span>
+          <span class="anchor-gap-probe" aria-hidden="true"></span>
           ${marks.map((m, index) => {
-            const [dx, dy] = this._offsetFor(index);
+            const { dx, dy, forceLeader } = this._offsetFor(index);
             const length = Math.hypot(dx, dy);
             const angle = Math.atan2(dy, dx) * (180 / Math.PI);
             const style = `--mx:${m.x}%;--my:${m.y}%;--mark-dx:${dx}px;--mark-dy:${dy}px;--leader-length:${length}px;--leader-angle:${angle}deg`;
             const hidden = m.n > shown;
             return html`
               ${
-                this.leader && length > 0
+                (this.leader || forceLeader) && length > 0
                   ? html`<span class="leader" part="leader" ?hidden=${hidden} style=${style} aria-hidden="true"></span>`
                   : ''
               }

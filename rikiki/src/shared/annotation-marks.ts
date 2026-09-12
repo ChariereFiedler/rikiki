@@ -72,3 +72,39 @@ export function visibleCount(total: number, step: number): number {
 
 /** Steps a slide needs to reveal every mark · the count the engine asks for. */
 export const stepsForMarks = (total: number): number => Math.max(0, total);
+
+/** A badge side name : the four directions a keyword offset can name. */
+export type AnchorSide = 'above' | 'below' | 'left' | 'right';
+
+/** A parsed `offset` / `offsets` entry, either raw pixels or a named side. */
+export type Offset =
+  | { readonly kind: 'px'; readonly dx: number; readonly dy: number }
+  | { readonly kind: 'anchor'; readonly side: AnchorSide };
+
+const ANCHOR_SIDES: readonly AnchorSide[] = ['above', 'below', 'left', 'right'];
+
+const ZERO_OFFSET: Offset = { kind: 'px', dx: 0, dy: 0 };
+
+/**
+ * Read one `offset` / `offsets` entry · either `x,y` CSS pixels or a keyword
+ * naming a side (`above`, `below`, `left`, `right`).
+ *
+ * A keyword lets the author state the intent instead of guessing pixels in a
+ * coordinate system they cannot see : the component turns it into a real
+ * displacement once it knows the rendered badge size.
+ *
+ * An unreadable entry falls back to `0,0`, same as an unreadable `x,y` pair
+ * always has : a badge pinned to its target is a smaller mistake than one
+ * thrown off-image by a typo.
+ */
+export function parseOffset(text: string | null | undefined): Offset {
+  const trimmed = text?.trim();
+  if (!trimmed) return ZERO_OFFSET;
+  if ((ANCHOR_SIDES as readonly string[]).includes(trimmed)) {
+    return { kind: 'anchor', side: trimmed as AnchorSide };
+  }
+  const [rawX, rawY] = trimmed.split(',');
+  const dx = Number(rawX?.trim());
+  const dy = Number(rawY?.trim());
+  return Number.isFinite(dx) && Number.isFinite(dy) ? { kind: 'px', dx, dy } : ZERO_OFFSET;
+}

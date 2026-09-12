@@ -52,6 +52,136 @@ test('deck-annotate can displace badges and keep a leader on the exact target', 
   expect(geometry.leaderVisible).toBe(true);
 });
 
+test('deck-annotate offset="above" clears the target and turns the leader on unasked', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(`${EXTRAS}#4`);
+
+  await page.evaluate(async () => {
+    const annotation = document.getElementById('shot') as HTMLElement & {
+      updateComplete: Promise<unknown>;
+    };
+    // `leader` is deliberately left unset · a keyword offset must turn it on
+    // by itself.
+    annotation.setAttribute('offset', 'above');
+    await annotation.updateComplete;
+  });
+  await page.keyboard.press('ArrowRight');
+
+  const geometry = await page.evaluate(() => {
+    const annotation = document.getElementById('shot')!;
+    const shadow = annotation.shadowRoot!;
+    const image = shadow.querySelector('img') as HTMLImageElement;
+    const imageBox = image.getBoundingClientRect();
+    const ratio = image.naturalWidth / image.naturalHeight;
+    const boxRatio = imageBox.width / imageBox.height;
+    const paintedWidth = ratio > boxRatio ? imageBox.width : imageBox.height * ratio;
+    const paintedHeight = ratio > boxRatio ? imageBox.width / ratio : imageBox.height;
+    const targetY = imageBox.top + (imageBox.height - paintedHeight) / 2 + paintedHeight * 0.3;
+    const leaderElement = shadow.querySelector('.leader') as HTMLElement;
+    const marker = (shadow.querySelector('.mark') as HTMLElement).getBoundingClientRect();
+    return {
+      gapAboveTarget: targetY - marker.bottom,
+      leaderVisible: getComputedStyle(leaderElement).display !== 'none',
+    };
+  });
+
+  expect(geometry.gapAboveTarget, 'the badge bottom edge sits above the target y').toBeGreaterThan(0);
+  expect(geometry.gapAboveTarget, 'the gap stays close to the anchor gap token, not a stray value').toBeLessThan(40);
+  expect(geometry.leaderVisible, 'a keyword offset turns the leader on by itself').toBe(true);
+});
+
+test('deck-annotate offset="right" moves the badge to the right of the target', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(`${EXTRAS}#4`);
+
+  await page.evaluate(async () => {
+    const annotation = document.getElementById('shot') as HTMLElement & {
+      updateComplete: Promise<unknown>;
+    };
+    annotation.setAttribute('offset', 'right');
+    await annotation.updateComplete;
+  });
+  await page.keyboard.press('ArrowRight');
+
+  const geometry = await page.evaluate(() => {
+    const annotation = document.getElementById('shot')!;
+    const shadow = annotation.shadowRoot!;
+    const image = shadow.querySelector('img') as HTMLImageElement;
+    const imageBox = image.getBoundingClientRect();
+    const ratio = image.naturalWidth / image.naturalHeight;
+    const boxRatio = imageBox.width / imageBox.height;
+    const paintedWidth = ratio > boxRatio ? imageBox.width : imageBox.height * ratio;
+    const paintedHeight = ratio > boxRatio ? imageBox.width / ratio : imageBox.height;
+    const target = {
+      x: imageBox.left + (imageBox.width - paintedWidth) / 2 + paintedWidth * 0.2,
+      y: imageBox.top + (imageBox.height - paintedHeight) / 2 + paintedHeight * 0.3,
+    };
+    const marker = (shadow.querySelector('.mark') as HTMLElement).getBoundingClientRect();
+    return {
+      dx: marker.left + marker.width / 2 - target.x,
+      dy: marker.top + marker.height / 2 - target.y,
+    };
+  });
+
+  expect(geometry.dx, 'the badge moves to the right of the target').toBeGreaterThan(5);
+  expect(Math.abs(geometry.dy), 'the badge stays level with the target vertically').toBeLessThan(5);
+});
+
+test('deck-annotate pixel offsets keep working unchanged', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(`${EXTRAS}#4`);
+
+  await page.evaluate(async () => {
+    const annotation = document.getElementById('shot') as HTMLElement & {
+      updateComplete: Promise<unknown>;
+    };
+    annotation.setAttribute('offset', '0,0');
+    await annotation.updateComplete;
+  });
+  await page.keyboard.press('ArrowRight');
+
+  const geometry = await page.evaluate(() => {
+    const annotation = document.getElementById('shot')!;
+    const shadow = annotation.shadowRoot!;
+    const leaderElement = shadow.querySelector('.leader') as HTMLElement | null;
+    return {
+      leaderPresent: leaderElement !== null,
+    };
+  });
+
+  // offset="0,0" produces zero displacement · no leader is drawn for it, since
+  // there is nothing to connect the badge back to, and the pixel form never
+  // forces one on.
+  expect(geometry.leaderPresent).toBe(false);
+});
+
+test('deck-annotate offsets mixes keywords and pixels per mark', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(`${EXTRAS}#4`);
+
+  await page.evaluate(async () => {
+    const annotation = document.getElementById('shot') as HTMLElement & {
+      updateComplete: Promise<unknown>;
+    };
+    // First mark : keyword, no `leader` attribute set anywhere on the host.
+    // Second mark : plain pixels, unaffected by the first mark's keyword.
+    annotation.setAttribute('offsets', 'above|10,10');
+    await annotation.updateComplete;
+  });
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowRight');
+
+  const leaderCount = await page.evaluate(() => {
+    const annotation = document.getElementById('shot')!;
+    return annotation.shadowRoot!.querySelectorAll('.leader').length;
+  });
+
+  // Only the keyword mark renders a leader element at all · the pixel mark
+  // has `leader` unset and a non-zero offset, but the keyword form is the
+  // only one that forces it on.
+  expect(leaderCount, 'exactly the keyword mark gets a leader, not the pixel one').toBe(1);
+});
+
 test('deck-step note-position below remains legible in a five-step row', async ({ page }) => {
   const deck = createDeckPage(page);
   await deck.goto(EXTENSIONS);
