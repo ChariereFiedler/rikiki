@@ -1,4 +1,6 @@
 ---
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import Docs from '../../layouts/Docs.astro';
 import CodeBlock from '../../components/CodeBlock.astro';
 import ComponentPreview from '../../components/ComponentPreview.astro';
@@ -92,10 +94,20 @@ const timeline = `<deck-feature eyebrow="Plan">
   <h1 slot="title">Ship in three moves</h1>
   <deck-timeline direction="row">
     <deck-milestone date="09:00" label="Draft" tone="accent">Write the source</deck-milestone>
-    <deck-milestone date="11:00" label="Check" tone="ok">Run the doctor</deck-milestone>
+    <deck-milestone date="11:00" label="Check" tone="ok">Run the deck checks</deck-milestone>
     <deck-milestone date="14:00" label="Deliver">Export HTML and PDF</deck-milestone>
   </deck-timeline>
 </deck-feature>`;
+
+// How many compositions the agent working guide lists · counted from the
+// shipped file at build time (its "## Recipes" section, one `### n · ` heading
+// per composition) rather than typed, so the figure follows the guide.
+const workflowPath = resolve(process.cwd(), '../rikiki/docs/llms/rikiki-workflow.md');
+const workflowGuide = readFileSync(workflowPath, 'utf8');
+const recipesSection = workflowGuide.slice(workflowGuide.indexOf('\n## Recipes'));
+const workflowRecipeCount = [
+  ...recipesSection.slice(0, recipesSection.indexOf('\n## ', 1)).matchAll(/^### \d+ · /gm),
+].length;
 
 const training = `<deck-root autoplay="4000" loop swipe transition="slide">
   <deck-cover brand="COURSE · 01"><h1>Learn in context.</h1></deck-cover>
@@ -136,7 +148,7 @@ const training = `<deck-root autoplay="4000" loop swipe transition="slide">
 <ComponentPreview code={hook} full />
 
 <h2 id="code-detail">Code on top, two notes underneath</h2>
-<p>When the code needs commentary · <code>&lt;deck-feature-cards&gt;</code> caps the diagram at 40% so the code stays readable.</p>
+<p>When the code needs commentary · <code>&lt;deck-feature-cards&gt;</code> gives the hero block its natural height and lets the cards below take the rest, so the code stays readable.</p>
 <CodeBlock label="Pattern" lang="html" code={codeWithDetail} />
 <ComponentPreview code={codeWithDetail} full />
 
@@ -147,6 +159,7 @@ const training = `<deck-root autoplay="4000" loop swipe transition="slide">
 
 <h2 id="photo-break">A visual chapter break</h2>
 <p>Use one local image as a pause between dense sections. Keep the caption short and preserve contrast with <code>darken</code>.</p>
+<p class="recipe-note"><code>/component-photo.svg</code> is an asset of this site, not of the framework. Point <code>src</code> at a file of your own, sitting next to <code>index.html</code> in the deck folder.</p>
 <CodeBlock label="Pattern" lang="html" code={photo} />
 <ComponentPreview code={photo} full />
 
@@ -156,9 +169,24 @@ const training = `<deck-root autoplay="4000" loop swipe transition="slide">
 <ComponentPreview code={timeline} module="deck-timeline.js" full />
 
 <h2 id="training-carousel">An embedded training carousel</h2>
-<p>Add autoplay, loop, and swipe to the deck root when the material sits inside a course or documentation page.</p>
+<p>Add autoplay, loop, and swipe to the deck root when the material sits inside a course or documentation page. The host page must give the deck a sized container; <a href="/docs/api#embed">the embedding notes</a> list what an embedded deck does and does not touch on the host page.</p>
 <CodeBlock label="Pattern" lang="html" code={training} />
 <ComponentPreview code={training} full root />
 <p class="recipe-note">The preview advances automatically. Hover it to pause, or use its arrows and touch gestures.</p>
+
+<h2 id="more">More compositions</h2>
+<p>
+  The patterns above are the ones that come up while writing by hand. The
+  working guide written for coding agents,
+  <a href="/rikiki/docs/llms/rikiki-workflow.md">rikiki-workflow.md</a>, lists {workflowRecipeCount} more
+  compositions, each keyed to the question a slide answers rather than to a tag. It ships with the package, so an agent reads the
+  same file you do.
+</p>
+
+<h2 id="next">Next</h2>
+<ul>
+  <li><a href="/docs/cli">Check and deliver</a> · run the deck checks before the deck leaves your machine.</li>
+  <li><a href="/docs/components">Component library</a> · every element the patterns above are built from.</li>
+</ul>
 
 </Docs>

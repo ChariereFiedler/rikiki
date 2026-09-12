@@ -34,11 +34,22 @@ const minDeck = `<!doctype html>
 const cdnDeck = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rikiki-deck@0.7.0/tokens.css">
 <script type="module" src="https://cdn.jsdelivr.net/npm/rikiki-deck@0.7.0/dist/index.js"></script>`;
 
+const cloneCmd = `git clone https://gitlab.com/tordu-jardin/rikiki.git
+cd rikiki/rikiki
+npm install
+npm run build`;
+
 const serve = `# Any static server works · pick one you already have:
 python3 -m http.server 7799
 # or
 npx serve .
 # ES modules require http://; do not double-click the file`;
+
+const deliver = `# measure the deck in a real browser
+npx rikiki check index.html
+
+# one PDF page per slide
+npx rikiki export index.html`;
 
 const minDeckPreview = `<deck-cover brand="my-talk">
   <h1>Hello, <span class="accent">world</span>.</h1>
@@ -52,7 +63,7 @@ const minDeckPreview = `<deck-cover brand="my-talk">
 <Docs
   title="Getting started"
   eyebrow="Quickstart"
-  description="From zero to a live deck in three steps. No build, no toolchain."
+  description="For a first deck: install, write one slide, serve the folder, then check and export it. Four steps, no build, no toolchain."
 >
 
 <h2 id="install">1 · Install</h2>
@@ -69,18 +80,29 @@ const minDeckPreview = `<deck-cover brand="my-talk">
 </p>
 <CodeBlock label="<head>" lang="html" code={cdnDeck} />
 
-<h3 id="install-npm">Via npm (versioned, offline-friendly)</h3>
+<h3 id="install-npm">Via npm (versioned, runs from your own folder)</h3>
 <CodeBlock label="terminal" lang="js" code={npmCmd} />
 <p>
   The command writes <code>index.html</code> and copies its assets into
   <code>rikiki/</code> inside <code>my-talk/</code>.
 </p>
+<p>
+  One thing still leaves the machine: the default theme
+  (<code>tokens.css</code>, which imports <code>themes/rikiki.css</code>) pulls
+  its typefaces from Google Fonts. For a deck that must run offline, pass
+  <code>--theme siliceum</code> to <code>init</code> · that theme's woff2 files
+  are copied into <code>rikiki/fonts/</code> · or accept the system-font
+  fallback, which is what <code>rikiki bundle</code> produces when it strips the
+  remote import.
+</p>
 
 <h3 id="install-clone">Via git clone (contributors)</h3>
 <p>
-  Clone the repo, the <code>rikiki/</code> folder is what you ship. Run
-  <code>npm install</code> inside it only if you plan to rebuild from sources.
+  The npm package lives in the <code>rikiki/</code> folder of the repository.
+  Build it from the TypeScript sources only if you plan to change the
+  framework itself.
 </p>
+<CodeBlock label="terminal" lang="js" code={cloneCmd} />
 
 <h2 id="first-deck">2 · Your first deck</h2>
 <p>
@@ -88,6 +110,11 @@ const minDeckPreview = `<deck-cover brand="my-talk">
 </p>
 <CodeBlock label="my-talk/index.html" lang="html" code={minDeck} />
 <ComponentPreview code={minDeckPreview} full />
+<p>
+  <code>rikiki/tokens.css</code> is the theme entry point: it imports
+  <code>themes/rikiki.css</code>, so linking either file loads the same default
+  theme. Pages here use both spellings.
+</p>
 
 <h2 id="serve">3 · Serve it</h2>
 <p>
@@ -101,12 +128,27 @@ const minDeckPreview = `<deck-cover brand="my-talk">
   go through the slides. That's the loop.
 </p>
 
+<h2 id="check">4 · Check and deliver</h2>
+<p>
+  Before a deck leaves your machine, measure it and print it. The first
+  command loads the deck in a real browser and reports what is wrong with it,
+  slide by slide; the second turns it into a PDF, one page per slide. Both
+  need the optional <code>playwright</code> peer.
+</p>
+<CodeBlock label="terminal" lang="js" code={deliver} />
+<p>
+  <a href="/docs/cli">Check and deliver</a> covers the rest: the exit codes
+  <code>check</code> returns, the JSON report a script can read, the pictures
+  <code>render</code> writes, and the single-file bundle.
+</p>
+
 <h2 id="next">Where to go next</h2>
 <ul>
   <li><a href="/docs/anatomy">Anatomy of a slide</a> · how a <code>&lt;deck-*&gt;</code> element maps to what you see.</li>
   <li><a href="/docs/components">The component library</a> · the documented elements with their attributes and slots.</li>
   <li><a href="/docs/navigation">Navigation</a> · ←/→, ↑/↓, Space, O, ? · and the 2D model behind them.</li>
   <li><a href="/docs/theming">Theming</a> · how the design tokens work and how to write a new theme.</li>
+  <li><a href="/docs/cli">Check and deliver</a> · the command line, from <code>check</code> to <code>export</code>.</li>
 </ul>
 
 </Docs>

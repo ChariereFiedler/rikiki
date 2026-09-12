@@ -1,7 +1,39 @@
 ---
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import Docs from '../../layouts/Docs.astro';
 import CodeBlock from '../../components/CodeBlock.astro';
 import ComponentPreview from '../../components/ComponentPreview.astro';
+
+// Every size quoted on this page is measured from the artifact it names ·
+// scripts/size-surfaces.mjs is the single source. Loaded through a runtime file
+// URL so Vite leaves the module out of the prerender bundle: it locates the
+// package from its own import.meta.url.
+const sizeSurfaces = pathToFileURL(
+  resolve(process.cwd(), '../rikiki/scripts/size-surfaces.mjs'),
+).href;
+const { measureSizes, toKb } = await import(/* @vite-ignore */ sizeSurfaces);
+const sizes = measureSizes();
+/** A lazily-loaded module, in the KB the docs quote. */
+const moduleKb = (name: string) => toKb(sizes.lazy[name]);
+const engineKb = toKb(sizes.bundleGzip);
+const initialLoadKb = toKb(sizes.initialLoadGzip);
+const shikiRuntimeKb = toKb(sizes.vendors.shiki);
+const mermaidRuntimeKb = toKb(sizes.vendors.mermaid);
+const mermaidModuleKb = toKb(sizes.lazy['deck-mermaid']);
+
+// Where the overview switches layouts · read from deck-overview's own
+// threshold so the figure on this page cannot drift from the runtime.
+const overviewSource = readFileSync(
+  resolve(process.cwd(), '../rikiki/src/runtime/deck-overview.ts'),
+  'utf8',
+);
+const sidebarThreshold = overviewSource.match(/const useSidebar = total > (\d+);/);
+if (!sidebarThreshold) {
+  throw new Error('deck-overview no longer picks its layout with a slide-count threshold');
+}
+const overviewPathMax = sidebarThreshold[1];
 
 const transitionUsage = `<!-- Set on deck-root · the entire deck animates -->
 <deck-root transition="slide">
@@ -131,72 +163,72 @@ const clickStagesPreview = `<deck-feature>
 ---
 
 <Docs
-  title="Plugins"
+  title="Optional modules"
   eyebrow="Reference"
-  description="Optional add-ons · activated by an attribute on deck-root or an explicit import. None of them are in the core bundle · they fetch on first use only."
+  description="The parts a deck imports on demand · activated by an attribute on deck-root or by an explicit import. None of them are in the core bundle; each fetches on first use."
 >
 
-<h2 id="overview">Optional modules</h2>
+<h2 id="overview">What loads on demand, and what triggers it</h2>
 <p>
-  Rikiki ships optional runtime modules and component modules. The core (<code>dist/index.js</code>,
-  ~43 KB gzip) doesn't load any of them. Each one fetches separately the
-  first time it's needed, so a deck that doesn't use a plugin pays nothing
-  for it.
+  Rikiki ships optional runtime modules and optional component modules. The
+  initial load · the engine (<code>dist/index.js</code>, {engineKb} KB gzip) plus
+  Lit and marked, {initialLoadKb} KB gzip together · doesn't include any of them.
+  Each one fetches separately the first time it is needed, so a deck that never
+  uses a module pays nothing for it.
 </p>
 
 <table class="plugins">
   <thead>
-    <tr><th>Plugin</th><th>Size (gz)</th><th>Activated by</th><th>Use-case</th></tr>
+    <tr><th>Module</th><th>Size (gz)</th><th>Activated by</th><th>Use-case</th></tr>
   </thead>
   <tbody>
     <tr>
       <td><a href="#transition"><code>deck-transition</code></a></td>
-      <td>~1.7 KB</td>
+      <td>{moduleKb('deck-transition')} KB</td>
       <td><code>transition="..."</code> attr on <code>deck-root</code></td>
       <td>Slide-in / fade / zoom / flip animations between slides</td>
     </tr>
     <tr>
       <td><a href="#presenter"><code>deck-presenter</code></a></td>
-      <td>~6.0 KB</td>
+      <td>{moduleKb('deck-presenter')} KB</td>
       <td>Press <kbd>P</kbd></td>
       <td>Speaker window with notes + next-slide preview + timer</td>
     </tr>
     <tr>
       <td><a href="#shiki"><code>shiki</code></a></td>
-      <td>~0.4 KB + 113 KB runtime</td>
+      <td>{moduleKb('shiki')} KB loader + {shikiRuntimeKb} KB runtime</td>
       <td>Explicit <code>import + installShiki()</code></td>
       <td>Production-grade syntax highlighting for <code>deck-code</code></td>
     </tr>
     <tr>
       <td><a href="#click-stages"><code>click-stages</code></a></td>
-      <td>~2.6 KB</td>
+      <td>{moduleKb('click-stages')} KB</td>
       <td>Explicit <code>import + installClickStages()</code></td>
       <td>Reveal elements one click at a time with <code>data-click</code></td>
     </tr>
     <tr>
       <td><a href="/docs/navigation"><code>deck-overview</code></a></td>
-      <td>~5 KB</td>
+      <td>{moduleKb('deck-overview')} KB</td>
       <td>Press <kbd>O</kbd></td>
-      <td>Grid of every slide, with search, to jump around mid-talk</td>
+      <td>Every slide as a thumbnail, with search · path layout up to {overviewPathMax} slides, two columns above</td>
     </tr>
     <tr>
       <td><a href="/docs/navigation"><code>deck-help</code></a></td>
-      <td>~1.4 KB</td>
+      <td>{moduleKb('deck-help')} KB</td>
       <td>Press <kbd>?</kbd> or <kbd>H</kbd></td>
       <td>Keyboard shortcut overlay</td>
     </tr>
-    <tr>
-      <td><a href="#notes"><code>deck-notes</code></a></td>
-      <td>~0.4 KB (auto-loaded with core)</td>
-      <td>Use the <code>deck-notes</code> element</td>
-      <td>Speaker notes (read by <code>deck-presenter</code>)</td>
-    </tr>
   </tbody>
 </table>
-
-<h2 id="extra-components">Extra component modules</h2>
 <p>
-  The components below are compiled from <code>src/extras</code> and ship as
+  <code>deck-notes</code> is not on this list: it ships inside the core bundle,
+  so a slide can carry speaker notes with nothing imported.
+  <a href="#notes">Speaker notes</a> below covers it.
+</p>
+
+<h2 id="extra-components">Optional component modules</h2>
+<p>
+  The elements below are compiled from <code>src/extras</code> and ship as
   separate files. Import the file only when the deck uses that element; the
   complete catalogue, attributes, and examples live in the
   <a href="/docs/components#optional">component reference</a>.
@@ -206,6 +238,7 @@ const clickStagesPreview = `<deck-feature>
   <a href="/docs/components#deck-annotate"><code>deck-annotate</code></a> ·
   <a href="/docs/components#deck-bar"><code>deck-bar</code></a> ·
   <a href="/docs/components#deck-checklist"><code>deck-checklist</code></a> ·
+  <a href="/docs/components#deck-figure"><code>deck-figure</code></a> ·
   <a href="/docs/components#deck-flow"><code>deck-flow</code></a> ·
   <a href="/docs/components#deck-graph"><code>deck-graph</code></a> ·
   <a href="/docs/components#deck-icon"><code>deck-icon</code></a> ·
@@ -221,9 +254,9 @@ const clickStagesPreview = `<deck-feature>
 <h2 id="transition">deck-transition · animations between slides</h2>
 <p>
   Setting a <code>transition</code> attribute on <code>deck-root</code>
-  triggers a lazy import of the plugin on first navigation. The plugin then
-  cross-fades both the outgoing and incoming slides on every navigation
-  (no background flash regardless of slide colors).
+  triggers a lazy import of the module on first navigation. The module then
+  animates both the outgoing and incoming slides with transforms only, so no
+  background shows through whatever colors the two slides use.
 </p>
 
 <CodeBlock label="basic usage" lang="html" code={transitionUsage} />
@@ -273,22 +306,39 @@ const clickStagesPreview = `<deck-feature>
   the popup also drives the main deck, so you can use one laptop with the
   second screen mirroring the audience view.
 </p>
+<h3 id="presenter-second-screen">Second screen (Chromium)</h3>
 <p>
-  On a Chromium browser with a second screen, pressing <kbd>P</kbd> sends the
-  <strong>deck fullscreen to the external screen</strong> (the projector) and
-  opens the <strong>speaker window on your current screen</strong> · the audience
-  sees the slides, you keep the presenter view on your laptop (the deck
-  fullscreen is released when you close the presenter). The first <kbd>P</kbd>
-  press prompts for the Window Management permission · the speaker window opens
-  regardless, and the slides move to the projector once the layout is known (the
-  very first time that can take a second <kbd>P</kbd> press, just after you grant
-  the permission). Without the API (Firefox/Safari), the permission, or a second
-  screen, the deck stays put and the popup uses the default placement. The
-  Current / Next previews are constrained to a 16:9 box so the thumbnail matches
-  the projected slide's geometry whatever the window shape. While the speaker
-  window is open, the projected deck auto-hides its key-hint chips and nav arrows
-  (same as <code>no-hint</code> / <code>no-arrows</code>), restoring them on
-  close.
+  With an external screen attached, pressing <kbd>P</kbd> sends the deck
+  fullscreen to that screen (the projector) and opens the speaker window on the
+  screen you are working on. The audience sees the slides, you keep the
+  presenter view on your laptop; closing the presenter releases the deck's
+  fullscreen.
+</p>
+
+<h3 id="presenter-permission">The first press asks for Window Management</h3>
+<p>
+  Placing the two windows needs the Window Management permission, so the first
+  <kbd>P</kbd> press prompts for it. The speaker window opens either way, and
+  the slides move to the projector once the screen layout is known · the very
+  first time, that can take a second <kbd>P</kbd> press right after you grant
+  the permission.
+</p>
+
+<h3 id="presenter-fallback">Without the API or a second screen</h3>
+<p>
+  On Firefox and Safari, or with the permission refused, or on a single screen,
+  the deck stays where it is and the speaker window opens at the browser's
+  default placement. Everything else · notes, previews, timer, sync · works the
+  same.
+</p>
+
+<h3 id="presenter-while-open">While the speaker window is open</h3>
+<p>
+  The Current and Next previews are constrained to a 16:9 box, so a thumbnail
+  keeps the projected slide's geometry whatever shape the window takes. The
+  projected deck also auto-hides its key-hint chips and nav arrows (the same
+  effect as <code>no-hint</code> and <code>no-arrows</code>) and restores them
+  when the presenter closes.
 </p>
 
 <h3 id="notes">Speaker notes · the deck-notes element</h3>
@@ -305,16 +355,17 @@ const clickStagesPreview = `<deck-feature>
 <h2 id="shiki">shiki · production code highlighting</h2>
 <p>
   The default <code>deck-code</code> highlighter is a hand-rolled regex pass
-  (~10 keywords per language, no template literal awareness, no JSX). Good
-  enough for blog snippets, brittle for serious prod code.
+  over a fixed keyword list, with no template-literal awareness and no JSX.
+  Good enough for blog snippets, brittle for serious prod code.
 </p>
 <p>
   Opt in to <a href="https://shiki.style" rel="noopener">Shiki</a> when you
   need TextMate-quality highlighting for TypeScript, JavaScript, HTML, CSS or
   JSON. Rikiki vendors only those five grammars and the
-  <code>one-dark-pro</code> theme, keeping the optional runtime near 113 KB gzip.
-  The plugin loads <code>dist/vendor/shiki.js</code> on first use (offline, no
-  CDN), so a deck that does not install it pays no cost.
+  <code>one-dark-pro</code> theme, which keeps the optional
+  runtime at {shikiRuntimeKb} KB gzip.
+  The module loads <code>dist/vendor/shiki.js</code> on first use, from the deck's
+  own folder rather than a CDN.
 </p>
 <CodeBlock label="install shiki" lang="html" code={shikiUsage} />
 <ComponentPreview code={shikiPreview} full />
@@ -349,22 +400,25 @@ const clickStagesPreview = `<deck-feature>
     <tr><td><code>data-click</code></td><td>Hidden until the next click, then revealed.</td></tr>
     <tr><td><code>data-click="N"</code></td><td>Revealed on click N specifically.</td></tr>
     <tr><td><code>data-click-hide</code></td><td>Visible at first, hidden on the next click.</td></tr>
-    <tr><td><code>data-anim="..."</code></td><td>How it enters · <code>fade</code> (default), <code>slide-up</code>, <code>slide-left</code>, <code>scale</code>.</td></tr>
+    <tr><td><code>data-anim="..."</code></td><td>How it enters · <code>fade</code> (default), <code>slide-up</code>, <code>slide-down</code>, <code>slide-left</code>, <code>slide-right</code>, <code>scale</code>, <code>blur</code>, <code>flip-up</code>, <code>draw</code> (strokes an SVG on).</td></tr>
+    <tr><td><code>data-anim-duration="600"</code></td><td>Entry duration in ms · default 320.</td></tr>
+    <tr><td><code>data-anim-delay="120"</code></td><td>Delay before the entry starts, in ms · default 0.</td></tr>
+    <tr><td><code>data-anim-ease="spring"</code></td><td><code>out</code> (default), <code>spring</code>, <code>in-out</code>, or a raw <code>cubic-bezier(…)</code>.</td></tr>
   </tbody>
 </table>
 <p>
-  Nothing loads unless you call <code>installClickStages()</code>. Honours
-  <code>prefers-reduced-motion: reduce</code> · reveals snap in without the
-  transform when the reader asks for less motion.
+  Honours <code>prefers-reduced-motion: reduce</code> · reveals snap in without
+  the transform, and the delay drops to zero, when the reader asks for less
+  motion.
 </p>
 
 <h2 id="writing">Writing a plugin</h2>
 <p>
   Both <code>click-stages</code> and <code>shiki</code> extend the deck through a
   small <strong>public</strong> contract rather than reaching into engine
-  internals. A plugin is a <code>DeckPlugin</code> object; register it on a deck
-  with <code>deckRoot.use(plugin)</code>, which returns an unregister function.
-  The hooks are all optional:
+  internals. The contract is <code>DeckPlugin</code>, an object you register on a
+  deck with <code>deckRoot.use(plugin)</code>, which returns an unregister
+  function. The hooks are all optional:
 </p>
 <table class="opts">
   <thead><tr><th>Hook</th><th>When</th></tr></thead>
@@ -372,7 +426,7 @@ const clickStagesPreview = `<deck-feature>
     <tr><td><code>setup(ctx)</code></td><td>On register · may return a teardown run on unregister.</td></tr>
     <tr><td><code>steps(slide, ctx)</code></td><td>Contributes to the slide's step count · combined with the engine's own as a maximum.</td></tr>
     <tr><td><code>applyStep(step, slide, ctx)</code></td><td>After the engine applied a step · toggle your elements here.</td></tr>
-    <tr><td><code>navigate(to, ctx, proceed)</code></td><td>Around-advice · call <code>proceed()</code> to navigate (optionally wrapped, e.g. a View Transition). Return truthy to take ownership; the first plugin with this hook wins.</td></tr>
+    <tr><td><code>navigate(to, ctx, proceed)</code></td><td>Wraps the navigation · the engine hands you the move and you decide when it happens, by calling <code>proceed()</code> (optionally inside something of your own, a View Transition for instance). Return truthy to take ownership; the first plugin with this hook wins.</td></tr>
   </tbody>
 </table>
 <CodeBlock label="a deck-root plugin" lang="ts" code={pluginUsage} />
@@ -406,21 +460,39 @@ const clickStagesPreview = `<deck-feature>
   the browser.
 </p>
 
-<h2 id="cost">Cost model</h2>
+<h2 id="cost">What opting in costs</h2>
 <p>
-  Plugin costs are paid <strong>only when you opt in</strong>:
+  The modules in the table at the top of this page are small. Two of them pull a
+  vendored third-party payload behind them, which is where the real weight is ·
+  measured from the shipped files:
 </p>
+<table class="opts">
+  <thead><tr><th>Opting into</th><th>Module (gz)</th><th>Vendored payload (gz)</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>deck-mermaid</code> · a diagram on a slide</td>
+      <td>{mermaidModuleKb} KB</td>
+      <td>{mermaidRuntimeKb} KB · <code>dist/vendor/mermaid.min.js</code></td>
+    </tr>
+    <tr>
+      <td><code>installShiki()</code> · TextMate highlighting</td>
+      <td>{moduleKb('shiki')} KB</td>
+      <td>{shikiRuntimeKb} KB · <code>dist/vendor/shiki.js</code></td>
+    </tr>
+  </tbody>
+</table>
+<p>
+  Neither payload is fetched by a deck that does not use the feature, and the
+  engine (<code>dist/index.js</code>) stays at {engineKb} KB gzip whichever
+  modules the deck ends up importing.
+</p>
+
+<h2 id="next">Next</h2>
 <ul>
-  <li>A deck without <code>transition</code> on its root never fetches <code>deck-transition.js</code>.</li>
-  <li>A deck without an <code>installShiki()</code> call never fetches Shiki.</li>
-  <li>No <code>installClickStages()</code> call means <code>click-stages.js</code> never loads.</li>
-  <li>Speaker who never presses <kbd>P</kbd> never fetches <code>deck-presenter.js</code>.</li>
-  <li><code>deck-notes</code> ships with the core (0.4 KB) but if you don't use the element, it's just one unused custom-element registration.</li>
+  <li><a href="/docs/components#optional">The component catalogue</a> · every optional element with its attributes, slots and tokens.</li>
+  <li><a href="/docs/api">API reference</a> · the <code>DeckPlugin</code> contract and the <code>deck-root</code> surface it uses.</li>
+  <li><a href="/docs/navigation">Navigation</a> · the overview and help modules, and the keys that open them.</li>
 </ul>
-<p>
-  Core (<code>dist/index.js</code>) stays at ~26 KB gzip regardless of which
-  plugins your deck eventually uses.
-</p>
 
 <style is:global>
   table.plugins,
@@ -428,7 +500,7 @@ const clickStagesPreview = `<deck-feature>
     width: 100%;
     border-collapse: collapse;
     margin: var(--rik-space-3) 0 var(--rik-space-5);
-    font-size: var(--rik-font-size-sm);
+    font-size: var(--rik-font-size-md);
   }
   table.plugins th,
   table.plugins td,
@@ -447,7 +519,7 @@ const clickStagesPreview = `<deck-feature>
   table.opts th {
     background: var(--rik-surface-sunken);
     color: var(--rik-text-default--faint);
-    font: 700 var(--rik-font-size-xs)/1.2 var(--rik-font-mono);
+    font: 700 var(--rik-font-size-sm)/1.2 var(--rik-font-mono);
     letter-spacing: 0.10em;
     text-transform: uppercase;
   }

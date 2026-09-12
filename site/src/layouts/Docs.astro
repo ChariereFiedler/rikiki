@@ -259,6 +259,18 @@ const pageTitle = `${title} · Rikiki docs`;
     background: rgba(240, 112, 32, 0.06);
     font-weight: 700;
   }
+  /* Narrow screens · a wide reference table becomes its own horizontal
+     scroller instead of widening the page. display:block lets the block box
+     take the column width while the anonymous table inside keeps its natural
+     columns. */
+  @media (max-width: 720px) {
+    .content > article table {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+  }
   .toc .lvl-3 a {
     padding-left: var(--rik-space-5);
     font-size: 0.82rem;
@@ -312,7 +324,7 @@ const pageTitle = `${title} · Rikiki docs`;
     .toc { display: none; }
   }
   @media (max-width: 920px) {
-    .layout { grid-template-columns: 1fr; }
+    .layout { grid-template-columns: minmax(0, 1fr); }
     .content { padding: var(--rik-space-4); }
   }
   @media (max-width: 480px) {

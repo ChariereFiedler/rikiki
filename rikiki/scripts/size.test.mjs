@@ -1,15 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import {
-  BUDGETS,
-  PLUGINS_PAGE,
-  PLUGIN_SURFACES,
-  REPO_ROOT,
-  SIZE_SURFACES,
-  measureSizes,
-  toKb,
-} from './size-surfaces.mjs';
+import { BUDGETS, REPO_ROOT, SIZE_SURFACES, measureSizes, toKb } from './size-surfaces.mjs';
 
 // Every published size figure must match the artifact it describes, and the
 // v1.0 budgets must hold. Both were previously prose, copied by hand, and drifted.
@@ -70,18 +62,7 @@ describe('published size figures match the artifacts', () => {
   });
 });
 
-describe('the plugins table quotes the module it names', () => {
-  const page = readFileSync(PLUGINS_PAGE, 'utf8');
-
-  it.each(PLUGIN_SURFACES)('$label', ({ module }) => {
-    // Match the row by the module name in its first cell, then read the size
-    // cell right after it · a row that moves keeps its own figure.
-    const row = new RegExp(`<code>${module}</code>[\\s\\S]{0,200}?<td>~([\\d.]+) KB`);
-    const found = page.match(row);
-    expect(found, `no size cell found for ${module} in the plugins table`).not.toBeNull();
-    expect(
-      Number(found[1]),
-      `the table says ${found[1]} KB for ${module}, measured ${toKb(sizes.lazy[module])} KB`,
-    ).toBe(toKb(sizes.lazy[module]));
-  });
-});
+// The plugins table used to be checked row by row against the lazy modules it
+// names. It now reads those sizes from measureSizes() in its own Astro
+// frontmatter, so the table and this measurement are the same call and there is
+// no published literal left to compare.

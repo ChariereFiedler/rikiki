@@ -1,7 +1,16 @@
 ---
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import Docs from '../../layouts/Docs.astro';
 import CodeBlock from '../../components/CodeBlock.astro';
 import ComponentPreview from '../../components/ComponentPreview.astro';
+
+// The issue tracker comes from the package manifest · one declared address, so
+// the link cannot drift from what `npm install rikiki-deck` reports.
+const pkg = JSON.parse(
+  readFileSync(resolve(process.cwd(), '../rikiki/package.json'), 'utf8'),
+);
+const issuesUrl = pkg.bugs.url;
 
 const overrideExample = `<deck-cover style="--deck-cover-bg: navy;"><h1>Hello</h1></deck-cover>`;
 const globalOverride = `:root { --rik-accent: #007acc; }`;
@@ -11,20 +20,25 @@ const slotExample = `<deck-feature><h1 slot="title">Hello</h1></deck-feature>`;
 <Docs
   title="Lit, Shadow DOM, and how to override styles"
   eyebrow="Getting started"
-  description="Two minutes."
+  description="For deck authors who fear they must learn Lit: you write HTML, and this page shows the three ways to restyle a component without touching the framework."
 >
 
 <h2 id="lit">Do I need to learn Lit?</h2>
 <p>
-  No. Lit is what we used to build the components. You write HTML tags such as
+  No · a deck author never writes Lit. Lit is what we used to build the
+  components. You write HTML tags such as
   <code>deck-cover</code>, <code>deck-feature</code>, <code>deck-code</code>, and
   that is it. Lit is an implementation detail; you never write a class, never
   call a tagged template literal, never see a decorator.
 </p>
 <p>
-  You only meet Lit if you decide to write your own component (see
-  <a href="/docs/contributing">Contributing</a>). For 100 percent of decks,
-  you stay in HTML-land.
+  You only meet Lit if you decide to write a component of your own, which means
+  working from the TypeScript sources (see
+  <a href="/docs/contributing">Contributing</a>). Restyling what already ships
+  is a different job and needs no Lit at all · the tokens in
+  <a href="/docs/theming">Theming</a> cover it, and they work the same whether
+  the deck loads the package from <code>npm install rikiki-deck</code> or from a
+  copied folder. To write a deck, you stay in HTML-land.
 </p>
 
 <h2 id="shadow-dom">What about Shadow DOM?</h2>
@@ -39,16 +53,26 @@ const slotExample = `<deck-feature><h1 slot="title">Hello</h1></deck-feature>`;
   has no effect, because the heading lives in shadow.
 </p>
 <p>
-  That sounds scary the first time. It is not · we exposed the right hooks so
-  you don't need to break Shadow DOM to retheme anything. There are exactly
-  three patterns.
+  That reads as a restriction, and it is · a deliberate one. Retheming goes
+  through the hooks the components expose instead of through selectors that
+  reach inside them. The three patterns below are those hooks.
 </p>
 
 <h2 id="override-instance">Pattern 1 · Override one instance via tokens</h2>
 <p>
-  Every component declares CSS custom properties named with the
-  <code>--deck-TAG-*</code> convention. Set them on the host and they cross
-  the shadow boundary.
+  Components that have something of their own to style declare CSS custom
+  properties named after their tag, <code>--deck-&lt;tag&gt;-*</code> ·
+  <code>--deck-cover-bg</code> on <code>deck-cover</code>,
+  <code>--deck-card-bg</code> and <code>--deck-card-radius</code> on
+  <code>deck-card</code>, <code>--deck-punch-color</code> on
+  <code>deck-punch</code>. Each one falls back to a semantic
+  <code>--rik-*</code> token, so an untouched component follows the theme. Some
+  elements expose very little: <code>deck-feature</code> exposes only the shared
+  <code>--deck-eyebrow-*</code> tokens, and the rest of its look comes from the
+  semantic tokens. A few declare none at all · <code>deck-fit</code>,
+  <code>deck-metric-list</code>, <code>deck-tier-arrow</code> and
+  <code>deck-shortcut-list</code>. Set a component token on the host and it
+  crosses the shadow boundary.
 </p>
 <CodeBlock label="inline override" lang="html" code={overrideExample} />
 <ComponentPreview code={overrideExample} full />
@@ -76,16 +100,24 @@ const slotExample = `<deck-feature><h1 slot="title">Hello</h1></deck-feature>`;
   inside a component.
 </p>
 <p>
-  Need a token that doesn't exist? Open an issue, we add them when it's
-  reasonable. Until then, you can always wrap your custom HTML in a slot.
+  Need a token that doesn't exist? Open an issue on
+  <a href={issuesUrl} rel="noopener">the tracker</a> · missing hooks get added
+  when the case is clear. Until then, putting your own HTML in a slot keeps that part
+  in your CSS world.
 </p>
 
 <h2 id="recap">Recap</h2>
 <ul>
-  <li>Lit: we use it, you don't. You write HTML.</li>
+  <li>Lit: the framework uses it, a deck author does not. You write HTML.</li>
   <li>Shadow DOM is why your CSS can't accidentally break the framework. The tokens are the bridge.</li>
   <li>Override tokens, not selectors. Either inline on a host, or globally on the document root.</li>
   <li>Slot content stays in your CSS world. Anything you put inside a layout component can be styled normally.</li>
+</ul>
+
+<h2 id="next">Next</h2>
+<ul>
+  <li><a href="/docs/theming">Theming · design tokens</a> · the token layers behind the three patterns, and how to restyle a whole deck.</li>
+  <li><a href="/docs/contributing">Contributing</a> · the path to take when you do want to write a component.</li>
 </ul>
 
 </Docs>

@@ -131,54 +131,16 @@ export const SIZE_SURFACES = [
     find: /([\d.]+) KB gzip/g,
     expect: 'initialLoadGzip',
   },
-  {
-    file: at('site/src/pages/docs/index.astro'),
-    label: 'docs index · initial load',
-    find: /initial load is ~([\d.]+) KB gzip/g,
-    expect: 'initialLoadGzip',
-  },
-  {
-    file: at('site/src/pages/docs/plugins.astro'),
-    label: 'plugins page · initial load',
-    find: /~([\d.]+) KB gzip\) doesn/g,
-    expect: 'initialLoadGzip',
-  },
-
-  // Bundle-only claims · dist/index.js on its own, no vendor chunk.
-  {
-    file: at('site/src/pages/docs/index.astro'),
-    label: 'docs index · bundle alone',
-    find: /\(([\d.]+) KB of engine plus/g,
-    expect: 'bundleGzip',
-  },
-  {
-    file: at('site/src/pages/docs/plugins.astro'),
-    label: 'plugins page · core stays at',
-    find: /stays at ~([\d.]+) KB gzip/g,
-    expect: 'bundleGzip',
-  },
-  {
-    file: at('site/src/pages/docs/contributing.astro'),
-    label: 'contributing · current floor',
-    find: /current floor is ([\d.]+) KB/g,
-    expect: 'bundleGzip',
-  },
-  {
-    file: at('site/src/pages/docs/contributing.astro'),
-    label: 'contributing · initial load',
-    find: /initial load including Lit and marked is ~([\d.]+) KB/g,
-    expect: 'initialLoadGzip',
-  },
 ];
 
-/** Per-plugin figures published in the plugins table · measured from the lazy
- *  module each row describes. */
-export const PLUGIN_SURFACES = [
-  { label: 'deck-transition row', module: 'deck-transition' },
-  { label: 'deck-presenter row', module: 'deck-presenter' },
-  { label: 'click-stages row', module: 'click-stages' },
-  { label: 'deck-overview row', module: 'deck-overview' },
-  { label: 'deck-help row', module: 'deck-help' },
-];
+/* The plugins page and the docs overview used to publish their sizes as typed
+   prose, guarded by the rows above. They now call measureSizes() in their Astro
+   frontmatter, so there is no literal left to check · the figure and the
+   artifact come from the same call. The rows were removed rather than kept
+   pointing at wording that no longer exists.
 
-export const PLUGINS_PAGE = at('site/src/pages/docs/plugins.astro');
+   The contributing page followed, for the same reason: it now reads BUDGETS and
+   measureSizes() in its own frontmatter and prints both the budget and the
+   measurement, so its two rows ("current floor", "initial load including Lit
+   and marked") had nothing left to match. The budgets themselves stay guarded
+   by the budget tests at the top of scripts/size.test.mjs. */

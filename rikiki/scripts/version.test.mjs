@@ -12,7 +12,9 @@ import {
   read,
   readCurrentVersion,
   releasedSectionsWithoutDate,
+  renderSiteChangelog,
   siteMentionsVersion,
+  sitePageRendersChangelog,
   versionsIn,
 } from './version-surfaces.mjs';
 
@@ -55,10 +57,17 @@ describe(`rikiki version consistency (current: ${current})`, () => {
   });
 
   describe('site changelog', () => {
-    it('mentions the current version', () => {
+    it('is rendered from CHANGELOG.md', () => {
       expect(
-        siteMentionsVersion(read(SITE_CHANGELOG), current),
-        `site changelog has no "<h2>${current} ·" section`,
+        sitePageRendersChangelog(read(SITE_CHANGELOG)),
+        'changelog.astro no longer renders CHANGELOG.md through src/lib/changelog.mjs',
+      ).toBe(true);
+    });
+
+    it('renders a section for the current version', async () => {
+      expect(
+        siteMentionsVersion(await renderSiteChangelog(), current),
+        `rendered site changelog has no "<h2>${current} ·" section`,
       ).toBe(true);
     });
   });
