@@ -12,12 +12,15 @@
 // found · prints file:line: snippet for each occurrence.
 
 import { readdirSync, readFileSync, lstatSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, sep } from 'node:path';
 
-// Site-owned surfaces only. public/ holds symlinks (rikiki, embed, sample,
-// stress) into the sibling framework and example decks · those are vendored,
-// so we never follow a symlink and only lint files the site itself authors.
+// Site-owned surfaces only. public/ holds the framework and the example decks
+// (rikiki, embed, decks, sample, stress) · those are vendored, so we lint only
+// what the site itself authors. Some arrive as symlinks and some as copies made
+// by scripts/stage-assets.mjs, so both are skipped: a bundled deck carries its
+// vendors' strings, and marked's error message names github.com.
 const ROOTS = ['src', 'public'];
+const STAGED = new Set(['public/rikiki', 'public/embed', 'public/decks', 'public/sample', 'public/stress']);
 const FILES = ['astro.config.mjs'];
 const EXTENSIONS = new Set(['.astro', '.ts', '.tsx', '.js', '.mjs', '.css', '.html', '.md', '.txt', '.json']);
 const IGNORE = new Set(['node_modules', 'dist', '.astro', '.vscode', '.git']);
@@ -40,6 +43,7 @@ function walk(dir) {
     let s;
     try { s = lstatSync(p); } catch { continue; }
     if (s.isSymbolicLink()) continue;              // vendored symlink · out of scope
+    if (STAGED.has(relative(CWD, p).split(sep).join('/'))) continue; // staged copy · same
     if (s.isDirectory()) { walk(p); continue; }
     const dot = name.lastIndexOf('.');
     if (dot === -1) continue;

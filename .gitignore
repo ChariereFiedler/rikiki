@@ -46,3 +46,6 @@ rikiki/-e2e-deck.html
 
 # Staged from ../rikiki by site/scripts/stage-assets.mjs · never edited by hand
 site/public/rikiki/
+# staged copies of example decks · rebuilt by site/scripts/stage-assets.mjs
+site/public/decks/showcase/
+site/public/decks/bento/

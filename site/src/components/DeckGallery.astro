@@ -1,0 +1,241 @@
+---
+// Proof by artefact · the example decks that ship in the repository, each with
+// the picture `rikiki render` took of its first slide and the slide count read
+// from the deck itself. Nothing here is typed by hand except the prose.
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+const siteDir = process.cwd();
+const repoRoot = resolve(siteDir, '..');
+
+/** How many slides a deck holds · the direct `deck-*` children of `<deck-root>`,
+ *  the same set the runtime collects in src/runtime/deck-root.ts and the same
+ *  number `rikiki render` reports as `slideCount`. A `deck-section` counts:
+ *  it is a chapter opener the audience sees, not a wrapper. */
+function slideCount(publicPath: string): number {
+  const html = readFileSync(resolve(siteDir, 'public', publicPath), 'utf8')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '')
+    .replace(/<!--[\s\S]*?-->/g, '');
+  const root = html.search(/<deck-root[\s>]/);
+  if (root < 0) throw new Error(`DeckGallery · no <deck-root> in ${publicPath}`);
+  let depth = 0;
+  let slides = 0;
+  for (const [, closing, , selfClosing] of html
+    .slice(root)
+    .matchAll(/<(\/?)(deck-[a-z0-9-]+)\b[^>]*?(\/?)>/g)) {
+    if (closing) {
+      depth -= 1;
+      if (depth === 0) break;
+      continue;
+    }
+    if (depth === 1) slides += 1;
+    if (!selfClosing) depth += 1;
+  }
+  return slides;
+}
+
+const decks = [
+  {
+    name: 'The docs tour',
+    source: 'examples/rikiki-tour',
+    href: '/embed/index.html',
+    thumb: '/decks/thumbs/rikiki-tour.png',
+    slides: slideCount('embed/index.html'),
+    note: 'The deck the documentation embeds, written as a source deck against the shared runtime.',
+  },
+  {
+    name: 'Layout showcase',
+    source: 'examples/showcase',
+    href: '/decks/showcase/index.html',
+    thumb: '/decks/thumbs/showcase.png',
+    slides: slideCount('decks/showcase/index.html'),
+    note: 'One slide per layout, with eleven opt-in components loaded by their own script tags.',
+  },
+  {
+    name: 'Bento and adaptive text',
+    source: 'examples/bento',
+    href: '/decks/bento/index.html',
+    thumb: '/decks/thumbs/bento.png',
+    slides: slideCount('decks/bento/index.html'),
+    note: 'One self-contained file, bundled from its authoring source with no external reference left.',
+  },
+];
+
+const version = JSON.parse(readFileSync(resolve(repoRoot, 'rikiki/package.json'), 'utf8')).version;
+const changelog = readFileSync(resolve(repoRoot, 'CHANGELOG.md'), 'utf8');
+const released = new RegExp(`^## \\[${version}\\] - (\\d{4}-\\d{2}-\\d{2})`, 'm').exec(changelog);
+if (!released) throw new Error(`DeckGallery · CHANGELOG.md has no dated entry for ${version}`);
+const releaseDate = new Date(`${released[1]}T00:00:00Z`).toLocaleDateString('en-GB', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+---
+
+<p class="lead">
+  These are the example decks shipped in the repository, under <code>examples/</code>.
+</p>
+
+<ul class="decks">
+  {decks.map((deck) => (
+    <li>
+      <a class="deck" href={deck.href}>
+        <img
+          class="shot"
+          src={deck.thumb}
+          width="960"
+          height="540"
+          decoding="async"
+          alt={`First slide of the ${deck.name} deck`}
+        />
+        <h3>{deck.name}</h3>
+        <p class="meta">
+          <strong>{deck.slides} slides</strong>
+          <code>{deck.source}</code>
+        </p>
+        <p class="note">{deck.note}</p>
+        <span class="open">Open the deck</span>
+      </a>
+    </li>
+  ))}
+</ul>
+
+<p class="caption">Thumbnails rendered by <code>npx rikiki render</code>, one picture per first slide.</p>
+
+<footer class="foot">
+  <p class="release">
+    <strong>Current release: v{version}</strong>
+    <span>Released {releaseDate}</span>
+    <a href="/docs/changelog">Read the changelog</a>
+  </p>
+  <p class="maintainer">
+    Maintained by <a href="https://gitlab.com/tordu-jardin/rikiki">tordu-jardin on GitLab</a>
+  </p>
+</footer>
+
+<style>
+  .lead {
+    max-width: 70ch;
+    margin: calc(-1 * var(--rik-space-3)) 0 var(--rik-space-5);
+    color: var(--rik-text-default--muted);
+    font-size: var(--rik-font-size-lead);
+    line-height: 1.55;
+  }
+  .lead code { color: var(--rik-text-default); }
+
+  .decks {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--rik-space-4);
+  }
+  .decks > li { min-width: 0; }
+
+  /* No card chrome · the thumbnail is the object, the text sits under it
+     on the page, and the grid gap is the only separator. */
+  .deck {
+    display: grid;
+    grid-template-rows: auto auto auto 1fr auto;
+    gap: var(--rik-space-2);
+    height: 100%;
+    color: inherit;
+    text-decoration: none;
+  }
+  .deck:hover { text-decoration: none; }
+  .deck:focus-visible { outline: var(--rik-focus-ring--width) solid var(--rik-focus-ring); outline-offset: var(--rik-focus-ring--offset); }
+
+  /* The picture is the argument · full column width and its real aspect
+     ratio, so a slide is judged as a slide. */
+  .shot {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border: 1px solid var(--rik-border-default);
+    background: var(--rik-surface-tint);
+    transition: border-color var(--rik-motion-fast) var(--rik-motion__ease-out);
+  }
+  .deck:hover .shot { border-color: var(--rik-accent); }
+
+  .deck h3 {
+    font-family: var(--rik-font-display);
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+    color: var(--rik-text-default);
+    margin: var(--rik-space-1) 0 0;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px var(--rik-space-3);
+    margin: 0;
+    font: var(--rik-font-size-sm)/1.4 var(--rik-font-mono);
+    color: var(--rik-text-default--muted);
+  }
+  .meta strong { color: var(--rik-text-default); font-weight: 700; }
+  .meta code { overflow-wrap: anywhere; font-size: inherit; }
+
+  .note {
+    margin: 0;
+    font-size: var(--rik-font-size-sm);
+    line-height: 1.5;
+    color: var(--rik-text-default--muted);
+  }
+
+  .open {
+    align-self: end;
+    color: var(--rik-accent--strong);
+    font-size: var(--rik-font-size-body);
+    font-weight: 700;
+  }
+  .deck:hover .open { text-decoration: underline; }
+
+  .caption {
+    margin: var(--rik-space-3) 0 0;
+    color: var(--rik-text-default--muted);
+    font: var(--rik-font-size-sm)/1.5 var(--rik-font-sans);
+  }
+  .caption code { color: var(--rik-text-default); }
+
+  .foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--rik-space-2) var(--rik-space-4);
+    margin-top: var(--rik-space-5);
+    padding-top: var(--rik-space-3);
+    border-top: 1px solid var(--rik-border-default);
+  }
+  .release,
+  .maintainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--rik-space-2) var(--rik-space-4);
+    margin: 0;
+    color: var(--rik-text-default--muted);
+    font: var(--rik-font-size-md)/1.4 var(--rik-font-mono);
+  }
+  .release strong { color: var(--rik-text-default); }
+  .release a,
+  .maintainer a { color: var(--rik-accent--strong); font-weight: 700; text-decoration: none; }
+  .release a:hover,
+  .maintainer a:hover { text-decoration: underline; }
+
+  @media (max-width: 880px) {
+    /* Two up, the third alongside · a lone full-width card would blow its
+       thumbnail up to twice the size of the others. */
+    .decks { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .decks { grid-template-columns: 1fr; }
+    .foot { flex-direction: column; }
+  }
+</style>
