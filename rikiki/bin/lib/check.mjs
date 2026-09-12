@@ -13,7 +13,7 @@
 
 import { basename } from 'node:path';
 import { readFileSync } from 'node:fs';
-import { NAVIGATION_TIMEOUT_MS, SLIDE_TITLE_READER, advanceStep, goToSlide, waitForStillFrame, withDeck } from './browser.mjs';
+import { NAVIGATION_TIMEOUT_MS, PAGE_LOAD_TIMEOUT_MS, SLIDE_TITLE_READER, advanceStep, goToSlide, waitForStillFrame, withDeck } from './browser.mjs';
 import { BOX_GEOMETRY_READER } from './box-geometry.mjs';
 import { GRAPH_GEOMETRY_READER } from './graph-hit.mjs';
 import { measureSlides } from './visual.mjs';
@@ -850,7 +850,7 @@ async function diagnoseAllStates(page, slideCount, inspectOpts, source, limits, 
  */
 export async function checkDeck(
   deckPath,
-  { timeoutMs = 30_000, width = 1920, height = 1080, visual = true, steps = false } = {},
+  { timeoutMs = PAGE_LOAD_TIMEOUT_MS, width = 1920, height = 1080, visual = true, steps = false } = {},
 ) {
   const source = readFileSync(deckPath, 'utf8');
   const limits = LIMITS;

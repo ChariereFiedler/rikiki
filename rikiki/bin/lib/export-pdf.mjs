@@ -8,7 +8,7 @@
 // and check share with it.
 // ════════════════════════════════════════════════════════════════
 
-import { withDeck } from './browser.mjs';
+import { PAGE_LOAD_TIMEOUT_MS, withDeck } from './browser.mjs';
 
 export { rootDepthFor } from './browser.mjs';
 
@@ -16,7 +16,7 @@ export { rootDepthFor } from './browser.mjs';
  * Render `deckPath` to `outputPath`.
  * @returns {Promise<{pages: number, missing: string[]}>}
  */
-export async function exportPdf(deckPath, outputPath, { timeoutMs = 30_000 } = {}) {
+export async function exportPdf(deckPath, outputPath, { timeoutMs = PAGE_LOAD_TIMEOUT_MS } = {}) {
   return withDeck(
     deckPath,
     async ({ page, missing }) => {

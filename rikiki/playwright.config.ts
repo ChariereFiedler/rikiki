@@ -7,6 +7,11 @@ const PORT = 7799;
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
+  // The CI runner is a small single-job VPS: several test browsers plus the
+  // Chromium each CLI test launches oversubscribe it, and page loads then
+  // overrun the CLI's own deadlines (three different tests flaked that way on
+  // 0.7.0). One worker there; the default (half the cores) elsewhere.
+  workers: process.env.CI ? 1 : undefined,
   forbidOnly: !!process.env.CI,
   retries: 0, // flaky tests are bugs to fix, not retry away (test-discipline)
   reporter: [['list'], ['json', { outputFile: 'test-results/e2e-report.json' }]],
