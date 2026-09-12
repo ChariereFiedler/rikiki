@@ -9,7 +9,7 @@ export declare class DeckAnnotate extends LitElement {
     marks?: string;
     /** Show every mark at once instead of revealing them one per step. */
     allAtOnce: boolean;
-    /** Drop the caption list under the image. */
+    /** Drop the legend list under the image. */
     noLegend: boolean;
     /** Draw a line from the precise target coordinate to the displaced badge. */
     leader: boolean;
@@ -17,6 +17,14 @@ export declare class DeckAnnotate extends LitElement {
     offset: string;
     /** Per-mark displacements separated by `|`; missing entries use `offset`. */
     offsets?: string;
+    /** Concise explanation displayed under the legend, in a real figcaption. */
+    caption?: string;
+    /** Source or credit displayed beside the caption. */
+    source?: string;
+    /** Optional URL for the source or credit. */
+    sourceHref?: string;
+    private get _hasCaption();
+    private get _hasSource();
     /** Current step, mirrored from the slide by deck-root's step machinery. */
     private _step;
     private get _marks();

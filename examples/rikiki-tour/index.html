@@ -11,6 +11,7 @@
 <script type="module" src="../../rikiki/dist/deck-flow.js"></script>
 <script type="module" src="../../rikiki/dist/deck-graph.js"></script>
 <script type="module" src="../../rikiki/dist/deck-icon.js"></script>
+<script type="module" src="../../rikiki/dist/deck-annotate.js"></script>
 <script>
   // Live theme switch · used by the clickable cards on the Themes slide.
   // Choice is persisted in localStorage so a reload keeps it.
@@ -395,6 +396,21 @@
     AMER; 6 220; Free
   </deck-csv>
   <deck-source>Internal usage export, September 2026</deck-source>
+</deck-feature>
+
+<!-- ════════════════════════════════════════════════════════════════
+     16d · An annotated screenshot is a figure, cited like one
+     ════════════════════════════════════════════════════════════════ -->
+<deck-feature eyebrow="Opt-in" fill>
+  <h1 slot="title">A pointer on a screenshot, still credited like a figure</h1>
+  <deck-annotate
+    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='450' viewBox='0 0 800 450'%3E%3Crect width='800' height='450' fill='%23dcd6cc'/%3E%3C/svg%3E"
+    alt="A placeholder dashboard, standing in for a real screenshot"
+    marks="20,30,Queue depth|55,60,Latency spike|82,25,Retries"
+    caption="Staging cluster, one hour before the incident."
+    source="Grafana"
+    source-href="https://example.com/grafana"
+  ></deck-annotate>
 </deck-feature>
 
 <deck-feature eyebrow="Opt-in" spread="center" data-steps="3">
