@@ -374,3 +374,36 @@ initials block has the inverse surface background.
 **Docs.** Reference section 20 rows for both components and their token lists;
 CHANGELOG Changed entry for each. Update the tour and the showcase only if an
 attribute changed.
+
+### Task 11 · Field bugs from the bib_eco trial
+
+Reported on 2026-09-12 by the deck session after trying the branch on the real
+64-slide deck.
+
+**Bug 1 · painted-box and graph checks only inspect slide 1 in default mode.**
+`GRAPH_NODE_OVERLAPS_NODE`, `GRAPH_EDGE_CROSSES_NODE`, `CONTENT_ESCAPES_BOX`,
+`CONTENT_OVERLAPS_SIBLING` (and the pre-existing `GRAPH_NODE_OUT_OF_BOUNDS`)
+fire only when the offending slide is slide 1; `check --steps` reports them on
+every slide. Minimal repro decks (two-slide, symmetric) under
+`/tmp/claude-1000/-home-cedric-games-juju-bib-eco/2fd567f9-9aa0-410b-a227-e9d043c6039b/scratchpad/mini/`
+(`mini.html`, `swapped.html`, `escape.html`, `escape-first.html`). Likely
+cause: the default inspection runs once on the document while only the
+active slide is displayed, so inactive slides have empty rects; the stepped
+path navigates per slide. Fix: in default mode, walk the slides with the
+shared `goToSlide` and inspect each opening state (states = 1), sharing the
+loop with `--steps`; keep `statesInspected` = slide count; keep the runtime
+cost acceptable (one navigation per slide, no re-inspection of the whole
+document per slide if the inspection can be scoped to the current slide).
+Add the symmetric repro as e2e (two slides, defect on slide 2 only, all five
+codes covered at least once).
+
+**Bug 2 · `deck-kpi-grid` regression.** A three-metric grid with `label` and
+`note` that fitted under the published runtime is clipped by 32 px on the
+branch: the value scale grew. Fix: the default value size returns to the
+pre-branch default (`--rik-font-size-mega` via `--deck-kpi-value-size`), the
+baseline alignment and the marked mass stay; a fluid larger scale remains
+available through the knob. Verify on a fixture reproducing the reported
+slide (three figures, two-line note each, in a `deck-feature`) at 1920×1080:
+`CONTENT_CLIPPED` must not fire, and the row must still read as one family.
+Note in the CHANGELOG that `ruled` now really draws (it was dead), since a
+deck that carried the attribute gains separators and a little padding.
