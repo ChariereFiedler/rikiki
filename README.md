@@ -2,7 +2,7 @@
 
 > A tiny Lit Web Components framework for technical presentations · zero-build for consumers, TypeScript for contributors.
 
-This documentation tracks rikiki v0.7.0.
+This documentation tracks rikiki v0.7.1.
 
 Serve the folder with any static HTTP server and open `index.html`. There is no consumer build step or toolchain to maintain; the shipped folder contains the runtime. Offline bundle tests verify that the delivered HTML loads without network requests · everything is Web standards (Custom Elements, Shadow DOM, ES Modules, CSS Custom Properties).
 

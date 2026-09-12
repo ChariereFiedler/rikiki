@@ -5,7 +5,7 @@
 > stylesheet, then the component bundle, then write a `<deck-root>` wrapping
 > `deck-*` slide elements. No build step to author or run a deck.
 
-This reference documents rikiki v0.7.0.
+This reference documents rikiki v0.7.1.
 
 The framework is opinionated:
 

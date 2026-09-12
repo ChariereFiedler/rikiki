@@ -1,6 +1,6 @@
 # Rikiki · LLM reference
 
-This reference documents rikiki v0.7.0.
+This reference documents rikiki v0.7.1.
 
 Exhaustive, self-consistent reference for authoring valid **rikiki** decks. Every
 tag, attribute, slot, and token below was derived from the source in this repo
