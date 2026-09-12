@@ -123,6 +123,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   node it does not connect. A runtime older than the attribute still falls
   back to the straight centre-to-centre test.
 
+### Changed
+- **Documented the "single record, field by field" recipe.** §22 of the LLM
+  reference shows a `deck-table` with `highlight-rows` and `reveal` as the
+  composition for one entity's fields, instead of a new `deck-record`
+  component.
+
 ## [1.0.0] - 2026-09-09
 ### Added
 - **`rikiki init` writes a deck you can edit, not only one you can ship.** The
