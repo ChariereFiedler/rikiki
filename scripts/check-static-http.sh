@@ -18,5 +18,7 @@ check /docs/ 200 text/html
 check /rikiki/dist/index.js 200 application/javascript
 check /rikiki/dist/vendor/marked.js 200 application/javascript
 check /rikiki/tokens.css 200 text/css
+check /rikiki/docs/llms/rikiki-workflow.md 200 "text/markdown; charset=utf-8"
+check /llms.txt 200 "text/plain; charset=utf-8"
 check /__release_missing_route__/ 404
 check /rikiki/dist/__release_missing__.js 404
