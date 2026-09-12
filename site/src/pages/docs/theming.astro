@@ -1,7 +1,93 @@
 ---
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import {
+  WCAG_AA,
+  contrastRatio,
+  readTokens,
+  resolveColor,
+} from '../../../../rikiki/src/shared/contrast';
 import Docs from '../../layouts/Docs.astro';
 import CodeBlock from '../../components/CodeBlock.astro';
 import ComponentPreview from '../../components/ComponentPreview.astro';
+
+// How many custom properties a theme declares · counted from the shipped
+// stylesheet at build time rather than typed, so the figure follows the theme.
+// A declaration is a `--rik-*:` on its own line; a `var(--rik-*)` read carries
+// no colon and is not counted. scripts/theme-parity.test.mjs is what keeps the
+// two shipped themes declaring the same set.
+const themePath = resolve(process.cwd(), '../rikiki/themes/rikiki.css');
+const themeTokenCount = new Set(
+  [...readFileSync(themePath, 'utf8').matchAll(/^\s*(--rik-[\w-]+)\s*:/gm)].map((m) => m[1]),
+).size;
+
+// Contrast figures are MEASURED from the theme files with the same module the
+// contrast tests use (rikiki/src/shared/contrast.ts), so a palette change moves
+// the published ratio and the pass/fail verdict with it · nothing here is typed.
+const themeTokens = (name: string) =>
+  readTokens(readFileSync(resolve(process.cwd(), `../rikiki/themes/${name}.css`), 'utf8'));
+
+/** One token's contrast against its own theme's page surface. */
+function onPage(theme: string, token: string) {
+  const tokens = themeTokens(theme);
+  const color = resolveColor(tokens, token);
+  const page = resolveColor(tokens, '--rik-surface-page');
+  if (!color || !page) throw new Error(`theming · ${token} or --rik-surface-page does not resolve in themes/${theme}.css`);
+  const ratio = contrastRatio(color, page);
+  return {
+    theme,
+    token,
+    // Truncated, never rounded up · a published ratio must not claim contrast
+    // the colours do not have.
+    ratio: (Math.floor(ratio * 100) / 100).toFixed(2),
+    passes: ratio >= WCAG_AA.normalText,
+  };
+}
+
+// The rem rule the runtime injects · read out of deck-root's own _injectGlobals
+// string so the percentage, the canvas default and the fluid clamp on this page
+// are the ones the engine ships, not a transcription of them.
+const deckRootSource = readFileSync(
+  resolve(process.cwd(), '../rikiki/src/runtime/deck-root.ts'),
+  'utf8',
+);
+const fixedRem = deckRootSource.match(
+  /deck-root:not\(\[fluid\]\)\)\{font-size:calc\(var\(--deck-canvas-h,(\d+)\)\*([\d.]+)px\)\}/,
+);
+const fluidRem = deckRootSource.match(/deck-root\[fluid\]\)\{font-size:(clamp\([^)]+\))\}/);
+if (!fixedRem || !fluidRem) {
+  throw new Error('theming · deck-root no longer injects the font-size rules this page describes');
+}
+const canvasHeight = Number(fixedRem[1]);
+const remFactor = Number(fixedRem[2]);
+const remPercent = String(Number((remFactor * 100).toFixed(2)));
+const remPixels = (canvasHeight * remFactor).toFixed(1);
+const fluidClamp = fluidRem[1].replace(/,/g, ', ');
+
+const contrastRows = [
+  onPage('rikiki', '--rik-accent'),
+  onPage('rikiki', '--rik-link'),
+  onPage('siliceum', '--rik-link'),
+];
+const aaBodyText = WCAG_AA.normalText.toFixed(1);
+
+const resolution = `/* LAYER 1 · palette · a raw value, private to the theme */
+:root { --rik-palette-night-900: #06080f; }
+
+/* LAYER 2 · semantic · the intent the components read */
+:root { --rik-surface-inverse: var(--rik-palette-night-900); }
+
+/* LAYER 3 · component · what deck-cover declares, fallback included
+   (this line lives in the component, you do not write it) */
+background: var(--deck-cover-bg, var(--rik-surface-inverse));`;
+
+const resolutionChange = `<!-- One cover, on that same night background -->
+<deck-cover><h1>Inherits the theme</h1></deck-cover>
+
+<!-- The same cover, one value changed at layer 3 -->
+<deck-cover style="--deck-cover-bg: #2d1b4e;"><h1>This one only</h1></deck-cover>`;
+
+const resolutionPreview = `<deck-cover style="--deck-cover-bg: #2d1b4e;"><h1>This one only</h1></deck-cover>`;
 
 const swap = `<!-- Default: tropical Rikiki -->
 <link rel="stylesheet" href="rikiki/themes/rikiki.css">
@@ -126,13 +212,13 @@ const allTokens = `/* SEMANTIC LAYER · consumer-facing
 <Docs
   title="Theming · design tokens"
   eyebrow="Guides"
-  description="~140 CSS custom properties, two layers, BEM-named. Swap a stylesheet, you swap the brand. No Sass, no JS, no build."
+  description={`${themeTokenCount} CSS custom properties in three layers, BEM-named. Swap a stylesheet, you swap the brand. No Sass, no JS, no build.`}
 >
 
-<h2 id="model">The mental model · two layers</h2>
+<h2 id="model">The mental model · three layers</h2>
 <p>
-  Rikiki's tokens are organised in two layers (three if you count component-scoped
-  overrides):
+  Rikiki's tokens are organised in three layers · two you author in a theme, and
+  the component-scoped overrides you set on one host:
 </p>
 <ol>
   <li><strong>Palette</strong> · raw colors with internal names
@@ -145,6 +231,28 @@ const allTokens = `/* SEMANTIC LAYER · consumer-facing
   that default to the matching semantic token. Use them to retheme one instance
   without touching <code>:root</code>.</li>
 </ol>
+
+<h2 id="resolution">The three layers on one change</h2>
+<p>
+  Take the cover's background. The palette holds the raw colour under a private
+  name, the semantic layer gives it an intent, and the component reads that
+  intent through a token of its own with the semantic value as fallback.
+</p>
+<CodeBlock label="How the value resolves" lang="css" code={resolution} />
+<p>
+  Each layer is a different reach. Change
+  <code>--rik-palette-night-900</code> and every surface built on it moves.
+  Change <code>--rik-surface-inverse</code> and every inverse surface moves,
+  whatever palette entry fed it. Change <code>--deck-cover-bg</code> on one host
+  and only that cover moves · the difference the pair below shows.
+</p>
+<CodeBlock label="One instance, one layer" lang="html" code={resolutionChange} />
+<ComponentPreview code={resolutionPreview} full />
+<p>
+  The preview shows the overridden cover. Its sibling, untouched, would sit on
+  <code>#06080f</code> instead · the value the palette holds and the semantic
+  token forwards.
+</p>
 
 <h2 id="swap">Swap a whole theme</h2>
 <p>One stylesheet, one swap. The semantic layer is identical across themes · only the palette values change underneath.</p>
@@ -172,8 +280,8 @@ const allTokens = `/* SEMANTIC LAYER · consumer-facing
 <ComponentPreview code={componentOverride} />
 <p>
   See the <a href="/docs/components">Component library</a> for the
-  per-component token list (every component declares its own
-  <code>--deck-&lt;tag&gt;-*</code> family · 9–12 tokens per component on average).
+  per-component token list · every component declares its own
+  <code>--deck-&lt;tag&gt;-*</code> family, and the catalogue entry names each one.
 </p>
 
 <h2 id="naming">Naming convention</h2>
@@ -194,19 +302,39 @@ const allTokens = `/* SEMANTIC LAYER · consumer-facing
 <p>
   Both shipped themes zero out the motion tokens under
   <code>prefers-reduced-motion: reduce</code>. The spring-ease curve (overshoot
-  1.8) is neutralised to a standard ease-out. WCAG 2.3.3 compliance, vestibular
-  safety. If you author your own theme, copy this pattern:
+  1.8) is neutralised to a standard ease-out. Honouring <code>prefers-reduced-motion</code>
+  is the technique behind WCAG 2.3.3, animation from interactions. If you author your own theme, copy this pattern:
 </p>
 <CodeBlock label="themes/my-brand.css (excerpt)" lang="css" code={reduceMotion} />
 
 <h2 id="contrast">Contrast notes</h2>
 <p>
-  The brand accent <code>#f07020</code> on paper is <strong>3.2:1</strong>,
-  which fails WCAG AA for body text. Both themes route <code>--rik-link</code>
-  through <code>--rik-accent--strong</code> (a darker shade that passes 4.5:1).
-  If you write a custom theme, audit your <code>--rik-link</code> against your
-  page background; the link CSS in Rikiki uses underlines, so non-text contrast
-  is 3:1 · but body links read as text and should pass AA.
+  The brand accent is a display colour, not a body-text colour. The ratios below
+  are measured at build time from the shipped theme files against each theme's
+  own <code>--rik-surface-page</code>, truncated rather than rounded up, and
+  compared with the WCAG AA threshold for body text ({aaBodyText}:1).
+</p>
+<table class="ratios">
+  <thead><tr><th>Token</th><th>Theme</th><th>On the page surface</th><th>AA body text</th></tr></thead>
+  <tbody>
+    {contrastRows.map((row) => (
+      <tr>
+        <td><code>{row.token}</code></td>
+        <td>{row.theme}</td>
+        <td>{row.ratio}:1</td>
+        <td>{row.passes ? 'passes' : 'fails'}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+<p>
+  That is why neither theme uses the raw accent for links: the default theme
+  points <code>--rik-link</code> at <code>--rik-accent--strong</code> and
+  siliceum declares a darker link colour of its own · the table says where each
+  of them lands. If you write a custom theme, measure your
+  <code>--rik-link</code> against your page background; the link CSS in Rikiki
+  uses underlines, so non-text contrast is 3:1 · but body links read as text and
+  should pass AA.
 </p>
 
 <h2 id="typography">Type scale</h2>
@@ -217,10 +345,14 @@ const allTokens = `/* SEMANTIC LAYER · consumer-facing
   <code>--rik-font-size-*</code> tokens point to the same values.
 </p>
 <p>
-  Note that the slide root applies <code>html {`{`} font-size: clamp(14px, 2.35vh, 42px) {`}`}</code>
-  so every <code>rem</code> scales with the viewport height. That's a deliberate
-  choice for slides; if you embed Rikiki in a regular page (the marketing site
-  does), drop that rule from your own stylesheet.
+  Note that <code>deck-root</code> sets the document font-size itself, so every
+  <code>rem</code> scales with the slide rather than with a fixed pixel value:
+  on the default fixed canvas <code>1rem</code> is {remPercent} % of the canvas
+  height ({remPixels}px at the default canvas of {canvasHeight}), and under
+  <code>fluid</code> it is <code>{fluidClamp}</code>. The injected rule targets a
+  <code>deck-root</code> that is a direct child of <code>body</code>, so an
+  embedded deck (the marketing site is one) leaves the host page's
+  <code>rem</code> alone.
 </p>
 
 <h2 id="write-theme">Write a third theme</h2>
@@ -239,16 +371,33 @@ const allTokens = `/* SEMANTIC LAYER · consumer-facing
   DO inherit through the shadow boundary, which is why the entire override
   surface is tokens-only.
 </p>
-<p>
-  Concretely: every component declares its custom property reads with the
-  semantic fallback, e.g.
-  <code>background: var(--deck-cover-bg, var(--rik-surface-inverse))</code>.
-  Override <code>--deck-cover-bg</code> for one instance, override
-  <code>--rik-surface-inverse</code> for all of them.
-</p>
-
 <h2 id="all-tokens">Token reference</h2>
 <p>The full semantic-layer surface, grouped by domain:</p>
 <CodeBlock label="Semantic tokens" lang="css" code={allTokens} />
+
+<h2 id="next">Next</h2>
+<ul>
+  <li><a href="/docs/components">Component library</a> · the <code>--deck-&lt;tag&gt;-*</code> family each component declares.</li>
+  <li><a href="/docs/lit-and-shadow-dom">Lit and Shadow DOM</a> · why the override surface is tokens rather than selectors.</li>
+</ul>
+
+<style>
+  table.ratios {
+    width: 100%; max-width: 640px;
+    border-collapse: collapse;
+    margin: var(--rik-space-3) 0 var(--rik-space-5);
+    font-size: var(--rik-font-size-sm);
+  }
+  table.ratios th, table.ratios td {
+    text-align: left;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--rik-border-default);
+  }
+  table.ratios th {
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--rik-text-default--faint);
+  }
+</style>
 
 </Docs>

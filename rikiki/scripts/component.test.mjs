@@ -5,10 +5,13 @@ import {
   CATALOGUE_PAGE,
   COUNT_SURFACES,
   catalogueCounts,
+  catalogueEntries,
+  elementAttributes,
   LLM_REFERENCE,
   NOT_IN_CATALOGUE,
   PKG_DIR,
   REPO_ROOT,
+  UNDOCUMENTED_ATTRIBUTES,
   coreElements,
   optInElements,
   registeredElements,
@@ -66,17 +69,75 @@ describe('every element is documented where an author will look', () => {
     expect(reference, 'the reference explains the opt-in contract').toMatch(/opt-in/i);
   });
 
-  it('the catalogue bucket counts match its own arrays', () => {
-    const { layouts, atoms } = catalogueCounts();
+  // The catalogue now interpolates the lengths of its own arrays, so the prose
+  // and the entries below it cannot disagree. What can still break is the
+  // derivation itself: a renamed array, or a bucket that quietly empties.
+  it('the catalogue derives its bucket counts from its own arrays', () => {
     const page = readFileSync(CATALOGUE_PAGE, 'utf8');
-    expect(page).toContain(`<strong>${layouts} layouts</strong>`);
-    expect(page).toContain(`<strong>${atoms} building blocks</strong>`);
+    for (const binding of [
+      'const layoutCount = layouts.length;',
+      'const atomCount = atoms.length;',
+      'const optionalModuleCount = optionalComponents.length;',
+      'const childCount = optionalChildren.length;',
+    ]) {
+      expect(page, `the catalogue no longer derives its counts · ${binding}`).toContain(binding);
+    }
+    for (const [bucket, count] of Object.entries(catalogueCounts())) {
+      expect(count, `the ${bucket} array details no component`).toBeGreaterThan(0);
+    }
   });
 
   it('the LLM reference lists every element, core and opt-in', () => {
     const reference = readFileSync(LLM_REFERENCE, 'utf8');
     const missing = elements.filter((name) => !reference.includes(name));
     expect(missing, `absent from the LLM reference: ${missing.join(', ')}`).toEqual([]);
+  });
+});
+
+// ────────────────────────────────────────────────────────────────
+// An attribute that exists but is not written down
+//
+// The catalogue was read by hand and drifted from the source in one direction
+// only: a `@property` added later kept working and stayed undocumented, so an
+// author could not discover deck-csv's highlight-rows, deck-stat's compact or
+// deck-punch's fit at all. The source declares the attribute surface, so the
+// source is what the page is checked against.
+// ────────────────────────────────────────────────────────────────
+
+describe('every attribute an element declares is in its catalogue entry', () => {
+  const entries = catalogueEntries();
+  const attributes = elementAttributes();
+  const catalogued = [...entries.keys()].filter((tag) => (attributes[tag] ?? []).length > 0);
+
+  it('finds the catalogue entries to check', () => {
+    // A parsing change that silently matched nothing would make every case
+    // below vacuous · this is the assertion that notices.
+    expect(catalogued.length).toBeGreaterThan(30);
+  });
+
+  it.each(catalogued)('%s documents every attribute it declares', (tag) => {
+    const entry = entries.get(tag);
+    const excused = UNDOCUMENTED_ATTRIBUTES[tag] ?? {};
+    const missing = attributes[tag].filter((name) => {
+      if (excused[name]) return false;
+      // Word boundaries that treat `-` as part of the name, so `note` is not
+      // matched by `note-position` and `n` is not matched by `num`.
+      return !new RegExp(`(?<![\\w-])${name}(?![\\w-])`).test(entry);
+    });
+    expect(
+      missing,
+      `<${tag}> accepts ${missing.join(', ')} · absent from its catalogue entry`,
+    ).toEqual([]);
+  });
+
+  it('every excused attribute names a real property and gives a reason', () => {
+    for (const [tag, excuses] of Object.entries(UNDOCUMENTED_ATTRIBUTES)) {
+      for (const [name, reason] of Object.entries(excuses)) {
+        expect(attributes[tag], `${tag} is not a registered element`).toBeDefined();
+        expect(attributes[tag], `${tag} no longer declares ${name}`).toContain(name);
+        expect(reason.length, `${tag}/${name} is excused without a reason`).toBeGreaterThan(20);
+      }
+    }
   });
 });
 

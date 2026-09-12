@@ -1,0 +1,375 @@
+---
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import Docs from '../../layouts/Docs.astro';
+import CodeBlock from '../../components/CodeBlock.astro';
+
+const packageDir = resolve(process.cwd(), '../rikiki');
+const pkg = JSON.parse(readFileSync(resolve(packageDir, 'package.json'), 'utf8'));
+const nodeRange = pkg.engines.node;
+const playwrightRange = pkg.peerDependencies.playwright;
+const rolldownRange = pkg.peerDependencies.rolldown;
+
+const installPlaywright = 'npm i -D playwright && npx playwright install chromium';
+const installRolldown = 'npm i -D rolldown';
+
+const initCmd = `npx rikiki init index.html
+
+# a single self-contained file instead of a source deck
+npx rikiki init index.html --standalone --title "My talk"`;
+
+const checkCmd = `npx rikiki check index.html
+
+# the same report as JSON on stdout, for a script or an agent
+npx rikiki check index.html --json`;
+
+const checkOutput = `! TEXT_TOO_SMALL · slide 4 (#pricing)
+    text renders at 15px · the back row will not read it
+    at  deck-split#pricing > deck-md
+    try raise the size, or move the detail into deck-notes
+
+index.html · 12 slide(s) · 0 error(s), 1 warning(s)`;
+
+const renderCmd = `npx rikiki render index.html
+
+# a chosen few, each revealed state, into a directory you name
+npx rikiki render index.html --slides 2,pricing --steps --out shots/`;
+
+const bundleCmd = `npx rikiki bundle index.html
+
+# an explicit name, or - to write the file to stdout
+npx rikiki bundle index.html talk.html`;
+
+const exportCmd = `npx rikiki export index.html
+
+# choose the file name
+npx rikiki export index.html --output talk.pdf`;
+
+const assembleCmd = `npx rikiki assemble deck.config.js`;
+
+const skillsCmd = `npx rikiki skills`;
+---
+
+<Docs
+  title="Check and deliver"
+  eyebrow="Guides"
+  description="Start a deck, measure it in a real browser, photograph it, and turn it into the file you hand over."
+>
+
+<h2 id="what">What the command line is for</h2>
+<p>
+  A deck is plain HTML, so you can write one and present it without ever
+  opening a terminal. The command line covers the three moments where that is
+  not enough: starting a deck with its runtime already in place, finding out
+  what is wrong with it before a room does, and producing the artefact you
+  actually deliver · a single file, a PDF, or a set of pictures.
+</p>
+<p>
+  Two audiences need it. Authors reach for <code>init</code> at the start and
+  for <code>export</code> or <code>bundle</code> at the end. Agents and CI jobs
+  live on <code>check</code> and <code>render</code>, which are the only two
+  commands that report what a deck looks like in a form a program can read.
+</p>
+<p>
+  Every command runs from an install, with no clone and no build step. The
+  package declares <code>bin.rikiki</code>, so <code>npx rikiki …</code> works
+  as soon as <code>rikiki-deck</code> is a dependency.
+</p>
+
+<h2 id="prerequisites">What each command needs</h2>
+<p>
+  All of them need Node <code>{nodeRange}</code>, the range the package
+  declares under <code>engines</code>. Three of them need a browser, and two
+  need a bundler. Both are optional peer dependencies: a deck that only loads
+  the runtime never pays for them.
+</p>
+<table class="opts">
+  <thead>
+    <tr><th>Command</th><th>Beyond Node</th><th>Install line</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="#init"><code>init</code></a></td>
+      <td>nothing else</td>
+      <td>·</td>
+    </tr>
+    <tr>
+      <td><a href="#init"><code>init --standalone</code></a></td>
+      <td><code>rolldown</code> {rolldownRange}</td>
+      <td><code>{installRolldown}</code></td>
+    </tr>
+    <tr>
+      <td><a href="#check"><code>check</code></a></td>
+      <td><code>playwright</code> {playwrightRange}</td>
+      <td><code>{installPlaywright}</code></td>
+    </tr>
+    <tr>
+      <td><a href="#render"><code>render</code></a></td>
+      <td><code>playwright</code> {playwrightRange}</td>
+      <td><code>{installPlaywright}</code></td>
+    </tr>
+    <tr>
+      <td><a href="#bundle"><code>bundle</code></a></td>
+      <td><code>rolldown</code> {rolldownRange}</td>
+      <td><code>{installRolldown}</code></td>
+    </tr>
+    <tr>
+      <td><a href="#export"><code>export</code></a></td>
+      <td><code>playwright</code> {playwrightRange}</td>
+      <td><code>{installPlaywright}</code></td>
+    </tr>
+    <tr>
+      <td><a href="#assemble"><code>assemble</code></a></td>
+      <td>nothing else</td>
+      <td>·</td>
+    </tr>
+    <tr>
+      <td><a href="#skills"><code>skills</code></a></td>
+      <td>nothing else</td>
+      <td>·</td>
+    </tr>
+  </tbody>
+</table>
+<p>
+  A missing peer is reported as a sentence with the line that installs it, not
+  as a stack trace.
+</p>
+
+<h2 id="init">init · start a deck</h2>
+<p>
+  Writes a deck you can edit, plus the runtime it loads, next to it.
+</p>
+<CodeBlock label="terminal" lang="js" code={initCmd} />
+<p>
+  The default form produces <code>index.html</code> and copies
+  <code>dist</code>, <code>tokens.css</code>, <code>themes</code> and
+  <code>fonts</code> into <code>rikiki/</code> beside it. Serve that folder over
+  <code>http://</code>; ES modules do not load from <code>file://</code>.
+</p>
+<p>
+  With <code>--standalone</code> you get one self-contained file instead, and the
+  command exits non-zero if that file would still fetch anything at runtime. A
+  second <code>init</code> on an existing name refuses to overwrite unless you
+  pass <code>--force</code>.
+</p>
+<table class="opts">
+  <thead><tr><th>Flag</th><th>Effect</th></tr></thead>
+  <tbody>
+    <tr><td><code>--standalone</code></td><td>emit one self-contained file instead of a source deck</td></tr>
+    <tr><td><code>--title "…"</code></td><td>deck title · defaults to the file name</td></tr>
+    <tr><td><code>--theme rikiki|siliceum</code></td><td>starting theme · a source deck copies <code>fonts/</code> either way, and under <code>--standalone</code> only <code>siliceum</code> has local fonts to inline (<code>rikiki</code> reads its typefaces from Google Fonts)</td></tr>
+    <tr><td><code>--with-mermaid</code>, <code>--with-shiki</code></td><td>also carry the mermaid runtime or the Shiki highlighter</td></tr>
+    <tr><td><code>--no-fonts</code></td><td>drop the fonts rather than inline them</td></tr>
+    <tr><td><code>--force</code></td><td>overwrite a deck that is already there</td></tr>
+  </tbody>
+</table>
+
+<h2 id="check">check · measure the deck</h2>
+<p>
+  Loads the deck in a real browser, measures it, and reports each finding with
+  a stable code, the slide it belongs to and the number that justifies it.
+</p>
+<CodeBlock label="terminal" lang="js" code={checkCmd} />
+<p>
+  The human report goes to stderr, one finding at a time, and ends with a
+  count of errors and warnings.
+</p>
+<CodeBlock label="stderr · an example report" code={checkOutput} />
+
+<h3 id="check-exit">Exit codes</h3>
+<table class="opts">
+  <thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>the deck was measured and no finding has error severity</td></tr>
+    <tr><td><code>1</code></td><td>the deck was measured and at least one finding is an error</td></tr>
+    <tr><td><code>2</code></td><td>the deck could not be read at all · the path is missing or is not a file</td></tr>
+  </tbody>
+</table>
+<p>
+  The split matters to whoever calls the command: <code>1</code> says fix the
+  deck, <code>2</code> says fix the call.
+</p>
+
+<h3 id="check-json">The JSON report</h3>
+<p>
+  With <code>--json</code>, stdout carries the report and nothing else, so it
+  pipes without stripping anything · including when the deck is broken. Notes
+  stay on stderr. The report is versioned by a <code>schema</code> field and
+  carries the deck name, the slide count, the thresholds that were applied, an
+  <code>error</code> and <code>warning</code> summary, the diagnostics, and a
+  <code>notChecked</code> list naming what nobody looked at.
+</p>
+
+<h3 id="check-categories">What it looks at</h3>
+<table class="opts">
+  <thead><tr><th>Category</th><th>Codes</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>the deck never ran</td>
+      <td><code>RUNTIME_NOT_LOADED</code>, <code>NO_DECK_ROOT</code>, <code>NO_SLIDES</code>, <code>PAGE_ERROR</code>, <code>RESOURCE_MISSING</code></td>
+    </tr>
+    <tr>
+      <td>markup that renders as nothing</td>
+      <td><code>UNKNOWN_ELEMENT</code>, <code>STRAY_MARKUP</code>, <code>CONTENT_NOT_RENDERED</code>, <code>UNKNOWN_ATTRIBUTE</code>, <code>DUPLICATE_SLIDE_ID</code></td>
+    </tr>
+    <tr>
+      <td>what fits on the slide</td>
+      <td><code>CONTENT_CLIPPED</code>, <code>SLIDE_DENSE</code>, <code>SLIDE_TOP_HEAVY</code>, <code>TEXT_TOO_SMALL</code></td>
+    </tr>
+    <tr>
+      <td>diagram geometry</td>
+      <td><code>GRAPH_NODE_OUT_OF_BOUNDS</code>, <code>GRAPH_EDGE_CROSSES_NODE</code></td>
+    </tr>
+    <tr>
+      <td>the talk and what it pulls in</td>
+      <td><code>TALK_SHORTER_THAN_ANNOUNCED</code>, <code>EXTERNAL_DEPENDENCY</code></td>
+    </tr>
+  </tbody>
+</table>
+<p>
+  <code>SLIDE_TOP_HEAVY</code> comes from a pixel pass that takes one
+  screenshot per slide and measures where the ink sits.
+  <code>--no-visual</code> skips that pass; the report then says the pixels
+  were not measured. <code>--width</code> and <code>--height</code> set the
+  canvas the deck is measured against.
+</p>
+
+<h3 id="check-limits">What it does not test</h3>
+<p>
+  The report is a set of measurements, not a verdict on the deck, and it says
+  so in its own <code>notChecked</code> list:
+</p>
+<ul>
+  <li>accessibility · no contrast, focus order or screen-reader check is run.</li>
+  <li>revealed steps · only the opening state of each slide is measured.</li>
+  <li>wording, facts and figures · nothing here reads the content.</li>
+  <li>other viewports · the deck is measured at its own canvas size.</li>
+  <li>text inside a diagram · an SVG scales by its viewBox, which is not measured.</li>
+</ul>
+
+<h2 id="render">render · one picture per slide</h2>
+<p>
+  Photographs the deck so that something without eyes on the screen, a review
+  thread or an agent, can look at it.
+</p>
+<CodeBlock label="terminal" lang="js" code={renderCmd} />
+<p>
+  The pictures land in <code>index.shots/</code> unless <code>--out</code>
+  names another directory. Beside them sit a gallery page,
+  <code>index.html</code>, that opens offline from a file manager, and a
+  <code>manifest.json</code> that ties every picture back to the slide it came
+  from: its index, its id, its tag, its title and its file name. That manifest
+  is what turns "the third picture" into an element you can edit.
+</p>
+<table class="opts">
+  <thead><tr><th>Flag</th><th>Effect</th></tr></thead>
+  <tbody>
+    <tr><td><code>--out</code> <em>dir</em></td><td>where the pictures go · defaults to the deck name plus <code>.shots</code></td></tr>
+    <tr><td><code>--slides</code> <em>a,b</em></td><td>which slides · 1-based numbers or slide ids, in deck order · an unknown name is an error</td></tr>
+    <tr><td><code>--steps</code></td><td>one picture per revealed state · without it a stepped slide is caught in its opening state</td></tr>
+    <tr><td><code>--width</code>, <code>--height</code></td><td>canvas size in pixels</td></tr>
+  </tbody>
+</table>
+
+<h2 id="bundle">bundle · one file to send</h2>
+<p>
+  Folds an existing deck, its theme, its runtime and its images into a single
+  HTML file with no external reference.
+</p>
+<CodeBlock label="terminal" lang="js" code={bundleCmd} />
+<p>
+  Without a second argument the file lands next to the deck as
+  <code>index.bundle.html</code>; <code>-</code> writes it to stdout instead.
+  The bundle is curated to the components the deck uses and to the icons it
+  draws, and the HTML and CSS stay readable so the result is still editable.
+  If anything in the produced file would still be fetched at runtime, the
+  command says what and exits non-zero · a bundle that fetches is a broken
+  deliverable, not a warning.
+</p>
+<table class="opts">
+  <thead><tr><th>Flag</th><th>Effect</th></tr></thead>
+  <tbody>
+    <tr><td><code>--with-mermaid</code>, <code>--with-shiki</code></td><td>inline the mermaid runtime or the Shiki highlighter · needed when the deck uses them</td></tr>
+    <tr><td><code>--all</code></td><td>carry every component instead of the ones the deck uses</td></tr>
+    <tr><td><code>--include</code> <em>a,b</em></td><td>force-include components that only appear from JS</td></tr>
+    <tr><td><code>--no-fonts</code></td><td>drop the fonts and fall back to system ones</td></tr>
+    <tr><td><code>--minify-css</code>, <code>--minify-html</code></td><td>trade readability for size</td></tr>
+    <tr><td><code>--no-minify-js</code></td><td>keep the framework JS readable</td></tr>
+  </tbody>
+</table>
+
+<h2 id="export">export · a PDF, one page per slide</h2>
+<p>
+  Prints the deck for the people who asked for the slides afterwards.
+</p>
+<CodeBlock label="terminal" lang="js" code={exportCmd} />
+<p>
+  The file lands as <code>index.pdf</code> unless <code>--output</code> (or
+  <code>-o</code>) names another one. Page geometry and page breaks come from
+  the deck's own print stylesheet, backgrounds are printed, and the PDF is
+  tagged with one outline entry per slide so a reader can jump around. Anything
+  the deck could not load is listed before the file is announced, because a
+  page that printed without an image is worth saying out loud.
+</p>
+
+<h2 id="assemble">assemble · one deck from many files</h2>
+<p>
+  Joins ordered partials into the single deck file the rest of the commands
+  expect.
+</p>
+<CodeBlock label="terminal" lang="js" code={assembleCmd} />
+<p>
+  The config lists a title, a theme href, a runtime href and the ordered
+  parts; <code>.html</code> parts are inlined as they are and <code>.md</code>
+  parts split into slides. The output is a normal deck, so
+  <code>check</code>, <code>render</code>, <code>bundle</code> and
+  <code>export</code> all take it. A second argument names the output file, and
+  <code>-</code> sends it to stdout. See
+  <a href="/docs/multi-deck">Multi-file decks</a> for the manifest and the
+  partial formats.
+</p>
+
+<h2 id="skills">skills · the agent skills</h2>
+<p>
+  Copies the skills shipped with the package into a project, so a coding agent
+  discovers them on its own.
+</p>
+<CodeBlock label="terminal" lang="js" code={skillsCmd} />
+<p>
+  The installed skills are <code>rikiki-deck</code>,
+  <code>rikiki-theme</code> and <code>rikiki-debug</code>. They land in
+  <code>.claude/skills/</code> unless <code>--dir</code> names another
+  location, an existing skill is left alone unless you pass
+  <code>--force</code>, and the command reports what it wrote.
+</p>
+
+<h2 id="next">Next</h2>
+<ul>
+  <li><a href="/docs/theming">Theming</a> · the tokens behind <code>--theme</code>, and how to write a theme of your own.</li>
+  <li><a href="/docs/multi-deck">Multi-file decks</a> · the manifest <code>assemble</code> reads.</li>
+</ul>
+
+<style is:global>
+  table.opts {
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--rik-space-3) 0 var(--rik-space-5);
+    font-size: var(--rik-font-size-md);
+  }
+  table.opts th,
+  table.opts td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--rik-border-default);
+    vertical-align: top;
+  }
+  table.opts th {
+    background: var(--rik-surface-sunken);
+    color: var(--rik-text-default--faint);
+    font: 700 var(--rik-font-size-sm)/1.2 var(--rik-font-mono);
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+  }
+</style>
+
+</Docs>

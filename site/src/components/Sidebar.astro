@@ -1,28 +1,33 @@
 ---
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+// Counts come from the source and the catalogue, never from a typed number ·
+// scripts/component.test.mjs guards the same figures on the pages themselves.
+// Loaded through a runtime file URL so Vite leaves the module out of the
+// prerender bundle: it locates the repository from its own import.meta.url.
+const surfaces = pathToFileURL(
+  resolve(process.cwd(), '../rikiki/scripts/component-surfaces.mjs'),
+).href;
+const { catalogueCounts, optInElements } = await import(/* @vite-ignore */ surfaces);
+const { layouts, atoms } = catalogueCounts();
+const optIn = optInElements().length;
+
 const sections = [
   {
     title: 'Getting started',
     links: [
-      { href: '/docs/',                  label: 'Overview' },
-      { href: '/docs/getting-started',   label: 'Install · Quickstart' },
-      { href: '/docs/cheatsheet',        label: 'Cheatsheet · 5 components' },
-      { href: '/docs/lit-and-shadow-dom',label: 'Lit & Shadow DOM' },
-      { href: '/docs/anatomy',           label: 'Anatomy of a slide' },
-    ],
-  },
-  {
-    title: 'Components',
-    links: [
-      { href: '/docs/components',         label: 'Library overview' },
-      { href: '/docs/components#layouts', label: 'Layouts (8)' },
-      { href: '/docs/components#atoms',   label: 'Building blocks (21)' },
-      { href: '/docs/components#optional', label: 'Optional components (14)' },
+      { href: '/docs/',                 label: 'Overview' },
+      { href: '/docs/getting-started',  label: 'Install · Quickstart' },
+      { href: '/docs/cheatsheet',       label: 'Cheatsheet · 5 components' },
+      { href: '/docs/anatomy',          label: 'Anatomy of a slide' },
+      { href: '/docs/navigation',       label: 'Navigation' },
     ],
   },
   {
     title: 'Guides',
     links: [
-      { href: '/docs/navigation',  label: 'Navigation & overview' },
+      { href: '/docs/cli',         label: 'Check & deliver' },
       { href: '/docs/theming',     label: 'Theming · design tokens' },
       { href: '/docs/multi-deck',  label: 'Multi-file decks' },
       { href: '/docs/recipes',     label: 'Recipes' },
@@ -31,11 +36,16 @@ const sections = [
   {
     title: 'Reference',
     links: [
-      { href: '/docs/api',         label: 'deck-root API' },
-      { href: '/docs/plugins',     label: 'Plugins' },
-      { href: '/rikiki/docs/llms/rikiki-reference.md', label: 'For LLMs · full reference' },
-      { href: '/docs/changelog',   label: 'Changelog' },
-      { href: '/docs/contributing', label: 'Contributing' },
+      { href: '/docs/components',          label: 'Component library' },
+      { href: '/docs/components#layouts',  label: `Layouts (${layouts})` },
+      { href: '/docs/components#atoms',    label: `Building blocks (${atoms})` },
+      { href: '/docs/components#optional', label: `Opt-in elements (${optIn})` },
+      { href: '/docs/api',                 label: 'deck-root API' },
+      { href: '/docs/plugins',             label: 'Runtime modules · transitions, presenter, Shiki' },
+      { href: '/docs/lit-and-shadow-dom',  label: 'Lit & Shadow DOM' },
+      { href: '/rikiki/docs/llms/rikiki-reference.md', label: 'For coding agents · reference .md' },
+      { href: '/docs/changelog',           label: 'Changelog' },
+      { href: '/docs/contributing',        label: 'Contributing' },
     ],
   },
 ];

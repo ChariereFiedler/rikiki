@@ -27,20 +27,22 @@ const minimalPreview = `<deck-cover><h1>Cover</h1></deck-cover>
 <Docs
   title="Anatomy of a slide"
   eyebrow="Concepts"
-  description="A slide is an HTML element. Layouts give it structure, atoms fill the slots."
+  description="For deck authors: how one <deck-*> element becomes the slide on screen, through its layout, its slots, its atoms and the Shadow DOM, so you know which layer to touch when a slide looks wrong."
 >
 
-<h2 id="three-layers">Three layers, always</h2>
+<h2 id="three-layers">Three layers</h2>
 <p>
   Every slide is built from three concentric layers, top to bottom:
 </p>
 
 <ol>
   <li>
-    <strong>A layout component</strong> · <code>&lt;deck-cover&gt;</code>,
+    <strong>A layout component</strong> · one of the eight layouts the package
+    ships: <code>&lt;deck-cover&gt;</code>, <code>&lt;deck-section&gt;</code>,
     <code>&lt;deck-feature&gt;</code>, <code>&lt;deck-split&gt;</code>,
-    <code>&lt;deck-feature-cards&gt;</code>, <code>&lt;deck-section&gt;</code>,
-    or <code>&lt;deck-takeaway&gt;</code>.
+    <code>&lt;deck-feature-cards&gt;</code>, <code>&lt;deck-bento&gt;</code>,
+    <code>&lt;deck-photo&gt;</code> and <code>&lt;deck-takeaway&gt;</code>.
+    The layout decides the composition of the slide.
   </li>
   <li>
     <strong>Named slots</strong> · the layout exposes <code>slot="title"</code>,
@@ -68,27 +70,21 @@ const minimalPreview = `<deck-cover><h1>Cover</h1></deck-cover>
 <CodeBlock label="The minimal deck" lang="html" code={minimal} />
 <ComponentPreview code={minimalPreview} full />
 
-<h2 id="sections">Sections &amp; 2D navigation</h2>
+<h2 id="sections">Sections</h2>
 <p>
-  A <code>&lt;deck-section&gt;</code> isn't just a divider · it marks a chapter
-  boundary. By default arrows stay <strong>linear</strong>; add
-  <code>nav="2d"</code> to <code>&lt;deck-root&gt;</code> (with two or more
-  chapters, one holding multiple slides) to opt into a <strong>2D grid</strong>:
-</p>
-
-<ul>
-  <li><kbd>←</kbd> / <kbd>→</kbd> · jump between sections</li>
-  <li><kbd>↑</kbd> / <kbd>↓</kbd> · walk slides inside a section</li>
-  <li><kbd>Space</kbd> · always advances linearly</li>
-</ul>
-
-<p>
-  Without <code>nav="2d"</code>, all arrow keys do the same thing · linear
-  next/prev, whatever your section layout. See
-  <a href="/docs/navigation">Navigation</a> for the full key map.
+  A <code>&lt;deck-section&gt;</code> is a chapter boundary as well as a
+  divider: the arrow keys stay linear by default, and <code>nav="2d"</code> on
+  <code>&lt;deck-root&gt;</code> turns the chapters into a grid. See
+  <a href="/docs/navigation">Navigation</a> for the key map and the 2D model.
 </p>
 
 <h2 id="rendering">How a slide renders</h2>
+<p>
+  The framework is written with Lit, and each component renders inside a
+  Shadow DOM. <a href="/docs/lit-and-shadow-dom">Lit &amp; Shadow DOM</a>
+  explains what that changes for your own CSS; this section gives the short
+  version.
+</p>
 <p>
   The browser parses your HTML. Each <code>&lt;deck-*&gt;</code> element is a
   Custom Element registered by Rikiki. On <code>connectedCallback</code> it
@@ -97,15 +93,15 @@ const minimalPreview = `<deck-cover><h1>Cover</h1></deck-cover>
 </p>
 
 <ul>
-  <li>Your CSS doesn't leak <em>into</em> the components (Shadow DOM isolates them).</li>
+  <li>Your CSS does not leak <em>into</em> the components (Shadow DOM isolates them).</li>
   <li>Theme variables (<code>--rik-accent</code>, <code>--rik-surface-page</code>, …) <em>do</em> cross the boundary · they inherit from <code>:root</code>.</li>
   <li>Each slide's <code>:host</code> rule decides the background, padding, layout direction.</li>
 </ul>
 
 <h2 id="next">Next</h2>
 <ul>
-  <li><a href="/docs/components">Browse every component</a> with its attributes and slots.</li>
-  <li><a href="/docs/theming">Override the tokens</a> to retheme the whole deck.</li>
+  <li><a href="/docs/navigation">Navigation</a> · the keys, the mouse, the presenter window and the 2D grid.</li>
+  <li><a href="/docs/components">Component library</a> · every layout and atom with its attributes and slots.</li>
 </ul>
 
 </Docs>

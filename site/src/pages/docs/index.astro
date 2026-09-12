@@ -1,25 +1,47 @@
 ---
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import Docs from '../../layouts/Docs.astro';
 import Card from '../../components/Card.astro';
 import CardGrid from '../../components/CardGrid.astro';
+
+// Read from rikiki/package.json at build time so the range never drifts.
+const packageDir = resolve(process.cwd(), '../rikiki');
+const pkg = JSON.parse(readFileSync(resolve(packageDir, 'package.json'), 'utf8'));
+const nodeRange = pkg.engines.node;
+
+// The sizes below are measured from the build artifacts they describe ·
+// scripts/size-surfaces.mjs is the single source. Loaded through a runtime file
+// URL so Vite leaves the module out of the prerender bundle: it locates the
+// package from its own import.meta.url.
+const sizeSurfaces = pathToFileURL(resolve(packageDir, 'scripts/size-surfaces.mjs')).href;
+const { measureSizes, toKb } = await import(/* @vite-ignore */ sizeSurfaces);
+const sizes = measureSizes();
+const engineKb = toKb(sizes.bundleGzip);
+const initialLoadKb = toKb(sizes.initialLoadGzip);
 ---
 
 <Docs
   title="Rikiki documentation"
   eyebrow="Docs"
-  description="A tiny Lit Web Components framework for technical presentations. Write a deck as plain HTML, serve the folder, give the talk · five years from now too."
+  description="A tiny Lit Web Components framework for technical presentations. Write a deck as plain HTML, serve the folder, give the talk."
 >
 
-<aside class="llm-callout">
-  <span class="llm-tag" aria-hidden="true">FOR&nbsp;LLMS</span>
-  <p>
-    <strong>If you're an LLM, read this file.</strong> Point your agent
-    (Claude or other) at the full machine-readable reference · every component,
-    attribute, slot, token and pattern in one page:
-    <a href="/rikiki/docs/llms/rikiki-reference.md">the complete rikiki reference for agents →</a>
-    There's also a short <a href="/llms.txt">/llms.txt</a> index.
-  </p>
-</aside>
+<p>
+  A Rikiki deck is a folder of readable HTML. The first file is
+  <code>index.html</code>; the slides are <code>&lt;deck-*&gt;</code> elements
+  inside one <code>&lt;deck-root&gt;</code>, and the framework loads from a
+  <code>rikiki/</code> folder next to it. There is no build step: any static
+  server serves the deck as written. The command line checks a deck in a real
+  browser and delivers it as a single HTML file or a PDF.
+</p>
+<p class="prereqs">
+  <strong>Prerequisites.</strong> Writing and serving a deck needs a browser
+  and a static server. The command line needs Node <code>{nodeRange}</code>;
+  <code>check</code>, <code>render</code> and <code>export</code> also need
+  Playwright, an optional peer.
+</p>
 
 <h2 id="map">Where to start</h2>
 <p>
@@ -36,14 +58,29 @@ import CardGrid from '../../components/CardGrid.astro';
     <p><a href="/docs/components">→ Component library</a></p>
   </Card>
   <Card title="Want to rebrand?">
-    <p>~100 CSS custom properties · two themes ship, write a third by copy-paste.</p>
+    <p>One layer of CSS custom properties · two themes ship, write a third by copy-paste.</p>
     <p><a href="/docs/theming">→ Theming guide</a></p>
   </Card>
   <Card title="Need a specific layout?">
     <p>Patterns for code-on-left, side-by-side, three-column, big-number slides.</p>
     <p><a href="/docs/recipes">→ Recipes</a></p>
   </Card>
+  <Card title="Ready to deliver?">
+    <p>Run the deck checks, render pictures, bundle to one file, export a PDF.</p>
+    <p><a href="/docs/cli">→ Check and deliver</a></p>
+  </Card>
 </CardGrid>
+
+<aside class="llm-callout">
+  <span class="llm-tag" aria-hidden="true">AGENTS</span>
+  <p>
+    <strong>For coding agents.</strong> The whole reference fits in one
+    machine-readable page · every component, attribute, slot, token and
+    pattern:
+    <a href="/rikiki/docs/llms/rikiki-reference.md">the rikiki reference for agents →</a>
+    A shorter <a href="/llms.txt">/llms.txt</a> index points to it.
+  </p>
+</aside>
 
 <h2 id="design">Design principles</h2>
 <p>
@@ -57,34 +94,50 @@ import CardGrid from '../../components/CardGrid.astro';
   </li>
   <li>
     <strong>Web standards over framework lore.</strong>
-    Custom Elements, Shadow DOM, ES Modules and CSS Custom Properties have
-    been stable W3C specs since 2018. They will outlive Vite.
+    Custom Elements and Shadow DOM (WHATWG HTML and DOM), ES modules
+    (ECMAScript) and CSS custom properties (W3C) ship in every current browser
+    engine: Blink, Gecko and WebKit.
   </li>
   <li>
     <strong>Light by default, extensible on demand.</strong>
-    The initial load is ~43 KB gzip (26 KB of engine plus Lit and marked). The overview mode and the help overlay
-    lazy-load on first use. Anything bigger ships as an opt-in module.
+    The initial load is {initialLoadKb} KB gzip · {engineKb} KB of engine, the
+    rest Lit and marked. The overview mode and the help overlay load on first
+    use. Anything bigger ships as an optional module the deck imports.
   </li>
 </ol>
 
 <h2 id="not-for-you">Not the right tool when…</h2>
 <ul>
-  <li>You want a builder UI · Rikiki is "write HTML, open in a browser".</li>
-  <li>You need fancy transitions · the framework toggles <code>display</code>, no GPU animation between slides.</li>
+  <li>You want a WYSIWYG editor · Rikiki uses HTML source and a browser preview. It has no visual builder.</li>
+  <li>You need PowerPoint-style animation on shapes · an optional module adds slide-level fade, slide, zoom and flip transitions, not free-form timelines.</li>
   <li>You want a hosted SaaS · there is none. You host the static files yourself.</li>
-  <li>You want PowerPoint compatibility · Rikiki produces HTML, not <code>.pptx</code>.</li>
+  <li>You need PowerPoint export · Rikiki delivers standalone HTML and PDF, not <code>.pptx</code>.</li>
+  <li>Your environment forbids Web Components · Custom Elements and Shadow DOM are part of the runtime.</li>
 </ul>
 
 <p>For everything else · keep reading.</p>
 
+<h2 id="next">Next</h2>
+<ul>
+  <li><a href="/docs/getting-started">Getting started</a> · install, write the first deck, serve it, check and deliver it.</li>
+  <li><a href="/docs/cheatsheet">Cheatsheet</a> · the five components a first talk needs.</li>
+</ul>
+
 </Docs>
 
 <style>
+  .prereqs {
+    padding: var(--rik-space-3) var(--rik-space-4);
+    background: var(--rik-surface-raised);
+    border: 1px solid var(--rik-border-default);
+    border-radius: var(--rik-radius-md);
+    font-size: var(--rik-font-size-sm);
+  }
   .llm-callout {
     display: flex;
     align-items: flex-start;
     gap: var(--rik-space-3);
-    margin: 0 0 var(--rik-space-5);
+    margin: var(--rik-space-5) 0;
     padding: var(--rik-space-3) var(--rik-space-4);
     background: var(--rik-surface-inverse);
     color: var(--rik-text-inverse--muted);

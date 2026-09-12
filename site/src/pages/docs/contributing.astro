@@ -1,13 +1,32 @@
 ---
+// Budgets and measurements come from rikiki/scripts/size-surfaces.mjs, the same
+// module scripts/size.test.mjs uses · no size is typed into this page. Loaded
+// through a runtime file URL so Vite leaves the module out of the prerender
+// bundle (the Sidebar.astro pattern).
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import Docs from '../../layouts/Docs.astro';
 import CodeBlock from '../../components/CodeBlock.astro';
 
-const setup = `git clone <repo>
-cd rikiki
-npm install
-npm run build       # esbuild + tsc --emitDeclarationOnly
-npm run watch       # esbuild --watch (dev sourcemaps)
-npm run typecheck   # tsc --noEmit (must stay clean)`;
+const surfaces = pathToFileURL(
+  resolve(process.cwd(), '../rikiki/scripts/size-surfaces.mjs'),
+).href;
+const { BUDGETS, measureSizes, toKb } = await import(/* @vite-ignore */ surfaces);
+const sizes = measureSizes();
+const initialLoad = toKb(sizes.initialLoadGzip);
+const initialBudget = toKb(BUDGETS.initialLoadGzip);
+const standalone = toKb(sizes.standaloneGzip);
+const standaloneBudget = toKb(BUDGETS.standaloneGzip);
+
+const setup = `git clone https://gitlab.com/tordu-jardin/rikiki.git
+cd rikiki/rikiki     # the npm package · every command below runs from here
+
+npm ci
+npm run build        # vendor chunks, esbuild, standalone bundle, then tsc --emitDeclarationOnly
+npm run watch        # esbuild in watch mode, for iterating on a deck
+npm run typecheck    # tsc --noEmit
+npm test             # vitest run · sizes, versions, CLI and assembler
+npm run lint         # biome check src scripts`;
 
 const newComponent = `// src/molecules/deck-myname.ts  (or layouts/, atoms/, runtime/)
 import { LitElement, html, css } from 'lit';
@@ -36,23 +55,47 @@ declare global {
 <Docs
   title="Contributing"
   eyebrow="Reference"
-  description="Setup, conventions, PR flow. Short on purpose."
+  description="For contributors changing the framework itself: build the package from its TypeScript sources, follow the three conventions, and get a merge request accepted."
 >
 
 <h2 id="setup">Setup</h2>
+<p>
+  The repository holds the npm package in <code>rikiki/</code> and this site in
+  <code>site/</code>. The commands below are the package's own scripts, so they
+  run from <code>rikiki/</code>.
+</p>
 <CodeBlock label="terminal" lang="js" code={setup} />
 
 <p>
+  <code>npm run build</code> runs four steps in order: <code>build-vendor.mjs</code>
+  writes the local Lit and marked chunks, <code>build.mjs</code> compiles every
+  <code>src/**/*.ts</code> entry point, <code>build-standalone.mjs</code> emits the
+  single-file runtime, and <code>tsc --emitDeclarationOnly</code> writes the
+  <code>.d.ts</code> files.
+</p>
+
+<p>
   <code>dist/</code> is versioned · the zero-build promise applies to deck
-  authors, not contributors. Always commit the rebuilt <code>dist/</code> with
-  your source change so consumers don't need to run anything.
+  authors, not contributors. Commit the rebuilt <code>dist/</code> with your
+  source change so consumers don't need to run anything.
 </p>
 
 <h2 id="conventions">Conventions</h2>
 <ul>
   <li><strong>English</strong> for code, comments and commit messages.</li>
-  <li><strong>No magic numbers</strong> in CSS · everything goes through tokens (<code>--sp-*</code>, <code>--fs-*</code>, etc.).</li>
-  <li><strong>No em-dashes (·)</strong> in slide content · prefer ` · ` (middle dot).</li>
+  <li>
+    <strong>No magic numbers</strong> in CSS · sizes, colors and spacing route
+    through the theme tokens (<code>--rik-space-*</code>,
+    <code>--rik-font-size-*</code>, <code>--rik-surface-*</code>,
+    <code>--rik-text-*</code>), defined in <code>themes/rikiki.css</code> and
+    <code>themes/siliceum.css</code> and reached through
+    <code>tokens.css</code>.
+  </li>
+  <li>
+    <strong>No em-dash</strong> in prose, slide content or source files · the
+    middle dot ( · ) replaces it, and <code>npm run lint:dashes</code> in
+    <code>site/</code> fails on any that slips in.
+  </li>
   <li><strong>Read MANIFESTO.md first</strong> before proposing a feature · the rejected-features list saves time.</li>
 </ul>
 
@@ -64,36 +107,60 @@ declare global {
   <li>Extend <code>LitElement</code>, decorate with <code>@customElement</code> and <code>@property</code>.</li>
   <li>Expose <strong>per-component tokens</strong> with sensible defaults from the theme palette · users should be able to retheme via <code>--deck-myname-*</code>.</li>
   <li>Register it in <code>src/index.ts</code> with the full bucket path: <code>import './&lt;bucket&gt;/deck-myname.js'</code>.</li>
-  <li>Run <code>npm run build</code> · commit both <code>src/</code> and <code>dist/</code>. <code>dist/</code> stays flat regardless of the bucket · the public URL is <code>/rikiki/dist/deck-myname.js</code>.</li>
+  <li>Run <code>npm run build</code> · commit both <code>src/</code> and <code>dist/</code>. The compiled JavaScript stays flat regardless of the bucket, so the public URL is <code>/rikiki/dist/deck-myname.js</code>; only the <code>.d.ts</code> files mirror the source folders.</li>
 </ol>
 
 <CodeBlock label="src/<bucket>/deck-myname.ts" lang="ts" code={newComponent} />
 
-<h2 id="pr-flow">Pull requests</h2>
+<h2 id="mr-flow">Merge requests</h2>
+<p>
+  The project is hosted on GitLab, so a change arrives as a merge request
+  against <code>main</code>.
+</p>
 <ul>
-  <li>One self-contained change per PR.</li>
+  <li>One self-contained change per merge request.</li>
   <li>Include a short rationale · what changed, why, what was considered and rejected.</li>
   <li>If the change is visual, attach a before/after screenshot.</li>
-  <li><code>npm run build</code> must succeed · <code>npm run typecheck</code> must stay at <strong>0 errors</strong>.</li>
+  <li><code>npm run build</code> must succeed, <code>npm run typecheck</code> must stay at <strong>0 errors</strong>, and <code>npm test</code> must pass.</li>
+  <li>
+    If the change touches a component, run the deck checks on a deck that uses
+    it (<code>npx rikiki check decks/tests/demo.html</code>) and read the
+    report · see <a href="/docs/cli">Check &amp; deliver</a>.
+  </li>
 </ul>
 
 <h2 id="bundle-budget">Bundle budget</h2>
 <p>
-  The framework promises ~25 KB gzip for the core
-  (<code>dist/index.js</code> alone). The current floor is 26 KB;
-  the initial load including Lit and marked is ~43 KB. PRs that grow the bundle by more than <strong>1 KB gzip</strong>
-  need to justify the increase · prefer extracting to a lazy module
-  (<code>deck-overview.js</code> / <code>deck-help.js</code> are the
-  precedent).
+  Two budgets are declared in <code>scripts/size-surfaces.mjs</code> and enforced
+  by <code>npm test</code>: <strong>{initialBudget} KB gzip</strong> for the
+  initial load (<code>dist/index.js</code> plus the Lit and marked chunks it
+  imports, which is what a browser downloads before the first slide paints) and
+  <strong>{standaloneBudget} KB gzip</strong> for <code>dist/standalone.js</code>.
+  The current build measures <strong>{initialLoad} KB</strong> and
+  <strong>{standalone} KB</strong>. Mermaid and Shiki sit outside both figures:
+  they are optional modules a deck imports only when it uses them.
+</p>
+<p>
+  A change that eats into the remaining headroom needs a reason in the merge
+  request · the alternative is to move the code into an optional module
+  (<code>deck-overview.js</code> and <code>deck-help.js</code> are the
+  precedent). Crossing a budget is a decision to document, not a number to
+  raise quietly.
 </p>
 
 <p>To measure your change:</p>
-<CodeBlock label="terminal" lang="js" code="npm run build && gzip -9 < dist/index.js | wc -c" />
+<CodeBlock label="terminal" lang="js" code="npm run build && npm test    # the size suite reports every measured artifact" />
 
 <h2 id="license">License</h2>
 <p>
   By contributing you agree that your contribution is licensed under the
   project's MIT license.
 </p>
+
+<h2 id="next">Next</h2>
+<ul>
+  <li><a href="/docs/changelog">Changelog</a> · where a merged change ends up.</li>
+  <li><a href="/docs/components">Component library</a> · what already exists before you add to it.</li>
+</ul>
 
 </Docs>

@@ -1,220 +1,39 @@
 ---
+// The changelog is not retyped here: CHANGELOG.md in the repository is read at
+// build time and rendered by src/lib/changelog.mjs, so the page cannot drift
+// from the file the release process writes. Every size figure quoted below
+// comes from that file too.
+import { resolve } from 'node:path';
 import Docs from '../../layouts/Docs.astro';
+import { renderChangelogFile } from '../../lib/changelog.mjs';
+
+const changelog = renderChangelogFile(resolve(process.cwd(), '../CHANGELOG.md'));
 ---
 
 <Docs
   title="Changelog"
   eyebrow="Reference"
-  description="Notable changes. Follows Keep a Changelog · the project is on semver."
+  description="For anyone upgrading or deciding whether to adopt: what each release changed and what is merged but not yet released, rendered from CHANGELOG.md so it cannot drift. The format follows Keep a Changelog and the project follows semver."
 >
 
-<h2 id="v070">0.7.0 · 2026-09-12</h2>
+<p class="source-note">
+  The <strong>Unreleased</strong> section below lists what is merged and not yet
+  published to npm. Everything under a dated heading ships in that release.
+</p>
 
-<h3>Added</h3>
+<Fragment set:html={changelog} />
+
+<h2 id="next">Next</h2>
 <ul>
-  <li><strong>Agent-first delivery workflow.</strong> The package ships the authoring, diagnostic, visual review and delivery workflow needed to take a brief to a checked deck · <code>init</code> writes a deck you can edit, <code>assemble</code> builds one from ordered partials, <code>render</code> writes one picture per slide with a manifest, and <code>check</code> says what is wrong, where, and what to try.</li>
-  <li><strong><code>rikiki check --steps</code>.</strong> Every revealed state of a slide is measured, not just its opening one; each diagnostic carries the state it held, and a defect identical across states is reported once.</li>
-  <li><strong><code>rikiki render --baseline &lt;dir&gt;</code>.</strong> Each fresh capture is compared to the same-named picture in an earlier render, in the browser that just took it. Slides are ranked by changed ratio with the bounding box of what moved; <code>--threshold</code> keeps anti-aliasing noise out of the report.</li>
-  <li><strong>Painted-box and graph checks.</strong> <code>CONTENT_ESCAPES_BOX</code> and <code>CONTENT_OVERLAPS_SIBLING</code> catch content that paints outside its box or over a sibling; <code>GRAPH_NODE_OUT_OF_BOUNDS</code>, <code>GRAPH_EDGE_CROSSES_NODE</code> and <code>GRAPH_NODE_OVERLAPS_NODE</code> measure a graph's nodes and edges against their canvas and against each other.</li>
-  <li><strong><code>deck-source</code>, <code>deck-figure</code> and a figure-shaped <code>deck-annotate</code>.</strong> A screenshot, diagram or chart now carries its own caption and credit as one semantic unit, and <code>deck-annotate</code> badges accept named anchors (<code>above</code>, <code>below</code>, <code>left</code>, <code>right</code>) next to pixel offsets.</li>
-  <li><strong><code>deck-versus</code> gains a <code>footer</code> slot in slide mode</strong>, rendered full width under both sides at reading size.</li>
-  <li><strong>Opt-in components.</strong> <code>deck-bar</code>, <code>deck-quote</code>, <code>deck-annotate</code>, <code>deck-agenda</code>, <code>deck-icon</code>, <code>deck-checklist</code>, <code>deck-kpi-grid</code>, <code>deck-pull</code>, <code>deck-persona</code>, <code>deck-versus</code>, <code>deck-flow</code>, <code>deck-timeline</code>, <code>deck-table</code> and <code>deck-graph</code> live outside the default bundle, so a deck that never uses them pays nothing.</li>
-  <li><strong>Runtime diagnostics.</strong> <code>check</code> reports structural, runtime, accessibility and visual risks with stable exit codes, and names what was <em>not</em> checked.</li>
+  <li><a href="/docs/contributing">Contributing</a> · how a change gets from a branch to one of these entries.</li>
+  <li><a href="/docs/getting-started">Install</a> · pick up the released version.</li>
 </ul>
-
-<h3>Changed</h3>
-<ul>
-  <li><strong><code>deck-kpi-grid</code> is one family of figures.</strong> The grid owns the value, label and note rows and every figure adopts them with <code>subgrid</code>, so all the values share one baseline and one size. A <code>tone</code> says itself in the label, not by recolouring the number, and <code>ruled</code> finally draws a divider that can be seen at projection distance.</li>
-  <li><strong><code>deck-persona</code> · the portrait block is the one mass.</strong> The initials sit in a square of the inverse surface at statement scale, or the photo fills the same square; <code>compact</code> and <code>inline</code> shrink the block and the name together.</li>
-  <li><strong>The engine's rules moved out of the component</strong> into a domain, application and infrastructure layering, enforced by a test rather than by convention. No public API change.</li>
-  <li><strong>The single-record recipe is documented</strong> as a <code>deck-table</code> composition rather than a new component.</li>
-</ul>
-
-<h3>Fixed</h3>
-<ul>
-  <li><strong><code>rikiki check</code> measured only the slide that was on screen.</strong> Every other slide reported empty rects, so the geometry diagnostics fired only when the defect happened to sit on slide 1. The default mode now walks the deck and measures each slide in its opening state, and a deck the walk cannot navigate stops with <code>NAVIGATION_STALLED</code> instead of killing the command.</li>
-  <li><strong><code>GRAPH_EDGE_CROSSES_NODE</code> no longer misses a visible crossing.</strong> <code>deck-graph</code> publishes the polyline it actually paints, bends included, and the check tests that polyline widened by half the stroke.</li>
-  <li><strong><code>deck-graph</code> edges stop at the node's painted edge</strong>, measured from its real box, so a wide node no longer swallows the arrowhead. <code>route="ortho"</code>, <code>label-offset</code> and a node <code>width</code> come with it.</li>
-  <li><strong>The CSS-in-JS minifier silently deleted the descendant combinator</strong> in front of a pseudo-class or pseudo-element, so three shipped rules were dead in <code>dist/</code> and nowhere else.</li>
-  <li><strong>Print, PDF export, accessibility and three browser engines.</strong> A real print stylesheet, a tagged and bookmarked PDF, an Axe pass over the reference decks with keyboard-operable chrome, and Firefox and WebKit passing the full base contract beside Chromium.</li>
-  <li><strong>Published claims are measured.</strong> Sizes, component counts and install cost are asserted from the artifacts they describe, and the built site no longer carries the whole package.</li>
-</ul>
-
-<h3>Measured runtime sizes · 2026-09-09</h3>
-<ul>
-  <li><strong>25.7 KB gzip</strong> · <code>dist/index.js</code> for the core alone; Lit and marked are separate local imports, bringing initial load to approximately 42 KiB gzip.</li>
-  <li><strong>5.2 KB gzip</strong> · lazy overview module.</li>
-  <li><strong>1.5 KB gzip</strong> · lazy help module.</li>
-  <li>Mermaid and Shiki remain opt-in payloads for bundles that use them.</li>
-</ul>
-
-<h2 id="v060">0.6.0 · 2026-06-19</h2>
-
-<h3>Added</h3>
-<ul>
-  <li><strong>Slide zoom.</strong> Ctrl/⌘ + wheel, trackpad pinch and <code>+</code>/<code>-</code>/<code>0</code> magnify the active slide around the cursor and pan it (drag or wheel), fixed-canvas only, on by default. Scales fonts and layout together (no reflow). Opt out with <code>no-zoom</code> on <code>&lt;deck-root&gt;</code>.</li>
-  <li><strong>Per-slide fluid escape.</strong> A single slide can carry its own <code>fluid</code> attribute to escape the fixed canvas and use the real viewport, while the rest of the deck stays on the canvas · for one slide that embeds a live interactive demo. The canvas is restored on navigation away.</li>
-  <li><strong>Plugin hook API.</strong> <code>&lt;deck-root&gt;</code> exposes a public <code>use(plugin)</code> method and a <code>DeckPlugin</code> / <code>DeckContext</code> contract so plugins extend the deck through a stable surface instead of patching engine internals. <code>setDeckCodeHighlighter()</code> is the matching hook for <code>&lt;deck-code&gt;</code> syntax highlighting; all three are re-exported from <code>dist/index.js</code>.</li>
-  <li><strong>Presenter multi-screen placement.</strong> With the Window Management API the deck goes fullscreen on the external screen (the projector) and the speaker window opens on the speaker's current screen, released when the presenter closes.</li>
-  <li><strong>Preview (inert) mode.</strong> <code>preview</code> on <code>&lt;deck-root&gt;</code> renders and letterboxes a deck but wires no input, autoplay or presenter handlers · used so the presenter's Current preview acts as a control surface. A <code>no-counter</code> attribute hides the slide counter outright.</li>
-</ul>
-
-<h3>Changed</h3>
-<ul>
-  <li><strong>Presenter Current preview is a live control surface.</strong> Keyboard, click and wheel events on the Current preview are forwarded to the projected deck, with an opt-in advance-on-click. The preview renders the inert <code>preview</code> deck.</li>
-  <li><strong>Slide counter is hidden on cover, overview and blank screens</strong> (in addition to the new <code>no-counter</code> opt-out).</li>
-  <li><strong>Default slide typography scaled up for projection.</strong> Body, lead and heading sizes step up the type scale (body ≈32px on the 1080 canvas) in both shipped themes so text reads from the back of a room; the hierarchy stays monotonic.</li>
-  <li><strong>Presenter Current/Next previews are constrained to 16:9</strong>, so the laptop thumbnail matches the projected slide's geometry regardless of window shape, and presenter mode auto-hides the projected window's key-hint chips and nav arrows while the speaker window is open.</li>
-  <li><strong>Click-stages and Shiki plugins migrated to the hook API.</strong> They no longer monkey-patch prototypes. <code>installClickStages()</code> and <code>installShiki()</code> keep working as back-compat shims; a deck created dynamically after the call must register the plugin itself via <code>deckRoot.use()</code>.</li>
-</ul>
-
-<h3>Fixed</h3>
-<ul>
-  <li><strong>Wheel navigation no longer swallows browser zoom.</strong> Ctrl/⌘ + wheel and trackpad pinch are left for the browser instead of being <code>preventDefault</code>ed for slide navigation.</li>
-  <li><strong>Shiki-highlighted code keeps its colors.</strong> The vendored Shiki emits token colors as inline styles, so stripping them left every token monochrome · the palette is now preserved while the <code>class="line"</code> wrappers survive for step dimming.</li>
-  <li><strong>Presenter places the speaker window on the right screen on the first press</strong> and closes its <code>BroadcastChannel</code> on teardown, so reopening no longer doubles forwarded input.</li>
-</ul>
-
-<h2 id="v050">0.5.0 · 2026-06-12</h2>
-
-<p>This release reworks the rendering model. Every deck now renders into a fixed logical canvas scaled uniformly to fit the viewport, with an opt-in fluid mode for decks that should reflow like a web page, and embedded decks no longer disturb the page that hosts them.</p>
-
-<h3>Added</h3>
-<ul>
-  <li><strong>Opt-in fluid mode.</strong> <code>&lt;deck-root fluid&gt;</code> makes a deck fill its box and reflow like a web page · no logical canvas, no zoom-to-fit scale, no letterbox. It can be toggled at runtime; the default stays zoom-to-fit.</li>
-  <li><strong>Playwright render net.</strong> A browser-level test suite (smoke, navigation, scaling, embedding) loads every fixture deck and asserts the engine upgrades, slides render, navigation works and the host page is left intact.</li>
-</ul>
-
-<h3>Changed</h3>
-<ul>
-  <li><strong>Uniform zoom-to-fit is now the default.</strong> Every deck renders into a fixed logical canvas (1920×1080 by default, set via <code>width</code>/<code>height</code>) scaled uniformly to fit, so a slide's layout is identical at any window size and letterboxed when the aspect differs. Author fluid layouts now opt in with <code>fluid</code>.</li>
-  <li><strong>Embedded decks leave the host page alone.</strong> The global baseline (scroll lock, rem sizing) is scoped to full-page decks, so a <code>&lt;deck-root&gt;</code> inside a larger document no longer hijacks the page's scroll or typography.</li>
-  <li><strong>Zoom-to-fit measures the deck's own box</strong> (via a <code>ResizeObserver</code> on the host, not the window), so an embedded deck scales to its container and re-fits on container resize.</li>
-</ul>
-
-<h3>Removed</h3>
-<ul>
-  <li><strong>The <code>fixed</code> attribute.</strong> Zoom-to-fit is now the only canvas mode, so <code>fixed</code> no longer has any effect and has been removed. Decks that still carry it render identically.</li>
-</ul>
-
-<h3>Fixed</h3>
-<ul>
-  <li><strong>Letterbox bands now match slides whose background has a zero blue channel</strong> (black, red, yellow). The opacity check parsed the blue channel as the alpha, so those slides wrongly fell back to the page surface for their bands.</li>
-  <li><strong>The deck no longer leaves marks on the host page.</strong> Removing the last deck restores the page's scroll and rem baseline; changing <code>width</code>/<code>height</code> after first render re-fits the canvas; a deck moved or re-attached in the DOM keeps rescaling on resize.</li>
-</ul>
-
-<h2 id="v040">0.4.0 · 2026-06-12</h2>
-
-<h3>Added</h3>
-<ul>
-  <li>Release tooling: <code>npm run bump</code> rewrites every version surface at once, backed by a Vitest suite (<code>npm test</code>) that fails when any surface drifts.</li>
-  <li>The docs now declare which release they document via a <code>rikiki v&lt;version&gt;</code> stamp.</li>
-</ul>
-
-<h3>Changed</h3>
-<ul>
-  <li>The npm package now ships the LLM docs (<code>llms.txt</code> + <code>docs/llms</code>), so the reference is available after <code>npm install rikiki-deck</code>.</li>
-</ul>
-
-<h2 id="v031">0.3.1 · 2026-06-09</h2>
-
-<h3>Fixed</h3>
-<ul>
-  <li>Presenter mode showed un-styled slides in single-file bundled decks (the mirror iframe failed to re-load the bundle from a <code>data:</code> URI). The presenter now inlines the bundle when served from a data URL.</li>
-</ul>
-
-<h2 id="v030">0.3.0 · 2026-06-08</h2>
-
-<h3>Added</h3>
-<ul>
-  <li>
-    <strong>Mouse navigation</strong> · click / Shift-click, scroll wheel (yields
-    to scrollable content, advances at the edge), bottom-right chevrons, and
-    mouse back/forward buttons. Tune with the <code>mouse-nav</code> attribute.
-  </li>
-  <li>
-    <strong>Click-stages plugin reveals</strong> (<code>installClickStages()</code>)
-    · <code>data-click</code>, <code>data-click-hide</code>,
-    <code>data-click-auto</code>, <code>data-click-stagger</code>,
-    <code>data-click-children</code>, per-element <code>data-anim*</code>, and
-    <code>data-morph</code> Magic Move (View Transitions, FLIP fallback on Firefox).
-  </li>
-  <li>
-    <strong>Overview grid</strong> (<kbd>O</kbd>) · viewport-faithful thumbnails
-    (Mermaid diagrams included), type-to-filter search, click-to-jump.
-  </li>
-  <li><strong>Clickable hint chips</strong> · the bottom-left <kbd>←</kbd> <kbd>→</kbd> <kbd>O</kbd> <kbd>P</kbd> <kbd>?</kbd> now run their action.</li>
-</ul>
-
-<h3>Fixed</h3>
-<ul>
-  <li><strong>Overview SVG styling</strong> · Mermaid thumbnails rendered black because cloned-SVG ids were namespaced but their <code>&lt;style&gt;</code> selectors were not. Diagrams now keep their styling.</li>
-  <li><strong>Deep links clamp</strong> to the nearest valid slide/step instead of snapping to slide 1 (survives iterating with hot reload).</li>
-  <li><strong>Wheel</strong> yields to scrollable descendants (including inline <code>&lt;svg&gt;</code>) and navigates at the scroll edge instead of trapping the wheel.</li>
-  <li><strong>Click-stages edge cases</strong> · <code>data-click-stagger="0"</code> flips together, stagger children honor <code>data-click-hide</code>/<code>data-anim-delay</code>, no double delay, no flicker during a morph transition, unified step counting.</li>
-</ul>
-
-<h3>Changed</h3>
-<ul>
-  <li><strong>2D navigation is opt-in</strong> via <code>nav="2d"</code> (was auto-enabled on any sectioned deck). Arrows stay linear by default.</li>
-</ul>
-
-<h2 id="v020">0.2.0 · 2026-06-02</h2>
-
-<h3>Added</h3>
-<ul>
-  <li><strong>Click-stages plugin</strong> · the first cut of per-element <code>v-click</code>-style reveals, opt-in via <code>installClickStages()</code>.</li>
-  <li><strong>Multi-file deck assembly</strong> · <code>rikiki assemble</code> stitches ordered <code>.html</code>/<code>.md</code> partials from a <code>deck.config</code>; a single <code>.md</code> splits on <code>---</code>.</li>
-  <li><strong><code>?live</code> opt-in</strong> · the core lazy-imports the livereload poller, watching the document's own stylesheets.</li>
-  <li><strong>LLM-facing reference</strong> (<code>docs/llms/rikiki-reference.md</code>) and a <code>rikiki-deck</code> authoring skill.</li>
-</ul>
-
-<h3>Fixed</h3>
-<ul>
-  <li>Presenter window showed slides unstyled; the bundle URL is now derived from <code>import.meta.url</code>.</li>
-  <li><code>deck-root</code> no longer throws in a sandboxed / <code>srcdoc</code> iframe (guarded <code>history.replaceState</code>).</li>
-</ul>
-
-<h2 id="v010">0.1.0 · 2026-05-21</h2>
-
-<h3>Added</h3>
-<ul>
-  <li>Initial public release.</li>
-  <li>
-    <strong>23 <code>&lt;deck-*&gt;</code> Web Components</strong> · 6 layouts
-    (cover, section, hero, hero-detail, split, hook) and 17 atoms (md, code,
-    callout, card, mermaid, stat, badge, metric, tier-list, step-list,
-    kicker, stack, grid, punch, shortcut, kbd, plus root).
-  </li>
-  <li>
-    <strong>Two ship-ready themes</strong> · <code>rikiki</code> (tropical
-    palette on dark) and <code>siliceum</code> (warm paper with a yellow
-    accent). Each is fully token-driven · ~100 CSS custom properties.
-  </li>
-  <li>
-    <strong>2D keyboard navigation</strong> · ←/→ between sections, ↑/↓
-    within a section, Space for linear, with linear fallback at boundaries
-    so no arrow ever feels dead.
-  </li>
-  <li>
-    <strong>Path-style overview mode</strong> (<kbd>O</kbd>) with a slide grid,
-    one row per chapter, sub-slides flowing right.
-  </li>
-  <li>
-    <strong>Lazy-loaded modules</strong> · <code>deck-overview.js</code> and
-    <code>deck-help.js</code> fetch on demand · -12 % on the initial bundle.
-  </li>
-  <li>
-    <strong>Live-reload helper</strong> (<code>?live</code>) · ~70 lines, no
-    WebSocket, polls Last-Modified.
-  </li>
-  <li>
-    <strong>TypeScript-first sources</strong> · the framework is built from
-    <code>.ts</code> with <code>@customElement</code>/<code>@property</code>
-    decorators · consumer-side stays zero-build.
-  </li>
-</ul>
-
-
 
 </Docs>
+
+<style is:global>
+  .content > article > .source-note {
+    border-left: 3px solid var(--rik-accent);
+    padding-left: var(--rik-space-3);
+  }
+</style>

@@ -63,14 +63,14 @@ const fullDeckEx = `<!doctype html>
 >
 
 <p>
-  Rikiki has 36 components but you don't need them on day one. Pick these five,
-  give your talk, come back later for the rest. Each example below is
+  Rikiki has 36 components but you do not need them on day one. Pick these
+  five, give your talk, come back later for the rest. Each example below is
   self-contained · drop it inside <code>&lt;deck-root&gt;</code> in the order
   that fits your story.
 </p>
 
 <h2 id="cover">1 · Cover</h2>
-<p>The opening slide. Title, optional sub-title, optional brand + speaker. Always first.</p>
+<p>The opening slide. Title, optional sub-title, optional brand + speaker. It comes first.</p>
 <CodeBlock label="cover" lang="html" code={coverEx} />
 <ComponentPreview code={coverEx} full />
 
@@ -88,7 +88,7 @@ const fullDeckEx = `<!doctype html>
 <h2 id="hero">3 · Hero with code</h2>
 <p>
   The workhorse · a title, a one-line lead, then one focal block (code,
-  diagram, big number). 80 % of your slides will look like this.
+  diagram, big number). Most body slides take this shape.
 </p>
 <CodeBlock label="hero" lang="html" code={heroEx} />
 <ComponentPreview code={heroEx} full />
@@ -103,24 +103,32 @@ const fullDeckEx = `<!doctype html>
 
 <h2 id="hook">5 · Hook for the punch line</h2>
 <p>
-  Close on a dark slide with one big sentence the audience leaves with. Don't
-  use this more than once or twice per deck · it loses weight if it's everywhere.
+  Close on a dark slide with one big sentence the audience leaves with. Use it
+  once or twice per deck · it loses weight when it is everywhere.
 </p>
 <CodeBlock label="hook" lang="html" code={hookEx} />
 <ComponentPreview code={hookEx} full />
 
 <h2 id="ship">Putting it together</h2>
-<p>That's a complete deck. Drop it in a file, open it, give the talk.</p>
+<p>
+  That is a complete deck. Save it as <code>index.html</code>, serve the
+  folder as in <a href="/docs/getting-started#serve">Getting started</a>,
+  give the talk. Speaker notes go in a <code>&lt;deck-notes&gt;</code> inside
+  a slide; pressing <kbd>P</kbd> opens a second window that shows them next to
+  the current and next slide.
+</p>
 <CodeBlock label="my-talk/index.html" lang="html" code={fullDeckEx} />
 <ComponentPreview code={`${coverEx}\n${sectionEx}\n${heroEx}\n${splitEx}\n${hookEx}`} full />
 
-<h2 id="next">When you outgrow these five</h2>
+<h2 id="next">Next</h2>
+<p>When you outgrow these five:</p>
 <ul>
+  <li><a href="/docs/anatomy">Anatomy of a slide</a> · the three layers every slide is built from.</li>
   <li>For a callout / warning box · <a href="/docs/components#deck-callout"><code>&lt;deck-callout&gt;</code></a></li>
   <li>For a big metric on the cover · <a href="/docs/components#deck-stat"><code>&lt;deck-stat&gt;</code></a></li>
   <li>For markdown body text · <a href="/docs/components#deck-md"><code>&lt;deck-md&gt;</code></a></li>
   <li>For a flowchart · <a href="/docs/components#deck-mermaid"><code>&lt;deck-mermaid&gt;</code></a></li>
-  <li>For speaker notes + presenter window · <a href="/docs/components#deck-notes"><code>&lt;deck-notes&gt;</code></a> then press <kbd>P</kbd></li>
+  <li>For speaker notes and the presenter window · <a href="/docs/components#deck-notes"><code>&lt;deck-notes&gt;</code></a>, then <a href="/docs/navigation#presenter">press <kbd>P</kbd></a></li>
   <li>The full reference · <a href="/docs/components">Component library</a></li>
 </ul>
 

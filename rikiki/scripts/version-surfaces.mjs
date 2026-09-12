@@ -7,7 +7,7 @@
 
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url)); // rikiki/scripts
 export const REPO_ROOT = resolve(here, '..', '..'); // git root
@@ -132,8 +132,25 @@ export function releasedSectionsWithoutDate(text) {
   return bad;
 }
 
-// The site changelog must carry an "<h2 ...>X.Y.Z · ...</h2>" section.
-export function siteMentionsVersion(text, version) {
+// The site changelog page renders CHANGELOG.md at build time through
+// site/src/lib/changelog.mjs, so the version section is checked on the markup
+// the page ships, not on the .astro source.
+export const SITE_CHANGELOG_RENDERER = at('site', 'src', 'lib', 'changelog.mjs');
+
+/** True when the page still builds itself from CHANGELOG.md through the
+ *  renderer · otherwise the rendered HTML checked below proves nothing. */
+export function sitePageRendersChangelog(text) {
+  return /from '(?:\.\.\/)+lib\/changelog\.mjs'/.test(text) && /CHANGELOG\.md/.test(text);
+}
+
+/** The HTML the changelog page publishes, produced by the same call. */
+export async function renderSiteChangelog() {
+  const { renderChangelog } = await import(pathToFileURL(SITE_CHANGELOG_RENDERER).href);
+  return renderChangelog(read(CHANGELOG));
+}
+
+// The rendered changelog must carry an "<h2 ...>X.Y.Z · ...</h2>" section.
+export function siteMentionsVersion(html, version) {
   const re = new RegExp(`<h2[^>]*>\\s*${version.replace(/\./g, '\\.')}\\s*·`);
-  return re.test(text);
+  return re.test(html);
 }

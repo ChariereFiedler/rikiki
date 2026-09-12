@@ -25,6 +25,44 @@ const carouselExample = `<!-- Carousel mode · auto-advance every 4 s, wrap at e
   </deck-feature>
 </deck-root>`;
 
+const fluidExample = `<!-- Fluid deck · fills its box and reflows, no logical canvas -->
+<deck-root fluid>
+  <deck-feature>
+    <h1 slot="title">Reflows with the window</h1>
+  </deck-feature>
+</deck-root>
+
+<!-- Or one slide at a time, inside a zoom-to-fit deck -->
+<deck-root>
+  <deck-feature>
+    <h1 slot="title">Scaled to the 1920 x 1080 canvas</h1>
+  </deck-feature>
+  <deck-feature fluid>
+    <h1 slot="title">This one uses the real viewport</h1>
+  </deck-feature>
+</deck-root>`;
+
+const useExample = `const deck = document.querySelector('deck-root');
+
+const unregister = deck.use({
+  name: 'count-steps',
+  setup(ctx) {
+    console.info('slides', ctx.slides.length);
+  },
+  steps(slide) {
+    return slide.querySelectorAll('[data-reveal]').length;
+  },
+  applyStep(step, slide) {
+    slide.querySelectorAll('[data-reveal]').forEach((el, i) => {
+      el.toggleAttribute('shown', i < step);
+    });
+  },
+});
+
+deck.addEventListener('slide-change', (e) => {
+  console.info(e.detail.previous, '->', e.detail.current, 'at', deck.current);
+});`;
+
 const carouselPreview = `<deck-feature><h1 slot="title">Slide 1</h1></deck-feature>
 <deck-feature><h1 slot="title">Slide 2</h1></deck-feature>
 <deck-feature><h1 slot="title">Slide 3</h1></deck-feature>`;
@@ -33,7 +71,7 @@ const carouselPreview = `<deck-feature><h1 slot="title">Slide 1</h1></deck-featu
 <Docs
   title="<deck-root> API"
   eyebrow="Reference"
-  description="Programmatic surface · navigation methods, lifecycle, and the keyboard event you can intercept."
+  description="For authors who script or embed a deck, and for extension writers: every attribute of <deck-root>, its slide-change event, and the use() method that registers an extension."
 >
 
 <h2 id="properties">Reactive properties</h2>
@@ -43,16 +81,87 @@ const carouselPreview = `<deck-feature><h1 slot="title">Slide 1</h1></deck-featu
     <tr><td><code>current</code></td>   <td><code>number</code> (state)</td>           <td>Index of the active slide (0-based).</td></tr>
     <tr><td><code>step</code></td>      <td><code>number</code> (state)</td>           <td>Current step within the active slide (0 = first reveal).</td></tr>
     <tr><td><code>overview</code></td>  <td><code>boolean</code> (reflected)</td>      <td>Toggles the overview mode.</td></tr>
-    <tr><td><code>transition</code></td><td><code>string</code> (reflected)</td>       <td>Lazy-loads the transition plugin. See <a href="/docs/plugins#transition">Plugins · transitions</a>.</td></tr>
+    <tr><td><code>transition</code></td><td><code>string</code> (reflected)</td>       <td>Lazy-loads the transition module. See <a href="/docs/plugins#transition">Optional modules · transitions</a>.</td></tr>
     <tr><td><code>autoplay</code></td>  <td><code>number</code> ms (reflected)</td>    <td>Auto-advance interval. <code>0</code> disables. Pauses on hover, resets on user nav.</td></tr>
     <tr><td><code>loop</code></td>      <td><code>boolean</code> (reflected)</td>      <td>Wrap around at the deck edges (carousel mode).</td></tr>
     <tr><td><code>swipe</code></td>     <td><code>boolean</code> (reflected)</td>      <td>Enable pointer-driven horizontal swipe navigation (touch + mouse).</td></tr>
     <tr><td><code>fluid</code></td>     <td><code>boolean</code> (reflected)</td>      <td>Fill the box and reflow instead of the zoom-to-fit canvas. Also honoured <strong>per slide</strong> (a slide carrying <code>fluid</code> escapes the canvas for the real viewport).</td></tr>
     <tr><td><code>noHint</code></td>   <td><code>boolean</code> · attr <code>no-hint</code></td>   <td>Hide the bottom-left key-hint chips.</td></tr>
     <tr><td><code>noArrows</code></td> <td><code>boolean</code> · attr <code>no-arrows</code></td> <td>Hide the bottom-right navigation chevrons.</td></tr>
+    <tr><td><code>noCounter</code></td><td><code>boolean</code> · attr <code>no-counter</code></td><td>Hide the bottom-right <code>n / total</code> counter.</td></tr>
     <tr><td><code>noZoom</code></td>   <td><code>boolean</code> · attr <code>no-zoom</code></td>   <td>Disable slide zoom (Ctrl/⌘+wheel, pinch, <code>+</code>/<code>-</code>/<code>0</code>) · on by default.</td></tr>
+    <tr><td><code>width</code> <code>height</code></td><td><code>number</code> (default <code>1920</code> / <code>1080</code>)</td><td>Logical canvas. Only the aspect ratio and the rem baseline depend on them · the canvas is then scaled to fit the box.</td></tr>
+    <tr><td><code>mouseNav</code></td> <td><code>string</code> · attr <code>mouse-nav</code></td>  <td>Mouse mechanisms in use. <code>none</code> disables them, or pass a space-separated subset of <code>click wheel arrows aux</code>. Unset means all of them.</td></tr>
+    <tr><td><code>nav</code></td>      <td><code>string</code> (reflected)</td>       <td><code>2d</code> opts into chapter/slide grid navigation. Unset stays linear, whatever the <code>deck-section</code> structure.</td></tr>
+    <tr><td><code>preview</code></td>  <td><code>boolean</code> (reflected)</td>      <td>Passive render · the deck still scales and letterboxes but wires no keyboard, mouse, autoplay or presenter handler. Used by the presenter preview panes.</td></tr>
+    <tr><td><code>blank</code></td>    <td><code>'black' | 'white' | null</code> (state)</td><td>The full-screen blank overlay (the <kbd>B</kbd> / <kbd>W</kbd> clicker keys). Not an attribute.</td></tr>
+    <tr><td><code>presenterActive</code></td><td><code>boolean</code> (state)</td>   <td>Set by the presenter module while the speaker window is open · the main window then hides its hint chips and arrows.</td></tr>
   </tbody>
 </table>
+<p>
+  <code>current</code>, <code>step</code>, <code>blank</code> and
+  <code>presenterActive</code> are reactive state, readable and writable from
+  script but carrying no attribute. The rest are reflected, so setting the
+  attribute in HTML and setting the property from script do the same thing.
+</p>
+
+<h2 id="fluid">Fixed canvas or fluid</h2>
+<p>
+  By default the deck is a fixed logical canvas of
+  <code>width</code> × <code>height</code>, scaled uniformly to fit its box and
+  letterboxed when the aspect differs · every slide then keeps an identical
+  layout at any window size. <code>fluid</code> drops that: the stage fills the
+  box and the slide reflows like a web page. A single slide can carry
+  <code>fluid</code> on its own to escape the canvas while it is the active one.
+</p>
+<CodeBlock label="fluid" lang="html" code={fluidExample} />
+
+<h2 id="events">Events</h2>
+<p>
+  <code>deck-root</code> dispatches one event of its own,
+  <code>slide-change</code>, when the active slide changes · not on a step
+  change within a slide. It does not bubble, so listen on the
+  <code>deck-root</code> element itself. Its <code>detail</code> carries
+  <code>current</code> and <code>previous</code>, the two slide elements
+  (<code>previous</code> is <code>null</code> on the first render). The
+  transition module and the presenter window are both built on it.
+</p>
+
+<h2 id="use">Registering an extension · <code>use()</code></h2>
+<p>
+  <code>use(plugin)</code> is the element's own public method, next to the standard custom-element lifecycle. It takes an
+  object with a <code>name</code> and any of the optional hooks
+  <code>setup</code>, <code>steps</code>, <code>applyStep</code> and
+  <code>navigate</code>, and returns a function that unregisters it. It is
+  idempotent by <code>name</code>: registering the same name twice keeps the
+  first one. Each hook receives a small context with the host element, the live
+  <code>current</code> and <code>step</code>, the slide list, and
+  <code>requestUpdate()</code>.
+</p>
+<ul>
+  <li><code>setup(ctx)</code> · runs once on registration, may return a teardown.</li>
+  <li><code>steps(slide, ctx)</code> · contributes to that slide's step count · the engine takes the maximum of its own count and every plugin's.</li>
+  <li><code>applyStep(step, slide, ctx)</code> · runs after the engine applied a step.</li>
+  <li><code>navigate(to, ctx, proceed)</code> · wraps a cross-slide move · call <code>proceed()</code> to run it, return a truthy value when handled. Only the first registered plugin with this hook owns navigation; a second one is warned about and ignored.</li>
+</ul>
+<CodeBlock label="use() and slide-change" lang="js" code={useExample} />
+
+<h2 id="embed">Embedding a deck in a page</h2>
+<p>
+  A deck can live inside a course page, a guide or product documentation. The
+  host page loads the same two files a standalone deck does, the theme stylesheet
+  and <code>dist/index.js</code>, then places <code>&lt;deck-root&gt;</code> in a
+  sized container: the element fills its container, so give that container a
+  width and an aspect ratio, for example <code>width: 100%; aspect-ratio: 16 / 9</code>.
+</p>
+<ul>
+  <li>Arrow keys act only while the embedded deck has focus; it receives <code>tabindex="0"</code> automatically, so a click or a Tab gives it focus.</li>
+  <li>The page URL hash is left alone: deep links to a slide work for a full-page deck only.</li>
+  <li><code>mouse-nav="click arrows"</code> keeps the mouse wheel for the host page; the mechanisms are <code>click</code>, <code>wheel</code>, <code>arrows</code> and <code>aux</code>.</li>
+  <li>The theme's helper classes are scoped to the deck subtree and do not restyle the host page.</li>
+  <li>The deck's own hint and arrows can be hidden with <code>no-hint</code> and <code>no-arrows</code> when the host page owns the chrome.</li>
+</ul>
+<p>See <a href="/docs/recipes#training-carousel">the training carousel recipe</a> for the autoplay variant.</p>
 
 <h2 id="carousel">Carousel mode</h2>
 <p>
@@ -76,8 +185,9 @@ const carouselPreview = `<deck-feature><h1 slot="title">Slide 1</h1></deck-featu
 <table class="t">
   <thead><tr><th>Key</th><th>Behavior</th></tr></thead>
   <tbody>
-    <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Section nav · linear fallback at edges</td></tr>
-    <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Sub-slide nav · linear fallback at section boundaries</td></tr>
+    <tr><td><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td><td>Next / previous slide or step · the default, linear</td></tr>
+    <tr><td><kbd>←</kbd> <kbd>→</kbd> with <code>nav="2d"</code></td><td>Section nav · linear fallback at edges</td></tr>
+    <tr><td><kbd>↑</kbd> <kbd>↓</kbd> with <code>nav="2d"</code></td><td>Sub-slide nav · linear fallback at section boundaries</td></tr>
     <tr><td><kbd>Space</kbd> <kbd>PgDn</kbd></td><td>Linear next</td></tr>
     <tr><td><kbd>PgUp</kbd></td><td>Linear previous</td></tr>
     <tr><td><kbd>Home</kbd> <kbd>End</kbd></td><td>First / last slide</td></tr>
@@ -123,24 +233,26 @@ const carouselPreview = `<deck-feature><h1 slot="title">Slide 1</h1></deck-featu
   <li><code>--deck-root-dot-active-bg</code> · active slide dot</li>
   <li><code>--deck-root-counter-color</code> · "N / total" text colour</li>
   <li><code>--deck-root-kb-hint-color</code> · keyboard-hint footer text colour</li>
+  <li><code>--deck-root-nav-bg</code> · background of the bottom-right nav chevrons</li>
+  <li><code>--deck-root-nav-color</code> · chevron glyph colour</li>
+  <li><code>--deck-root-nav-opacity</code> · chevron resting opacity · default <code>0.35</code></li>
 </ul>
 
-<h2 id="extending">Extending</h2>
+<h2 id="extending">Adding an element</h2>
 <p>
   To add a layout or atom, write a class that extends <code>LitElement</code>,
   decorate it with <code>@customElement('deck-myname')</code>, and import the
   file from your deck. The new tag is immediately usable inside any slide ·
-  no registration step in <code>deck-root</code>.
+  no registration step in <code>deck-root</code>. See
+  <a href="/docs/plugins#writing">Optional modules · writing an extension</a> for
+  the full hook contract and the <code>setDeckCodeHighlighter</code> hook.
 </p>
-<p>
-  To extend the deck's <em>behaviour</em> (step counts, reveals, navigation),
-  register a plugin with <code>deckRoot.use(plugin)</code> · a
-  <code>DeckPlugin</code> with optional <code>setup</code> / <code>steps</code> /
-  <code>applyStep</code> / <code>navigate</code> hooks. <code>use()</code> returns
-  an unregister function and is idempotent by the plugin's <code>name</code>. See
-  <a href="/docs/plugins#writing">Plugins · writing a plugin</a> for the full
-  contract and the <code>setDeckCodeHighlighter</code> hook.
-</p>
+
+<h2 id="next">Next</h2>
+<ul>
+  <li><a href="/docs/plugins">Optional modules</a> · transitions, the presenter window, syntax highlighting and the other modules a deck imports.</li>
+  <li><a href="/docs/navigation">Navigation</a> · the keys and mouse gestures the properties above control.</li>
+</ul>
 
 <style>
   table.t {
@@ -155,7 +267,7 @@ const carouselPreview = `<deck-feature><h1 slot="title">Slide 1</h1></deck-featu
     vertical-align: top;
   }
   table.t th {
-    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    font: 700 var(--rik-font-size-sm)/1 var(--rik-font-mono);
     text-transform: uppercase; letter-spacing: 0.1em;
     color: var(--rik-text-default--faint);
   }

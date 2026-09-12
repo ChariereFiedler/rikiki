@@ -1,8 +1,21 @@
 ---
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import Docs from '../../layouts/Docs.astro';
 import CodeBlock from '../../components/CodeBlock.astro';
 import ComponentPreview from '../../components/ComponentPreview.astro';
 import TokenReference from '../../components/TokenReference.astro';
+
+// How many elements the default bundle registers, and how many stay opt-in ·
+// read from src/index.ts by scripts/component-surfaces.mjs rather than typed
+// here. Loaded through a runtime file URL so Vite leaves the module out of the
+// prerender bundle: it locates the package from its own import.meta.url.
+const componentSurfaces = pathToFileURL(
+  resolve(process.cwd(), '../rikiki/scripts/component-surfaces.mjs'),
+).href;
+const { coreElements, optInElements } = await import(/* @vite-ignore */ componentSurfaces);
+const coreCount = coreElements().length;
+const optInCount = optInElements().length;
 
 const layoutTags = new Set(['deck-cover', 'deck-section', 'deck-feature', 'deck-split', 'deck-feature-cards', 'deck-takeaway', 'deck-photo', 'deck-bento']);
 
@@ -36,6 +49,11 @@ const layouts: Component[] = [
       { name: 'duration',    type: 'string' },
       { name: 'audience',    type: 'string' },
       { name: 'runtime',     type: 'string' },
+      { name: 'speaker-label',  type: 'string', note: 'Override the meta label · the default follows the document language' },
+      { name: 'company-label',  type: 'string' },
+      { name: 'duration-label', type: 'string' },
+      { name: 'audience-label', type: 'string' },
+      { name: 'runtime-label',  type: 'string' },
     ],
     slots: [
       { name: '(default)', note: 'Title (h1) and subtitle (.sub)' },
@@ -59,7 +77,11 @@ const layouts: Component[] = [
   {
     tag: 'deck-feature',
     summary: 'One focal block · code, table, mermaid, big stat.',
-    attrs: [{ name: 'eyebrow', type: 'string', note: 'Small pill above the title' }],
+    attrs: [
+      { name: 'eyebrow', type: 'string', note: 'Small pill above the title' },
+      { name: 'spread',  type: 'between | around | evenly | center | end | start', note: 'How the leftover vertical space of the body is distributed · default start' },
+      { name: 'fill',    type: 'boolean', note: 'Let the body blocks take the leftover height instead · pair with a <deck-fit> child' },
+    ],
     slots: [
       { name: 'title', note: 'h1' },
       { name: 'lead',  note: 'one-line intro' },
@@ -81,6 +103,11 @@ const layouts: Component[] = [
       { name: 'cols',    type: '"1-1" | "1-2" | "2-1" | "3"', note: 'Default 1-1' },
       { name: 'gap',     type: '1..6',                        note: 'maps to var(--rik-space-N)' },
       { name: 'col-gap', type: '1..6',                        note: 'gap between children inside a column' },
+      { name: 'eyebrow', type: 'string',                      note: 'Small pill above the title' },
+      { name: 'spread',  type: 'between | around | evenly | center | end | start', note: 'How the leftover vertical space of the body is distributed · default start' },
+      { name: 'fill',    type: 'boolean',                     note: 'Let the body blocks take the leftover height instead' },
+      { name: 'pivot',   type: 'string',                      note: 'Symbol or word drawn between the two columns · turns a neutral split into a directed comparison. Two columns only' },
+      { name: 'winner',  type: 'left | right',                note: 'Which side carries the accent rule · absent for neither' },
     ],
     slots: [
       { name: 'title / lead', note: 'header above the columns' },
@@ -114,7 +141,11 @@ const layouts: Component[] = [
   {
     tag: 'deck-takeaway',
     summary: 'Centered punchline on dark · the take-home line.',
-    attrs: [{ name: 'kicker', type: 'string', note: 'Small caption above the punch' }],
+    attrs: [
+      { name: 'kicker', type: 'string', note: 'Small caption above the punch' },
+      { name: 'spread', type: 'between | around | evenly | center | end | start', note: 'How the leftover vertical space of the body is distributed · default start' },
+      { name: 'fill',   type: 'boolean', note: 'Let the body blocks take the leftover height instead' },
+    ],
     slots: [{ name: '(default)', note: 'Use <deck-punch size="display"> for the big text' }],
     example: `<deck-takeaway kicker="The whole point">
   <deck-punch size="display">Source = output.</deck-punch>
@@ -167,41 +198,34 @@ const layouts: Component[] = [
   },
 ];
 
+// Ordered by theme rather than by source folder · text first (what a slide
+// says), then data (what it proves), then structure (how the slide is laid
+// out), then media (what it embeds). An author scanning for "the thing that
+// shows a number" reads one run of entries instead of the whole list.
 const atoms: Component[] = [
+  // ── Text ──────────────────────────────────────────────────────
   {
-    tag: 'deck-cell',
-    summary: 'Bento grid item · a size container, so child cqw/cqh type scales against the cell.',
-    attrs: [
-      { name: 'span',    type: '"CxR" | column count', note: 'e.g. 2x1' },
-      { name: 'col',     type: 'integer | line syntax', note: 'per-axis override' },
-      { name: 'row',     type: 'integer | line syntax', note: 'per-axis override' },
-      { name: 'tone',    type: 'info | warn | ok | danger' },
-      { name: 'plain',   type: 'boolean', note: 'drop the card chrome' },
-      { name: 'flat',    type: 'boolean', note: 'keep the surface, drop the border' },
-      { name: 'align',   type: 'start | center | end | stretch', note: 'HORIZONTAL · align-items' },
-      { name: 'justify', type: 'start | center | end | between', note: 'VERTICAL · justify-content' },
-    ],
-    example: `<deck-cell span="2x1" tone="ok" justify="end">
-  <h3>Bottom-aligned</h3>
-</deck-cell>`,
-    tokens: ['--deck-cell-bg', '--deck-cell-border', '--deck-cell-radius', '--deck-cell-padding-x', '--deck-cell-padding-y', '--deck-cell-gap'],
+    tag: 'deck-md',
+    summary: 'Markdown body · GFM, tables, lists, code, **bold**, *italic*.',
+    example: `<deck-md>
+  **Markdown** body with \`inline code\`, lists, and links.
+</deck-md>`,
+    tokens: ['--deck-md-pre-bg', '--deck-md-pre-border', '--deck-md-pre-text'],
   },
   {
-    tag: 'deck-csv',
-    summary: 'Inline CSV rendered as a styled table · cells are trimmed.',
+    tag: 'deck-punch',
+    summary: 'Big punchline text · sized via attribute, color via tone.',
     attrs: [
-      { name: 'delimiter', type: 'string', note: 'default ","' },
-      { name: 'no-header', type: 'boolean', note: 'first row is data' },
-      { name: 'fit',       type: 'boolean', note: 'shrink the table to fit its box' },
-      { name: 'fit-min',   type: 'rem', note: 'default 0.6' },
-      { name: 'fit-max',   type: 'rem', note: 'default 2' },
+      { name: 'size',    type: 'lead | big | mega | stat | display' },
+      { name: 'tone',    type: 'warn | danger | ok | info | muted | accent' },
+      { name: 'weight',  type: '700 | 800 | 900' },
+      { name: 'align',   type: 'left | center | right' },
+      { name: 'fit',     type: 'boolean', note: 'Shrink to fit the box · overrides size and the fluid cqw scaling' },
+      { name: 'fit-min', type: 'rem',     note: 'Fit floor · default 1' },
+      { name: 'fit-max', type: 'rem',     note: 'Fit ceiling · default 12' },
     ],
-    example: `<deck-csv delimiter=";" fit>
-  Region; Users; Plan
-  EMEA; 12 040; Pro
-  APAC; 9 310; Pro
-</deck-csv>`,
-    tokens: ['--deck-csv-border', '--deck-csv-header-bg', '--deck-csv-padding-x', '--deck-csv-padding-y'],
+    example: `<deck-punch size="display">Source = output.</deck-punch>`,
+    tokens: ['--deck-punch-color', '--deck-punch-size'],
   },
   {
     tag: 'deck-fit',
@@ -215,35 +239,30 @@ const atoms: Component[] = [
 </deck-fit>`,
   },
   {
-    tag: 'deck-tier-arrow',
-    summary: 'Separator note between two tiers of a deck-tier-list.',
-    example: `<deck-tier-list>
-  <deck-tier label="S">Ships today</deck-tier>
-  <deck-tier-arrow>after ~6 runs</deck-tier-arrow>
-  <deck-tier label="A">Ships next</deck-tier>
-</deck-tier-list>`,
-  },
-  {
-    tag: 'deck-code',
-    summary: 'Code block with light syntax highlighting · js, ts, html, css.',
+    tag: 'deck-kicker',
+    summary: 'Caption-style label above a section · uppercase, mono.',
     attrs: [
-      { name: 'lang',        type: 'js | ts | html | css | …' },
-      { name: 'hero',        type: 'boolean', note: 'centers vertically as the focal block' },
-      { name: 'nested',      type: 'boolean', note: 'no shadow, lighter border (inside a card)' },
-      { name: 'step-groups', type: 'JSON',    note: '[[1,2],[3,4]] · highlight subsets of lines on each step' },
+      { name: 'on-dark', type: 'boolean', note: 'Switch to the inverse-surface palette · use on dark backgrounds' },
     ],
-    example: `<deck-code lang="ts" hero>
-  const greet = (n: string) => \`Hi, \${n}\`;
-</deck-code>`,
-    tokens: ['--deck-code-bg', '--deck-code-border', '--deck-code-text', '--deck-code-radius', '--deck-code-padding-x', '--deck-code-padding-y', '--deck-code-syntax-{kw,str,num,cmt,ty,prop,fn}'],
+    example: `<deck-kicker>Before</deck-kicker>`,
+    tokens: ['--deck-kicker-color', '--deck-kicker-on-dark-color', '--deck-kicker-font-size', '--deck-kicker-tracking', '--deck-kicker-margin'],
   },
   {
-    tag: 'deck-md',
-    summary: 'Markdown body · GFM, tables, lists, code, **bold**, *italic*.',
-    example: `<deck-md>
-  **Markdown** body with \`inline code\`, lists, and links.
-</deck-md>`,
-    tokens: ['--deck-md-pre-bg', '--deck-md-pre-border', '--deck-md-pre-text'],
+    tag: 'deck-badge',
+    summary: 'Status pill · bad / ok / info / warn / neutral.',
+    attrs: [{ name: 'type', type: 'bad | ok | info | warn | neutral' }],
+    example: `<deck-badge type="ok">production-ready</deck-badge>`,
+    tokens: ['--deck-badge-bg', '--deck-badge-fg', '--deck-badge-border', '--deck-badge-radius', '--deck-badge-padding-x', '--deck-badge-padding-y'],
+  },
+  {
+    tag: 'deck-kbd',
+    summary: 'One keyboard key chip · inline anywhere in body text, and the piece <deck-shortcut> draws its keys from.',
+    attrs: [
+      { name: 'tone', type: 'accent | ok', note: 'Paint the chip when one key in a run deserves the emphasis' },
+    ],
+    slots: [{ name: '(default)', note: 'The key name · Esc, ⌘, PgDn' }],
+    example: `<p>Press <deck-kbd>P</deck-kbd> to open the presenter window.</p>`,
+    tokens: ['--deck-kbd-bg', '--deck-kbd-color', '--deck-kbd-border', '--deck-kbd-radius', '--deck-kbd-padding-x', '--deck-kbd-padding-y', '--deck-kbd-accent-bg', '--deck-kbd-ok-bg'],
   },
   {
     tag: 'deck-callout',
@@ -258,35 +277,29 @@ const atoms: Component[] = [
     tokens: ['--deck-callout-bg', '--deck-callout-border', '--deck-callout-stroke', '--deck-callout-radius', '--deck-callout-padding-x', '--deck-callout-padding-y', '--deck-callout-color', '--deck-callout-strong-color', '--deck-callout-code-bg'],
   },
   {
-    tag: 'deck-card',
-    summary: 'Tinted card · yellow, orange, green, red.',
-    attrs: [
-      { name: 'color',   type: 'yellow | orange | green | red' },
-      { name: 'center',  type: 'boolean' },
-      { name: 'compact', type: 'boolean', note: 'reduced padding' },
+    tag: 'deck-notes',
+    summary: 'Speaker notes for a slide · hidden by default, surfaced in the presenter window (press P). Free-form text content.',
+    slots: [
+      { name: '(default)', note: 'Plain text or markup · displayed as-is in the presenter window' },
     ],
-    example: `<deck-card color="green">
-  <h3>Tinted card</h3>
-  <p>Used inside splits and grids.</p>
-</deck-card>`,
-    tokens: ['--deck-card-bg', '--deck-card-border', '--deck-card-text', '--deck-card-title-color', '--deck-card-radius', '--deck-card-padding-x', '--deck-card-padding-y', '--deck-card-shadow', '--deck-card-gap'],
+    example: `<deck-feature>
+  <h1 slot="title">My slide</h1>
+  <deck-notes>
+    Talking points:
+    - Mention the migration story
+    - Pause for laughter on the Java joke
+  </deck-notes>
+</deck-feature>`,
   },
-  {
-    tag: 'deck-mermaid',
-    summary: 'Mermaid diagram · rendered by the optional vendored runtime in bundles.',
-    attrs: [{ name: 'compact', type: 'boolean', note: 'reduced padding and max-width' }],
-    example: `<deck-mermaid>
-  graph LR
-  a --> b --> c
-</deck-mermaid>`,
-    tokens: ['--deck-mermaid-bg', '--deck-mermaid-border', '--deck-mermaid-padding', '--deck-mermaid-radius'],
-  },
+
+  // ── Data ──────────────────────────────────────────────────────
   {
     tag: 'deck-stat',
     summary: 'Big-number visual · for promises, metrics, milestones.',
     attrs: [
-      { name: 'num',  type: 'string',                      note: 'Huge display-font number' },
-      { name: 'tone', type: 'yellow|orange|green|red|purple|lime|cyan' },
+      { name: 'num',     type: 'string',                      note: 'Huge display-font number' },
+      { name: 'tone',    type: 'yellow|orange|green|red|purple|lime|cyan' },
+      { name: 'compact', type: 'boolean',                     note: 'Smaller scale, for a row of stats rather than one hero figure' },
     ],
     slots: [
       { name: 'claim',     note: 'Mid-size headline below the number' },
@@ -297,13 +310,6 @@ const atoms: Component[] = [
   No build, no toolchain.
 </deck-stat>`,
     tokens: ['--deck-stat-color', '--deck-stat-num-size', '--deck-stat-num-weight', '--deck-stat-claim-color', '--deck-stat-body-color', '--deck-stat-border-width', '--deck-stat-padding-x', '--deck-stat-padding-y', '--deck-stat-gap'],
-  },
-  {
-    tag: 'deck-badge',
-    summary: 'Status pill · bad / ok / info / warn / neutral.',
-    attrs: [{ name: 'type', type: 'bad | ok | info | warn | neutral' }],
-    example: `<deck-badge type="ok">production-ready</deck-badge>`,
-    tokens: ['--deck-badge-bg', '--deck-badge-fg', '--deck-badge-border', '--deck-badge-radius', '--deck-badge-padding-x', '--deck-badge-padding-y'],
   },
   {
     tag: 'deck-metric',
@@ -328,33 +334,100 @@ const atoms: Component[] = [
 </deck-metric-list>`,
   },
   {
-    tag: 'deck-tier-list',
-    summary: 'Tier list · for JIT levels, severity ladders, ranking.',
+    tag: 'deck-csv',
+    summary: 'Inline CSV rendered as a styled table · cells are trimmed.',
     attrs: [
-      { name: 'name',     type: 'string' },
-      { name: 'speed',    type: 'string', note: 'right-side number' },
-      { name: 'severity', type: 'muted | warn | ok' },
-      { name: 'hot',      type: 'boolean' },
+      { name: 'delimiter',      type: 'string',  note: 'default ","' },
+      { name: 'no-header',      type: 'boolean', note: 'first row is data' },
+      { name: 'fit',            type: 'boolean', note: 'shrink the table to fit its box' },
+      { name: 'fit-min',        type: 'rem',     note: 'default 0.6' },
+      { name: 'fit-max',        type: 'rem',     note: 'default 2' },
+      { name: 'highlight-rows', type: 'string',  note: '1-based body rows to emphasise · "2" or "2 5"' },
+      { name: 'highlight-cols', type: 'string',  note: '1-based columns to emphasise · same grammar' },
+      { name: 'reveal',         type: 'boolean', note: 'show one body row per step instead of the whole table' },
     ],
+    example: `<deck-csv delimiter=";" highlight-rows="2" fit>
+  Region; Users; Plan
+  EMEA; 12 040; Pro
+  APAC; 9 310; Pro
+</deck-csv>`,
+    tokens: ['--deck-csv-border', '--deck-csv-header-bg', '--deck-csv-padding-x', '--deck-csv-padding-y'],
+  },
+  {
+    tag: 'deck-tier-list',
+    summary: 'Tier ladder · stacks <deck-tier> rows for JIT levels, severity ladders, ranking. No attributes · the rows carry the data.',
     example: `<deck-tier-list>
   <deck-tier name="LLInt" speed="×1">Bytecode</deck-tier>
   <deck-tier name="FTL"   speed="×100" hot>LLVM</deck-tier>
 </deck-tier-list>`,
+  },
+  {
+    tag: 'deck-tier',
+    summary: 'One tier of a <deck-tier-list> · name on the left, speed on the right, description in the default slot.',
+    attrs: [
+      { name: 'name',     type: 'string', note: 'Left-hand label, in the mono face' },
+      { name: 'speed',    type: 'string', note: 'Right-side figure · free text, not only a number' },
+      { name: 'severity', type: 'muted | warn | ok', note: 'Colors the speed figure' },
+      { name: 'hot',      type: 'boolean', note: 'Marks the top tier · tints the row and the figure with the accent' },
+    ],
+    slots: [{ name: '(default)', note: 'Description line under the name' }],
+    example: `<deck-tier-list>
+  <deck-tier name="LLInt" speed="×1"   severity="muted">Bytecode interpreter</deck-tier>
+  <deck-tier name="DFG"   speed="×8"   severity="ok">Optimizing JIT</deck-tier>
+  <deck-tier name="FTL"   speed="×100" hot>Top-tier JIT</deck-tier>
+</deck-tier-list>`,
     tokens: ['--deck-tier-bg', '--deck-tier-border', '--deck-tier-radius', '--deck-tier-padding-x', '--deck-tier-padding-y', '--deck-tier-shadow', '--deck-tier-name-color', '--deck-tier-desc-color', '--deck-tier-speed-{muted,warn,ok}', '--deck-tier-hot-bg', '--deck-tier-hot-border', '--deck-tier-hot-color'],
   },
   {
+    tag: 'deck-tier-arrow',
+    summary: 'Separator note between two tiers of a deck-tier-list.',
+    example: `<deck-tier-list>
+  <deck-tier name="S" speed="×1">Ships today</deck-tier>
+  <deck-tier-arrow>after ~6 runs</deck-tier-arrow>
+  <deck-tier name="A" speed="×10">Ships next</deck-tier>
+</deck-tier-list>`,
+  },
+  {
     tag: 'deck-step-list',
-    summary: 'Numbered steps · big circle bullet, mono label, chip note.',
+    summary: 'Numbered steps · stacks <deck-step> rows, or chains them across the width.',
     attrs: [
-      { name: 'n',    type: 'string', note: 'Number or letter' },
-      { name: 'note', type: 'string', note: 'Right-aligned chip' },
-      { name: 'note-position', type: 'inline | below', note: 'On deck-step · below puts the note under its label' },
+      { name: 'direction',     type: 'column | row', note: 'default column · row lays the steps as a chain across the width' },
+      { name: 'no-connectors', type: 'boolean',      note: 'Drop the connector drawn between steps in row direction' },
     ],
+    slots: [{ name: '(default)', note: '<deck-step> children' }],
     example: `<deck-step-list>
   <deck-step n="1" note="opens the deck">Cover</deck-step>
   <deck-step n="2" note="chapter break">Section</deck-step>
 </deck-step-list>`,
-    tokens: ['--deck-step-bg', '--deck-step-border', '--deck-step-radius', '--deck-step-padding-x', '--deck-step-padding-y', '--deck-step-shadow', '--deck-step-num-bg', '--deck-step-num-color', '--deck-step-num-size', '--deck-step-label-color', '--deck-step-chip-bg', '--deck-step-chip-color'],
+    tokens: ['--deck-step-list-gap', '--deck-step-list-connector', '--deck-step-list-arrow'],
+  },
+  {
+    tag: 'deck-step',
+    summary: 'One step of a <deck-step-list> · number, label, and the note that explains it.',
+    attrs: [
+      { name: 'n',             type: 'string',          note: 'Number or letter carrying the sequence' },
+      { name: 'note',          type: 'string',          note: 'Supporting explanation, read after the label' },
+      { name: 'note-position', type: 'inline | below',  note: 'default inline · below puts the note under its label, which keeps a row of steps readable' },
+    ],
+    slots: [{ name: '(default)', note: 'The step label' }],
+    example: `<deck-step-list direction="row">
+  <deck-step n="1" note="What the check measures" note-position="below">Inspect</deck-step>
+  <deck-step n="2" note="What it writes" note-position="below">Report</deck-step>
+</deck-step-list>`,
+    tokens: ['--deck-step-rule', '--deck-step-padding-y', '--deck-step-num-color', '--deck-step-num-size', '--deck-step-num-scale', '--deck-step-label-color', '--deck-step-note-color', '--deck-step-note-gap'],
+  },
+  {
+    tag: 'deck-shortcut-list',
+    summary: 'Two-column grid of <deck-shortcut> rows, with a separator line under each.',
+    attrs: [
+      { name: 'cols',    type: 'string', note: 'Set to "1" for a single column · the default is two' },
+      { name: 'col-gap', type: '1..6',   note: 'Space between the two columns' },
+    ],
+    slots: [{ name: '(default)', note: '<deck-shortcut> children' }],
+    example: `<deck-shortcut-list cols="1" col-gap="4">
+  <deck-shortcut keys="O" label="Overview" note="Path layout"></deck-shortcut>
+  <deck-shortcut keys="?" label="Help" note="Full shortcut overlay"></deck-shortcut>
+</deck-shortcut-list>`,
   },
   {
     tag: 'deck-shortcut',
@@ -362,26 +435,17 @@ const atoms: Component[] = [
     attrs: [
       { name: 'keys',  type: 'string', note: 'Space-separated · e.g. "Space PgDn"' },
       { name: 'label', type: 'string' },
-      { name: 'note',  type: 'string' },
+      { name: 'note',  type: 'string', note: 'Falls back to the default slot when absent' },
+      { name: 'tone',  type: 'accent | ok', note: 'Paints the keys of this row' },
     ],
+    slots: [{ name: '(default)', note: 'The note, when it is richer than a string attribute' }],
     example: `<deck-shortcut-list>
-  <deck-shortcut keys="O" label="Overview" note="Path layout"/>
-  <deck-shortcut keys="?" label="Help" note="Full shortcut overlay"/>
+  <deck-shortcut keys="O" label="Overview" note="Path layout"></deck-shortcut>
+  <deck-shortcut keys="?" label="Help" note="Full shortcut overlay" tone="accent"></deck-shortcut>
 </deck-shortcut-list>`,
-    tokens: ['--deck-kbd-bg', '--deck-kbd-color', '--deck-kbd-border', '--deck-kbd-radius', '--deck-kbd-padding-x', '--deck-kbd-padding-y', '--deck-kbd-accent-bg', '--deck-kbd-ok-bg'],
   },
-  {
-    tag: 'deck-punch',
-    summary: 'Big punchline text · sized via attribute, color via tone.',
-    attrs: [
-      { name: 'size',   type: 'lead | big | mega | stat | display' },
-      { name: 'tone',   type: 'warn | danger | ok | info | muted | accent' },
-      { name: 'weight', type: '700 | 800 | 900' },
-      { name: 'align',  type: 'left | center | right' },
-    ],
-    example: `<deck-punch size="display">Source = output.</deck-punch>`,
-    tokens: ['--deck-punch-color', '--deck-punch-size'],
-  },
+
+  // ── Structure ─────────────────────────────────────────────────
   {
     tag: 'deck-stack',
     summary: 'Vertical (or horizontal) flex container · the most-used spacing helper.',
@@ -416,13 +480,18 @@ const atoms: Component[] = [
     tokens: ['--deck-grid-gap'],
   },
   {
-    tag: 'deck-kicker',
-    summary: 'Caption-style label above a section · uppercase, mono.',
+    tag: 'deck-card',
+    summary: 'Tinted card · yellow, orange, green, red.',
     attrs: [
-      { name: 'on-dark', type: 'boolean', note: 'Switch to the inverse-surface palette · use on dark backgrounds' },
+      { name: 'color',   type: 'yellow | orange | green | red' },
+      { name: 'center',  type: 'boolean' },
+      { name: 'compact', type: 'boolean', note: 'reduced padding' },
     ],
-    example: `<deck-kicker>Before</deck-kicker>`,
-    tokens: ['--deck-kicker-color', '--deck-kicker-on-dark-color', '--deck-kicker-font-size', '--deck-kicker-tracking', '--deck-kicker-margin'],
+    example: `<deck-card color="green">
+  <h3>Tinted card</h3>
+  <p>Used inside splits and grids.</p>
+</deck-card>`,
+    tokens: ['--deck-card-bg', '--deck-card-border', '--deck-card-text', '--deck-card-title-color', '--deck-card-radius', '--deck-card-padding-x', '--deck-card-padding-y', '--deck-card-shadow', '--deck-card-gap'],
   },
   {
     tag: 'deck-source',
@@ -441,19 +510,67 @@ const atoms: Component[] = [
     tokens: ['--deck-source-color', '--deck-source-gap'],
   },
   {
-    tag: 'deck-notes',
-    summary: 'Speaker notes for a slide · hidden by default, surfaced in the presenter window (press P). Free-form text content.',
-    slots: [
-      { name: '(default)', note: 'Plain text or markup · displayed as-is in the presenter window' },
+    tag: 'deck-cell',
+    summary: 'Bento grid item · a size container, so child cqw/cqh type scales against the cell.',
+    attrs: [
+      { name: 'span',    type: '"CxR" | column count', note: 'e.g. 2x1' },
+      { name: 'col',     type: 'integer | line syntax', note: 'per-axis override' },
+      { name: 'row',     type: 'integer | line syntax', note: 'per-axis override' },
+      { name: 'tone',    type: 'info | warn | ok | danger' },
+      { name: 'plain',   type: 'boolean', note: 'drop the card chrome' },
+      { name: 'flat',    type: 'boolean', note: 'keep the surface, drop the border' },
+      { name: 'align',   type: 'start | center | end | stretch', note: 'HORIZONTAL · align-items' },
+      { name: 'justify', type: 'start | center | end | between', note: 'VERTICAL · justify-content' },
     ],
-    example: `<deck-feature>
-  <h1 slot="title">My slide</h1>
-  <deck-notes>
-    Talking points:
-    - Mention the migration story
-    - Pause for laughter on the Java joke
-  </deck-notes>
-</deck-feature>`,
+    example: `<deck-cell span="2x1" tone="ok" justify="end">
+  <h3>Bottom-aligned</h3>
+</deck-cell>`,
+    tokens: ['--deck-cell-bg', '--deck-cell-border', '--deck-cell-radius', '--deck-cell-padding-x', '--deck-cell-padding-y', '--deck-cell-gap'],
+  },
+  {
+    tag: 'deck-point',
+    summary: 'Bento item sized BY its content · reach for it when the item holds words, and for deck-cell when it holds something measured.',
+    attrs: [
+      { name: 'span',  type: '"CxR" | column count', note: 'e.g. 2x1 · col/row override it' },
+      { name: 'col',   type: 'integer | line syntax', note: 'per-axis override' },
+      { name: 'row',   type: 'integer | line syntax', note: 'per-axis override' },
+      { name: 'tone',  type: 'info | warn | ok | danger' },
+      { name: 'plain', type: 'boolean', note: 'stop painting the chrome · the gutter and border width stay, so the reading edge matches a painted sibling' },
+      { name: 'flat',  type: 'boolean', note: 'keep the surface, drop the border' },
+      { name: 'align', type: 'start | center | end | stretch', note: 'HORIZONTAL · there is no justify, a point has no leftover height to distribute' },
+    ],
+    slots: [{ name: '(default)', note: 'A title (h3) and its body text' }],
+    example: `<deck-point tone="ok">
+  <h3>Sized by its words</h3>
+  <p>No hole under the text, whatever the title wraps to.</p>
+</deck-point>`,
+    tokens: ['--deck-cell-bg', '--deck-cell-border', '--deck-cell-radius', '--deck-cell-padding-x', '--deck-cell-padding-y', '--deck-cell-gap'],
+  },
+
+  // ── Media ─────────────────────────────────────────────────────
+  {
+    tag: 'deck-code',
+    summary: 'Code block with light syntax highlighting · js, ts, html, css.',
+    attrs: [
+      { name: 'lang',        type: 'js | ts | html | css | …' },
+      { name: 'hero',        type: 'boolean', note: 'centers vertically as the focal block' },
+      { name: 'nested',      type: 'boolean', note: 'no shadow, lighter border (inside a card)' },
+      { name: 'step-groups', type: 'JSON',    note: '[[1,2],[3,4]] · highlight subsets of lines on each step' },
+    ],
+    example: `<deck-code lang="ts" hero>
+  const greet = (n: string) => \`Hi, \${n}\`;
+</deck-code>`,
+    tokens: ['--deck-code-bg', '--deck-code-border', '--deck-code-text', '--deck-code-radius', '--deck-code-padding-x', '--deck-code-padding-y', '--deck-code-syntax-{kw,str,num,cmt,ty,prop,fn}'],
+  },
+  {
+    tag: 'deck-mermaid',
+    summary: 'Mermaid diagram. Needs rikiki/dist/vendor/mermaid.min.js beside the runtime: start the deck with `init --with-mermaid` (or copy the file in), and pass --with-mermaid to bundle.',
+    attrs: [{ name: 'compact', type: 'boolean', note: 'reduced padding and max-width' }],
+    example: `<deck-mermaid>
+  graph LR
+  a --> b --> c
+</deck-mermaid>`,
+    tokens: ['--deck-mermaid-bg', '--deck-mermaid-border', '--deck-mermaid-padding', '--deck-mermaid-radius'],
   },
 ];
 
@@ -510,7 +627,7 @@ const optionalComponents: OptionalComponent[] = [
     tag: 'deck-checklist',
     summary: 'Responsive checklist container for yes/no decisions and acceptance criteria.',
     module: 'deck-checklist.js',
-    attrs: 'cols: number/string · deck-check no: boolean',
+    attrs: 'cols: number/string',
     slots: 'default: deck-check children',
     example: `<deck-checklist cols="2">
   <deck-check>Offline bundle</deck-check>
@@ -537,13 +654,13 @@ const optionalComponents: OptionalComponent[] = [
     tag: 'deck-flow',
     summary: 'Stage based process diagram with labels, notes, connectors, and reveal states.',
     module: 'deck-flow.js',
-    attrs: 'cols: number/string · no-connectors · reveal · deck-flow-step label · note · index · plain · last · linked',
+    attrs: 'cols: number/string · no-connectors · reveal',
     slots: 'default: deck-flow-step children',
     example: `<deck-flow cols="4">
-  <deck-flow-step index="01" label="Write" note="brief">
+  <deck-flow-step label="Write" note="brief">
     Source
   </deck-flow-step>
-  <deck-flow-step index="02" label="Check" note="evidence">
+  <deck-flow-step label="Check" note="evidence">
     Review
   </deck-flow-step>
 </deck-flow>`,
@@ -553,7 +670,7 @@ const optionalComponents: OptionalComponent[] = [
     tag: 'deck-graph',
     summary: 'Positioned node and edge graph for architecture, dependencies, or relationships.',
     module: 'deck-graph.js',
-    attrs: 'layout: free|row|column · reveal · deck-node at · label · note · width: CSS width for long labels · boxed · tone · icon · deck-group at · label · solid · deck-lane at · label · deck-edge from · to · label · dashed · route: straight|ortho · label-offset: x,y pixel offset for the label',
+    attrs: 'layout: free|row|column · reveal',
     slots: 'default: deck-node, deck-group, deck-lane, and deck-edge children',
     example: `<deck-graph layout="row">
   <deck-node id="source" label="Brief"></deck-node>
@@ -575,7 +692,7 @@ const optionalComponents: OptionalComponent[] = [
     tag: 'deck-kpi-grid',
     summary: 'Aligned KPI figures with optional rules between the values.',
     module: 'deck-kpi-grid.js',
-    attrs: 'cols: number/string · ruled · deck-kpi value · label · note · tone: default|accent|ok|warn|danger|muted',
+    attrs: 'cols: number/string · ruled',
     slots: 'default: deck-kpi children; deck-kpi default slot accepts supporting text',
     example: `<deck-kpi-grid cols="3" ruled>
   <deck-kpi value="0" label="CDNs" tone="ok">
@@ -635,7 +752,7 @@ const optionalComponents: OptionalComponent[] = [
     tag: 'deck-timeline',
     summary: 'Chronological milestone track with row or column direction and progressive reveal.',
     module: 'deck-timeline.js',
-    attrs: 'direction: row|column · reveal · deck-milestone date · label · note · tone: default|accent|ok|warn|danger',
+    attrs: 'direction: row|column · reveal',
     slots: 'default: deck-milestone children',
     example: `<deck-timeline direction="row">
   <deck-milestone date="Now" label="Source" tone="accent">
@@ -666,16 +783,159 @@ const optionalComponents: OptionalComponent[] = [
     tokens: '--deck-versus-gap · --deck-versus-pivot-color · --deck-versus-pivot-size · --deck-versus-rule · --deck-versus-winner-rule · --deck-versus-loser-color · --deck-versus-eyebrow-color · --deck-versus-slide-bg · --deck-versus-side-align',
   },
 ];
+
+/** The elements an optional module defines alongside its parent · they exist
+ *  only inside it, so they are documented under it rather than as catalogue
+ *  entries of their own. */
+interface ChildComponent extends Component {
+  parent: string;
+}
+
+const optionalChildren: ChildComponent[] = [
+  {
+    tag: 'deck-check',
+    parent: 'deck-checklist',
+    summary: 'One line of a checklist · a yes by default, a no when the attribute says so.',
+    attrs: [
+      { name: 'no', type: 'boolean', note: 'Mark the line as not met · swaps the yes glyph for the no one' },
+    ],
+    slots: [{ name: '(default)', note: 'The criterion being checked' }],
+    example: `<deck-checklist cols="2">
+  <deck-check>Offline bundle</deck-check>
+  <deck-check no>External CDN</deck-check>
+</deck-checklist>`,
+  },
+  {
+    tag: 'deck-flow-step',
+    parent: 'deck-flow',
+    summary: 'One stage of a flow · an index, a label, a note, and the body text under them.',
+    attrs: [
+      { name: 'label',  type: 'string',  note: 'Stage name' },
+      { name: 'note',   type: 'string',  note: 'Short qualifier under the label' },
+      { name: 'plain',  type: 'boolean', note: 'Stop the active stage from taking the block' },
+      { name: 'index',  type: 'string',  note: 'Position in the chain · written by deck-flow on every update, not by the author' },
+      { name: 'last',   type: 'boolean', note: 'Written by deck-flow on the final stage · it has nothing to point at' },
+      { name: 'linked', type: 'boolean', note: 'Written by deck-flow from its own no-connectors attribute' },
+    ],
+    slots: [{ name: '(default)', note: 'The body text of the stage' }],
+    example: `<deck-flow cols="2">
+  <deck-flow-step label="Write" note="brief">Source</deck-flow-step>
+  <deck-flow-step label="Check" note="evidence">Review</deck-flow-step>
+</deck-flow>`,
+  },
+  {
+    tag: 'deck-node',
+    parent: 'deck-graph',
+    summary: 'One node of a graph · placed by the layout, or by an explicit position.',
+    attrs: [
+      { name: 'at',    type: 'x,y percent', note: 'Position in the drawing area · ignored under a row or column layout' },
+      { name: 'label', type: 'string' },
+      { name: 'note',  type: 'string',    note: 'Mono micro-label under the name · a protocol, a count, a latency' },
+      { name: 'width', type: 'CSS width', note: 'Wrap a long label before it collides with its neighbour' },
+      { name: 'boxed', type: 'boolean',   note: 'Draw the node as a filled block rather than type under a rule' },
+      { name: 'tone',  type: 'accent | ok | warn | danger', note: 'Fill color of a boxed node' },
+      { name: 'icon',  type: 'icon name', note: 'Glyph above the label · needs dist/deck-icon.js loaded too' },
+    ],
+    example: `<deck-graph layout="row">
+  <deck-node id="source" label="Brief"></deck-node>
+  <deck-node id="proof" label="Verified deck" boxed tone="ok"></deck-node>
+</deck-graph>`,
+  },
+  {
+    tag: 'deck-edge',
+    parent: 'deck-graph',
+    summary: 'One edge of a graph · joins two nodes by their id.',
+    attrs: [
+      { name: 'from',         type: 'node id' },
+      { name: 'to',           type: 'node id' },
+      { name: 'label',        type: 'string', note: 'Caption drawn on the edge' },
+      { name: 'dashed',       type: 'boolean' },
+      { name: 'route',        type: 'straight | ortho', note: 'ortho turns at right angles instead of cutting across' },
+      { name: 'label-offset', type: 'x,y',    note: 'Pixel offset for the label when it collides with a node' },
+    ],
+    example: `<deck-graph layout="row">
+  <deck-node id="source" label="Brief"></deck-node>
+  <deck-edge from="source" to="proof" label="check"></deck-edge>
+  <deck-node id="proof" label="Verified deck"></deck-node>
+</deck-graph>`,
+  },
+  {
+    tag: 'deck-group',
+    parent: 'deck-graph',
+    summary: 'A labelled frame drawn behind a set of nodes · for a boundary or a subsystem.',
+    attrs: [
+      { name: 'at',    type: 'x,y,width,height percent', note: 'Position and size of the frame in the drawing area' },
+      { name: 'label', type: 'string' },
+      { name: 'solid', type: 'boolean', note: 'A solid outline instead of the dashed default' },
+    ],
+    example: `<deck-graph>
+  <deck-group at="4,10,44,70" label="Authoring" solid></deck-group>
+  <deck-node at="14,40" label="Source"></deck-node>
+</deck-graph>`,
+  },
+  {
+    tag: 'deck-lane',
+    parent: 'deck-graph',
+    summary: 'A horizontal band across the graph · names a stage the nodes sitting in it belong to.',
+    attrs: [
+      { name: 'at',    type: 'top,height percent', note: 'Vertical position and height of the band in the drawing area' },
+      { name: 'label', type: 'string' },
+    ],
+    example: `<deck-graph>
+  <deck-lane at="10,30" label="Author"></deck-lane>
+  <deck-node at="20,25" label="Write"></deck-node>
+</deck-graph>`,
+  },
+  {
+    tag: 'deck-kpi',
+    parent: 'deck-kpi-grid',
+    summary: 'One figure of a KPI grid · the value, what it measures, and an optional qualifier.',
+    attrs: [
+      { name: 'value', type: 'string', note: 'The figure itself' },
+      { name: 'label', type: 'string', note: 'What the figure measures' },
+      { name: 'note',  type: 'string', note: 'Qualifier under the label' },
+      { name: 'tone',  type: 'default | accent | ok | warn | danger | muted' },
+    ],
+    slots: [{ name: '(default)', note: 'Supporting text under the figure' }],
+    example: `<deck-kpi-grid cols="3" ruled>
+  <deck-kpi value="0" label="CDNs" tone="ok">Runtime requests</deck-kpi>
+  <deck-kpi value="20" label="slides"></deck-kpi>
+</deck-kpi-grid>`,
+  },
+  {
+    tag: 'deck-milestone',
+    parent: 'deck-timeline',
+    summary: 'One milestone of a timeline · a date, a label, and the body text under them.',
+    attrs: [
+      { name: 'date',  type: 'string', note: 'Free text · "Now", "Q3", a real date' },
+      { name: 'label', type: 'string' },
+      { name: 'note',  type: 'string', note: 'Qualifier under the label' },
+      { name: 'tone',  type: 'default | accent | ok | warn | danger' },
+    ],
+    slots: [{ name: '(default)', note: 'The body text of the milestone' }],
+    example: `<deck-timeline direction="row">
+  <deck-milestone date="Now" label="Source" tone="accent">Write the brief</deck-milestone>
+  <deck-milestone date="Next" label="Proof">Run the checks</deck-milestone>
+</deck-timeline>`,
+  },
+];
+
+// The catalogue counts its own arrays · a figure in the prose below can no
+// longer disagree with the entries it introduces.
+const layoutCount = layouts.length;
+const atomCount = atoms.length;
+const optionalModuleCount = optionalComponents.length;
+const childCount = optionalChildren.length;
 ---
 
 <Docs
   title="Component library"
   eyebrow="Reference"
-  description="Every <deck-*> element · attributes, slots, tokens, live preview. The default bundle has 36 core components; 23 optional elements are documented below."
+  description={`Every <deck-*> element · attributes, slots, tokens, live preview. The default bundle has ${coreCount} core components; ${optInCount} optional elements are documented below.`}
 >
 
 <h2 id="mental-model">Mental model · which one do I need?</h2>
-<p>The core catalog fits in four practical buckets. Start with the layout, then add only the atoms the slide needs.</p>
+<p>The core elements you will meet first fit in five practical buckets; sub-elements and helpers follow in the catalogue. Start with the layout, then add only the building blocks the slide needs.</p>
 <ul>
   <li>
     <strong>Layouts (8)</strong> · the slide's overall shape ·
@@ -689,7 +949,7 @@ const optionalComponents: OptionalComponent[] = [
     <a href="#deck-bento"><code>deck-bento</code></a>.
   </li>
   <li>
-    <strong>The five you'll always use</strong> · the talk-shaping atoms ·
+    <strong>The five you'll always use</strong> · the talk-shaping blocks ·
     <a href="#deck-code"><code>deck-code</code></a>,
     <a href="#deck-md"><code>deck-md</code></a>,
     <a href="#deck-card"><code>deck-card</code></a>,
@@ -697,7 +957,7 @@ const optionalComponents: OptionalComponent[] = [
     <a href="#deck-badge"><code>deck-badge</code></a>.
   </li>
   <li>
-    <strong>Domain atoms (8)</strong> · reach for when the slide needs one ·
+    <strong>Domain blocks (8)</strong> · reach for when the slide needs one ·
     <a href="#deck-stat"><code>deck-stat</code></a>,
     <a href="#deck-metric"><code>deck-metric</code></a>,
     <a href="#deck-tier-list"><code>deck-tier-list</code></a>,
@@ -726,10 +986,9 @@ const optionalComponents: OptionalComponent[] = [
 
 
 <p>
-  This catalogue details <strong>8 layouts</strong> and <strong>37 building blocks</strong>:
-  21 from the default bundle and 15 optional components. Layouts define a
-  slide's overall structure; the building blocks fill the slots. Both
-  groups follow the same design-token contract · override
+  This catalogue details <strong>{layoutCount} layouts</strong> and <strong>{atomCount} building blocks</strong> from the default bundle, then <strong>{optionalModuleCount} optional modules</strong> and the <strong>{childCount} child elements</strong> those modules define. Layouts give a slide
+  its overall structure; the building blocks fill the slots. Every group
+  follows the same design-token contract · override
   <code>--deck-&lt;tag&gt;-*</code> on the host to retheme a single instance,
   or globally on <code>:root</code>.
 </p>
@@ -802,8 +1061,12 @@ const optionalComponents: OptionalComponent[] = [
   </article>
 ))}
 
-<h2 id="atoms">Atoms</h2>
-<p>The building blocks you slot inside layouts.</p>
+<h2 id="atoms">Building blocks</h2>
+<p>
+  The building blocks you slot inside layouts, grouped by what they are for:
+  first the ones that carry text, then the ones that carry data, then the ones
+  that shape the slide, then the ones that embed code and diagrams.
+</p>
 
 {atoms.map((c) => (
   <article class="comp">
@@ -851,11 +1114,13 @@ const optionalComponents: OptionalComponent[] = [
   </article>
 ))}
 
-<h2 id="optional">Optional components</h2>
+<h2 id="optional">Optional modules</h2>
 <p>
-  These components live in <code>src/extras</code>. They are compiled as
-  separate modules and loaded only by decks that use them. Import the matching
-  file from <code>rikiki/dist/</code> after the core runtime.
+  These elements live in <code>src/extras</code>. They are compiled as separate
+  modules and reach the browser only when a deck imports them, so a deck that
+  does not use one pays nothing for it. Import the matching file from
+  <code>rikiki/dist/</code> after the core runtime. Several modules also define
+  child elements · those are documented under the module that defines them.
 </p>
 <table class="optional">
   <thead><tr><th>Element</th><th>Purpose</th><th>Module</th></tr></thead>
@@ -890,8 +1155,53 @@ const optionalComponents: OptionalComponent[] = [
     <CodeBlock lang="html" code={c.example} />
     <ComponentPreview code={c.preview ?? c.example} module={c.module} full={c.previewFull} />
     <TokenReference tag={c.tag} tokens={c.tokens.split(' · ')} />
+
+    {optionalChildren.filter((child) => child.parent === c.tag).map((child) => (
+      <section class="child-comp">
+        <h4 id={child.tag}><code>&lt;{child.tag}&gt;</code></h4>
+        <p class="summary">{child.summary}</p>
+        <p class="block-head">Attributes</p>
+        <table class="attrs">
+          <thead><tr><th>Attribute</th><th>Type</th><th>Notes</th></tr></thead>
+          <tbody>
+            {(child.attrs ?? []).map((a) => (
+              <tr>
+                <td><code>{a.name}</code></td>
+                <td><code>{a.type}</code></td>
+                <td>{a.note ?? ''}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {child.slots && (
+          <>
+            <p class="block-head">Slots</p>
+            <table class="attrs">
+              <thead><tr><th>Slot</th><th>What goes in</th></tr></thead>
+              <tbody>
+                {child.slots.map((slot) => (
+                  <tr>
+                    <td><code>{slot.name}</code></td>
+                    <td>{slot.note}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
+        <p class="block-head">Example</p>
+        <CodeBlock lang="html" code={child.example} />
+      </section>
+    ))}
   </article>
 ))}
+
+<h2 id="next">Next</h2>
+<ul>
+  <li><a href="/docs/plugins">Optional modules</a> · what each module costs and how a deck imports it.</li>
+  <li><a href="/docs/theming">Theming</a> · the token contract these components read.</li>
+  <li><a href="/docs/api">API reference</a> · the deck-root properties, events and extension hooks.</li>
+</ul>
 
 <style>
   /* Aerated layout · one component per "page-break" block, generous padding,
@@ -939,7 +1249,7 @@ const optionalComponents: OptionalComponent[] = [
     width: 100%; max-width: 720px;
     border-collapse: collapse;
     margin: 0 0 var(--rik-space-3);
-    font-size: var(--rik-font-size-sm);
+    font-size: var(--rik-font-size-md);
   }
   table.attrs th, table.attrs td {
     text-align: left;
@@ -949,8 +1259,8 @@ const optionalComponents: OptionalComponent[] = [
   }
   table.attrs th {
     background: var(--rik-surface-raised);
-    color: var(--rik-text-default--faint);
-    font: 700 var(--rik-font-size-xs)/1.2 var(--rik-font-mono);
+    color: var(--rik-text-default--muted);
+    font: 700 var(--rik-font-size-sm)/1.2 var(--rik-font-mono);
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
@@ -982,7 +1292,7 @@ const optionalComponents: OptionalComponent[] = [
   }
   table.optional th {
     color: var(--rik-text-default--muted);
-    font: 700 var(--rik-font-size-xs)/1.2 var(--rik-font-mono);
+    font: 700 var(--rik-font-size-sm)/1.2 var(--rik-font-mono);
     text-transform: uppercase;
     letter-spacing: 0.08em;
   }
@@ -991,6 +1301,24 @@ const optionalComponents: OptionalComponent[] = [
     color: var(--rik-text-default);
     font-weight: 700;
   }
+  /* A child element is documented inside its module's entry · indented behind
+     a rule so the reader can see it belongs to the element above it. */
+  .child-comp {
+    margin-top: var(--rik-space-5);
+    padding-left: var(--rik-space-4);
+    border-left: 2px solid var(--rik-border-default);
+  }
+  .child-comp h4 {
+    margin: 0 0 var(--rik-space-2);
+    font-size: 1.1rem;
+  }
+  .child-comp h4 code {
+    background: var(--rik-accent--faint);
+    color: var(--rik-text-default);
+    padding: 3px 8px;
+    border-radius: var(--rik-radius-sm);
+  }
+  .child-comp .summary { margin-bottom: var(--rik-space-3); }
   .module-path { margin: 0; }
   .module-path code { color: var(--rik-accent--strong); }
   .optional-details {

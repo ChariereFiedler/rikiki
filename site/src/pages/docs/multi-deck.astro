@@ -6,9 +6,10 @@ import ComponentPreview from '../../components/ComponentPreview.astro';
 const configCode = `// decks/my-talk/deck.config.js
 export default {
   title: 'My talk',
-  theme: '../../tokens.css',       // href, relative to the OUTPUT file
-  bundle: '../../dist/index.js',   // rikiki bundle, relative to the OUTPUT file
+  theme: 'rikiki/tokens.css',      // default · href, relative to the OUTPUT file
+  bundle: 'rikiki/dist/index.js',  // default · runtime href, relative to OUTPUT
   transition: 'slide',             // optional · sets transition on deck-root
+  lang: 'fr',                      // optional · <html lang="...">
   slides: [
     'parts/cover.html',
     'parts/intro.md',
@@ -41,12 +42,14 @@ const partialMdPreview = `<deck-feature>
   <deck-md>## Second slide\n\nA separator in the source starts this slide.</deck-md>
 </deck-feature>`;
 
-const runCmd = `npx rikiki assemble deck.config.js
+const runCmd = `cd decks/my-talk               # config and output paths resolve from here
+npx rikiki assemble deck.config.js
 
 # explicit output, or - for stdout
 npx rikiki assemble deck.config.js out/my-talk.html
 
-# writes my-talk.html next to the config · a normal rikiki deck`;
+# with no output argument: <title>, slugged, next to the config
+# my-talk.html · a normal rikiki deck`;
 ---
 
 <Docs
@@ -55,7 +58,7 @@ npx rikiki assemble deck.config.js out/my-talk.html
   description="Split a long talk across small files and stitch them into one deck at build time. Reuse fragments between decks. Zero runtime weight added."
 >
 
-<h2 id="why">Why</h2>
+<h2 id="why">Split a long talk into files you can reorder</h2>
 <p>
   A single <code>index.html</code> is fine until a talk gets long. Past a
   point you want one slide per file, you want to reorder without scrolling
@@ -71,9 +74,21 @@ npx rikiki assemble deck.config.js out/my-talk.html
 </p>
 <CodeBlock label="decks/my-talk/deck.config.js" lang="js" code={configCode} />
 <p>
+  The <code>.js</code> config is loaded as an ES module: add
+  <code>"type": "module"</code> to your <code>package.json</code>, or name the
+  file <code>deck.config.mjs</code>, or use <code>deck.config.json</code>. A
+  project created with <code>npm init -y</code> declares
+  <code>"type": "commonjs"</code>, and <code>assemble</code> stops with a message
+  saying exactly that.
+</p>
+<p>
   <code>theme</code> and <code>bundle</code> are hrefs written into the output
-  file, so they're relative to where the assembled deck lands, not to the
-  config.
+  file, so they are relative to where the assembled deck lands, not to the
+  config. Omit them and the assembler writes
+  <code>rikiki/tokens.css</code> and <code>rikiki/dist/index.js</code>, the
+  same spelling <code>rikiki init</code> uses for a source deck. The
+  <code>slides</code> paths are different: they are read at build time and
+  resolve from the config's own folder.
 </p>
 
 <h2 id="partials">The parts</h2>
@@ -92,7 +107,10 @@ npx rikiki assemble deck.config.js out/my-talk.html
 <h2 id="build">Build it</h2>
 <p>
   Point the assembler at the config. It concatenates the parts inside one
-  <code>deck-root</code> and writes the deck next to the config.
+  <code>deck-root</code> and writes the deck next to the config. The config path
+  and the optional output path are both resolved from the directory you run the
+  command in, so run it from the deck's folder or give it paths from wherever
+  you are.
 </p>
 <CodeBlock label="assemble" code={runCmd} />
 <p>
@@ -101,16 +119,26 @@ npx rikiki assemble deck.config.js out/my-talk.html
   command again, and you've got the new order.
 </p>
 
-<h2 id="bundle">Bundling an assembled deck</h2>
+<h2 id="bundle">Checking and bundling an assembled deck</h2>
 <p>
-  Want a single self-contained file? <code>rikiki bundle</code> takes an
-  assembled deck the same as any other, on one condition: the deck has to
-  reference rikiki with the <code>rikiki/...</code> path style that the
-  bundler rewrites. That is the default in the config, and also what
-  <code>rikiki init</code> writes. Point <code>theme</code> or
-  <code>bundle</code> at bare <code>../../</code> relatives instead and the
-  deck serves fine on its own, but the assemble command warns that those
-  references will stay external.
+  The output is an ordinary deck, so the delivery commands apply to it
+  unchanged: <code>rikiki check</code> reports what is wrong before a rehearsal,
+  and <code>rikiki bundle</code> folds the deck into a single self-contained
+  file. Both are covered in <a href="/docs/cli">Check &amp; deliver</a>.
 </p>
+<p>
+  Bundling has one condition: the deck must reference rikiki with the
+  <code>rikiki/...</code> path style the bundler rewrites, which is what the
+  assembler writes when <code>theme</code> and <code>bundle</code> are left out.
+  Point them at bare <code>../../</code> relatives instead and the deck still
+  serves on its own, but <code>assemble</code> prints a note on stderr saying
+  those references will stay external.
+</p>
+
+<h2 id="next">Next</h2>
+<ul>
+  <li><a href="/docs/recipes">Recipes</a> · slide patterns to reuse across the decks you assemble.</li>
+  <li><a href="/docs/cli">Check &amp; deliver</a> · <code>assemble</code>, <code>check</code> and <code>bundle</code> from the command line.</li>
+</ul>
 
 </Docs>

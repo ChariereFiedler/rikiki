@@ -1,11 +1,25 @@
 ---
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import Docs from '../../layouts/Docs.astro';
+
+// Where the overview switches layouts · read from deck-overview's own
+// threshold so the figure on this page cannot drift from the runtime.
+const overviewSource = readFileSync(
+  resolve(process.cwd(), '../rikiki/src/runtime/deck-overview.ts'),
+  'utf8',
+);
+const sidebarThreshold = overviewSource.match(/const useSidebar = total > (\d+);/);
+if (!sidebarThreshold) {
+  throw new Error('deck-overview no longer picks its layout with a slide-count threshold');
+}
+const overviewPathMax = sidebarThreshold[1];
 ---
 
 <Docs
   title="Navigation"
   eyebrow="Concepts"
-  description="Linear by default, with an opt-in 2D grid. The mouse navigates too, and yields to scrollable content."
+  description="Every key, click, wheel and URL a presenter or the viewer of an embedded deck can use to move through the slides, and how to restrict them with mouse-nav."
 >
 
 <h2 id="linear">Linear by default</h2>
@@ -18,7 +32,7 @@ import Docs from '../../layouts/Docs.astro';
 <table class="keys">
   <thead><tr><th>Key</th><th>Action</th></tr></thead>
   <tbody>
-    <tr><td><kbd>→</kbd> <kbd>←</kbd></td><td>Next / previous slide (or reveal step)</td></tr>
+    <tr><td><kbd>→</kbd> <kbd>←</kbd> · <kbd>↓</kbd> <kbd>↑</kbd></td><td>Next / previous slide (or reveal step)</td></tr>
     <tr><td><kbd>Space</kbd> <kbd>PgDn</kbd></td><td>Advance · <kbd>PgUp</kbd> back</td></tr>
     <tr><td><kbd>Home</kbd> <kbd>End</kbd></td><td>First / last slide</td></tr>
     <tr><td><kbd>O</kbd> · <kbd>P</kbd> · <kbd>?</kbd></td><td>Overview · presenter · help</td></tr>
@@ -26,12 +40,34 @@ import Docs from '../../layouts/Docs.astro';
 </table>
 
 <p>
-  The mouse navigates too (since 0.3.0): click to advance, Shift+click to go
-  back, the scroll wheel, the bottom-right chevrons, and the mouse back/forward
-  buttons. The wheel <strong>yields to scrollable content</strong> (a tall code
-  block, a zoomable SVG): it scrolls that element and only advances the deck
-  once it reaches the scroll edge. Scope or disable it with the
-  <code>mouse-nav</code> attribute.
+  The mouse navigates too: click to advance, Shift+click to go back, the
+  scroll wheel, the bottom-right chevrons, and the mouse back/forward buttons.
+  The wheel <strong>yields to scrollable content</strong> (a tall code block,
+  a zoomable SVG): it scrolls that element and only advances the deck once it
+  reaches the scroll edge.
+</p>
+
+<h3 id="mouse-nav">Scoping the mouse with <code>mouse-nav</code></h3>
+<p>
+  The <code>mouse-nav</code> attribute on <code>&lt;deck-root&gt;</code>
+  selects which pointer mechanisms the deck claims. This matters for an
+  embedded deck, which would otherwise swallow the host page's scroll.
+</p>
+
+<table class="keys">
+  <thead><tr><th>Value</th><th>Effect</th></tr></thead>
+  <tbody>
+    <tr><td>absent, or <code>all</code></td><td>Every mechanism is on (the default).</td></tr>
+    <tr><td><code>none</code></td><td>The mouse does not navigate at all.</td></tr>
+    <tr><td>a space-separated list</td><td>Only the named mechanisms, among <code>click</code>, <code>wheel</code>, <code>arrows</code> and <code>aux</code> (the back/forward buttons). A word the list does not know matches nothing, so a typo disables rather than enables.</td></tr>
+  </tbody>
+</table>
+
+<p>
+  Example: <code>&lt;deck-root mouse-nav="click arrows"&gt;</code> keeps the
+  click and the chevrons and leaves the wheel to the page. The other
+  <code>&lt;deck-root&gt;</code> attributes are listed in the
+  <a href="/docs/api#properties">deck-root API</a>.
 </p>
 
 <h2 id="two-axes">2D navigation (opt-in)</h2>
@@ -52,10 +88,12 @@ import Docs from '../../layouts/Docs.astro';
 
 <h2 id="overview">Overview mode</h2>
 <p>
-  Press <kbd>O</kbd> to open a path-style overview: one row per chapter,
-  sub-slides flow rightward, the current slide is highlighted. Click any
-  thumbnail to jump there. Press <kbd>Esc</kbd> or <kbd>O</kbd> again to
-  close.
+  Press <kbd>O</kbd> to open a thumbnail view of the whole deck, with a search
+  bar at the top. Up to {overviewPathMax} slides it uses a path layout: one row
+  per chapter, sub-slides flowing rightward, the current slide highlighted. Past
+  that it switches to two columns · a chapter sidebar on the left, a wrapping grid of
+  thumbnails on the right. Click any thumbnail to jump there. Press
+  <kbd>Esc</kbd> or <kbd>O</kbd> again to close.
 </p>
 
 <p>
@@ -67,6 +105,17 @@ import Docs from '../../layouts/Docs.astro';
 <p>
   Press <kbd>?</kbd> or <kbd>H</kbd> for the full keyboard cheatsheet. The
   list adapts to whether 2D nav applies in the current deck.
+</p>
+
+<h2 id="presenter">Presenter window</h2>
+<p>
+  Press <kbd>P</kbd> to open a second window for the speaker. It mirrors the
+  current slide, previews the next one, shows the text of the slide's
+  <code>&lt;deck-notes&gt;</code> and runs a timer; the two windows stay in
+  sync while you navigate from either. The module loads on the first
+  <kbd>P</kbd>, so a deck whose speaker never presses it never fetches it.
+  <a href="/docs/plugins#presenter">Optional modules · presenter</a> covers
+  the second-screen placement and the notes element.
 </p>
 
 <h2 id="hash">URL hash</h2>
@@ -81,11 +130,17 @@ import Docs from '../../layouts/Docs.astro';
 
 <h2 id="kb-hint">The bottom-left hint</h2>
 <p>
-  Rikiki shows a small keyboard cheatsheet in the bottom-left corner: it always
-  lists <kbd>←</kbd> <kbd>→</kbd>, <kbd>O</kbd>, <kbd>P</kbd>, <kbd>?</kbd> · and
-  adds <kbd>↑</kbd> <kbd>↓</kbd> when <code>nav="2d"</code> is active. The chips
+  Rikiki shows a small keyboard cheatsheet in the bottom-left corner: it lists
+  <kbd>←</kbd> <kbd>→</kbd>, <kbd>O</kbd>, <kbd>P</kbd>, <kbd>?</kbd> · and adds
+  <kbd>↑</kbd> <kbd>↓</kbd> when <code>nav="2d"</code> is active. The chips
   are <strong>clickable</strong> shortcuts for the matching action.
 </p>
+
+<h2 id="next">Next</h2>
+<ul>
+  <li><a href="/docs/cli">Check and deliver</a> · run the deck checks, then export the deck as HTML or PDF.</li>
+  <li><a href="/docs/api">deck-root API</a> · every attribute and property of the wrapper element.</li>
+</ul>
 
 <style>
   table.keys {
@@ -99,7 +154,7 @@ import Docs from '../../layouts/Docs.astro';
     border-bottom: 1px solid var(--rik-border-default);
   }
   table.keys th {
-    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    font: 700 var(--rik-font-size-sm)/1 var(--rik-font-mono);
     text-transform: uppercase; letter-spacing: 0.1em;
     color: var(--rik-text-default--faint);
   }
