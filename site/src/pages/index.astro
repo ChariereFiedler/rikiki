@@ -13,6 +13,7 @@ import Faq from '../components/Faq.astro';
 import AnatomyBento from '../components/AnatomyBento.astro';
 import Limits from '../components/Limits.astro';
 import AgentLoop from '../components/AgentLoop.astro';
+import DeckGallery from '../components/DeckGallery.astro';
 
 const anatomyCode = `<deck-feature eyebrow="Module">
   <h1 slot="title">Side effects</h1>
@@ -31,43 +32,54 @@ const anatomyCode = `<deck-feature eyebrow="Module">
   <Hero />
 
   <Section id="quickstart" num="01" eyebrow="Interactive example" title="Write. Inspect. Deliver." tone="tint">
-    <p class="section-lead">Edit the HTML and watch the slide respond. The panel below simulates three fast checks; the full <code>rikiki check</code> command measures every slide in a browser and reports structural, runtime and visual risks.</p>
+    <p class="section-lead">Edit the HTML and watch the slide respond. The panel below runs three sample rules of its own, so you can see the loop from edit to diagnostic; the real <code>rikiki check</code> command loads every slide in Chromium and reports structural, runtime, timing and visual-layout diagnostics.</p>
     <AnatomyBento code={anatomyCode} />
-    <div class="inline-cta"><a href="/docs/getting-started">Create your first deck →</a><span>Install once, then run the commands shown above.</span></div>
+    <div class="inline-cta"><a href="/docs/getting-started">Create your first deck</a><span>Install the package and Playwright once (<code>npm i -D playwright &amp;&amp; npx playwright install chromium</code>); <code>bundle</code> also needs the rolldown bundler.</span></div>
+  </Section>
+
+  <!-- ── Example decks ──────────────────────────────── -->
+  <Section id="decks" num="02" eyebrow="Example decks" title="See finished decks">
+    <DeckGallery />
+  </Section>
+
+  <!-- ── Agents ─────────────────────────────────────── -->
+  <Section id="agents" num="03" eyebrow="Coding-agent workflow" title="Brief your agent, then check its deck">
+    <p class="section-lead">Rikiki ships a component reference and an authoring workflow for coding agents. Hand your own agent a brief plus <code>llms.txt</code>, the packaged component reference; it writes the same HTML you would review by hand, and <code>rikiki check</code> returns diagnostics for the next revision. Rikiki supplies the reference and the checks, not an AI service.</p>
+    <AgentLoop />
   </Section>
 
   <!-- ── Library ────────────────────────────────────── -->
-  <Section id="library" num="02" eyebrow="Reusable parts" title="Compose with purpose-built layouts">
+  <Section id="library" num="04" eyebrow="Reusable parts" title="Compose with purpose-built layouts">
     <ul class="layout-grid">
-      <li class="tile-cover">
+      <li>
         <LayoutPreview type="cover" />
         <h3>Open the deck <code>&lt;deck-cover&gt;</code></h3>
-        <p>The opener. XL title on dark, brand mark if you want one, meta block.</p>
+        <p>An XL title on a dark surface, with an optional brand mark and a meta block for the speaker, company and talk duration.</p>
       </li>
-      <li class="tile-feature">
+      <li>
         <LayoutPreview type="hero" />
         <h3>Focus one idea <code>&lt;deck-feature&gt;</code></h3>
-        <p>One thing in focus. Code, a table, a mermaid diagram, a big stat.</p>
+        <p>One idea per slide, backed by code, a Markdown table, a mermaid diagram or a single large stat.</p>
       </li>
-      <li class="tile-split">
+      <li>
         <LayoutPreview type="split" />
         <h3>Compare columns <code>&lt;deck-split&gt;</code></h3>
-        <p>Two columns or three. <code>cols="1-1"</code>, <code>"1-2"</code>, <code>"3"</code>.</p>
+        <p>Lay content side by side in two or three columns, with ratios like <code>cols="1-1"</code>, <code>"1-2"</code> or <code>"3"</code>.</p>
       </li>
-      <li class="tile-bento">
+      <li>
         <LayoutPreview type="bento" />
-        <h3>Compose a visual system <code>&lt;deck-bento&gt;</code></h3>
-        <p>Give each idea the space it deserves with explicit rows, columns and spans.</p>
+        <h3>Give each idea its own cell <code>&lt;deck-bento&gt;</code></h3>
+        <p>Arrange several ideas on one slide with explicit rows, columns and spans, so each keeps the space it deserves.</p>
       </li>
-      <li class="tile-data">
+      <li>
         <LayoutPreview type="data" />
-        <h3>Present evidence <code>&lt;deck-kpi-grid&gt;</code></h3>
-        <p>Align a small set of metrics so the result reads in one glance.</p>
+        <h3>Present evidence <code>&lt;deck-kpi-grid&gt;</code> <span class="opt">optional module</span></h3>
+        <p>Align a small set of metrics so the result reads in one glance. Loads from <code>dist/deck-kpi-grid.js</code> when a deck imports it.</p>
       </li>
-      <li class="tile-hook">
+      <li>
         <LayoutPreview type="hook" />
         <h3>Land the message <code>&lt;deck-takeaway&gt;</code></h3>
-        <p>The line they remember. Centered, on dark.</p>
+        <p>A single line, centered on a dark background, for the point the audience should remember.</p>
       </li>
     </ul>
     <p class="swipe-hint">Swipe to browse · 6 layouts</p>
@@ -75,23 +87,18 @@ const anatomyCode = `<deck-feature eyebrow="Module">
       <p><strong>Media</strong><span>photo · mermaid · code</span></p>
       <p><strong>Data</strong><span>stat · metric · tier list</span></p>
       <p><strong>Structure</strong><span>grid · stack · cards</span></p>
-      <a href="/docs/components">Browse all components →</a>
+      <a href="/docs/components">Browse all components</a>
     </div>
   </Section>
 
   <!-- ── Themes ─────────────────────────────────────── -->
-  <Section id="themes" num="03" eyebrow="Design system" title="Brand the same source with tokens" tone="tint">
+  <Section id="themes" num="05" eyebrow="Design system" title="Brand the same source with tokens" tone="tint">
     <ThemeSwap />
     <p class="more">
       Theme tokens control the main colors, type and spacing of deck components.
       Copy <code>themes/rikiki.css</code>, keep its structure and adjust the values
       for your brand.
     </p>
-  </Section>
-
-  <Section id="agents" num="04" eyebrow="Coding-agent workflow" title="Give an agent a contract, then check its work">
-    <p class="section-lead">Rikiki ships a component reference and an authoring workflow for coding agents. Give your own agent a brief and <code>llms.txt</code>; it writes the same HTML you review, while <code>rikiki check</code> returns actionable diagnostics for the next revision. Rikiki supplies the contract and checks, not an AI service.</p>
-    <AgentLoop />
   </Section>
 
   <DualUse />
@@ -102,7 +109,7 @@ const anatomyCode = `<deck-feature eyebrow="Module">
 
   <Hook
     kicker="Ready to try it"
-    punch={`Create a checked, <span class="accent">standalone deck.</span>`}
+    punch="Create a checked, standalone deck."
     caption="Review the diagnostics and slide images before you deliver the offline HTML and PDF."
   />
 
@@ -112,8 +119,9 @@ const anatomyCode = `<deck-feature eyebrow="Module">
 <style>
   .section-lead { max-width:70ch; margin:-1rem 0 var(--rik-space-5); color:var(--rik-text-default--muted); font-size:var(--rik-font-size-lead); line-height:1.55; }
   .inline-cta { display:flex; justify-content:space-between; align-items:center; gap:var(--rik-space-3); margin-top:var(--rik-space-4); padding:var(--rik-space-3) 0; border-bottom:1px solid var(--rik-border-default); }
-  .inline-cta a { color:var(--rik-accent--strong); font-weight:800; text-decoration:none; }
-  .inline-cta span { color:var(--rik-text-default--faint); font:var(--rik-font-size-xs)/1.4 var(--rik-font-mono); }
+  .inline-cta a { color:var(--rik-accent--strong); font-weight:700; text-decoration:none; white-space:nowrap; }
+  .inline-cta span { color:var(--rik-text-default--muted); font:var(--rik-font-size-sm)/1.5 var(--rik-font-sans); }
+  .inline-cta code { color:var(--rik-text-default); }
   .more {
     margin-top: var(--rik-space-5);
     font-size: var(--rik-font-size-body);
@@ -124,33 +132,25 @@ const anatomyCode = `<deck-feature eyebrow="Module">
   .more code {
     color: var(--rik-text-default);
   }
-  .swipe-hint { display:none; color:var(--rik-text-default--faint); font:700 var(--rik-font-size-xs)/1.4 var(--rik-font-mono); text-transform:uppercase; letter-spacing:.1em; }
+  .swipe-hint { display:none; color:var(--rik-text-default--muted); font:600 var(--rik-font-size-sm)/1.4 var(--rik-font-sans); }
   .component-groups { display:grid; grid-template-columns:repeat(3,1fr) auto; align-items:end; gap:var(--rik-space-4); margin-top:var(--rik-space-4); padding-top:var(--rik-space-3); border-top:1px solid var(--rik-border-default); }
   .component-groups p { display:grid; gap:4px; margin:0; }
   .component-groups > * { min-width:0; }
-  .component-groups strong { color:var(--rik-text-default); font-size:var(--rik-font-size-sm); }
-  .component-groups span { color:var(--rik-text-default--faint); font-size:var(--rik-font-size-sm); }
-  .component-groups a { color:var(--rik-accent--strong); font-weight:800; text-decoration:none; white-space:nowrap; }
+  .component-groups strong { color:var(--rik-text-default); font-size:var(--rik-font-size-md); }
+  .component-groups span { color:var(--rik-text-default--muted); font-size:var(--rik-font-size-md); }
+  .component-groups a { color:var(--rik-accent--strong); font-weight:700; text-decoration:none; white-space:nowrap; }
 
-  /* Library section · an uneven grid mirrors the compositional system. */
+  /* Library section · six previews at one scale, three to a row. */
   .layout-grid {
     list-style: none;
     padding: 0;
     margin: 0;
     display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    gap: var(--rik-space-4);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--rik-space-5) var(--rik-space-4);
   }
-  .tile-cover,.tile-split,.tile-data { grid-column:span 5; }
-  .tile-feature,.tile-bento,.tile-hook { grid-column:span 7; }
-  .tile-hook { display:grid !important; grid-template-columns:minmax(0,1.25fr) minmax(220px,.75fr); align-items:center; }
-  .tile-hook .layout-preview { grid-column:1; grid-row:1 / span 2; margin-bottom:0; }
-  .tile-hook h3 { grid-column:2; grid-row:1; align-self:end; }
-  .tile-hook p { grid-column:2; grid-row:2; align-self:start; }
   @media (max-width: 880px) {
-    .layout-grid { grid-template-columns: repeat(2, 1fr); }
-    .layout-grid li { grid-column:auto; }
-    .tile-hook { display:flex !important; }
+    .layout-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   @media (max-width: 560px) {
     .layout-grid {
@@ -169,41 +169,39 @@ const anatomyCode = `<deck-feature eyebrow="Module">
   .layout-grid li {
     display: flex; flex-direction: column;
     gap: var(--rik-space-2);
-    padding: var(--rik-space-3);
-    background: var(--rik-surface-raised--strong);
-    border: 1px solid var(--rik-border-default);
-    border-radius: var(--rik-radius-md);
-    box-shadow: var(--rik-elevation-1);
+    min-width: 0;
   }
+  .layout-grid :global(.layout-preview) { margin-bottom: var(--rik-space-1); }
   .layout-grid h3 {
-    font-family: var(--rik-font-mono);
-    font-size: var(--rik-font-size-body);
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--rik-space-1) var(--rik-space-2);
+    font-family: var(--rik-font-sans);
+    font-size: var(--rik-font-size-lead);
     font-weight: 700;
     color: var(--rik-text-default);
     letter-spacing: -0.005em;
-    margin: var(--rik-space-1) 0 0;
+    margin: 0;
+  }
+  .layout-grid .opt {
+    color: var(--rik-text-default--muted);
+    font-size: var(--rik-font-size-sm);
+    font-weight: 500;
+    white-space: nowrap;
   }
   .layout-grid p {
-    font-size: var(--rik-font-size-sm);
+    font-size: var(--rik-font-size-md);
     color: var(--rik-text-default--muted);
     line-height: 1.5;
     margin: 0;
   }
-  .layout-grid code {
-    font-family: var(--rik-font-mono);
-    font-size: 0.9em;
-    background: var(--rik-surface-tint);
+  .layout-grid h3 code {
+    font: 700 var(--rik-font-size-sm)/1.3 var(--rik-font-mono);
     color: var(--rik-text-default);
-    padding: 1px 5px;
-    border-radius: 3px;
   }
+  .layout-grid p code { color: var(--rik-text-default); }
 
   @media (max-width: 640px) {
     .layout-grid {
       gap: var(--rik-space-3);
-    }
-    .layout-grid li {
-      padding: var(--rik-space-3);
     }
     .more {
       font-size: var(--rik-font-size-body);

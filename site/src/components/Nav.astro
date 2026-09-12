@@ -13,7 +13,8 @@
     <a href="/docs/components">Components</a>
     <a href="/docs/theming">Theming</a>
     <a href="/docs/changelog">Changelog</a>
-    <a href="https://gitlab.com/tordu-jardin/rikiki" class="cta">GitLab source ↗</a>
+    <a href="https://gitlab.com/tordu-jardin/rikiki">Source on GitLab</a>
+    <a href="/docs/getting-started" class="btn btn-primary cta">Get started</a>
   </div>
 </nav>
 
@@ -21,8 +22,8 @@
   .nav {
     position: sticky; top: 0; z-index: 100;
     display: flex; align-items: center; justify-content: space-between;
-    padding: var(--rik-space-3) var(--rik-space-5);
-    background: rgba(250, 248, 245, 0.85);
+    padding: var(--rik-space-1) var(--rik-space-5);
+    background: var(--rik-surface-page--glass);
     backdrop-filter: blur(12px) saturate(1.2);
     border-bottom: 1px solid var(--rik-border-default);
     font-family: var(--rik-font-mono);
@@ -46,14 +47,8 @@
     transition: color 0.15s ease;
   }
   .links a:hover { color: var(--rik-text-default); text-decoration: none; }
-  .links .cta {
-    color: var(--rik-surface-inverse);
-    background: var(--rik-accent);
-    padding: 6px 12px;
-    border-radius: var(--rik-radius-pill);
-    font-weight: 700;
-  }
-  .links .cta:hover { color: var(--rik-surface-inverse); }
+  .links .cta { color: var(--rik-accent__on); }
+  .links .cta:hover { color: var(--rik-text-inverse); }
   @media (max-width: 640px) {
     .links a:not(:first-child):not(.cta) { display: none; }
   }

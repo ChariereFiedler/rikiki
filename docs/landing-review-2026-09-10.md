@@ -84,3 +84,37 @@ The current correction:
 3. Fix every failed gate before scoring aesthetics.
 4. Score all ten weighted categories and continue until the total reaches 9.0,
    with no category below 8.0.
+
+## Visual pass · 2026-09-12
+
+A peer visual audit of the working tree (24 defects: 4 blocking, 14 important,
+6 polish) was applied on the site side and re-measured with Playwright at
+1440 and 390 px:
+
+- no text run under 13 px (`--rik-font-size-xs` raised to 0.8125rem, no
+  composed `em` reductions on inline code);
+- no accent-coloured text under 15 px on paper; small labels use the muted
+  text tokens;
+- one sentence-case `Eyebrow.astro` for every section, no tracked-out caps;
+- no `→` or `↗` in link or button labels; the orphan chevron in the module
+  list is gone;
+- one 1080 px container for every section (`--rik-measure-page`), FAQ and
+  closing block included;
+- one button style (`.btn`, `.btn-primary`, `.btn-ghost`, `.btn-icon` in
+  `tokens.css`): pill, sans, 16 px, 44 px, applied to all nine controls;
+- six layout previews in one 16:9 box at one scale; fixtures mark one cell
+  or one card only; gallery and library tiles lost their card chrome;
+- the rendered code block in the interactive example carries a full 1 px
+  border instead of a single-side inset shadow; the embed snippet renders
+  through `CodeBlock`; the embedded carousel hides the runtime counter and
+  hint so the host bar is the only chrome;
+- the agent-loop arc stays inside its panel; the module list is no longer
+  numbered; the limits list has no icons; the closing block is left-aligned
+  with a plain command block and no accent span.
+
+Kept on purpose: the accent span in the hero headline, which mirrors the
+`deck-cover` signature shown in the gallery thumbnails below it. Left to the
+runtime: the accent rule under slide titles (D16) lives in
+`rikiki/src/shared-styles.ts`.
+
+Docs tables: `th` at 14 px minimum, `td` at 15 px, copy labels at 13 px.

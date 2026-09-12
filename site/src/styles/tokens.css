@@ -61,6 +61,8 @@
   --rik-surface-inverse--soft:        var(--rik-palette-night-800);
   --rik-surface-inverse--soft-2:      var(--rik-palette-night-700);
   --rik-surface-inverse__overlay:     var(--rik-palette-night-overlay);
+  /* Sticky nav over scrolled content · the page colour at 85 % */
+  --rik-surface-page--glass:          rgba(250, 248, 245, 0.85);
 
   /* Text */
   --rik-text-default:                 var(--rik-palette-ink-900);
@@ -145,8 +147,10 @@
   --rik-font-size-h2:                 clamp(1.4rem, 2.2vw, 2rem);
   --rik-font-size-lead:               1.15rem;
   --rik-font-size-body:               1rem;
+  --rik-font-size-md:                 0.9375rem;
   --rik-font-size-sm:                 0.88rem;
-  --rik-font-size-xs:                 0.72rem;
+  /* 13 px floor · nothing on the site is set below this size. */
+  --rik-font-size-xs:                 0.8125rem;
   --rik-font-size-mono:               0.92rem;
 
   /* Spacing */
@@ -159,6 +163,20 @@
   --rik-space-5:                      2.25rem;
   --rik-space-6:                      3.5rem;
   --rik-space-7:                      5rem;
+
+  /* Page measure · every landing section shares one container width. */
+  --rik-measure-page:                 1080px;
+
+  /* Controls · three shapes by role, never an arbitrary fourth.
+     Page call to action  -> .btn, --rik-radius-pill
+     Surface-attached     -> --rik-control-radius (copy, install)
+     Card-shaped control  -> --rik-radius-md, same as the cards it sits among
+     Every control label is --rik-font-sans; mono is reserved for code. */
+  --rik-btn-height:                   44px;
+  --rik-btn-padding-x:                1.375rem;
+  --rik-btn-ghost__border:            var(--rik-border-default);
+  --rik-btn-ghost__text:              var(--rik-text-default);
+  --rik-control-radius:               var(--rik-radius-sm);
 
   /* Radius */
   --rik-radius-xs:                    6px;
@@ -221,12 +239,56 @@ a:hover { color: var(--rik-link--hover); text-decoration: underline; text-decora
 
 code, kbd {
   font-family: var(--rik-font-mono);
-  font-size: 0.92em;
+  /* Inline code shrinks a little against its prose, never below the floor. */
+  font-size: max(0.92em, var(--rik-font-size-xs));
 }
-code {
+/* The chip is for inline code only · a <code> inside <pre> is a block and
+   would paint one pill per wrapped line. */
+code:not(pre code) {
   background: var(--rik-surface-tint);
   padding: 2px 6px;
   border-radius: 5px;
 }
+
+/* ── Buttons ─────────────────────────────────────────────────────
+   One button on the whole site: pill, sans, 16 px, 44 px tall. Dark
+   surfaces set --rik-btn-ghost__border / __text on their container. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rik-space-1);
+  min-height: var(--rik-btn-height);
+  padding: 0 var(--rik-btn-padding-x);
+  border: 1px solid transparent;
+  border-radius: var(--rik-radius-pill);
+  font: 700 var(--rik-font-size-body)/1 var(--rik-font-sans);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--rik-motion-fast) var(--rik-motion__ease-out),
+              border-color var(--rik-motion-fast) var(--rik-motion__ease-out),
+              color var(--rik-motion-fast) var(--rik-motion__ease-out);
+}
+.btn:hover { text-decoration: none; }
+.btn:focus-visible {
+  outline: var(--rik-focus-ring--width) solid var(--rik-focus-ring);
+  outline-offset: var(--rik-focus-ring--offset);
+}
+.btn-primary {
+  background: var(--rik-accent);
+  color: var(--rik-accent__on);
+}
+.btn-primary:hover { background: var(--rik-accent--strong); color: var(--rik-text-inverse); }
+.btn-ghost {
+  background: transparent;
+  color: var(--rik-btn-ghost__text);
+  border-color: var(--rik-btn-ghost__border);
+}
+.btn-ghost:hover { border-color: var(--rik-accent); color: var(--rik-btn-ghost__text); }
+.btn-icon {
+  width: var(--rik-btn-height);
+  padding: 0;
+}
+.btn-icon svg { display: block; }
 
 ::selection { background: var(--rik-selection__bg); color: var(--rik-selection__text); }
