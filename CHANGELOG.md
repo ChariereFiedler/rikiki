@@ -134,7 +134,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   arrow between steps). The minifier now tracks whether it is inside a
   declaration block, so a declaration colon still collapses and a selector
   colon keeps the space in front of it; `scripts/minify-templates.test.mjs`
-  covers the three shapes and the four real selectors.
+  covers the three shapes and the four real selectors. A follow-up fixed the
+  same loss under CSS nesting: `:host { & ::slotted(*) { … } }` tightened to
+  `&::slotted(*)`, because a colon inside a declarations block was always read
+  as a declaration colon even when its own run opened a nested rule.
 
 ### Changed
 - **Documented the "single record, field by field" recipe.** §22 of the LLM

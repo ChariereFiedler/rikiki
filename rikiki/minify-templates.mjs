@@ -49,6 +49,19 @@ export function tightenCss(css) {
   let prelude = '';
 
   const inRules = () => blocks[blocks.length - 1] === 'rules';
+  /** Does the run since the last `{`/`}`/`;` open a NESTED rule rather than a
+   *  plain declaration · a leading `&`, or a `{` reached before the next `;`.
+   *  CSS nesting lets a rule live inside a declarations block (`:host { &
+   *  ::slotted(*) { … } }`), and its own colons are selector colons even
+   *  though the enclosing block is `declarations`. */
+  const opensNestedRule = (index) => {
+    if (prelude.trimStart().startsWith('&')) return true;
+    for (let j = index; j < css.length; j++) {
+      if (css[j] === '{') return true;
+      if (css[j] === ';') return false;
+    }
+    return false;
+  };
   /** Emit a character that owns its own whitespace on both sides. */
   const tight = (char, index) => {
     out = out.trimEnd() + char;
@@ -87,7 +100,7 @@ export function tightenCss(css) {
       prelude += c;
       // In a selector or a prelude, a colon that begins a pseudo keeps the
       // space in front of it · that space is the descendant combinator.
-      if (inRules() && STARTS_PSEUDO.test(css[i + 1] ?? '')) {
+      if ((inRules() || opensNestedRule(i)) && STARTS_PSEUDO.test(css[i + 1] ?? '')) {
         out += ':';
         while (css[i + 1] === ' ') i++;
         continue;

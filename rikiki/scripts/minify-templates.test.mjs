@@ -86,6 +86,24 @@ describe('the rules this bug actually killed', () => {
   }
 });
 
+describe('CSS nesting inside a declarations block', () => {
+  test('& ::slotted(*) keeps the descendant combinator', () => {
+    expect(tighten(':host { color: red; & ::slotted(*) { flex: 1; } }')).toBe(
+      ':host{color:red;& ::slotted(*){flex:1}}',
+    );
+  });
+
+  test('&:hover stays tight · there was no space to keep', () => {
+    expect(tighten(':host { &:hover { color: blue; } }')).toBe(':host{&:hover{color:blue}}');
+  });
+
+  test('a nested @media inside :host still tightens its declarations', () => {
+    expect(tighten(':host { @media (min-width: 600px) { color: red; } }')).toBe(
+      ':host{@media (min-width:600px){color:red}}',
+    );
+  });
+});
+
 test('whitespace is otherwise still removed', () => {
   const source = `
     :host {
