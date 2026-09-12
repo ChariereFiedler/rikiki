@@ -1,11 +1,14 @@
 // ════════════════════════════════════════════════════════════════
 // <deck-annotate src="dashboard.png" alt="The ops dashboard"
-//   marks="35,60,Latency spike|12,20,Queue depth|80,45,Retries">
-// </deck-annotate>
+//   marks="35,60,Latency spike|12,20,Queue depth|80,45,Retries"
+//   caption="Staging cluster, one hour before the incident."
+//   source="Grafana · 12 September 2026"></deck-annotate>
 //
 // A screenshot the speaker can point at. Showing a dashboard on a projector is
 // useless without designating three places in it, and a laser pointer does not
-// survive the recording.
+// survive the recording. An annotated screenshot is a figure before it is an
+// annotation, so it takes the same `caption` / `source` / `source-href` as
+// deck-figure, in real <figure>/<figcaption> markup.
 //
 // Positions are percentages of the image box, so they hold under zoom-to-fit,
 // in the overview thumbnail and in the PDF export. Marks reveal one per step,
@@ -19,9 +22,14 @@
 //   <script type="module" src="dist/deck-annotate.js"></script>
 // ════════════════════════════════════════════════════════════════
 
-import { LitElement, css, html } from 'lit';
+import { LitElement, css, html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { parseMarks, placeMarks, stepsForMarks, visibleCount } from '../shared/annotation-marks.js';
+
+// deck-source is a core atom, registered by dist/index.js · every opt-in
+// module is documented as "loaded next to the bundle" (§20), so it is always
+// present by the time a deck reaches this one. Importing it here too would
+// register 'deck-source' a second time and throw when both bundles load.
 
 @customElement('deck-annotate')
 export class DeckAnnotate extends LitElement {
@@ -37,14 +45,24 @@ export class DeckAnnotate extends LitElement {
        --deck-annotate-leader-width  leader line thickness
        --deck-annotate-legend-color  the caption list
        --deck-annotate-legend-size   its type size
-       --deck-annotate-gap           space between image and legend           */
+       --deck-annotate-gap           space between image, legend and caption ·
+                                      defaults to deck-figure's own gap
+       --deck-annotate-caption-color the caption / source line under the
+                                      legend · defaults to deck-figure's own */
   static override styles = css`
     :host {
       display: flex;
       flex-direction: column;
-      gap: var(--deck-annotate-gap, var(--rik-space-3));
       min-height: 0;
       font-family: var(--rik-font-sans);
+    }
+    figure {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      gap: var(--deck-annotate-gap, var(--deck-figure-gap, var(--rik-space-2)));
+      min-height: 0;
+      margin: 0;
     }
     /* The image fills its box and object-fit contain letterboxes it inside, so
        the PAINTED area is smaller than the element. Markers are positioned
@@ -149,6 +167,30 @@ export class DeckAnnotate extends LitElement {
       .mark[hidden] { display: grid; }
       .item[data-pending] { opacity: 1; }
     }
+    /* Matches deck-figure's own figcaption exactly, so the two authoring
+       paths read as one line under either kind of image. */
+    figcaption {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: baseline;
+      gap: var(--rik-space-2) var(--rik-space-4);
+      color: var(--deck-annotate-caption-color, var(--deck-figure-caption-color, var(--rik-text-default--muted)));
+      font-size: var(--rik-font-size-sm);
+      line-height: 1.5;
+    }
+    /* deck-source renders the actual credit · these two rules forward the
+       figcaption's own token and restore the single-line, baseline-aligned
+       look this figcaption grid needs. */
+    deck-source {
+      --deck-source-gap: 0;
+    }
+    deck-source::part(source) {
+      white-space: nowrap;
+    }
+    @media (max-width: 640px) {
+      figcaption { grid-template-columns: 1fr; }
+      deck-source::part(source) { white-space: normal; }
+    }
   `;
 
   /** The image to annotate. */
@@ -163,7 +205,7 @@ export class DeckAnnotate extends LitElement {
   /** Show every mark at once instead of revealing them one per step. */
   @property({ type: Boolean, attribute: 'all-at-once' }) allAtOnce = false;
 
-  /** Drop the caption list under the image. */
+  /** Drop the legend list under the image. */
   @property({ type: Boolean, attribute: 'no-legend' }) noLegend = false;
 
   /** Draw a line from the precise target coordinate to the displaced badge. */
@@ -174,6 +216,25 @@ export class DeckAnnotate extends LitElement {
 
   /** Per-mark displacements separated by `|`; missing entries use `offset`. */
   @property({ type: String }) offsets?: string;
+
+  /** Concise explanation displayed under the legend, in a real figcaption. */
+  @property({ type: String }) caption?: string;
+
+  /** Source or credit displayed beside the caption. */
+  @property({ type: String }) source?: string;
+
+  /** Optional URL for the source or credit. */
+  @property({ type: String, attribute: 'source-href' }) sourceHref?: string;
+
+  private get _hasCaption(): boolean {
+    return Boolean(
+      this.caption || this.source || this.querySelector('[slot="caption"], [slot="source"]'),
+    );
+  }
+
+  private get _hasSource(): boolean {
+    return Boolean(this.source || this.querySelector('[slot="source"]'));
+  }
 
   /** Current step, mirrored from the slide by deck-root's step machinery. */
   @state() private _step = 0;
@@ -267,36 +328,52 @@ export class DeckAnnotate extends LitElement {
     const shown = this.allAtOnce ? marks.length : visibleCount(marks.length, this._step);
 
     return html`
-      <div class="frame" part="frame">
-        ${this.src ? html`<img src=${this.src} alt=${this.alt} part="image" />` : ''}
-        ${this.src ? html`<span class="edge" part="edge" aria-hidden="true"></span>` : ''}
-        ${marks.map((m, index) => {
-          const [dx, dy] = this._offsetFor(index);
-          const length = Math.hypot(dx, dy);
-          const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-          const style = `--mx:${m.x}%;--my:${m.y}%;--mark-dx:${dx}px;--mark-dy:${dy}px;--leader-length:${length}px;--leader-angle:${angle}deg`;
-          const hidden = m.n > shown;
-          return html`
-            ${
-              this.leader && length > 0
-                ? html`<span class="leader" part="leader" ?hidden=${hidden} style=${style} aria-hidden="true"></span>`
-                : ''
-            }
-            <span class="mark" part="mark" ?hidden=${hidden} style=${style} aria-hidden="true">${m.n}</span>
-          `;
-        })}
-      </div>
-      ${
-        this.noLegend || marks.length === 0
-          ? ''
-          : html`<ol class="legend" part="legend">
-              ${marks.map(
-                (m) => html`<li class="item" ?data-pending=${m.n > shown}>
-                  <span class="n">${m.n}</span><span>${m.label}</span>
-                </li>`,
-              )}
-            </ol>`
-      }
+      <figure part="figure">
+        <div class="frame" part="frame">
+          ${this.src ? html`<img src=${this.src} alt=${this.alt} part="image" />` : ''}
+          ${this.src ? html`<span class="edge" part="edge" aria-hidden="true"></span>` : ''}
+          ${marks.map((m, index) => {
+            const [dx, dy] = this._offsetFor(index);
+            const length = Math.hypot(dx, dy);
+            const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+            const style = `--mx:${m.x}%;--my:${m.y}%;--mark-dx:${dx}px;--mark-dy:${dy}px;--leader-length:${length}px;--leader-angle:${angle}deg`;
+            const hidden = m.n > shown;
+            return html`
+              ${
+                this.leader && length > 0
+                  ? html`<span class="leader" part="leader" ?hidden=${hidden} style=${style} aria-hidden="true"></span>`
+                  : ''
+              }
+              <span class="mark" part="mark" ?hidden=${hidden} style=${style} aria-hidden="true">${m.n}</span>
+            `;
+          })}
+        </div>
+        ${
+          this.noLegend || marks.length === 0
+            ? ''
+            : html`<ol class="legend" part="legend">
+                ${marks.map(
+                  (m) => html`<li class="item" ?data-pending=${m.n > shown}>
+                    <span class="n">${m.n}</span><span>${m.label}</span>
+                  </li>`,
+                )}
+              </ol>`
+        }
+        ${
+          this._hasCaption
+            ? html`<figcaption part="caption">
+                <span class="caption"><slot name="caption">${this.caption ?? ''}</slot></span>
+                ${
+                  this._hasSource
+                    ? html`<deck-source part="source" href=${this.sourceHref ?? nothing}
+                        ><slot name="source">${this.source ?? ''}</slot></deck-source
+                      >`
+                    : nothing
+                }
+              </figcaption>`
+            : nothing
+        }
+      </figure>
     `;
   }
 }

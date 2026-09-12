@@ -253,6 +253,112 @@ test('a marker sits on the image, not on the letterbox beside it', async ({ page
   expect(inside, 'every marker lands on the screenshot').toEqual([true, true, true]);
 });
 
+test('an annotated screenshot with a caption is a real figure, credited by deck-source', async ({
+  page,
+}) => {
+  const deck = createDeckPage(page);
+  await deck.goto(`${DECK}#4`);
+
+  const semantics = await page.evaluate(() => {
+    const shadow = document.getElementById('shot-captioned')!.shadowRoot!;
+    const source = shadow.querySelector('deck-source');
+    return {
+      figure: shadow.querySelector('figure') !== null,
+      caption: shadow.querySelector('figcaption')?.textContent?.replace(/\s+/g, ' ').trim(),
+      sourceCount: shadow.querySelectorAll('deck-source').length,
+      sourceHref: source?.shadowRoot?.querySelector('a')?.getAttribute('href'),
+      legend: shadow.querySelector('.legend') !== null,
+    };
+  });
+
+  expect(semantics).toEqual({
+    figure: true,
+    caption: 'Staging cluster, one hour before the incident. Grafana',
+    sourceCount: 1,
+    sourceHref: 'https://example.invalid/grafana',
+    legend: true,
+  });
+});
+
+test('no-legend still hides the legend on a captioned annotate figure', async ({ page }) => {
+  const deck = createDeckPage(page);
+  await deck.goto(`${DECK}#4`);
+
+  const parts = await page.evaluate(() => {
+    const shadow = document.getElementById('shot-no-legend')!.shadowRoot!;
+    return {
+      legend: shadow.querySelector('.legend'),
+      caption: shadow.querySelector('figcaption')?.textContent?.trim(),
+    };
+  });
+
+  expect(parts.legend).toBeNull();
+  expect(parts.caption).toBe('Same shot, legend hidden.');
+});
+
+test('adding a caption does not move the marks · they measure the frame, not the figure', async ({
+  page,
+}) => {
+  // A caption line growing the figure can legitimately change how much room
+  // is left for the frame in a height-constrained slide, so the frame's own
+  // pixel box is allowed to change. What must not change is the invariant
+  // _measure() exists for: the first mark (20,30 in percent) keeps landing at
+  // 20%/30% of the PAINTED picture, computed the same way the "sits on the
+  // image" test above does. If _measure() ever measured the figure instead of
+  // .frame, this ratio would drift because the figure's box also contains the
+  // legend and caption text, not just the picture.
+  const deck = createDeckPage(page);
+  await deck.goto(`${DECK}#7`);
+  await page.keyboard.press('ArrowRight');
+
+  const markRatio = () =>
+    page.evaluate(() => {
+      const shadow = document.getElementById('shot-toggle')!.shadowRoot!;
+      const img = shadow.querySelector('img') as HTMLImageElement;
+      const box = img.getBoundingClientRect();
+      const ratio = img.naturalWidth / img.naturalHeight;
+      const boxRatio = box.width / box.height;
+      const w = ratio > boxRatio ? box.width : box.height * ratio;
+      const h = ratio > boxRatio ? box.width / ratio : box.height;
+      const left = box.left + (box.width - w) / 2;
+      const top = box.top + (box.height - h) / 2;
+      const mark = (shadow.querySelector('.mark') as HTMLElement).getBoundingClientRect();
+      return {
+        x: ((mark.left + mark.width / 2 - left) / w) * 100,
+        y: ((mark.top + mark.height / 2 - top) / h) * 100,
+      };
+    });
+
+  const before = await markRatio();
+  expect(before.x, 'the first mark starts at 20% of the picture').toBeGreaterThan(17);
+  expect(before.x).toBeLessThan(23);
+  expect(before.y, 'the first mark starts at 30% of the picture').toBeGreaterThan(27);
+  expect(before.y).toBeLessThan(33);
+
+  await page.evaluate(async () => {
+    const annotation = document.getElementById('shot-toggle') as HTMLElement & {
+      updateComplete: Promise<unknown>;
+    };
+    annotation.setAttribute('caption', 'Added after the fact.');
+    annotation.setAttribute('source', 'Grafana');
+    await annotation.updateComplete;
+  });
+
+  // Shrinking the frame fires _measure() through a ResizeObserver callback,
+  // which runs asynchronously after layout · poll rather than read once, so
+  // the assertion does not race the mark's own re-position.
+  await expect
+    .poll(async () => Math.round((await markRatio()).x), 'the mark settles back at 20% of the picture')
+    .toBeGreaterThan(17);
+
+  const after = await markRatio();
+  expect(after.x).toBeLessThan(23);
+  expect(after.y, 'the mark still sits at 30% of the picture after the caption is added').toBeGreaterThan(
+    27,
+  );
+  expect(after.y).toBeLessThan(33);
+});
+
 // ════════════════════════════════════════════════════════════════
 // The redesigned figure row and persona · what the eye is promised
 //

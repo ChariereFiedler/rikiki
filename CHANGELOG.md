@@ -14,6 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `source-href` attributes, so both paths share one implementation; its
   `--deck-figure-source-color` token keeps working, forwarded to the new
   `--deck-source-color`.
+- **`deck-annotate` is now a figure too.** `caption`, `source` and
+  `source-href` render a real `<figure>`/`<figcaption>` around the screenshot,
+  legend and marks, crediting it with the same `deck-source` atom
+  `deck-figure` uses · `--deck-annotate-gap` and `--deck-annotate-caption-color`
+  default to `deck-figure`'s own `--deck-figure-gap` and
+  `--deck-figure-caption-color`, so both authoring paths read as one line
+  under either kind of image. Marker placement is unaffected: `_measure()`
+  still reads the `.frame` box, not the figure the caption grows.
 - **`rikiki render --baseline <dir>` says what moved since an earlier render.**
   Each fresh PNG is compared to the same-named capture in `<dir>`, in the
   browser that just took the pictures (both images on a canvas,
