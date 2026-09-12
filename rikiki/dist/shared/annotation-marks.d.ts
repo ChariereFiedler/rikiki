@@ -34,3 +34,27 @@ export declare function placeMarks(marks: readonly Mark[]): PlacedMark[];
 export declare function visibleCount(total: number, step: number): number;
 /** Steps a slide needs to reveal every mark · the count the engine asks for. */
 export declare const stepsForMarks: (total: number) => number;
+/** A badge side name : the four directions a keyword offset can name. */
+export type AnchorSide = 'above' | 'below' | 'left' | 'right';
+/** A parsed `offset` / `offsets` entry, either raw pixels or a named side. */
+export type Offset = {
+    readonly kind: 'px';
+    readonly dx: number;
+    readonly dy: number;
+} | {
+    readonly kind: 'anchor';
+    readonly side: AnchorSide;
+};
+/**
+ * Read one `offset` / `offsets` entry · either `x,y` CSS pixels or a keyword
+ * naming a side (`above`, `below`, `left`, `right`).
+ *
+ * A keyword lets the author state the intent instead of guessing pixels in a
+ * coordinate system they cannot see : the component turns it into a real
+ * displacement once it knows the rendered badge size.
+ *
+ * An unreadable entry falls back to `0,0`, same as an unreadable `x,y` pair
+ * always has : a badge pinned to its target is a smaller mistake than one
+ * thrown off-image by a typo.
+ */
+export declare function parseOffset(text: string | null | undefined): Offset;

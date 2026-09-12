@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **`deck-annotate` badges accept a named anchor, not just pixels.** `offset`
+  and `offsets` take `above`, `below`, `left` or `right` next to `x,y` CSS
+  pixels, mixable in one list (`offsets="above|0,-40|right"`). A keyword
+  displaces the badge by its own rendered diameter plus one
+  `--deck-annotate-anchor-gap` (defaults to `--rik-space-2`) in that
+  direction, and turns the leader on for that mark whether or not `leader`
+  is set · the author states the intent, the component measures the badge to
+  place it. `parseOffset` lives in `src/shared/annotation-marks.ts`; an
+  unreadable token still falls back to `0,0`.
 - **`deck-source` atom** for crediting evidence blocks. Place it under any
   `deck-csv`, `deck-table`, `deck-bar`, `deck-kpi-grid`, `deck-annotate`, or
   plain prose · `<deck-source href="…">Word, p. 12</deck-source>` renders the
