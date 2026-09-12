@@ -375,6 +375,54 @@ test.describe('check', () => {
     expect(external.suggestion).toMatch(/bundle/);
   });
 
+  test('counts two dependencies that differ only by a version number as two', () => {
+    // The `--steps` dedupe blanks the measurement out of a diagnostic's
+    // identity, because a pixel drifts between two states of one slide. It
+    // must not blank the digits of a URL: these two are one character apart
+    // and they are two files the deck fetches.
+    writeFileSync(
+      join(workDir, 'cdn-twice.html'),
+      `<!doctype html><html lang="en"><head><meta charset="UTF-8">
+<link rel="stylesheet" href="rikiki/tokens.css">
+<link rel="stylesheet" href="https://cdn.example.com/pack/v1/a.css">
+<link rel="stylesheet" href="https://cdn.example.com/pack/v2/a.css">
+<script type="module" src="rikiki/dist/index.js"></script>
+</head><body><deck-root><deck-cover><h1>A</h1></deck-cover></deck-root></body></html>`,
+    );
+    const r = reportFast('cdn-twice');
+    const external = r.json.diagnostics.filter((d: any) => d.code === 'EXTERNAL_DEPENDENCY');
+    expect(external.map((d: any) => d.message).join(' '), r.stdout).toContain('v1');
+    expect(external.map((d: any) => d.message).join(' '), r.stdout).toContain('v2');
+    expect(external, r.stdout).toHaveLength(2);
+  });
+
+  test('reports a deck it cannot walk instead of crashing on it', () => {
+    // The walk drives the deck by its location hash. A page script that eats
+    // the hashchange leaves `deck-root` on slide 1 forever · the navigation
+    // helper throws on its own timeout, and the command used to die with no
+    // JSON at all on stdout, which is the one thing an agent cannot parse.
+    writeFileSync(
+      join(workDir, 'stalled.html'),
+      `<!doctype html><html lang="en"><head><meta charset="UTF-8">
+<link rel="stylesheet" href="rikiki/tokens.css">
+<script>window.addEventListener('hashchange', (e) => e.stopImmediatePropagation(), true);</script>
+<script type="module" src="rikiki/dist/index.js"></script>
+</head><body><deck-root>
+<deck-cover id="one"><h1>A</h1></deck-cover>
+<deck-takeaway id="two"><h1>B</h1></deck-takeaway>
+</deck-root></body></html>`,
+    );
+    const run = cli(['check', 'stalled.html', '--json', '--no-visual']);
+    expect(() => JSON.parse(run.stdout), 'stdout must parse as JSON on its own').not.toThrow();
+    const json = JSON.parse(run.stdout);
+    const stalled = json.diagnostics.find((d: any) => d.code === 'NAVIGATION_STALLED');
+    expect(stalled, run.stdout).toBeTruthy();
+    expect(stalled.severity).toBe('error');
+    expect(stalled.slide).toBe(2);
+    expect(json.slideCount).toBe(2);
+    expect(run.status).toBe(1);
+  });
+
   test('in --json mode stdout is the report and nothing else, even when the deck is broken', () => {
     writeFileSync(
       join(workDir, 'broken.html'),

@@ -759,7 +759,10 @@ npx rikiki check talk.html --steps      # measure every revealed state, not just
 Every slide is measured, in its opening state, whatever the mode: `check`
 walks the deck one slide at a time, because `deck-root` lays out the slide on
 screen and hides the rest · measuring the document in one shot would read empty
-boxes for every slide but the first, and report a clean deck.
+boxes for every slide but the first, and report a clean deck. The walk drives
+the deck by its location hash; a deck it cannot navigate stops the walk at that
+slide with `NAVIGATION_STALLED`, and the report still carries every slide
+measured before it.
 
 Without `--steps`, a stepped slide is only ever measured in its opening state
 · `advanceStep`'s own geometry rarely changes with it (rikiki reveals dim and
@@ -794,6 +797,7 @@ an `element` path that reaches into the Shadow DOM (`deck-feature#detail
 | `NO_DECK_ROOT` / `NO_SLIDES` | error | nothing to show |
 | `RESOURCE_MISSING` | error | a file the deck asked for did not arrive |
 | `PAGE_ERROR` | error | the page threw during setup |
+| `NAVIGATION_STALLED` | error | the deck never arrived at that slide · the walk stopped there and the report holds only what came before |
 | `UNKNOWN_ELEMENT` | error | a misspelled `deck-*` tag · it renders as nothing at all |
 | `STRAY_MARKUP` | warning | prose about markup that the parser turned into an element · escape the angle brackets |
 | `CONTENT_CLIPPED` | error | the slide clips rather than scrolls · that content is lost |
@@ -1424,7 +1428,9 @@ target point and the badge), `--deck-annotate-gap`
 `--deck-check-yes`, `--deck-check-no`, `--deck-check-size`,
 `--deck-check-no-color`, `--deck-checklist-rule`;
 `--deck-kpi-value-size` (statement size by default · a slide with room can go
-fluid with `clamp(2.25rem, 6cqw, 7rem)`), `--deck-kpi-value-color`,
+fluid with `clamp(2.25rem, 6cqw, 7rem)`, where `cqw` measures the nearest
+declared container and falls back to the viewport when the deck declares
+none), `--deck-kpi-value-color`,
 `--deck-kpi-label-color`,
 `--deck-kpi-note-color`, `--deck-kpi-mass`, `--deck-kpi-mass-text`,
 `--deck-kpi-block-pad-x` (set it on the grid or above, never on one figure ·

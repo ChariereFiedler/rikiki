@@ -429,8 +429,15 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, only = n
   // the authored `at`.
   const graphIssues = [];
   const centreOf = ({ box }) => ({ x: (box.left + box.right) / 2, y: (box.top + box.bottom) / 2 });
-  const graphScope = only === null ? document : slides[only - 1];
-  for (const graph of graphScope ? graphScope.querySelectorAll('deck-graph') : []) {
+  /** Every `deck-graph` of the slide under inspection · the slide itself
+   *  counts, since a deck can put a graph straight into `deck-root`. */
+  const graphsOf = (scope) => {
+    if (!scope) return [];
+    const found = [...scope.querySelectorAll('deck-graph')];
+    if (scope.tagName?.toLowerCase() === 'deck-graph') found.unshift(scope);
+    return found;
+  };
+  for (const graph of only === null ? document.querySelectorAll('deck-graph') : graphsOf(slides[only - 1])) {
     const graphBox = graph.getBoundingClientRect();
     if (!graphBox.width || !graphBox.height) continue;
     const slide = slides.find((candidate) => candidate.contains(graph));
@@ -758,17 +765,34 @@ function diagnose(page, source, limits) {
   return found;
 }
 
+/** Codes whose message states a measurement. Between two states of one slide
+ *  that number drifts by a pixel and the finding is still the same one, so it
+ *  is blanked out of the identity. Nowhere else: two dependencies that differ
+ *  only by a version number are two dependencies, and blanking their digits
+ *  reported one. */
+const MEASURED_IN_MESSAGE = new Set([
+  'CONTENT_CLIPPED',
+  'CONTENT_ESCAPES_BOX',
+  'CONTENT_OVERLAPS_SIBLING',
+  'SLIDE_DENSE',
+  'SLIDE_TOP_HEAVY',
+  'TEXT_TOO_SMALL',
+  'GRAPH_NODE_OUT_OF_BOUNDS',
+  'GRAPH_NODE_OVERLAPS_NODE',
+  'TALK_SHORTER_THAN_ANNOUNCED',
+]);
+
 /** Two diagnostics identical on (code, slide, element, wording) are the same
  *  finding seen at a different moment · keep the earliest state it held.
  *
  *  The wording counts because one element carries several findings of the same
- *  code · two attributes it ignores are two diagnostics on the same path. The
- *  numbers inside it do not: a measurement drifts by a pixel between states,
- *  and that is still one finding. */
+ *  code · two attributes it ignores are two diagnostics on the same path, and
+ *  a diagnostic with no element at all is identified by its words alone. */
 function dedupeStateDiagnostics(diagnostics) {
   const kept = new Map();
   for (const d of diagnostics) {
-    const wording = String(d.message ?? '').replace(/[\d.]+/g, '#');
+    const message = String(d.message ?? '');
+    const wording = MEASURED_IN_MESSAGE.has(d.code) ? message.replace(/[\d.]+/g, '#') : message;
     const key = JSON.stringify([d.code, d.slide ?? null, d.element ?? null, wording]);
     const prior = kept.get(key);
     if (!prior || d.state < prior.state) kept.set(key, d);
@@ -791,7 +815,22 @@ async function diagnoseAllStates(page, slideCount, inspectOpts, source, limits, 
   const found = [];
   let statesInspected = 0;
   for (let index = 1; index <= slideCount; index++) {
-    await goToSlide(page, index);
+    try {
+      await goToSlide(page, index);
+    } catch {
+      // The deck did not arrive · a script swallowing the hash, a slide that
+      // throws on connect. Report it and keep what the earlier slides gave:
+      // a deck nobody can walk still deserves the report it already earned,
+      // and an agent reading the JSON gets a diagnosis instead of a crash.
+      found.push(
+        diagnostic('NAVIGATION_STALLED', SEVERITY.error, `the deck never arrived at slide ${index} · the walk stopped there`, {
+          slide: index,
+          measurement: { slidesMeasured: index - 1, slideCount },
+          suggestion: 'navigation is driven by the location hash · check for a script that intercepts it, or a slide that throws while connecting',
+        }),
+      );
+      break;
+    }
     let state = 0;
     for (;;) {
       const scanDocument = index === 1 && state === 0;
@@ -820,9 +859,14 @@ export async function checkDeck(
     deckPath,
     async ({ page, settled, missing, errors }) => {
       const inspectOpts = { limits, titleReader: SLIDE_TITLE_READER, graphGeometry: GRAPH_GEOMETRY_READER, boxGeometry: BOX_GEOMETRY_READER };
+      // The outline, and nothing measured · `only: 0` names no slide. What the
+      // walk below needs from this pass is how many slides there are and what
+      // they are called; measuring them here would read the empty rects of
+      // every slide that is not on screen, which is the bug this walk fixes.
+      const outlineOpts = { ...inspectOpts, only: 0 };
       const observed = settled
-        ? await page.evaluate(inspectPage, inspectOpts)
-        : await page.evaluate(inspectPage, inspectOpts).catch(() => ({
+        ? await page.evaluate(inspectPage, outlineOpts)
+        : await page.evaluate(inspectPage, outlineOpts).catch(() => ({
             hasRoot: false,
             runtimeLoaded: false,
             slides: [],
@@ -837,8 +881,13 @@ export async function checkDeck(
         statesInspected = walked.statesInspected;
       } else {
         // Nothing to walk: the deck never settled, or it holds no slide at
-        // all. The single document-wide pass is all there is to report.
-        diagnostics = diagnose(observed, source, limits);
+        // all. One whole-document pass is all there is to report · on a deck
+        // that never settled the geometry is unreliable anyway, but saying
+        // nothing about it would be worse.
+        const whole = observed.slides.length
+          ? await page.evaluate(inspectPage, { ...inspectOpts, only: null }).catch(() => observed)
+          : observed;
+        diagnostics = diagnose(whole, source, limits);
         statesInspected = observed.slides.length;
       }
 

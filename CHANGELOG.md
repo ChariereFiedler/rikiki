@@ -125,11 +125,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the slide being measured, and what does not depend on which slide is showing
   (unknown tags, stray attributes, unslotted content, the notes word count) is
   asked once for the whole document instead of once per state · `--steps` used
-  to re-walk every element of the deck on every state. A graph node's own label
-  no longer reads as a painted box either: it sits two levels under
+  to re-walk every element of the deck on every state. A deck the walk cannot
+  navigate no longer kills the command: it stops at that slide with a new
+  `NAVIGATION_STALLED` error and the report still carries every slide measured
+  before it, so `--json` always has a report to hand back. A graph node's own
+  label no longer reads as a painted box either: it sits two levels under
   `deck-graph`, and the exclusion only looked at the nearest `deck-*` ancestor,
   so `GRAPH_NODE_OVERLAPS_NODE` came with a `CONTENT_OVERLAPS_SIBLING` saying
-  the same thing.
+  the same thing. This is a coverage trade, not only a deduplication: nothing
+  inside a `deck-graph` or a `deck-annotate` is compared against its
+  neighbours any more, slotted content included, so a graph's insides are
+  covered by the graph codes alone.
 - **`GRAPH_EDGE_CROSSES_NODE` no longer misses a visible crossing.** The check
   re-derived a centre-to-centre segment of its own, tested it as a
   mathematical line against the node box shrunk by 2px, and ignored
