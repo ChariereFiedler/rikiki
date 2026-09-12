@@ -271,3 +271,7 @@ to npm.
 - Publication of `rikiki-deck@1.0.0` to npm is out of scope for this review;
   the CDN pin and the version claims are accurate to the repository state,
   not yet to what `npm install` currently returns.
+
+## Release reconciliation · 2026-09-12
+
+After this review the release cut was 0.7.0, not 1.0.0 (1.0.0 was never tagged nor published; npm was at 0.6.0). The docs were rebased on that release: the CDN pin, the changelog and every computed version follow `rikiki/package.json`, and the attribute guard caught the three `deck-annotate` attributes 0.7.0 added (`caption`, `source`, `source-href`), now documented.
