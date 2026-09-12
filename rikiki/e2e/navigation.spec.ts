@@ -8,25 +8,43 @@ const DEMO = '/rikiki/decks/tests/demo.html';
 const slideCount = (deck: ReturnType<typeof createDeckPage>) =>
   deck.page.evaluate(() => document.querySelector('deck-root')?.children.length ?? 0);
 
+// A key press only reaches the deck's own handler once the custom element has
+// upgraded and the runtime attached its `keydown` listener · on a loaded CI
+// runner that upgrade can still be in flight right after `goto` resolves, so
+// each ArrowRight/ArrowLeft below gets a generous poll rather than the
+// default 5s budget.
+const NAV_POLL_TIMEOUT = 15_000;
+
 test('arrow keys advance and go back', async ({ page }) => {
   const deck = createDeckPage(page);
   await deck.goto(DEMO);
+  expect(await deck.upgraded(), 'deck-root should be a defined custom element').toBe(true);
   expect(await deck.activeIndex()).toBe(0);
+  // Embedded decks scope the keyboard to focus (see deck-root's
+  // `_ownsKeyboard`) · this demo is full-page and owns it regardless, but
+  // focusing is free insurance against that contract changing under us.
+  await deck.root.focus();
 
   // Advance until we leave the first slide (the cover may have inner steps).
   await expect
-    .poll(async () => {
-      await deck.advance();
-      return deck.activeIndex();
-    })
+    .poll(
+      async () => {
+        await deck.advance();
+        return deck.activeIndex();
+      },
+      { timeout: NAV_POLL_TIMEOUT },
+    )
     .toBeGreaterThan(0);
 
   const reached = await deck.activeIndex();
   await expect
-    .poll(async () => {
-      await deck.back();
-      return deck.activeIndex();
-    })
+    .poll(
+      async () => {
+        await deck.back();
+        return deck.activeIndex();
+      },
+      { timeout: NAV_POLL_TIMEOUT },
+    )
     .toBeLessThan(reached);
 
   expect(deck.consoleErrors).toEqual([]);

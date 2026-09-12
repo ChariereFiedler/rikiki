@@ -152,19 +152,30 @@ test('annotation marks are placed by percentage and revealed one per step', asyn
 
   // The placement is a percentage of the PAINTED PICTURE, not of the element
   // box · an image letterboxed inside its box would otherwise shift every mark.
-  const placed = await page.evaluate(() => {
-    const shadow = document.getElementById('shot')!.shadowRoot!;
-    const el = shadow.querySelector('img') as HTMLImageElement;
-    const box = el.getBoundingClientRect();
-    const ratio = el.naturalWidth / el.naturalHeight;
-    const boxRatio = box.width / box.height;
-    const w = ratio > boxRatio ? box.width : box.height * ratio;
-    const left = box.left + (box.width - w) / 2;
-    const m = (shadow.querySelector('.mark') as HTMLElement).getBoundingClientRect();
-    return Math.round(((m.left + m.width / 2 - left) / w) * 100);
-  });
-  expect(placed, 'the first mark sits at 20% of the picture').toBeGreaterThan(17);
-  expect(placed).toBeLessThan(23);
+  const placedPercent = () =>
+    page.evaluate(() => {
+      const shadow = document.getElementById('shot')!.shadowRoot!;
+      const el = shadow.querySelector('img') as HTMLImageElement;
+      // Not yet loaded means no natural size to measure against · report
+      // nothing rather than a bogus ratio, so the poll below keeps retrying.
+      if (!el.naturalWidth || !el.naturalHeight) return null;
+      const box = el.getBoundingClientRect();
+      const ratio = el.naturalWidth / el.naturalHeight;
+      const boxRatio = box.width / box.height;
+      const w = ratio > boxRatio ? box.width : box.height * ratio;
+      const left = box.left + (box.width - w) / 2;
+      const m = (shadow.querySelector('.mark') as HTMLElement).getBoundingClientRect();
+      return Math.round(((m.left + m.width / 2 - left) / w) * 100);
+    });
+
+  // _measure() runs from a ResizeObserver callback and from the image's own
+  // `load` event, both async · on a slow WebKit run the assertion can read the
+  // mark before either has settled, so poll the painted position instead of
+  // reading it once.
+  await expect
+    .poll(placedPercent, { message: 'the first mark settles at 20% of the picture' })
+    .toBeGreaterThan(17);
+  expect(await placedPercent()).toBeLessThan(23);
 });
 
 test('an annotated slide asks the engine for one step per mark', async ({ page }) => {
