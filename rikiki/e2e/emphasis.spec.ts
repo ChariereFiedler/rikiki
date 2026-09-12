@@ -40,7 +40,14 @@ const DECKS = [
   // fixtures' above: adding a marked element raises the number, nothing lowers
   // it. They are deliberately not zero · a deck that marks nothing would sail
   // through this file while proving nothing.
-  { path: '/examples/showcase/index.html', fills: 17 },
+  // 16, not 17: the showcase's one marked deck-kpi paints its block at the
+  // signature statement size, which is 0.90% of the canvas · just under the
+  // 1% floor below which this file does not call a fill a surface. It was
+  // counted while the value scale grew with the viewport, and that scale is
+  // what pushed a real deck off its slide. The block is still painted and
+  // still carries its contrast; it is the detector's floor that it sits
+  // under, not the design.
+  { path: '/examples/showcase/index.html', fills: 16 },
 ];
 /* examples/bento is deliberately absent · it is a bundled deck, so its theme is
    inlined and there is no stylesheet link to swap. This file measures both

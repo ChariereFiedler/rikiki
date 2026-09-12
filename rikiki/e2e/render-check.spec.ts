@@ -805,6 +805,41 @@ test.describe('every slide is measured, not only the one on screen', () => {
   });
 });
 
+test.describe('a row of figures', () => {
+  // The reported slide: three metrics, each a value, a label and a note that
+  // wraps to two lines, inside a deck-feature that already held a title and a
+  // lead. It fitted under the published runtime and was cut off by the branch,
+  // because the value scale had grown with the viewport. The fixture is sized
+  // to sit just inside the canvas at the signature statement size · which is
+  // what makes the second half of the test worth writing.
+  const FIGURES = `<deck-feature id="figures" spread="center" eyebrow="Le parc">
+       <h1 slot="title">Ce que la releve a mesure sur le terrain, saison apres saison, sans jamais interrompre l'exploitation ni mobiliser une equipe</h1>
+       <p slot="lead">Trois mesures qui resument la campagne : ce que la releve a couvert sur le terrain, ce qu'elle a coute a concevoir une seule fois, et ce qui la rejoue chaque annee sans personne devant l'ecran ni budget supplementaire a prevoir.</p>
+       <deck-kpi-grid GRID ruled cols="3">
+         <deck-kpi value="4 174" label="constats releves" note="sur l'ensemble du parc, dont la nuit, sans surveillance"></deck-kpi>
+         <deck-kpi value="17 h" label="de conception" tone="accent" note="une seule fois, puis le programme tourne seul chaque annee"></deck-kpi>
+         <deck-kpi value="429" label="tests automatises" note="rejoues a chaque version, dont la nuit, sans surveillance"></deck-kpi>
+       </deck-kpi-grid>
+     </deck-feature>`;
+
+  test('fits three three-line metrics on the slide it was laid out for', () => {
+    deck('figures', FIGURES.replace('GRID ', ''), ['deck-kpi-grid']);
+    const r = reportFast('figures');
+    expect(codes(r), r.stdout).not.toContain('CONTENT_CLIPPED');
+    expect(codes(r), r.stdout).not.toContain('CONTENT_OVERLAPS_SIBLING');
+  });
+
+  test('still reaches the fluid scale through --deck-kpi-value-size', () => {
+    // The same slide with the scale the branch had made the default · it is
+    // off the canvas, which is both the bug that was reported and the proof
+    // that the knob still carries the larger scale for a deck with room.
+    const fluid = 'style="--deck-kpi-value-size: clamp(2.25rem, calc(18cqw / 3), 7rem)"';
+    deck('figures-fluid', FIGURES.replace('GRID', fluid), ['deck-kpi-grid']);
+    const r = reportFast('figures-fluid');
+    expect(codes(r), r.stdout).toContain('CONTENT_CLIPPED');
+  });
+});
+
 test.describe('the visual pass', () => {
   test('reports a slide whose content sits in the top with a dead band below', () => {
     // Measured on the pixels, not on the DOM: a box can be the right size and
