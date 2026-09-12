@@ -299,41 +299,36 @@ test('no-legend still hides the legend on a captioned annotate figure', async ({
 test('adding a caption does not move the marks · they measure the frame, not the figure', async ({
   page,
 }) => {
-  // A caption line growing the figure can legitimately change how much room
-  // is left for the frame in a height-constrained slide, so the frame's own
-  // pixel box is allowed to change. What must not change is the invariant
-  // _measure() exists for: the first mark (20,30 in percent) keeps landing at
-  // 20%/30% of the PAINTED picture, computed the same way the "sits on the
-  // image" test above does. If _measure() ever measured the figure instead of
-  // .frame, this ratio would drift because the figure's box also contains the
-  // legend and caption text, not just the picture.
+  // #shot-toggle's slide has no `fill` and no explicit height, and its image
+  // is wide/short (800x200) so the frame's aspect-driven natural height
+  // leaves real headroom in the slide · adding a caption there grows the
+  // figure instead of squeezing .frame, which is the only way "mark
+  // coordinates are identical, within 1px" is a meaningful assertion instead
+  // of fighting a legitimate reflow.
   const deck = createDeckPage(page);
   await deck.goto(`${DECK}#7`);
+  // Marks reveal one per step and step 0 shows the screenshot alone, so all
+  // three ArrowRight presses are needed before every mark has a box to measure.
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowRight');
   await page.keyboard.press('ArrowRight');
 
-  const markRatio = () =>
+  const geometry = () =>
     page.evaluate(() => {
       const shadow = document.getElementById('shot-toggle')!.shadowRoot!;
-      const img = shadow.querySelector('img') as HTMLImageElement;
-      const box = img.getBoundingClientRect();
-      const ratio = img.naturalWidth / img.naturalHeight;
-      const boxRatio = box.width / box.height;
-      const w = ratio > boxRatio ? box.width : box.height * ratio;
-      const h = ratio > boxRatio ? box.width / ratio : box.height;
-      const left = box.left + (box.width - w) / 2;
-      const top = box.top + (box.height - h) / 2;
-      const mark = (shadow.querySelector('.mark') as HTMLElement).getBoundingClientRect();
-      return {
-        x: ((mark.left + mark.width / 2 - left) / w) * 100,
-        y: ((mark.top + mark.height / 2 - top) / h) * 100,
-      };
+      const frame = (shadow.querySelector('.frame') as HTMLElement).getBoundingClientRect();
+      const marks = [...shadow.querySelectorAll('.mark')].map((el) => {
+        const box = (el as HTMLElement).getBoundingClientRect();
+        // Relative to the frame's own top-left, not the viewport · the frame
+        // is free to move (the slide recentres a taller figure) as long as
+        // it does not change size, and marks are pinned to it, not to the page.
+        return { x: box.left + box.width / 2 - frame.left, y: box.top + box.height / 2 - frame.top };
+      });
+      return { frameW: frame.width, frameH: frame.height, marks };
     });
 
-  const before = await markRatio();
-  expect(before.x, 'the first mark starts at 20% of the picture').toBeGreaterThan(17);
-  expect(before.x).toBeLessThan(23);
-  expect(before.y, 'the first mark starts at 30% of the picture').toBeGreaterThan(27);
-  expect(before.y).toBeLessThan(33);
+  const before = await geometry();
+  expect(before.marks, 'all three marks have a box to measure').toHaveLength(3);
 
   await page.evaluate(async () => {
     const annotation = document.getElementById('shot-toggle') as HTMLElement & {
@@ -344,19 +339,29 @@ test('adding a caption does not move the marks · they measure the frame, not th
     await annotation.updateComplete;
   });
 
-  // Shrinking the frame fires _measure() through a ResizeObserver callback,
-  // which runs asynchronously after layout · poll rather than read once, so
-  // the assertion does not race the mark's own re-position.
+  // _measure() re-runs through a ResizeObserver callback, which fires
+  // asynchronously after layout · poll rather than read once, so the
+  // assertion does not race a settle that has not happened yet.
   await expect
-    .poll(async () => Math.round((await markRatio()).x), 'the mark settles back at 20% of the picture')
-    .toBeGreaterThan(17);
+    .poll(async () => Math.round((await geometry()).frameH))
+    .toBe(Math.round(before.frameH));
 
-  const after = await markRatio();
-  expect(after.x).toBeLessThan(23);
-  expect(after.y, 'the mark still sits at 30% of the picture after the caption is added').toBeGreaterThan(
-    27,
-  );
-  expect(after.y).toBeLessThan(33);
+  const after = await geometry();
+  // The invariant this test exists for: .frame, the box _measure() reads,
+  // does not change size when the caption is added, and every mark stays
+  // exactly where it was relative to that frame · both within 1px.
+  expect(Math.abs(after.frameW - before.frameW), '.frame width is unchanged').toBeLessThan(1);
+  expect(Math.abs(after.frameH - before.frameH), '.frame height is unchanged').toBeLessThan(1);
+  before.marks.forEach((mark, i) => {
+    expect(
+      Math.abs(after.marks[i].x - mark.x),
+      `mark ${i + 1} x relative to the frame is unchanged`,
+    ).toBeLessThan(1);
+    expect(
+      Math.abs(after.marks[i].y - mark.y),
+      `mark ${i + 1} y relative to the frame is unchanged`,
+    ).toBeLessThan(1);
+  });
 });
 
 // ════════════════════════════════════════════════════════════════
