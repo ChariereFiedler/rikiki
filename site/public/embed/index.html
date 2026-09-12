@@ -11,6 +11,9 @@
 <script type="module" src="../../rikiki/dist/deck-flow.js"></script>
 <script type="module" src="../../rikiki/dist/deck-graph.js"></script>
 <script type="module" src="../../rikiki/dist/deck-icon.js"></script>
+<script type="module" src="../../rikiki/dist/deck-annotate.js"></script>
+<script type="module" src="../../rikiki/dist/deck-versus.js"></script>
+<script type="module" src="../../rikiki/dist/deck-table.js"></script>
 <script>
   // Live theme switch · used by the clickable cards on the Themes slide.
   // Choice is persisted in localStorage so a reload keeps it.
@@ -357,13 +360,9 @@
     &lt;/head&gt;
     &lt;body&gt;
       &lt;deck-root&gt;
-        &lt;deck-cover brand="my-talk"&gt;
-          &lt;h1&gt;Hello, &lt;span class="accent"&gt;world&lt;/span&gt;.&lt;/h1&gt;
-        &lt;/deck-cover&gt;
-        &lt;deck-feature eyebrow="One slide"&gt;
-          &lt;h1 slot="title"&gt;That's all you need.&lt;/h1&gt;
-          &lt;deck-md&gt;Write **markdown**, drop `&lt;deck-*&gt;` blocks, navigate with arrows.&lt;/deck-md&gt;
-        &lt;/deck-feature&gt;
+        &lt;deck-cover brand="my-talk"&gt;&lt;h1&gt;Hello, &lt;span class="accent"&gt;world&lt;/span&gt;.&lt;/h1&gt;&lt;/deck-cover&gt;
+        &lt;deck-feature eyebrow="One slide"&gt;&lt;h1 slot="title"&gt;That's all you need.&lt;/h1&gt;
+          &lt;deck-md&gt;Write **markdown**, drop `&lt;deck-*&gt;` blocks, navigate with arrows.&lt;/deck-md&gt;&lt;/deck-feature&gt;
       &lt;/deck-root&gt;
     &lt;/body&gt;
     &lt;/html&gt;
@@ -376,11 +375,72 @@
 <deck-feature eyebrow="Opt-in" spread="center">
   <h1 slot="title">The opt-in components stay out of the bundle until a deck asks</h1>
   <deck-kpi-grid cols="3">
-    <deck-kpi value="34" label="components in the default bundle"></deck-kpi>
+    <deck-kpi value="36" label="components in the default bundle"></deck-kpi>
     <deck-kpi value="14" label="more, one script tag each" tone="accent"></deck-kpi>
     <deck-kpi value="0" label="network calls at runtime" note="a bundled deck runs from a memory stick"></deck-kpi>
   </deck-kpi-grid>
+  <deck-source href="https://example.com/component-count">Component count, this repo</deck-source>
 </deck-feature>
+
+<!-- ════════════════════════════════════════════════════════════════
+     16c · A source line under an evidence block
+     ════════════════════════════════════════════════════════════════ -->
+<deck-feature eyebrow="Evidence" spread="center">
+  <h1 slot="title">Every evidence block takes a source line under it</h1>
+  <deck-csv>
+    Region; Users; Plan
+    EMEA; 12 040; Pro
+    APAC; 9 310; Pro
+    AMER; 6 220; Free
+  </deck-csv>
+  <deck-source>Internal usage export, September 2026</deck-source>
+</deck-feature>
+
+<!-- ════════════════════════════════════════════════════════════════
+     16c-bis · A single record, field by field · recipe, not a component
+     ════════════════════════════════════════════════════════════════ -->
+<deck-feature eyebrow="Recipe" spread="center">
+  <h1 slot="title">A record is a table with one row per field</h1>
+  <deck-table highlight-rows="3" reveal>
+    <table>
+      <thead><tr><th>Field</th><th>Value</th><th>What makes it authoritative</th></tr></thead>
+      <tbody>
+        <tr><td>Incident</td><td>INC-4471</td><td>Assigned by the tracker on file</td></tr>
+        <tr><td>Detected</td><td>2026-09-03 02:14 UTC</td><td>Pager timestamp, not a recollection</td></tr>
+        <tr><td>Root cause</td><td>Connection pool exhaustion</td><td>Confirmed by the on-call engineer, not guessed</td></tr>
+        <tr><td>Owner</td><td>Platform team</td><td>Assignment recorded in the same tracker</td></tr>
+      </tbody>
+    </table>
+  </deck-table>
+  <deck-source href="https://example.com/tracker/INC-4471">Incident tracker, INC-4471</deck-source>
+</deck-feature>
+
+<!-- ════════════════════════════════════════════════════════════════
+     16d · An annotated screenshot is a figure, cited like one
+     ════════════════════════════════════════════════════════════════ -->
+<deck-feature eyebrow="Opt-in" fill>
+  <h1 slot="title">A pointer on a screenshot, still credited like a figure</h1>
+  <deck-annotate
+    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='450' viewBox='0 0 800 450'%3E%3Crect width='800' height='450' fill='%23dcd6cc'/%3E%3C/svg%3E"
+    alt="A placeholder dashboard, standing in for a real screenshot"
+    marks="20,30,Queue depth|55,60,Latency spike|82,25,Retries"
+    leader
+    offsets="above|28,-24"
+    caption="Staging cluster, one hour before the incident."
+    source="Grafana"
+    source-href="https://example.com/grafana"
+  ></deck-annotate>
+</deck-feature>
+
+<!-- ════════════════════════════════════════════════════════════════
+     16e · A comparison, as its own slide, with a footnote
+     ════════════════════════════════════════════════════════════════ -->
+<deck-versus eyebrow="Opt-in" slide pivot="OR" winner="right">
+  <h1 slot="title">Subscribing to the event beats polling the registry</h1>
+  <div slot="left"><h3>Poll the registry</h3><p>Simple, and always late.</p></div>
+  <div slot="right"><h3>Subscribe to the event</h3><p>One path, no drift.</p></div>
+  <deck-callout slot="footer" type="info">Rolls out behind a flag · reversible in one line.</deck-callout>
+</deck-versus>
 
 <deck-feature eyebrow="Opt-in" spread="center" data-steps="3">
   <h1 slot="title">A chain marks the stage you are on</h1>
