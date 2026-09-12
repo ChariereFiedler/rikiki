@@ -1,9 +1,19 @@
 ---
+import CodeBlock from './CodeBlock.astro';
+import Eyebrow from './Eyebrow.astro';
+
+const embedSnippet = `<deck-root
+  autoplay="4000"
+  loop
+  swipe>
+  …your slides
+</deck-root>`;
+
 const carousel = `<!doctype html><html><head><meta charset="UTF-8">
 <link rel="stylesheet" href="/rikiki/themes/rikiki.css">
 <script type="module" src="/rikiki/dist/index.js"></scr` + `ipt>
 <style>html,body{width:100%;height:100%;margin:0;overflow:hidden}deck-root{width:100%;height:100%}</style>
-</head><body><deck-root autoplay="4000" loop swipe transition="slide">
+</head><body><deck-root autoplay="4000" loop swipe no-hint no-counter no-arrows transition="slide">
   <deck-cover brand="COURSE · 01">
     <h1>Learn in <span class="accent">context.</span></h1>
     <p class="sub">A lesson embedded where people need it.</p>
@@ -23,19 +33,14 @@ const carousel = `<!doctype html><html><head><meta charset="UTF-8">
 
 <section id="dual" class="dual">
   <div class="inner">
-    <p class="eyebrow"><span class="num">05</span> Embedded learning</p>
+    <Eyebrow text="Embedded learning" num="06" />
     <div class="intro">
-      <div>
-        <h2>Put the deck inside the page.</h2>
-        <p class="lede">
-          A Rikiki deck is a Web Component, so the same material can live inside
-          a training course, an onboarding guide, or product documentation.
-          The slide canvas scales to its container; keyboard navigation starts when the embedded deck has focus.
-        </p>
-      </div>
-      <aside class="use-cases" aria-label="Common carousel uses">
-        <span>Training</span><span>Onboarding</span><span>Documentation</span>
-      </aside>
+      <h2>Put the deck inside the page.</h2>
+      <p class="lede">
+        A Rikiki deck is a Web Component, so the same material can live inside
+        a training course, an onboarding guide, or product documentation.
+        The slide canvas scales to its container; keyboard navigation starts when the embedded deck has focus.
+      </p>
     </div>
 
     <div class="demo-grid">
@@ -48,26 +53,21 @@ const carousel = `<!doctype html><html><head><meta charset="UTF-8">
           <iframe srcdoc={carousel} title="Embedded Rikiki training carousel"></iframe>
         </div>
         <div class="carousel-controls" aria-label="Carousel controls">
-          <button type="button" data-carousel-prev aria-label="Previous slide">←</button>
+          <button type="button" class="btn btn-ghost btn-icon" data-carousel-prev aria-label="Previous slide"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"></path></svg></button>
           <span><strong data-carousel-current>1</strong> / 3</span>
-          <button type="button" data-carousel-next aria-label="Next slide">→</button>
+          <button type="button" class="btn btn-ghost btn-icon" data-carousel-next aria-label="Next slide"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"></path></svg></button>
         </div>
       </div>
       <div class="how">
         <p class="label">The integration</p>
-        <pre><code>&lt;deck-root
-  autoplay="4000"
-  loop
-  swipe&gt;
-  …your slides
-&lt;/deck-root&gt;</code></pre>
+        <CodeBlock lang="html" code={embedSnippet} />
         <p>
           Add three attributes to the existing deck. Autoplay pauses on hover,
           touch gestures work on mobile, and <code>loop</code> returns to the first slide.
         </p>
         <div class="how-actions">
-          <button type="button" data-copy-embed>Copy markup snippet</button>
-          <a href="/demo/">Open the example →</a>
+          <button type="button" class="btn btn-ghost" data-copy-embed>Copy markup snippet</button>
+          <a href="/demo/">Open the example</a>
         </div>
       </div>
     </div>
@@ -76,35 +76,27 @@ const carousel = `<!doctype html><html><head><meta charset="UTF-8">
 
 <style>
   .dual { padding:var(--rik-space-7) var(--rik-space-5); background:var(--rik-surface-raised); border-block:1px solid var(--rik-border-default); }
-  .inner { max-width:1080px; margin:0 auto; }
-  .eyebrow { display:inline-flex; align-items:center; gap:10px; margin:0 0 var(--rik-space-3); color:var(--rik-accent--strong); font:700 var(--rik-font-size-xs)/1 var(--rik-font-mono); letter-spacing:.16em; text-transform:uppercase; }
-  .num { display:grid; place-items:center; width:26px; height:26px; border:2px solid var(--rik-accent); border-radius:50%; letter-spacing:0; }
-  .intro { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:var(--rik-space-5); align-items:end; margin-bottom:var(--rik-space-5); }
+  .inner { max-width:var(--rik-measure-page); margin:0 auto; }
+  .intro { margin-bottom:var(--rik-space-5); }
   h2 { max-width:20ch; margin:0 0 var(--rik-space-3); color:var(--rik-text-default); font:900 var(--rik-font-size-mega)/1.05 var(--rik-font-display); letter-spacing:-.025em; }
   .lede { max-width:66ch; margin:0; color:var(--rik-text-default--muted); font-size:var(--rik-font-size-lead); line-height:1.55; }
-  .use-cases { display:flex; flex-direction:column; align-items:flex-end; gap:5px; color:var(--rik-text-default--muted); font:700 var(--rik-font-size-xs)/1.2 var(--rik-font-mono); letter-spacing:.08em; text-transform:uppercase; }
   .demo-grid { display:grid; grid-template-columns:minmax(0,1.65fr) minmax(260px,.65fr); gap:var(--rik-space-4); align-items:stretch; }
-  .embed { min-width:0; overflow:hidden; background:#080910; border-radius:var(--rik-radius-md); box-shadow:var(--rik-elevation-3); }
-  .embed header { display:flex; justify-content:space-between; gap:var(--rik-space-3); padding:12px 16px; color:rgba(255,255,255,.52); font:700 .7rem/1 var(--rik-font-mono); letter-spacing:.08em; text-transform:uppercase; }
-  .embed header span:first-child { color:#fff; }
-  .embed i { display:inline-block; width:8px; height:8px; margin-right:7px; border-radius:50%; background:#00c8a0; }
+  .embed { --rik-btn-ghost__border:var(--rik-border-inverse--strong); --rik-btn-ghost__text:var(--rik-text-inverse); min-width:0; overflow:hidden; background:var(--rik-surface-inverse); border-radius:var(--rik-radius-md); box-shadow:var(--rik-elevation-3); }
+  .embed header { display:flex; justify-content:space-between; gap:var(--rik-space-3); padding:var(--rik-space-2) var(--rik-space-3); color:var(--rik-text-inverse--muted); font:600 var(--rik-font-size-sm)/1.3 var(--rik-font-sans); }
+  .embed header span:first-child { color:var(--rik-text-inverse); }
+  .embed i { display:inline-block; width:var(--rik-space-1); height:var(--rik-space-1); margin-right:var(--rik-space-2xs); border-radius:50%; background:var(--rik-status-success); }
   .viewport { position:relative; aspect-ratio:16/9; overflow:hidden; }
-  .carousel-controls { display:flex; justify-content:flex-end; align-items:center; gap:10px; padding:10px 14px; color:var(--rik-text-inverse--muted); border-top:1px solid var(--rik-border-inverse); font:700 var(--rik-font-size-xs)/1 var(--rik-font-mono); }
-  .carousel-controls button { display:grid; place-items:center; width:44px; height:44px; padding:0; color:var(--rik-text-inverse); background:var(--rik-surface-inverse--soft-2); border:1px solid var(--rik-text-inverse--faint); border-radius:4px; cursor:pointer; font:700 1.1rem/1 var(--rik-font-mono); }
+  .carousel-controls { display:flex; justify-content:flex-end; align-items:center; gap:var(--rik-space-2); padding:var(--rik-space-2) var(--rik-space-3); color:var(--rik-text-inverse--muted); border-top:1px solid var(--rik-border-inverse); font:600 var(--rik-font-size-sm)/1 var(--rik-font-mono); }
+  .carousel-controls strong { color:var(--rik-text-inverse); }
   iframe { position:absolute; inset:0; width:1920px; height:1080px; border:0; transform-origin:top left; }
-  .how { display:flex; flex-direction:column; justify-content:center; padding:var(--rik-space-4); border-block:1px solid var(--rik-border-default); }
-  .label { margin:0 0 var(--rik-space-2)!important; color:var(--rik-accent--strong)!important; font:700 var(--rik-font-size-xs)/1 var(--rik-font-mono)!important; letter-spacing:.12em; text-transform:uppercase; }
-  pre { margin:0 0 var(--rik-space-3); padding:0; overflow:auto; color:var(--rik-text-default); background:transparent; font:var(--rik-font-size-sm)/1.65 var(--rik-font-mono); }
-  .how p { margin:0 0 var(--rik-space-3); color:var(--rik-text-default--muted); font-size:var(--rik-font-size-sm); line-height:1.55; }
-  .how code { font-family:var(--rik-font-mono); }
-  .how a { color:var(--rik-accent--strong); font-size:var(--rik-font-size-sm); font-weight:800; text-decoration:none; }
+  .how { display:flex; flex-direction:column; justify-content:center; gap:var(--rik-space-3); min-width:0; padding:var(--rik-space-4) 0; border-block:1px solid var(--rik-border-default); }
+  .label { margin:0; color:var(--rik-text-default--muted); font:600 var(--rik-font-size-sm)/1.3 var(--rik-font-sans); }
+  .how p { margin:0; color:var(--rik-text-default--muted); font-size:var(--rik-font-size-md); line-height:1.55; }
+  .how a { color:var(--rik-accent--strong); font-size:var(--rik-font-size-body); font-weight:700; text-decoration:none; }
   .how-actions { display:flex; flex-wrap:wrap; align-items:center; gap:var(--rik-space-3); }
-  .how-actions button { min-height:44px; padding:0 12px; color:var(--rik-accent--strong); background:transparent; border:1px solid var(--rik-accent); border-radius:4px; cursor:pointer; font:800 var(--rik-font-size-sm)/1 var(--rik-font-sans); }
   @media (max-width:800px) {
     .dual { padding:var(--rik-space-6) var(--rik-space-3); }
-    .intro,.demo-grid { grid-template-columns:1fr; }
-    .use-cases { flex-direction:row; flex-wrap:wrap; align-items:flex-start; }
-    .how { padding-inline:0; }
+    .demo-grid { grid-template-columns:1fr; }
     .embed header span:last-child { display:none; }
   }
 </style>
@@ -114,22 +106,8 @@ const carousel = `<!doctype html><html><head><meta charset="UTF-8">
     const iframe = viewport.querySelector('iframe');
     if (!iframe) return;
     const fit = () => { iframe.style.transform = `scale(${viewport.clientWidth / 1920})`; };
-    const hideShortcutHints = () => {
-      const shadow = iframe.contentDocument?.querySelector('deck-root')?.shadowRoot;
-      if (!shadow || shadow.querySelector('[data-embed-chrome]')) return;
-      const style = document.createElement('style');
-      style.dataset.embedChrome = '';
-      style.textContent = '#kb-hint{display:none!important}';
-      shadow.append(style);
-    };
     fit();
     new ResizeObserver(fit).observe(viewport);
-    const prepareEmbeddedDeck = () => {
-      iframe.contentWindow?.customElements.whenDefined('deck-root').then(() => requestAnimationFrame(hideShortcutHints));
-    };
-    iframe.addEventListener('load', prepareEmbeddedDeck);
-    prepareEmbeddedDeck();
-    hideShortcutHints();
     const embed = viewport.closest('.embed');
     const current = embed?.querySelector('[data-carousel-current]');
     const move = (key) => {

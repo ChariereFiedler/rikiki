@@ -1,8 +1,32 @@
 ---
+// The release line is read from the package and the changelog, never typed,
+// so it cannot drift at the next release (same sources as DeckGallery.astro).
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import Eyebrow from './Eyebrow.astro';
+
+const repoRoot = resolve(process.cwd(), '..');
+const pkg = JSON.parse(readFileSync(resolve(repoRoot, 'rikiki/package.json'), 'utf8'));
+const version = pkg.version;
+const nodeRange = pkg.engines.node;
+const changelog = readFileSync(resolve(repoRoot, 'CHANGELOG.md'), 'utf8');
+const released = new RegExp(`^## \\[${version}\\] - (\\d{4}-\\d{2}-\\d{2})`, 'm').exec(changelog);
+if (!released) throw new Error(`Faq · CHANGELOG.md has no dated entry for ${version}`);
+const releaseDate = new Date(`${released[1]}T00:00:00Z`).toLocaleDateString('en-GB', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
 const items = [
   {
     q: 'What do I need to know to create a deck?',
-    a: 'HTML and CSS are enough. Write the supplied custom elements, then change CSS variables for your brand. Lit is an implementation detail; deck authors do not write Lit classes or templates.',
+    a: 'HTML and CSS are enough. Write the supplied custom elements, then change CSS variables for your brand. Lit, a small Web Components library, is an implementation detail; deck authors do not write Lit classes or templates.',
+  },
+  {
+    q: 'Can I write my slides in Markdown?',
+    a: 'Not as a deck format, and that is a design choice: a slide is an HTML custom element, so the file you write is the file the browser runs, with no custom syntax or <code>---</code> separator to learn. Inside a slide, the core <code>&lt;deck-md&gt;</code> component renders standard GitHub-flavoured Markdown, including headings, lists, links, tables, code blocks and images, plus one <code>::: cards</code> fence that expands into a card grid. A deck can mix HTML slides and Markdown bodies freely.',
   },
   {
     q: 'Can I print my deck to PDF?',
@@ -21,23 +45,35 @@ const items = [
     a: 'Yes. Put <code>&lt;deck-root&gt;</code> in a page and add <code>autoplay loop swipe</code> for a touch-friendly carousel with the same ~43 KB initial load. Keyboard input stays scoped to the deck while it has focus.',
   },
   {
-    q: 'What does the Doctor check?',
+    q: 'What does rikiki check report?',
     a: '<code>rikiki check</code> loads every slide in Chromium and reports structural, runtime, timing and visual-layout risks. It does not test contrast, focus order or screen-reader output, so keep an accessibility review in your release process.',
   },
   {
+    q: 'Is a deck accessible?',
+    a: 'The example decks are tested with axe in Chromium, Firefox and WebKit, and a serious or critical violation fails the suite. The overview opens, moves and picks a slide with the keyboard alone, every on-screen control is a real focusable button, a slide change is announced to assistive technology through a live region, and no slide animates under <code>prefers-reduced-motion</code>. <code>rikiki export</code> writes a tagged PDF with one bookmark per slide. Those tests cover the shipped examples and the runtime, not the contrast or the reading order of the content you write.',
+  },
+  {
     q: 'What requires Node.js?',
-    a: 'The deck runs in a browser. Node.js is required for the CLI commands that initialize, inspect, render, bundle or export it. PDF export and browser-based checks also require the optional Playwright dependency.',
+    a: `The deck runs in a browser. Node.js <code>${nodeRange}</code> is required for the CLI commands that initialize, inspect, render, bundle or export it. The commands that drive a browser, namely <code>check</code>, <code>render</code> and <code>export</code>, also need the optional Playwright peer dependency: <code>npm i -D playwright &amp;&amp; npx playwright install chromium</code>. <code>bundle</code> and <code>init --standalone</code> need the optional <code>rolldown</code> peer dependency instead.`,
   },
   {
     q: 'Which browsers are tested?',
     a: 'The base rendering, navigation, scaling and offline-bundle contract is tested in Chromium, Firefox and WebKit. PDF export and multi-screen presenter features are Chromium-specific.',
+  },
+  {
+    q: 'Why is there no build step and no custom syntax?',
+    a: 'There is no build step on the author side: the served folder contains the runtime, so you open <code>index.html</code> from any static HTTP server and it runs. Everything rests on Web standards, namely Custom Elements, Shadow DOM, ES Modules and CSS custom properties, with a thin component library rather than an application framework underneath. The source is readable HTML, so a slide reads the same in your editor and in the browser. Features beyond the core, such as presenter mode, transitions or syntax highlighting, are opt-in modules you import only when a deck needs them.',
+  },
+  {
+    q: 'Who maintains it, and what is the release status?',
+    a: `The project is developed by Cédric Chariere Fiedler and released under the MIT license; source, issues and merge requests live at <a href="https://gitlab.com/tordu-jardin/rikiki">gitlab.com/tordu-jardin/rikiki</a>. Version ${version} shipped on ${releaseDate}, and from that tag a breaking change means a major version bump. The <a href="/docs/changelog">changelog</a> lists every release.`,
   },
 ];
 ---
 
 <section id="faq" class="faq">
   <div class="inner">
-    <p class="eyebrow">FAQ</p>
+    <Eyebrow text="FAQ" />
     <h2>Check the requirements before you start.</h2>
 
     <div class="list">
@@ -60,18 +96,8 @@ const items = [
     padding: var(--rik-space-7) var(--rik-space-5);
     border-top: 1px solid var(--rik-border-default);
   }
-  .inner { max-width: 880px; margin: 0 auto; }
-  .eyebrow {
-    display: inline-block;
-    background: var(--rik-accent);
-    color: var(--rik-accent__on);
-    padding: 4px 10px;
-    border-radius: var(--rik-radius-pill);
-    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    margin-bottom: var(--rik-space-3);
-  }
+  .inner { max-width: var(--rik-measure-page); margin: 0 auto; }
+  .list { max-width: 880px; }
   h2 {
     font-family: var(--rik-font-display);
     font-size: var(--rik-font-size-mega);
@@ -132,13 +158,20 @@ const items = [
   }
   .a :global(code) {
     font-family: var(--rik-font-mono);
-    font-size: 0.92em;
     background: var(--rik-surface-tint);
     color: var(--rik-text-default);
     padding: 1px 6px;
     border-radius: 4px;
     white-space:normal;
     overflow-wrap:anywhere;
+  }
+  .a :global(a) {
+    color: var(--rik-accent--strong);
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+    overflow-wrap: anywhere;
   }
   @media (max-width:640px) {
     .faq { padding:var(--rik-space-6) var(--rik-space-3); }

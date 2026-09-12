@@ -1,78 +1,55 @@
 ---
 // Hero · same XL display + accent split as <deck-cover>, but on a marketing page.
+import Eyebrow from './Eyebrow.astro';
 ---
 
 <section id="top" class="hero">
   <div class="hero-inner">
-    <p class="eyebrow"><span class="eyebrow-mark"></span>Presentation tools for teams that work in code</p>
+    <Eyebrow text="For developers and their coding agents" tone="inverse" />
 
     <h1 class="title">
-      Write the talk.<br />
+      Write the deck or brief your agent.<br />
       Check it. <span class="accent">Ship it.</span>
     </h1>
 
     <p class="tagline">
-      Readable HTML <span class="dot">·</span> <strong>automated deck checks</strong> <span class="dot">·</span> offline delivery <span class="dot">·</span> MIT
+      Readable HTML <span class="dot">·</span> no build step <span class="dot">·</span> <strong>automated deck checks</strong> <span class="dot">·</span> offline delivery <span class="dot">·</span> MIT
     </p>
 
     <p class="lead">
-      Build technical presentations in readable HTML, keep the source in version
-      control, catch layout and runtime problems, then export standalone HTML or PDF.
+      A deck is a folder of readable HTML on Web standards: no build step for the
+      author, a clean diff in Git, and the runtime sits in the folder, so nothing
+      needs reinstalling when you reopen it. You or your coding agent write the
+      slides; Rikiki checks every slide in a browser and exports standalone HTML or PDF.
     </p>
 
     <div class="ctas">
-      <a class="btn primary" href="/docs/getting-started">Create your first deck</a>
-      <a class="btn ghost" href="#quickstart">Try the live editor →</a>
+      <a class="btn btn-primary" href="/docs/getting-started">Create your first deck</a>
+      <a class="btn btn-ghost" href="#decks">See a finished deck</a>
     </div>
 
     <ul class="meta">
       <li><strong>43 KB</strong> initial JavaScript load · gzip</li>
       <li><strong>36</strong> core components · 23 optional</li>
-      <li><strong>Offline HTML + PDF</strong></li>
-      <li><strong>MIT</strong></li>
+      <li><strong>Chromium, Firefox, WebKit</strong> · tested rendering contract</li>
     </ul>
   </div>
 </section>
 
 <style>
   .hero {
+    --rik-btn-ghost__border: var(--rik-border-inverse--strong);
+    --rik-btn-ghost__text: var(--rik-text-inverse);
     background: var(--rik-surface-inverse);
     color: var(--rik-text-inverse);
     padding: var(--rik-space-7) var(--rik-space-5);
     position: relative;
     overflow: hidden;
   }
-  .hero::before {
-    content: '';
-    position: absolute; inset: 0;
-    background:
-      radial-gradient(circle at 15% 85%, rgba(240, 112, 32, 0.10) 0%, transparent 50%),
-      radial-gradient(circle at 85% 15%, rgba(0, 200, 160, 0.08) 0%, transparent 45%);
-    pointer-events: none;
-  }
   .hero-inner {
     max-width: 920px;
     margin: 0 auto;
     position: relative;
-  }
-  .eyebrow {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: var(--rik-font-mono);
-    font-size: var(--rik-font-size-xs);
-    letter-spacing: 0.13em;
-    text-transform: uppercase;
-    color: var(--rik-text-inverse--muted);
-    margin-bottom: var(--rik-space-4);
-  }
-  .eyebrow-mark {
-    width: 8px;
-    height: 8px;
-    flex: 0 0 auto;
-    border-radius: 50%;
-    background: var(--rik-accent);
-    box-shadow: 0 0 0 5px rgba(240, 112, 32, 0.12);
   }
   .title {
     font-family: var(--rik-font-display);
@@ -103,25 +80,10 @@
     margin-bottom: var(--rik-space-5);
   }
   .lead code {
-    background: rgba(232, 228, 240, 0.10);
+    background: var(--rik-surface-inverse__overlay);
     color: var(--rik-text-inverse);
   }
   .ctas { display: flex; gap: var(--rik-space-3); flex-wrap: wrap; margin-bottom: var(--rik-space-6); }
-  .btn {
-    display: inline-flex; align-items: center;
-    min-height: 44px;
-    padding: 12px 22px;
-    border-radius: var(--rik-radius-pill);
-    font: 700 var(--rik-font-size-body)/1 var(--rik-font-sans);
-    transition: transform 0.15s ease;
-  }
-  .btn:hover { text-decoration: none; transform: translateY(-2px); }
-  .btn.primary { background: var(--rik-accent); color: var(--rik-surface-inverse); }
-  .btn.ghost {
-    background: transparent;
-    color: var(--rik-text-inverse);
-    border: 1px solid var(--rik-border-inverse);
-  }
   .meta {
     display: flex; flex-wrap: wrap;
     gap: var(--rik-space-4);
@@ -144,7 +106,6 @@
       line-height: 0.98;
     }
     .tagline {
-      font-size: var(--rik-font-size-xs);
       line-height: 1.7;
     }
     .lead {
@@ -154,10 +115,6 @@
     .ctas {
       align-items: stretch;
       flex-direction: column;
-    }
-    .btn {
-      justify-content: center;
-      min-height: 44px;
     }
     .meta {
       display: grid;

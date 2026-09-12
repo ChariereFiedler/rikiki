@@ -2,6 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { gzipSync } from 'node:zlib';
+import Eyebrow from './Eyebrow.astro';
 const packageDir = resolve(process.cwd(), '../rikiki');
 const measuredKb = (path: string) => {
   const kb = gzipSync(readFileSync(resolve(packageDir, path)), { level: 9 }).length / 1024;
@@ -18,7 +19,7 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
 <section id="plugins" class="shelf">
   <div class="inner">
     <header class="head">
-      <p class="eyebrow"><span class="num">06</span> Optional modules</p>
+      <Eyebrow text="Optional modules" num="07" tone="inverse" />
       <h2>Bring only the pieces the deck needs.</h2>
       <p class="lede">
         The ~43 KB initial load excludes these modules. In a source deck, imported
@@ -30,10 +31,9 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
     </header>
 
     <ol class="shelf-list">
-      {plugins.map((p, i) => (
+      {plugins.map((p) => (
         <li>
           <a class="plugin" href={p.href}>
-            <span class="idx">{String(i + 1).padStart(2, '0')}</span>
             <span class="glyph" aria-hidden="true">
               {p.glyph === 'transitions' && (
                 <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -89,14 +89,13 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
                 <code class="how-code">{p.activate}</code>
               </p>
             </div>
-            <span class="chev" aria-hidden="true">→</span>
           </a>
         </li>
       ))}
     </ol>
 
     <div class="extras">
-      <p class="extras-title">Extended components</p>
+      <p class="extras-title">Optional component modules</p>
       <p class="extras-list">
         {extras.map((name, index) => (
           <>
@@ -105,10 +104,15 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
         ))}
         <span> · and more</span>
       </p>
+      <p class="extras-note">
+        A deck is plain HTML, so your own custom elements or a stylesheet can sit
+        next to it and load with a <code>&lt;script type="module"&gt;</code> tag,
+        with no build step. <a href="/docs/api">Read the API reference</a>
+      </p>
     </div>
 
     <p class="footer-note">
-      <a href="/docs/plugins">Read the plugin reference →</a>
+      <a href="/docs/plugins">Read the optional-module reference</a>
     </p>
   </div>
 </section>
@@ -122,40 +126,16 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
     position: relative;
     overflow: hidden;
   }
-  .shelf::before {
-    content: '';
-    position: absolute; inset: 0;
-    background:
-      radial-gradient(circle at 8% 5%, rgba(240, 112, 32, 0.12) 0%, transparent 45%),
-      radial-gradient(circle at 95% 95%, rgba(0, 200, 160, 0.08) 0%, transparent 55%);
-    pointer-events: none;
-  }
   .inner {
     position: relative;
-    max-width: 1080px;
+    max-width: var(--rik-measure-page);
     margin: 0 auto;
   }
 
   .head { display:grid; grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr); gap:var(--rik-space-3) var(--rik-space-6); max-width:none; margin-bottom:var(--rik-space-6); }
-  .head .eyebrow { grid-column:1 / -1; }
+  .head :global(.eyebrow) { grid-column:1 / -1; }
   .head h2 { grid-column:1; grid-row:2 / span 2; }
   .head .lede,.head .budget { grid-column:2; }
-  .eyebrow {
-    display: inline-flex; align-items: center; gap: 10px;
-    color: var(--rik-accent);
-    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    margin: 0 0 var(--rik-space-3);
-  }
-  .eyebrow .num {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 26px; height: 26px;
-    background: var(--rik-accent);
-    color: var(--rik-accent__on);
-    border-radius: 50%;
-    letter-spacing: 0;
-  }
   h2 {
     font-family: var(--rik-font-display);
     font-size: var(--rik-font-size-mega);
@@ -198,7 +178,7 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
   }
   .plugin {
     display: grid;
-    grid-template-columns: 64px 44px 1fr auto;
+    grid-template-columns: 44px 1fr;
     gap: var(--rik-space-4);
     align-items: center;
     padding: var(--rik-space-4) var(--rik-space-2);
@@ -212,15 +192,6 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
     padding-left: var(--rik-space-3);
     text-decoration: none;
   }
-
-  .idx {
-    font: 900 2.6rem/1 var(--rik-font-display);
-    color: var(--rik-text-inverse--faint);
-    letter-spacing: -0.03em;
-    align-self: center;
-    text-align: center;
-  }
-  .plugin:hover .idx { color: var(--rik-accent); }
 
   .glyph {
     color: var(--rik-text-inverse--muted);
@@ -252,10 +223,10 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
   .role { color: var(--rik-text-inverse); }
   .file {
     font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
-    color: var(--rik-accent);
-    background: rgba(240, 112, 32, 0.12);
-    padding: 4px 8px;
-    border-radius: 4px;
+    color: var(--rik-text-inverse--muted);
+    background: var(--rik-surface-inverse__overlay);
+    padding: var(--rik-space-hair) var(--rik-space-1);
+    border-radius: var(--rik-radius-xs);
     letter-spacing: 0;
     white-space:normal;
     overflow-wrap:anywhere;
@@ -285,28 +256,15 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
     font-size: var(--rik-font-size-sm);
   }
   .how-label {
-    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--rik-text-inverse--faint);
+    font: 600 var(--rik-font-size-sm)/1 var(--rik-font-sans);
+    color: var(--rik-text-inverse--muted);
   }
   .how-code {
     font: 700 var(--rik-font-size-sm)/1.3 var(--rik-font-mono);
     color: var(--rik-status-success);
-    background: rgba(0, 200, 160, 0.10);
-    padding: 3px 8px;
-    border-radius: 4px;
-  }
-  .chev {
-    align-self: center;
-    font: 700 1.4rem/1 var(--rik-font-mono);
-    color: var(--rik-text-inverse--faint);
-    transition: transform var(--rik-motion-fast) var(--rik-motion__ease-out),
-                color var(--rik-motion-fast) var(--rik-motion__ease-out);
-  }
-  .plugin:hover .chev {
-    color: var(--rik-accent);
-    transform: translateX(4px);
+    background: var(--rik-status-success__bg);
+    padding: var(--rik-space-hair) var(--rik-space-1);
+    border-radius: var(--rik-radius-xs);
   }
 
   .footer-note {
@@ -328,32 +286,30 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
   }
   .extras-title {
     margin: 0 0 var(--rik-space-2);
-    color: var(--rik-text-inverse--faint);
-    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    color: var(--rik-text-inverse--muted);
+    font: 600 var(--rik-font-size-sm)/1.3 var(--rik-font-sans);
   }
   .extras-list { margin: 0; color: var(--rik-text-inverse--muted); line-height: 1.8; }
   .extras-list a { color: var(--rik-text-inverse); text-decoration: none; }
   .extras-list a:hover { color: var(--rik-accent); }
+  .extras-note { margin: var(--rik-space-3) 0 0; max-width: 72ch; color: var(--rik-text-inverse--muted); font-size: var(--rik-font-size-md); line-height: 1.65; }
+  .extras-note code { color: var(--rik-text-inverse); font-family: var(--rik-font-mono); overflow-wrap: anywhere; }
+  .extras-note a { color: var(--rik-accent); font-weight: 700; text-decoration: none; white-space: nowrap; }
 
   @media (max-width: 600px) {
     .shelf { padding-inline: var(--rik-space-3); }
     .head { grid-template-columns:1fr; margin-bottom:var(--rik-space-4); }
-    .head .eyebrow,.head h2,.head .lede,.head .budget { grid-column:1; grid-row:auto; }
+    .head :global(.eyebrow),.head h2,.head .lede,.head .budget { grid-column:1; grid-row:auto; }
     .plugin {
-      grid-template-columns: minmax(36px,auto) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr);
       gap: var(--rik-space-3);
       align-items: start;
       padding: var(--rik-space-4) 0;
     }
-    .chev { display: none; }
     .glyph { display:none; }
-    .idx { font-size: 1rem; color:var(--rik-accent); text-align:left; padding-top:5px; }
     .body h3 { font-size: 1.25rem; }
     .body h3,.role { overflow-wrap:anywhere; }
     .body > header { align-items:flex-start; }
-    .size { font-size:var(--rik-font-size-xs); }
     .summary { font-size:var(--rik-font-size-sm); }
     .summary { line-height:1.65; margin-block:8px 10px; color:var(--rik-text-inverse--muted); overflow-wrap:anywhere; }
     .how { max-width:100%; flex-wrap:wrap; gap:10px; }

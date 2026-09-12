@@ -1,4 +1,6 @@
 ---
+import Eyebrow from './Eyebrow.astro';
+
 interface Props {
   id?: string;
   eyebrow?: string;
@@ -12,12 +14,7 @@ const { id, eyebrow, num, title, tone = 'paper' } = Astro.props;
 
 <section id={id} class={`section ${tone}`}>
   <div class="inner">
-    {eyebrow && (
-      <p class="eyebrow">
-        {num && <span class="num">{num}</span>}
-        <span class="eyebrow-text">{eyebrow}</span>
-      </p>
-    )}
+    {eyebrow && <Eyebrow text={eyebrow} num={num} tone={tone === 'dark' ? 'inverse' : 'paper'} />}
     <h2 class="title" set:html={title}></h2>
     <div class="body">
       <slot />
@@ -40,29 +37,7 @@ const { id, eyebrow, num, title, tone = 'paper' } = Astro.props;
     background: var(--rik-surface-tint--strong);
     border-block: 1px solid var(--rik-border-default);
   }
-  .inner { max-width: 1080px; margin: 0 auto; }
-
-  .eyebrow {
-    display: flex; align-items: center; gap: 10px;
-    width: fit-content;
-    color: var(--rik-accent--strong);
-    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    margin: 0 0 var(--rik-space-3);
-  }
-  .eyebrow .num {
-    display: inline-flex; align-items: center;
-    justify-content: center;
-    width: 26px; height: 26px;
-    background: var(--rik-accent);
-    color: var(--rik-accent__on);
-    border-radius: 50%;
-    letter-spacing: 0;
-  }
-  .eyebrow .eyebrow-text {
-    display: inline-flex; align-items: center;
-  }
+  .inner { max-width: var(--rik-measure-page); margin: 0 auto; }
 
   .title {
     font-family: var(--rik-font-display);

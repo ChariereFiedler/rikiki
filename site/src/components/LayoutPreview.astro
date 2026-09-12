@@ -28,7 +28,7 @@ const greet = (n) => \`Hi \${n}\`;</deck-code>
   split: `
     <deck-split cols="1-1">
       <h1 slot="title">Two takes</h1>
-      <deck-card slot="left" color="red"><h3>Problem</h3><p>Bundler explodes.</p></deck-card>
+      <deck-card slot="left"><h3>Problem</h3><p>Bundler explodes.</p></deck-card>
       <deck-card slot="right" color="green"><h3>Fix</h3><p>Ship plain HTML.</p></deck-card>
     </deck-split>`,
 
@@ -36,8 +36,8 @@ const greet = (n) => \`Hi \${n}\`;</deck-code>
     <deck-bento eyebrow="System" cols="3" rows="2" gap="3">
       <h1 slot="title">One canvas. Unequal ideas.</h1>
       <deck-point col="1 / 3" row="1" tone="ok"><h3>Main signal</h3><p>Give the strongest idea room.</p></deck-point>
-      <deck-point col="3" row="1 / 3" tone="info"><h3>Context</h3><p>Keep detail nearby.</p></deck-point>
-      <deck-point col="1" row="2" tone="warn"><h3>Proof</h3></deck-point>
+      <deck-point col="3" row="1 / 3"><h3>Context</h3><p>Keep detail nearby.</p></deck-point>
+      <deck-point col="1" row="2"><h3>Proof</h3></deck-point>
       <deck-point col="2" row="2"><h3>Action</h3></deck-point>
     </deck-bento>`,
 
@@ -78,7 +78,7 @@ const srcdoc = `<!doctype html><html><head>
     deck-root { flex: 1; }
   </style>
 </head><body>
-  <deck-root>${decks[type]}</deck-root>
+  <deck-root no-hint>${decks[type]}</deck-root>
 </body></html>`;
 ---
 
@@ -99,10 +99,9 @@ const srcdoc = `<!doctype html><html><head>
     overflow: hidden;
     background: var(--rik-surface-sunken);
     border: 1px solid var(--rik-border-default);
-    border-radius: var(--rik-radius-sm);
     margin-bottom: var(--rik-space-3);
   }
-  /* Scaled-down 1920×1080 deck → 480×270 area · 25% scale */
+  /* Scaled-down 1920×1080 deck, 480×270 area · 25% scale */
   iframe {
     position: absolute;
     top: 0;
@@ -113,11 +112,6 @@ const srcdoc = `<!doctype html><html><head>
     transform-origin: top left;
     border: 0;
     pointer-events: none;
-  }
-  /* The iframe is fixed at 1920×1080; the .layout-preview is fluid.
-     We use a CSS container query to recompute the scale based on width. */
-  @container (max-width: 1920px) {
-    iframe { /* fallback handled by JS-less ResizeObserver alt */ }
   }
 </style>
 

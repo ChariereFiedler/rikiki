@@ -93,51 +93,53 @@ const highlighted = highlight(code.trim(), lang);
   }
   pre {
     margin: 0;
-    background: #0f0f10;
-    color: #f4f4f5;
-    border: 1px solid #232325;
+    background: var(--rik-code__bg);
+    color: var(--rik-code__text);
+    border: 1px solid var(--rik-code__border);
     border-radius: var(--rik-radius-md);
     padding: var(--rik-space-4);
     overflow: auto;
     font-family: var(--rik-font-mono);
-    font-size: 0.92rem;
+    font-size: var(--rik-font-size-mono);
     line-height: 1.7;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    box-shadow: var(--rik-elevation-2);
   }
-  code { display: block; }
-  pre :global(.kw)   { color: #c792ea; }
-  pre :global(.str)  { color: #c3e88d; }
-  pre :global(.prop) { color: #80cbc4; }
-  pre :global(.cmt)  { color: #8b95a0; font-style: italic; }
-  pre :global(.num)  { color: #f78c6c; }
-  pre :global(.ty)   { color: #ffcb6b; }
-  pre :global(.fn)   { color: #82aaff; }
+  code { display: block; font-size: inherit; }
+  pre :global(.kw)   { color: var(--rik-code__syntax-keyword); }
+  pre :global(.str)  { color: var(--rik-code__syntax-string); }
+  pre :global(.prop) { color: var(--rik-code__syntax-property); }
+  pre :global(.cmt)  { color: var(--rik-code__syntax-comment); font-style: italic; }
+  pre :global(.num)  { color: var(--rik-code__syntax-number); }
+  pre :global(.ty)   { color: var(--rik-code__syntax-type); }
+  pre :global(.fn)   { color: var(--rik-code__syntax-function); }
 
   /* Copy button · sits top-right of the code block, only visible on hover */
   .block { position: relative; min-width: 0; }
+  /* The affordance is opaque on purpose · a translucent chip composites
+     against whatever sits behind the figure, so its label contrast stopped
+     being a property of the button. Night surface + full-strength inverse
+     text reads at ~15:1 wherever the block is placed. */
   .copy {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: var(--rik-space-1);
+    right: var(--rik-space-1);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 10px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    border-radius: 6px;
-    color: rgba(244, 244, 245, 0.7);
-    font: 700 11px/1 var(--rik-font-mono);
-    letter-spacing: 0.10em;
-    text-transform: uppercase;
+    gap: var(--rik-space-2xs);
+    padding: var(--rik-space-2xs) var(--rik-space-2);
+    background: var(--rik-surface-inverse--soft);
+    border: 1px solid var(--rik-border-inverse--strong);
+    border-radius: var(--rik-control-radius);
+    color: var(--rik-text-inverse);
+    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-sans);
     cursor: pointer;
     opacity: 0;
-    transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+    transition: opacity 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   }
   .block:hover .copy,
   .copy:focus-visible { opacity: 1; }
-  .copy:hover { background: rgba(255, 255, 255, 0.12); color: #f4f4f5; }
-  .copy.copied { background: rgba(195, 232, 141, 0.18); color: #c3e88d; border-color: rgba(195, 232, 141, 0.35); }
+  .copy:hover { border-color: var(--rik-accent); }
+  .copy.copied { color: var(--rik-status-success); border-color: var(--rik-status-success); }
   .copy .icon { display: inline-flex; }
 </style>
 

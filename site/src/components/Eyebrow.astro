@@ -1,0 +1,28 @@
+---
+// The one label that sits above a section title. Sentence case, the sans
+// family, muted · the number is plain text and appears only where the
+// sections form a reading sequence (01 to 07 on the landing).
+interface Props {
+  text: string;
+  num?: string;
+  tone?: 'paper' | 'inverse';
+}
+const { text, num, tone = 'paper' } = Astro.props;
+---
+
+<p class={`eyebrow ${tone}`}>
+  {num && <span class="num">{num}</span>}
+  <span>{text}</span>
+</p>
+
+<style>
+  .eyebrow {
+    display: flex; flex-wrap: wrap; align-items: baseline;
+    gap: var(--rik-space-2);
+    margin: 0 0 var(--rik-space-3);
+    color: var(--rik-text-default--muted);
+    font: 600 var(--rik-font-size-body)/1.3 var(--rik-font-sans);
+  }
+  .eyebrow.inverse { color: var(--rik-text-inverse--muted); }
+  .num { font-variant-numeric: tabular-nums; }
+</style>
