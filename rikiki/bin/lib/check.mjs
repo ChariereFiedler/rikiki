@@ -13,7 +13,7 @@
 
 import { basename } from 'node:path';
 import { readFileSync } from 'node:fs';
-import { SLIDE_TITLE_READER, advanceStep, goToSlide, waitForStillFrame, withDeck } from './browser.mjs';
+import { NAVIGATION_TIMEOUT_MS, SLIDE_TITLE_READER, advanceStep, goToSlide, waitForStillFrame, withDeck } from './browser.mjs';
 import { BOX_GEOMETRY_READER } from './box-geometry.mjs';
 import { GRAPH_GEOMETRY_READER } from './graph-hit.mjs';
 import { measureSlides } from './visual.mjs';
@@ -901,7 +901,7 @@ export async function checkDeck(
           }, index);
           await page
             .waitForFunction((i) => document.querySelector('deck-root')?.current === i - 1, index, {
-              timeout: 5_000,
+              timeout: NAVIGATION_TIMEOUT_MS,
             })
             .catch(() => {});
           await waitForStillFrame(page);

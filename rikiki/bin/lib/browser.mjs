@@ -156,6 +156,11 @@ export async function waitForStillFrame(page, deadlineMs = 2_000) {
     .catch(() => {});
 }
 
+/** How long a slide change may take before the walk gives up on it. A deck
+ *  switches slides in milliseconds; the margin is for a loaded machine (a
+ *  single-core CI runner took over 5 s once), not for the deck. */
+export const NAVIGATION_TIMEOUT_MS = 15_000;
+
 /** Go to slide `index` (1-based) and report the state actually reached.
  *  Shared by `render` and `check` · both walk a deck the same way. */
 export async function goToSlide(page, index) {
@@ -165,7 +170,7 @@ export async function goToSlide(page, index) {
   await page.waitForFunction(
     (i) => document.querySelector('deck-root')?.current === i - 1,
     index,
-    { timeout: 5_000 },
+    { timeout: NAVIGATION_TIMEOUT_MS },
   );
   await page.evaluate(() => document.fonts.ready);
   await waitForStillFrame(page);
