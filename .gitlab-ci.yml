@@ -220,11 +220,14 @@ smoke-test:
       # The deployed bundle must import its vendored chunks relatively and reach
       # no CDN at all. Both halves are asserted: a missing relative import would
       # make the "no jsdelivr" half pass on an empty file.
-      body=$(curl -sk --max-time 10 "${SITE_URL}/rikiki/dist/index.js")
-      if echo "$body" | grep -q 'cdn\.jsdelivr\.net'; then
+      # Read the bundle from a file: `echo "$body"` interprets backslash
+      # escapes in the minified source, so the text grep sees is not the file
+      # and the import was reported missing on 0.7.0 while it was there.
+      curl -sk --max-time 10 -o /tmp/index.js "${SITE_URL}/rikiki/dist/index.js"
+      if grep -q 'cdn\.jsdelivr\.net' /tmp/index.js; then
         echo "FAIL · index.js reaches cdn.jsdelivr.net"
         fail=1
-      elif ! echo "$body" | grep -q './vendor/marked.js'; then
+      elif ! grep -q './vendor/marked.js' /tmp/index.js; then
         echo "FAIL · index.js does not import ./vendor/marked.js · is this the right bundle?"
         fail=1
       else
