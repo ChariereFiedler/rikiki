@@ -122,12 +122,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the check tests that polyline, widened by half the stroke, against every
   node it does not connect. A runtime older than the attribute still falls
   back to the straight centre-to-centre test.
+- **The CSS-in-JS minifier silently deleted the descendant combinator in front
+  of a pseudo-class or pseudo-element.** `minify-templates.mjs` tightened the
+  whitespace around EVERY `:`, so `:host([banded]) ::slotted(*)` shipped as
+  `:host([banded])::slotted(*)` · valid CSS that matches nothing. Three shipped
+  rules were dead in `dist/` and nowhere else: `:host([banded]) ::slotted(*)`
+  in `deck-point` (a banded bento cell aligning its children to the top of the
+  band), and both `:host([direction='row']) ::slotted(*)` and the
+  `:not([no-connectors])) ::slotted(* + *)::before` connector in
+  `deck-step-list` (a horizontal step list sharing the width and drawing the
+  arrow between steps). The minifier now tracks whether it is inside a
+  declaration block, so a declaration colon still collapses and a selector
+  colon keeps the space in front of it; `scripts/minify-templates.test.mjs`
+  covers the three shapes and the four real selectors.
 
 ### Changed
 - **Documented the "single record, field by field" recipe.** §22 of the LLM
   reference shows a `deck-table` with `highlight-rows` and `reveal` as the
   composition for one entity's fields, instead of a new `deck-record`
   component.
+- **`deck-kpi-grid` / `deck-kpi` · the figures are one family, and the marked
+  one is a mass.** The grid now owns three rows (value, label, note) and every
+  figure adopts them with `grid-template-rows: subgrid`, so all the values share
+  one baseline and one size, all the labels sit on one line, and a column
+  without a note costs no height anywhere else. The value scales with the slide
+  and with `cols` instead of being fixed at reading size. A `tone` of `accent`,
+  `ok`, `warn` or `danger` puts the figure on the inverse surface with inverse
+  digits, and says the tone in the colour of the label under it rather than
+  recolouring the figure · a coloured number on paper is a different colour, not
+  more emphasis; `default` and `muted` paint nothing at all. `ruled` draws a divider that
+  can actually be seen: its 1px `--rik-border-default` hairline was invisible at
+  projection distance, so it is now a `--deck-kpi-grid-rule-width` (default 2px)
+  in ink. It had also never rendered at all, for the unrelated build reason
+  recorded under Fixed above. No attribute changed.
+- **`deck-persona` · the portrait block is the one mass.** The initials were
+  faint grey type parked left of the name, attached to nothing. They now sit in
+  a square of the inverse surface in inverse ink at statement scale, or the
+  photo fills the same square, so the person has a place on the slide; the name
+  lines up with the block's top edge, and the context is the quiet line, gapped
+  away from the identity rather than stacked flush against it. `compact` and
+  `inline` shrink the block and the name together instead of only the block, and
+  `on-dark` flips the block to paper with ink initials. No attribute changed.
 
 ## [1.0.0] - 2026-09-09
 ### Added
@@ -194,44 +229,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   in the light DOM, but this element rebuilds the author's own text into its
   shadow tree, where the size check never looked.
 
-### Fixed
-- **The CSS-in-JS minifier silently deleted the descendant combinator in front
-  of a pseudo-class or pseudo-element.** `minify-templates.mjs` tightened the
-  whitespace around EVERY `:`, so `:host([banded]) ::slotted(*)` shipped as
-  `:host([banded])::slotted(*)` · valid CSS that matches nothing. Three shipped
-  rules were dead in `dist/` and nowhere else: `:host([banded]) ::slotted(*)`
-  in `deck-point` (a banded bento cell aligning its children to the top of the
-  band), and both `:host([direction='row']) ::slotted(*)` and the
-  `:not([no-connectors])) ::slotted(* + *)::before` connector in
-  `deck-step-list` (a horizontal step list sharing the width and drawing the
-  arrow between steps). The minifier now tracks whether it is inside a
-  declaration block, so a declaration colon still collapses and a selector
-  colon keeps the space in front of it; `scripts/minify-templates.test.mjs`
-  covers the three shapes and the four real selectors.
-
 ### Changed
-- **`deck-kpi-grid` / `deck-kpi` · the figures are one family, and the marked
-  one is a mass.** The grid now owns three rows (value, label, note) and every
-  figure adopts them with `grid-template-rows: subgrid`, so all the values share
-  one baseline and one size, all the labels sit on one line, and a column
-  without a note costs no height anywhere else. The value scales with the slide
-  and with `cols` instead of being fixed at reading size. A `tone` of `accent`,
-  `ok`, `warn` or `danger` puts the figure on the inverse surface with inverse
-  digits, and says the tone in the colour of the label under it rather than
-  recolouring the figure · a coloured number on paper is a different colour, not
-  more emphasis; `default` and `muted` paint nothing at all. `ruled` draws a divider that
-  can actually be seen: its 1px `--rik-border-default` hairline was invisible at
-  projection distance, so it is now a `--deck-kpi-grid-rule-width` (default 2px)
-  in ink. It had also never rendered at all, for the unrelated build reason
-  recorded under Fixed above. No attribute changed.
-- **`deck-persona` · the portrait block is the one mass.** The initials were
-  faint grey type parked left of the name, attached to nothing. They now sit in
-  a square of the inverse surface in inverse ink at statement scale, or the
-  photo fills the same square, so the person has a place on the slide; the name
-  lines up with the block's top edge, and the context is the quiet line, gapped
-  away from the identity rather than stacked flush against it. `compact` and
-  `inline` shrink the block and the name together instead of only the block, and
-  `on-dark` flips the block to paper with ink initials. No attribute changed.
 - **The authoring skill covers the whole job.** It carried the wiring; it now
   carries the seven steps from brief to delivery, the editorial contract, seven
   graphic composition decisions with the failure each one prevents, a table
