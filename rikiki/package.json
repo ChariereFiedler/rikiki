@@ -13,7 +13,7 @@
   },
   "type": "module",
   "bin": {
-    "rikiki": "./bin/rikiki.mjs"
+    "rikiki": "bin/rikiki.mjs"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
