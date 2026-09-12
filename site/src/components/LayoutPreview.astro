@@ -8,17 +8,24 @@ interface Props {
 }
 const type = Astro.props.type as Props['type'];
 
-// One self-contained HTML per layout. The iframe will scale the deck
-// to ~30 % so a 1920×1080 slide fits a ~560×315 card.
+// One self-contained HTML per layout. The iframe scales the 1920×1080 deck
+// to the card width (about 0.27 at the page measure).
+// Fixtures keep a few large elements per slide: the preview shows the
+// composition, not a dense slide, and body-sized text would not read at
+// the card scale (see the type floor in the srcdoc styles below).
+// Every cell that claims a span writes BOTH grid lines explicitly. A bare
+// integer is read as `span N` (see shared/grid-tracks.ts), so `col="3"` on a
+// three-column bento claims the whole width and paints an empty band over its
+// neighbours · the composition the tile exists to show is then unreadable.
 const decks: Record<Props['type'], string> = {
   cover: `
-    <deck-cover brand="rikiki · docs" speaker="Jane Smith" company="Acme">
+    <deck-cover>
       <h1>Hello, <span class="accent">world</span>.</h1>
       <p class="sub">Sub-title or opening question.</p>
     </deck-cover>`,
 
   hero: `
-    <deck-feature eyebrow="Module">
+    <deck-feature>
       <h1 slot="title">Side effects</h1>
       <p slot="lead" class="lead">A module can act on import.</p>
       <deck-code lang="ts" hero>import './polyfill';
@@ -28,21 +35,21 @@ const greet = (n) => \`Hi \${n}\`;</deck-code>
   split: `
     <deck-split cols="1-1">
       <h1 slot="title">Two takes</h1>
-      <deck-card slot="left"><h3>Problem</h3><p>Bundler explodes.</p></deck-card>
-      <deck-card slot="right" color="green"><h3>Fix</h3><p>Ship plain HTML.</p></deck-card>
+      <deck-card slot="left"><h3>Before, a bundler step</h3><p>A build step before the slide.</p></deck-card>
+      <deck-card slot="right" color="green"><h3>After, plain HTML</h3><p>Open the file and present.</p></deck-card>
     </deck-split>`,
 
   bento: `
-    <deck-bento eyebrow="System" cols="3" rows="2" gap="3">
+    <deck-bento cols="3" rows="2" gap="3">
       <h1 slot="title">One canvas. Unequal ideas.</h1>
-      <deck-point col="1 / 3" row="1" tone="ok"><h3>Main signal</h3><p>Give the strongest idea room.</p></deck-point>
-      <deck-point col="3" row="1 / 3"><h3>Context</h3><p>Keep detail nearby.</p></deck-point>
-      <deck-point col="1" row="2"><h3>Proof</h3></deck-point>
-      <deck-point col="2" row="2"><h3>Action</h3></deck-point>
+      <deck-point col="1 / 3" row="1 / 2" tone="ok"><h3>Main signal</h3><p>Give the strongest idea room.</p></deck-point>
+      <deck-point col="3 / 4" row="1 / 3"><h3>Context</h3><p>Keep the detail nearby.</p></deck-point>
+      <deck-point col="1 / 2" row="2 / 3"><h3>Proof</h3><p>One number, sourced.</p></deck-point>
+      <deck-point col="2 / 3" row="2 / 3"><h3>Action</h3><p>What to do next.</p></deck-point>
     </deck-bento>`,
 
   data: `
-    <deck-feature eyebrow="Evidence">
+    <deck-feature>
       <h1 slot="title">Make the result legible</h1>
       <deck-kpi-grid cols="3" ruled>
         <deck-kpi value="20" label="slides"></deck-kpi>
@@ -52,7 +59,7 @@ const greet = (n) => \`Hi \${n}\`;</deck-code>
     </deck-feature>`,
 
   hook: `
-    <deck-takeaway kicker="The whole point">
+    <deck-takeaway>
       <deck-punch size="display">Source = output.</deck-punch>
       <p class="caption on-dark">A deck is a folder.</p>
     </deck-takeaway>`,
@@ -76,9 +83,23 @@ const srcdoc = `<!doctype html><html><head>
     html, body { width: 100%; height: 100%; overflow: hidden; }
     body { display: flex; }
     deck-root { flex: 1; }
+    /* Preview type floor. The card renders the slide at about 0.27, where
+       every size below --rik-text-lg falls under 11 px. The small end of the
+       scale is clamped to that step; headings keep their own sizes. */
+    deck-root {
+      --rik-font-size-xs: var(--rik-text-lg);
+      --rik-font-size-sm: var(--rik-text-lg);
+      --rik-font-size-body: var(--rik-text-lg);
+      --rik-font-size-lead: var(--rik-text-lg);
+      --rik-font-size-h2: var(--rik-text-lg);
+      --rik-font-size-strong: var(--rik-text-lg);
+      --rik-font-size-mono: var(--rik-text-lg);
+      --rik-font-size-mono-sm: var(--rik-text-lg);
+      --rik-extras-reading: var(--rik-text-lg);
+    }
   </style>
 </head><body>
-  <deck-root no-hint>${decks[type]}</deck-root>
+  <deck-root no-hint no-counter no-arrows>${decks[type]}</deck-root>
 </body></html>`;
 ---
 

@@ -1,7 +1,31 @@
 ---
-// Honest limits · the things Rikiki deliberately doesn't do.
-// Lists the rejected features so visitors can self-disqualify quickly.
+// Honest limits · two lists, one to choose Rikiki by and one to leave it by.
+// Visitors self-disqualify in a minute; the "no" column is deliberately the
+// longer one.
 import Eyebrow from './Eyebrow.astro';
+
+const fits = [
+  {
+    title: 'Versioned HTML.',
+    body: 'A deck is a source file. Diff it, review it in a merge request, tag it with the release it belongs to.',
+  },
+  {
+    title: 'Technical presentations.',
+    body: 'Code, diagrams, KPIs and diagnostics are components, not screenshots pasted into a slide.',
+  },
+  {
+    title: 'Files you deliver yourself.',
+    body: 'One standalone HTML, a PDF and slide images, hosted or attached wherever you already ship.',
+  },
+];
+
+const misfits = [
+  { title: 'You want a WYSIWYG editor.', body: 'Rikiki uses HTML source and a browser preview. It has no visual builder.' },
+  { title: 'You need PowerPoint-style animation on shapes.', body: 'It supports slide-level fade, slide, zoom and flip transitions, not free-form timelines.' },
+  { title: 'You want a hosted SaaS.', body: 'Rikiki creates static files that you host with your existing web infrastructure.' },
+  { title: 'You need PowerPoint export.', body: 'Rikiki exports standalone HTML and PDF. It does not export <code>.pptx</code> files.' },
+  { title: 'Your environment forbids Web Components.', body: 'Custom Elements and Shadow DOM are part of the runtime.' },
+];
 ---
 
 <section id="limits" class="limits">
@@ -9,27 +33,27 @@ import Eyebrow from './Eyebrow.astro';
     <Eyebrow text="Fit check" />
     <h2>Know when Rikiki fits.</h2>
     <p class="lede">
-      Choose it for versioned HTML, technical presentations and files you can
-      deliver yourself. These requirements point elsewhere.
+      Rikiki is a small tool with a definite shape. Both lists are short on purpose.
     </p>
 
-    <ul class="grid">
-      <li>
-        <div><strong>You want a WYSIWYG editor.</strong>Rikiki uses HTML source and a browser preview. It has no visual builder.</div>
-      </li>
-      <li>
-        <div><strong>You need PowerPoint-style animation on shapes.</strong>It supports slide-level fade, slide, zoom and flip transitions, not free-form timelines.</div>
-      </li>
-      <li>
-        <div><strong>You want a hosted SaaS.</strong>Rikiki creates static files that you host with your existing web infrastructure.</div>
-      </li>
-      <li>
-        <div><strong>You need PowerPoint export.</strong>Rikiki exports standalone HTML and PDF. It does not export <code>.pptx</code> files.</div>
-      </li>
-      <li>
-        <div><strong>Your environment forbids Web Components.</strong>Custom Elements and Shadow DOM are part of the runtime.</div>
-      </li>
-    </ul>
+    <div class="columns">
+      <div class="column fits">
+        <h3>Choose it for</h3>
+        <ul>
+          {fits.map((item) => (
+            <li><strong>{item.title}</strong><span set:html={item.body} /></li>
+          ))}
+        </ul>
+      </div>
+      <div class="column misfits">
+        <h3>Look elsewhere if</h3>
+        <ul>
+          {misfits.map((item) => (
+            <li><strong>{item.title}</strong><span set:html={item.body} /></li>
+          ))}
+        </ul>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -56,29 +80,48 @@ import Eyebrow from './Eyebrow.astro';
     max-width: 65ch;
     margin: 0 0 var(--rik-space-6);
   }
-  .grid {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+
+  /* Two real columns · the "yes" list is short and opens under a mango
+     rule, the "no" list is longer and opens under the default rule. The
+     column titles carry the split; nothing else decorates it. */
+  .columns {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--rik-space-3) var(--rik-space-5);
+    grid-template-columns: 5fr 7fr;
+    gap: var(--rik-space-5) var(--rik-space-6);
+    align-items: start;
   }
-  @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
-  .grid li {
-    min-width: 0;
+  .column { min-width: 0; border-top: var(--rik-rule--strong) solid var(--rik-border-default); padding-top: var(--rik-space-3); }
+  .fits { border-top-color: var(--rik-accent); }
+  .column h3 {
+    font-family: var(--rik-font-display);
+    font-size: var(--rik-font-size-h2);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    color: var(--rik-text-default);
+    margin: 0 0 var(--rik-space-3);
+  }
+  .column ul { list-style: none; padding: 0; margin: 0; }
+  .column li {
     font-size: var(--rik-font-size-body);
     line-height: 1.6;
     color: var(--rik-text-default--muted);
     padding: var(--rik-space-3) 0;
     border-top: 1px solid var(--rik-border-default);
   }
-  .grid li strong {
+  .column li strong {
     display: block;
-    margin-bottom: 4px;
+    margin-bottom: var(--rik-space-hair);
     color: var(--rik-text-default);
     font-weight: 700;
-    font-size: 1.02rem;
+    font-size: var(--rik-font-size-body);
   }
-  .grid li code { color: var(--rik-text-default); }
+  .column li code { color: var(--rik-text-default); }
+  .fits li { max-width: 40ch; }
+  .misfits li { max-width: 60ch; }
+
+  @media (max-width: 800px) {
+    .columns { grid-template-columns: minmax(0, 1fr); }
+    .fits li, .misfits li { max-width: 60ch; }
+  }
 </style>

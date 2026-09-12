@@ -3,20 +3,22 @@
     <span>Agent workflow</span>
     <strong>Brief → HTML → diagnostics → files</strong>
   </div>
-  <svg class="flow-lines" viewBox="0 0 1000 190" preserveAspectRatio="none" aria-hidden="true">
-    <path class="forward" d="M70 82 H930" />
-    <path class="feedback" d="M720 112 C720 170 500 170 500 112" />
-    <text class="feedback-label" x="610" y="182" text-anchor="middle">revise from diagnostics</text>
-    <circle class="packet" r="5"><animateMotion dur="5s" repeatCount="indefinite" path="M70 82 H930" /></circle>
-    <circle class="packet feedback-packet" r="4"><animateMotion dur="3s" repeatCount="indefinite" path="M720 112 C720 170 500 170 500 112" /></circle>
-  </svg>
-  <ol>
-    <li><span class="loop-num">01</span><strong>Brief</strong><code>your brief</code></li>
-    <li><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">02</span><strong>Reference</strong><code>llms.txt</code></li>
-    <li><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">03</span><strong>Deck</strong><code>index.html</code></li>
-    <li class="doctor"><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">04</span><strong>Deck checks</strong><code>rikiki check</code></li>
-    <li><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">05</span><strong>Delivery</strong><code>HTML · PDF · PNGs</code></li>
-  </ol>
+  <div class="stage">
+    <svg class="flow-lines" viewBox="0 0 1000 160" preserveAspectRatio="none" aria-hidden="true">
+      <path class="forward" d="M70 82 H930" />
+      <path class="feedback" d="M720 100 C720 145 500 145 500 100" />
+      <circle class="packet" r="5"><animateMotion dur="5s" repeatCount="indefinite" path="M70 82 H930" /></circle>
+      <circle class="packet feedback-packet" r="4"><animateMotion dur="3s" repeatCount="indefinite" path="M720 100 C720 145 500 145 500 100" /></circle>
+    </svg>
+    <ol>
+      <li><span class="loop-num">01</span><strong>Brief</strong><code>your brief</code></li>
+      <li><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">02</span><strong>Reference</strong><code>llms.txt</code></li>
+      <li><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">03</span><strong>Deck</strong><code>index.html</code></li>
+      <li class="doctor"><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">04</span><strong>Deck checks</strong><code>rikiki check</code></li>
+      <li><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">05</span><strong>Delivery</strong><code>HTML · PDF · PNGs</code></li>
+    </ol>
+    <span class="feedback-label" aria-hidden="true">revise from diagnostics</span>
+  </div>
   <a href="/rikiki/docs/llms/rikiki-workflow.md">Open the complete agent workflow (Markdown)</a>
 </div>
 
@@ -40,23 +42,35 @@
     font: 600 var(--rik-font-size-sm)/1.3 var(--rik-font-sans);
   }
   .loop-label strong { font-family: var(--rik-font-display); }
-  ol {
-    position:relative; z-index:1;
-    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
-    /* The bottom padding reserves the room the feedback arc and its label
-       paint in · the SVG is absolute and must stay inside the panel. */
-    list-style: none; padding: var(--rik-space-4) 0 calc(var(--rik-space-7) + var(--rik-space-5)); margin: 0;
+  /* The stage is exactly as tall as the feedback arc needs · the list sits
+     in its upper part, the arc dips under the list and its label closes the
+     stage. One token gives the height, so the SVG can never leave the panel. */
+  .stage {
+    --deck-loop-arc__height: calc(var(--rik-space-7) * 2);
+    position: relative;
+    min-height: var(--deck-loop-arc__height);
   }
-  .flow-lines { position:absolute; z-index:0; left:var(--rik-space-4); top:65px; width:calc(100% - 2 * var(--rik-space-4)); height:190px; overflow:hidden; color:var(--rik-status-success); pointer-events:none; }
+  ol {
+    position: relative; z-index: 1;
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+    list-style: none; padding: var(--rik-space-4) 0 0; margin: 0;
+  }
+  .flow-lines { position:absolute; z-index:0; inset:0; width:100%; height:var(--deck-loop-arc__height); overflow:hidden; color:var(--rik-status-success); pointer-events:none; }
   .flow-lines path { fill:none; vector-effect:non-scaling-stroke; }
   .forward { stroke:var(--rik-border-inverse--strong); stroke-width:1; }
   .feedback { stroke:var(--rik-status-success); stroke-width:1.5; stroke-dasharray:5 7; animation:flow-dash 1.2s linear infinite; }
-  .feedback-label { fill:var(--rik-status-success); font:600 var(--rik-font-size-xs) var(--rik-font-sans); }
+  /* The label is DOM text under the arc's lowest point · the arc spans
+     x 500 to 720 of a 1000-wide stage, so its centre sits at 61%. */
+  .feedback-label {
+    position: absolute; left: 61%; bottom: 0; transform: translateX(-50%);
+    color: var(--rik-status-success); white-space: nowrap;
+    font: 600 var(--rik-font-size-xs)/1 var(--rik-font-sans);
+  }
   .packet { fill:var(--rik-accent); filter:drop-shadow(0 0 5px var(--rik-accent)); }
   .feedback-packet { fill:var(--rik-status-success); filter:drop-shadow(0 0 5px var(--rik-status-success)); }
   @keyframes flow-dash { to { stroke-dashoffset:-12; } }
   li {
-    position: relative; display: flex; flex-direction: column; gap: 4px;
+    position: relative; display: flex; flex-direction: column; gap: var(--rik-space-hair);
     min-width: 0; padding: 0 var(--rik-space-3);
   }
   li:first-child { padding-left: 0; }
@@ -73,21 +87,22 @@
     color: var(--rik-text-inverse--ghost); font-family: var(--rik-font-mono);
   }
   .doctor {
-    margin: -8px 0; padding-top: 8px; padding-bottom: 8px;
+    margin: calc(-1 * var(--rik-space-1)) 0; padding-top: var(--rik-space-1); padding-bottom: var(--rik-space-1);
     border: 1px solid var(--rik-status-success);
     background: var(--rik-surface-inverse__overlay); border-radius: var(--rik-radius-sm);
   }
   .agent-loop > a {
-    position: relative; z-index: 1;
+    position: relative; z-index: 1; display: inline-block; margin-top: var(--rik-space-3);
     color: var(--rik-accent); font-size: var(--rik-font-size-body);
     font-weight: 700; text-decoration: none;
   }
   .agent-loop > a:hover { text-decoration: underline; }
   @media (max-width: 640px) {
-    .flow-lines { display:none; }
+    .flow-lines, .feedback-label { display:none; }
+    .stage { min-height: 0; }
     .agent-loop { padding: var(--rik-space-3); }
     .loop-label { align-items: flex-start; flex-direction: column; }
-    ol { grid-template-columns: 1fr; gap: 0; padding: var(--rik-space-3) 0; }
+    ol { grid-template-columns: 1fr; gap: 0; padding: var(--rik-space-3) 0 0; }
     li, li:first-child {
       display: grid; grid-template-columns: 28px 1fr auto; align-items: center;
       padding: 11px 8px; border-bottom: 1px solid var(--rik-border-inverse);

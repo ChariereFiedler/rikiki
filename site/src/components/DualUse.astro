@@ -14,33 +14,45 @@ const carousel = `<!doctype html><html><head><meta charset="UTF-8">
 <script type="module" src="/rikiki/dist/index.js"></scr` + `ipt>
 <style>html,body{width:100%;height:100%;margin:0;overflow:hidden}deck-root{width:100%;height:100%}</style>
 </head><body><deck-root autoplay="4000" loop swipe no-hint no-counter no-arrows transition="slide">
-  <deck-cover brand="COURSE · 01">
+  <deck-cover brand="Training">
     <h1>Learn in <span class="accent">context.</span></h1>
     <p class="sub">A lesson embedded where people need it.</p>
   </deck-cover>
-  <deck-feature eyebrow="Concept">
+  <deck-feature eyebrow="Onboarding">
     <h1 slot="title">One idea per screen</h1>
     <p slot="lead" class="lead">Use the same layouts, components and theme as the full deck.</p>
     <deck-callout type="ok"><strong>Swipe, click, or let it advance.</strong></deck-callout>
   </deck-feature>
-  <deck-split cols="1-1">
+  <deck-split eyebrow="Documentation" cols="1-1">
     <h1 slot="title">Check understanding</h1>
     <deck-card slot="left" color="green"><h3>Example</h3><p>Show the pattern.</p></deck-card>
-    <deck-card slot="right"><h3>Practice</h3><p>Let the learner apply it.</p></deck-card>
+    <deck-card slot="right"><h3>Practice</h3><p>Let the reader apply it.</p></deck-card>
   </deck-split>
 </deck-root></body></html>`;
 ---
 
 <section id="dual" class="dual">
   <div class="inner">
-    <Eyebrow text="Embedded learning" num="06" />
+    <Eyebrow text="Embedded learning" />
     <div class="intro">
-      <h2>Put the deck inside the page.</h2>
-      <p class="lede">
-        A Rikiki deck is a Web Component, so the same material can live inside
-        a training course, an onboarding guide, or product documentation.
-        The slide canvas scales to its container; keyboard navigation starts when the embedded deck has focus.
-      </p>
+      <div>
+        <h2>Put the deck inside the page.</h2>
+        <p class="lede">
+          A Rikiki deck is a Web Component, so the same material can live inside
+          a training course, an onboarding guide, or product documentation.
+          The slide canvas scales to its container; keyboard navigation starts when the embedded deck has focus.
+        </p>
+      </div>
+      <!-- The three contexts are also the eyebrows of the three carousel
+           slides below, in this order · the list reads as its index. -->
+      <aside class="contexts" aria-label="Where an embedded deck runs">
+        <p class="contexts-label">Three slides, three places</p>
+        <ul>
+          <li>Training</li>
+          <li>Onboarding</li>
+          <li>Documentation</li>
+        </ul>
+      </aside>
     </div>
 
     <div class="demo-grid">
@@ -77,8 +89,15 @@ const carousel = `<!doctype html><html><head><meta charset="UTF-8">
 <style>
   .dual { padding:var(--rik-space-7) var(--rik-space-5); background:var(--rik-surface-raised); border-block:1px solid var(--rik-border-default); }
   .inner { max-width:var(--rik-measure-page); margin:0 auto; }
-  .intro { margin-bottom:var(--rik-space-5); }
-  h2 { max-width:20ch; margin:0 0 var(--rik-space-3); color:var(--rik-text-default); font:900 var(--rik-font-size-mega)/1.05 var(--rik-font-display); letter-spacing:-.025em; }
+  .intro { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:var(--rik-space-5); align-items:end; margin-bottom:var(--rik-space-5); }
+  .contexts { display:flex; flex-direction:column; align-items:flex-end; gap:var(--rik-space-2); text-align:right; }
+  .contexts-label { margin:0; color:var(--rik-text-default--faint); font:600 var(--rik-font-size-sm)/1.3 var(--rik-font-sans); }
+  .contexts ul { display:flex; flex-direction:column; gap:var(--rik-space-1); margin:0; padding:0; list-style:none; }
+  .contexts li { color:var(--rik-text-default); font:700 var(--rik-font-size-lead)/1.2 var(--rik-font-display); letter-spacing:-.01em; }
+  /* The title sits in the left column of the intro, so the measure alone
+     would break it one word from the end. Balancing the lines keeps the
+     phrase whole: "Put the deck / inside the page." */
+  h2 { max-width:20ch; margin:0 0 var(--rik-space-3); color:var(--rik-text-default); font:900 var(--rik-font-size-mega)/1.05 var(--rik-font-display); letter-spacing:-.025em; text-wrap:balance; }
   .lede { max-width:66ch; margin:0; color:var(--rik-text-default--muted); font-size:var(--rik-font-size-lead); line-height:1.55; }
   .demo-grid { display:grid; grid-template-columns:minmax(0,1.65fr) minmax(260px,.65fr); gap:var(--rik-space-4); align-items:stretch; }
   .embed { --rik-btn-ghost__border:var(--rik-border-inverse--strong); --rik-btn-ghost__text:var(--rik-text-inverse); min-width:0; overflow:hidden; background:var(--rik-surface-inverse); border-radius:var(--rik-radius-md); box-shadow:var(--rik-elevation-3); }
@@ -96,8 +115,15 @@ const carousel = `<!doctype html><html><head><meta charset="UTF-8">
   .how-actions { display:flex; flex-wrap:wrap; align-items:center; gap:var(--rik-space-3); }
   @media (max-width:800px) {
     .dual { padding:var(--rik-space-6) var(--rik-space-3); }
-    .demo-grid { grid-template-columns:1fr; }
+    .intro,.demo-grid { grid-template-columns:1fr; }
+    .contexts { align-items:flex-start; text-align:left; }
+    .contexts ul { flex-direction:row; flex-wrap:wrap; gap:var(--rik-space-2) var(--rik-space-4); }
     .embed header span:last-child { display:none; }
+  }
+  @media (max-width:560px) {
+    /* Three words on one line break 2 + 1 at phone width · stacked, the
+       list reads as the index of the three carousel slides again. */
+    .contexts ul { flex-direction:column; gap:var(--rik-space-1); }
   }
 </style>
 
@@ -117,6 +143,11 @@ const carousel = `<!doctype html><html><head><meta charset="UTF-8">
         if (current && deck && typeof deck.current === 'number') current.textContent = String(deck.current + 1);
       }, 120);
     };
+    const sync = () => {
+      const deck = iframe.contentDocument?.querySelector('deck-root');
+      if (current && deck && typeof deck.current === 'number') current.textContent = String(deck.current + 1);
+    };
+    window.setInterval(sync, 500);
     embed?.querySelector('[data-carousel-prev]')?.addEventListener('click', () => move('ArrowLeft'));
     embed?.querySelector('[data-carousel-next]')?.addEventListener('click', () => move('ArrowRight'));
   });

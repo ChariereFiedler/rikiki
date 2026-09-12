@@ -1,5 +1,10 @@
 ---
-// Closing hook · derived from <deck-takeaway>. Big punchline on dark.
+// Closing hook · derived from <deck-takeaway>: one centred punchline on
+// night, a caption, two actions and the two setup commands. The page opens
+// as a cover (Hero, left-aligned, accent in the title) and closes as a
+// takeaway (centred, no accent in the type · the mango is spent on the
+// primary button and the copy affordance only).
+import CodeBlock from './CodeBlock.astro';
 import Eyebrow from './Eyebrow.astro';
 
 interface Props {
@@ -8,6 +13,8 @@ interface Props {
   caption?: string;
 }
 const { kicker, punch, caption } = Astro.props;
+const setup = `$ npm install rikiki-deck
+$ npx rikiki init index.html`;
 ---
 
 <section class="hook">
@@ -19,12 +26,9 @@ const { kicker, punch, caption } = Astro.props;
       <a class="btn btn-primary" href="/docs/getting-started">Create your first deck</a>
       <a class="btn btn-ghost" href="/llms.txt">Open the agent reference (plain text)</a>
     </div>
-    <button class="install" type="button" data-copy={'npm install rikiki-deck\nnpx rikiki init index.html'} aria-label="Copy setup commands">
-      <span class="commands" aria-hidden="true">
-        <code><span class="prompt">$</span> npm install rikiki-deck</code>
-        <code><span class="prompt">$</span> npx rikiki init index.html</code>
-      </span><span data-copy-label>Copy setup</span>
-    </button>
+    <div class="install">
+      <CodeBlock lang="sh" code={setup} />
+    </div>
   </div>
 </section>
 
@@ -35,14 +39,16 @@ const { kicker, punch, caption } = Astro.props;
     background: var(--rik-surface-inverse);
     color: var(--rik-text-inverse);
     padding: var(--rik-space-7) var(--rik-space-5);
+    text-align: center;
   }
   .inner {
     max-width: var(--rik-measure-page);
     margin: 0 auto;
     display: flex; flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: var(--rik-space-3);
   }
+  .inner :global(.eyebrow) { justify-content: center; }
   .punch {
     font-family: var(--rik-font-display);
     font-size: var(--rik-font-size-display);
@@ -59,35 +65,26 @@ const { kicker, punch, caption } = Astro.props;
     max-width: 50ch;
     margin-top: var(--rik-space-3);
   }
-  .actions { display:flex; align-items:center; flex-wrap:wrap; gap:var(--rik-space-3); margin-top:var(--rik-space-3); }
-  .install {
-    display:inline-flex; max-width:100%; align-items:center; gap:var(--rik-space-4);
-    margin-top:var(--rik-space-3); padding:var(--rik-space-3) var(--rik-space-4);
-    color:var(--rik-text-inverse); background:var(--rik-surface-inverse__overlay);
-    border:1px solid var(--rik-border-inverse--strong); border-radius:var(--rik-control-radius);
-    /* A <button> does not inherit the page font · without this it falls back
-       to the UA default (Arial) and breaks the one-control-font rule. */
-    font-family:var(--rik-font-sans);
-    cursor:pointer; text-align:left;
+  .actions {
+    display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+    gap: var(--rik-space-3);
+    margin-top: var(--rik-space-3);
   }
-  .install:focus-visible { outline: var(--rik-focus-ring--width) solid var(--rik-focus-ring); outline-offset: var(--rik-focus-ring--offset); }
-  .install code { min-width:0; color:var(--rik-text-inverse); font:600 var(--rik-font-size-body)/1.3 var(--rik-font-mono); white-space:normal; overflow-wrap:anywhere; }
-  .commands { display:grid; min-width:0; gap:var(--rik-space-hair); }
-  .commands .prompt { color:var(--rik-text-inverse--faint); }
-  [data-copy-label] { color:var(--rik-text-inverse--muted); font:700 var(--rik-font-size-sm)/1 var(--rik-font-sans); white-space:nowrap; }
+  /* The copy chip is the visible call to action here, not a hover reveal. */
+  .install {
+    --rik-code-copy__bg: var(--rik-accent);
+    --rik-code-copy__border: var(--rik-accent);
+    --rik-code-copy__text: var(--rik-accent__on);
+    --rik-code-copy__opacity: 1;
+    width: min(100%, 34rem);
+    margin-top: var(--rik-space-4);
+    text-align: left;
+  }
   @media (max-width: 640px) {
     .hook { padding: var(--rik-space-6) var(--rik-space-3); }
+    /* 12vw keeps "standalone" on one line at 390 · the longest word of
+       the punch sets the ceiling, overflow-wrap only guards the rest. */
+    .punch { font-size: clamp(2.25rem, 12vw, 4.5rem); }
     .actions { flex-direction: column; align-items: stretch; align-self: stretch; }
-    .install { flex-direction: column; align-items: flex-start; }
   }
 </style>
-
-<script>
-  document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((button) => {
-    button.addEventListener('click', async () => {
-      await navigator.clipboard.writeText(button.dataset.copy || '');
-      const label = button.querySelector('[data-copy-label]');
-      if (label) label.textContent = 'Copied';
-    });
-  });
-</script>

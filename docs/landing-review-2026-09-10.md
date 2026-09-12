@@ -118,3 +118,36 @@ runtime: the accent rule under slide titles (D16) lives in
 `rikiki/src/shared-styles.ts`.
 
 Docs tables: `th` at 14 px minimum, `td` at 15 px, copy labels at 13 px.
+
+## Restoration pass · 2026-09-12
+
+The visual pass above had flattened the page: nine identical section
+headings, every grid on equal columns, the inverse surface spent on dark
+rectangles of the same value, mango reduced to a link colour. An independent
+art-director review compared three states (original production, after the
+content pass, after the visual pass) and the landing was reworked in four
+lots while keeping every floor from the audit:
+
+- the layout library is a two-column bento at one scale (528 px tiles,
+  smallest rendered text inside the previews 13.6 px), opened by the cover
+  tile paired with its text and closed by the takeaway tile in mirror;
+- the command rail holds five cells on one row, the file argument on its own
+  line, the result as the only inverse chip; the optional modules are carried
+  by their measured sizes set in the display family, the file chip on mango;
+- the closing block is a centred takeaway again with the install commands in
+  a coloured code block; the embed section has its two-column intro and the
+  three contexts back as slide eyebrows;
+- the gallery features the docs tour on two columns, the sections alternate
+  paper and tint, the fit-check section is two real columns ("Choose it for"
+  under a mango rule, "Look elsewhere if" under a grey one), the agent panel
+  closes just under its arc label;
+- the section numbering 01 to 07 was dropped: the landing rubrics are not a
+  sequence.
+
+Second art-director review: signature restored (at least six distinct section
+designs), no section below its pre-restoration score, gains from +3 to +5 on
+the library, limits, modules and closing block. Measured after the pass: no
+text under 13 px, no accent text under 15 px on paper, one accent span (hero),
+no arrow glyphs, one page measure, no overflow at 1440 or 390, thumbnails
+loaded. The docs-tour cover no longer states a slide count, since the count
+is computed by the gallery and had drifted twice.

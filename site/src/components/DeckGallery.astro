@@ -75,11 +75,12 @@ const releaseDate = new Date(`${released[1]}T00:00:00Z`).toLocaleDateString('en-
 
 <p class="lead">
   These are the example decks shipped in the repository, under <code>examples/</code>.
+  The docs tour is the reference: it is the deck the documentation itself runs on.
 </p>
 
 <ul class="decks">
-  {decks.map((deck) => (
-    <li>
+  {decks.map((deck, index) => (
+    <li class={index === 0 ? 'feature' : 'stacked'}>
       <a class="deck" href={deck.href}>
         <img
           class="shot"
@@ -124,23 +125,33 @@ const releaseDate = new Date(`${released[1]}T00:00:00Z`).toLocaleDateString('en-
   }
   .lead code { color: var(--rik-text-default); }
 
+  /* Two to one · the reference deck takes two columns and both rows, the
+     two other examples stack beside it at half its width. Size is the
+     hierarchy; there is no card chrome and the gap is the only separator. */
   .decks {
     list-style: none;
     padding: 0;
     margin: 0;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-rows: auto;
     gap: var(--rik-space-4);
+    align-items: start;
   }
   .decks > li { min-width: 0; }
+  .decks > .feature {
+    grid-column: 1 / span 2;
+    grid-row: 1 / span 2;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+  }
+  .decks > .stacked { grid-column: 3; }
 
-  /* No card chrome · the thumbnail is the object, the text sits under it
-     on the page, and the grid gap is the only separator. */
   .deck {
     display: grid;
-    grid-template-rows: auto auto auto 1fr auto;
+    grid-template-rows: auto auto auto auto auto;
     gap: var(--rik-space-2);
-    height: 100%;
     color: inherit;
     text-decoration: none;
   }
@@ -170,12 +181,16 @@ const releaseDate = new Date(`${released[1]}T00:00:00Z`).toLocaleDateString('en-
     color: var(--rik-text-default);
     margin: var(--rik-space-1) 0 0;
   }
+  /* The reference deck speaks at section-heading size · the same family
+     and weight as the title, one step down. */
+  .feature .deck h3 { font-size: var(--rik-font-size-h2); letter-spacing: -0.02em; }
+  .feature .note { font-size: var(--rik-font-size-body); max-width: 60ch; }
 
   .meta {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    gap: 6px var(--rik-space-3);
+    gap: var(--rik-space-2xs) var(--rik-space-3);
     margin: 0;
     font: var(--rik-font-size-sm)/1.4 var(--rik-font-mono);
     color: var(--rik-text-default--muted);
@@ -191,7 +206,6 @@ const releaseDate = new Date(`${released[1]}T00:00:00Z`).toLocaleDateString('en-
   }
 
   .open {
-    align-self: end;
     color: var(--rik-accent--strong);
     font-size: var(--rik-font-size-body);
     font-weight: 700;
@@ -199,7 +213,9 @@ const releaseDate = new Date(`${released[1]}T00:00:00Z`).toLocaleDateString('en-
   .deck:hover .open { text-decoration: underline; }
 
   .caption {
-    margin: var(--rik-space-3) 0 0;
+    margin: var(--rik-space-4) 0 0;
+    padding-top: var(--rik-space-3);
+    border-top: 1px solid var(--rik-border-default);
     color: var(--rik-text-default--muted);
     font: var(--rik-font-size-sm)/1.5 var(--rik-font-sans);
   }
@@ -230,12 +246,14 @@ const releaseDate = new Date(`${released[1]}T00:00:00Z`).toLocaleDateString('en-
   .maintainer a:hover { text-decoration: underline; }
 
   @media (max-width: 880px) {
-    /* Two up, the third alongside · a lone full-width card would blow its
-       thumbnail up to twice the size of the others. */
-    .decks { grid-template-columns: repeat(2, 1fr); }
+    /* The reference deck keeps the full width; the two others share a row
+       under it, still half its size. */
+    .decks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .decks > .feature { grid-column: 1 / -1; grid-row: auto; }
+    .decks > .stacked { grid-column: auto; }
   }
   @media (max-width: 640px) {
-    .decks { grid-template-columns: 1fr; }
+    .decks { grid-template-columns: minmax(0, 1fr); }
     .foot { flex-direction: column; }
   }
 </style>
