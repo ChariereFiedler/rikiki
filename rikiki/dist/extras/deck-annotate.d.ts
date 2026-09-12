@@ -1,4 +1,4 @@
-import { LitElement } from 'lit';
+import { LitElement, type PropertyValues } from 'lit';
 export declare class DeckAnnotate extends LitElement {
     static styles: import("lit").CSSResult;
     /** The image to annotate. */
@@ -55,7 +55,7 @@ export declare class DeckAnnotate extends LitElement {
      *  nothing could be measured yet, which keeps the settle loop retrying. */
     private _measuredFrom;
     firstUpdated(): void;
-    updated(): void;
+    updated(changed: PropertyValues): void;
     disconnectedCallback(): void;
     /** Watch everything whose size decides the painted rectangle.
      *
@@ -69,6 +69,16 @@ export declare class DeckAnnotate extends LitElement {
      *  itself is recreated whenever `src` goes from unset to set. */
     private _watchImage;
     private _onLoad;
+    /** The measurement contract, in one place : measure SYNCHRONOUSLY first,
+     *  then let the settle loop retry.
+     *
+     *  The synchronous half is what a one-shot consumer reads · a print or PDF
+     *  capture, or any renderer that snapshots without pumping an animation
+     *  frame, sees the published rectangle immediately rather than one frame
+     *  late. The loop is the retry for everything a single measurement cannot
+     *  know yet (an image with no natural size, a box still collapsed, a reflow
+     *  whose notification never arrives). */
+    private _remeasure;
     /** Re-measure once per animation frame until the geometry has stopped
      *  moving, then stop.
      *
@@ -82,7 +92,12 @@ export declare class DeckAnnotate extends LitElement {
     private _settle;
     private _scheduleSettle;
     /** Publish the letterboxed picture rectangle as percentages of the frame,
-     *  and the measured badge size and anchor gap a keyword offset needs. */
+     *  and the measured badge size and anchor gap a keyword offset needs.
+     *
+     *  Synchronous and idempotent · it forces layout by design, and it is always
+     *  called directly (never only from an animation frame) so that a consumer
+     *  capturing the page without pumping a frame still reads a current
+     *  rectangle. See _remeasure(). */
     private _measure;
     render(): import("lit-html").TemplateResult<1>;
 }

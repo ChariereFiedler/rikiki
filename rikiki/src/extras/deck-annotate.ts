@@ -25,7 +25,7 @@
 //   <script type="module" src="dist/deck-annotate.js"></script>
 // ════════════════════════════════════════════════════════════════
 
-import { LitElement, css, html, nothing } from 'lit';
+import { LitElement, css, html, nothing, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import {
   type Offset,
@@ -334,7 +334,7 @@ export class DeckAnnotate extends LitElement {
     // rectangle would stay frozen at whatever it was before the move.
     if (this.hasUpdated) {
       this._observe();
-      this._settle();
+      this._remeasure();
     }
   }
 
@@ -358,16 +358,21 @@ export class DeckAnnotate extends LitElement {
     // Web fonts land after first paint and change the legend height, which is
     // what decides the frame height here · the same safety net deck-fit uses.
     document.fonts?.ready?.then(() => {
-      if (this.isConnected) this._settle();
+      if (this.isConnected) this._remeasure();
     });
-    this._settle();
+    this._remeasure();
   }
 
-  override updated(): void {
+  override updated(changed: PropertyValues): void {
     // Every render can move the picture : a revealed mark, a new src, a
     // caption appearing under the legend.
     this._watchImage();
-    this._settle();
+    // The two probe readings are written BY a measurement · re-measuring for
+    // them alone would be work with nothing to see, and the settle loop
+    // already covers the frame they land in.
+    const onlyProbes = [...changed.keys()].every((k) => k === '_markSize' || k === '_anchorGap');
+    if (onlyProbes) this._settle();
+    else this._remeasure();
   }
 
   override disconnectedCallback(): void {
@@ -388,7 +393,7 @@ export class DeckAnnotate extends LitElement {
    *  notification never arrives is still caught by another one. */
   private _observe(): void {
     this._ro?.disconnect();
-    this._ro = new ResizeObserver(() => this._settle());
+    this._ro = new ResizeObserver(() => this._remeasure());
     for (const selector of ['figure', '.frame']) {
       const el = this.renderRoot.querySelector(selector);
       if (el) this._ro.observe(el);
@@ -408,8 +413,22 @@ export class DeckAnnotate extends LitElement {
   }
 
   private _onLoad = (): void => {
-    this._settle();
+    this._remeasure();
   };
+
+  /** The measurement contract, in one place : measure SYNCHRONOUSLY first,
+   *  then let the settle loop retry.
+   *
+   *  The synchronous half is what a one-shot consumer reads · a print or PDF
+   *  capture, or any renderer that snapshots without pumping an animation
+   *  frame, sees the published rectangle immediately rather than one frame
+   *  late. The loop is the retry for everything a single measurement cannot
+   *  know yet (an image with no natural size, a box still collapsed, a reflow
+   *  whose notification never arrives). */
+  private _remeasure(): void {
+    this._measure();
+    this._settle();
+  }
 
   /** Re-measure once per animation frame until the geometry has stopped
    *  moving, then stop.
@@ -441,7 +460,12 @@ export class DeckAnnotate extends LitElement {
   }
 
   /** Publish the letterboxed picture rectangle as percentages of the frame,
-   *  and the measured badge size and anchor gap a keyword offset needs. */
+   *  and the measured badge size and anchor gap a keyword offset needs.
+   *
+   *  Synchronous and idempotent · it forces layout by design, and it is always
+   *  called directly (never only from an animation frame) so that a consumer
+   *  capturing the page without pumping a frame still reads a current
+   *  rectangle. See _remeasure(). */
   private _measure = (): void => {
     const frame = this.renderRoot.querySelector('.frame') as HTMLElement | null;
     const img = this.renderRoot.querySelector('img') as HTMLImageElement | null;
