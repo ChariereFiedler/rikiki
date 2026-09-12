@@ -1510,7 +1510,14 @@ inverse surface: dark on light is the one high-contrast ground this palette has.
 solver: an automatic layout moves every node when you add one, which breaks
 "source = output" and makes the file unreadable a year later. `at="x,y"` in
 percent is the whole layout language, plus `row` and `column` for the two cases
-that would otherwise be typed out every time.
+that would otherwise be typed out every time. `layout="row"` and
+`layout="column"` space nodes evenly along one axis and **ignore `at`
+entirely** · there is no automatic placement beyond these two canned
+arrangements, and no `serpentine`, `fan-in` or `fan-out` layout, for the same
+reason: placement is the diagram, not a computed side effect. Hand-placed
+nodes that end up on top of each other are caught by `rikiki check`, which
+reports `GRAPH_NODE_OVERLAPS_NODE` (§12b) · that check is the net for hand
+placement, not a layout solver.
 
 ```html
 <deck-annotate
@@ -1601,7 +1608,7 @@ explicitly.
 
 ## 22 · Recipes for things that are NOT components
 
-Three requests deliberately answered by composition. Each is a layout problem,
+Four requests deliberately answered by composition. Each is a layout problem,
 not a missing element, and a component would freeze one arrangement.
 
 **A checklist of what works and what does not**
@@ -1637,6 +1644,33 @@ or a `deck-quote` (§20) when the words belong to someone else.
   <deck-md slot="left">The long explanation…</deck-md>
   <deck-punch slot="right" tone="accent" fit>The one line that matters.</deck-punch>
 </deck-split>
+```
+
+**A single record, field by field** · one entity's fields read top to bottom,
+each with the value and what backs it, rather than pasted sideways as a
+rotated CSV. `deck-table` (§20) already carries this: `highlight-rows` marks
+the field that carries the argument, `reveal` discloses one field per step,
+and a `deck-source` underneath credits the record. No header-row emphasis is
+needed · the field column sits at reading weight, the value column carries
+the statement, and the marked row is the one dark band the table already
+draws. Reach for this composition instead of a `deck-record` component
+because a record is a table with one row per field, and `deck-table` already
+has the emphasis and reveal a record needs; a dedicated component would only
+duplicate `highlight-rows` and `reveal` under a new name.
+
+```html
+<deck-table highlight-rows="3" reveal>
+  <table>
+    <thead><tr><th>Field</th><th>Value</th><th>What makes it authoritative</th></tr></thead>
+    <tbody>
+      <tr><td>Incident</td><td>INC-4471</td><td>Assigned by the tracker on file</td></tr>
+      <tr><td>Detected</td><td>2026-09-03 02:14 UTC</td><td>Pager timestamp, not a recollection</td></tr>
+      <tr><td>Root cause</td><td>Connection pool exhaustion</td><td>Confirmed by the on-call engineer, not guessed</td></tr>
+      <tr><td>Owner</td><td>Platform team</td><td>Assignment recorded in the same tracker</td></tr>
+    </tbody>
+  </table>
+</deck-table>
+<deck-source href="https://example.com/tracker/INC-4471">Incident tracker, INC-4471</deck-source>
 ```
 
 ---

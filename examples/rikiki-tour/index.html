@@ -13,6 +13,7 @@
 <script type="module" src="../../rikiki/dist/deck-icon.js"></script>
 <script type="module" src="../../rikiki/dist/deck-annotate.js"></script>
 <script type="module" src="../../rikiki/dist/deck-versus.js"></script>
+<script type="module" src="../../rikiki/dist/deck-table.js"></script>
 <script>
   // Live theme switch · used by the clickable cards on the Themes slide.
   // Choice is persisted in localStorage so a reload keeps it.
@@ -397,6 +398,25 @@
     AMER; 6 220; Free
   </deck-csv>
   <deck-source>Internal usage export, September 2026</deck-source>
+</deck-feature>
+
+<!-- ════════════════════════════════════════════════════════════════
+     16c-bis · A single record, field by field · recipe, not a component
+     ════════════════════════════════════════════════════════════════ -->
+<deck-feature eyebrow="Recipe" spread="center">
+  <h1 slot="title">A record is a table with one row per field</h1>
+  <deck-table highlight-rows="3" reveal>
+    <table>
+      <thead><tr><th>Field</th><th>Value</th><th>What makes it authoritative</th></tr></thead>
+      <tbody>
+        <tr><td>Incident</td><td>INC-4471</td><td>Assigned by the tracker on file</td></tr>
+        <tr><td>Detected</td><td>2026-09-03 02:14 UTC</td><td>Pager timestamp, not a recollection</td></tr>
+        <tr><td>Root cause</td><td>Connection pool exhaustion</td><td>Confirmed by the on-call engineer, not guessed</td></tr>
+        <tr><td>Owner</td><td>Platform team</td><td>Assignment recorded in the same tracker</td></tr>
+      </tbody>
+    </table>
+  </deck-table>
+  <deck-source href="https://example.com/tracker/INC-4471">Incident tracker, INC-4471</deck-source>
 </deck-feature>
 
 <!-- ════════════════════════════════════════════════════════════════
