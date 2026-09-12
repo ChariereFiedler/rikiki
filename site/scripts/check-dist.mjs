@@ -17,7 +17,10 @@ const DIST = join(SITE_DIR, 'dist');
 const FORBIDDEN = [
   { test: (p) => /(^|\/)node_modules(\/|$)/.test(p), why: 'dependency tree' },
   { test: (p) => p.endsWith('.ts') && !p.endsWith('.d.ts'), why: 'TypeScript source' },
-  { test: (p) => /(^|\/)(src|e2e|scripts|decks|test-results|playwright-report)(\/|$)/.test(p), why: 'development directory' },
+  { test: (p) => /(^|\/)(src|e2e|scripts|test-results|playwright-report)(\/|$)/.test(p), why: 'development directory' },
+  // `decks/` at the root is the published example gallery · the same segment
+  // anywhere else is a working directory that must not ship.
+  { test: (p) => /(^|\/)decks(\/|$)/.test(p) && !p.startsWith('decks/'), why: 'development directory' },
   { test: (p) => /(^|\/)\.(env|git|astro)(\/|$)/.test(p), why: 'local or version-control data' },
   { test: (p) => /(^|\/)(package(-lock)?\.json|tsconfig[^/]*\.json|vitest\.config\.[cm]?[jt]s|playwright\.config\.[cm]?[jt]s|biome\.json)$/.test(p), why: 'build manifest' },
   { test: (p) => /\.(map|tsbuildinfo|log)$/.test(p), why: 'build by-product' },
