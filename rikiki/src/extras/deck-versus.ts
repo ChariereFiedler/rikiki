@@ -185,6 +185,22 @@ export class DeckVersus extends LitElement {
     }
     @media print {
       .side { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      /* Slide mode draws its own shell instead of taking slideShell, so it
+         takes the same print contract by hand · every slide shown, one page
+         each, the deck canvas as the page. Without it the comparison stayed
+         display:none off screen and vanished from the PDF. */
+      :host([slide]) {
+        display: grid;
+        position: relative;
+        inset: auto;
+        width: calc(var(--deck-canvas-w, 1920) * 1px);
+        height: calc(var(--deck-canvas-h, 1080) * 1px);
+        break-inside: avoid;
+        break-after: page;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      :host([slide]:last-child) { break-after: auto; }
     }
   `,
   ];
