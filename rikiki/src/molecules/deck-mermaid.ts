@@ -33,17 +33,40 @@ async function ensureMermaid(): Promise<void> {
       document.head.appendChild(s);
     });
   }
+  // Mermaid takes concrete colors, not CSS variables, so the palette cannot be
+  // expressed in the stylesheet · it is READ from the theme instead of copied
+  // here. It had already been copied: the three values below were
+  // byte-identical to --rik-code__* in both shipped themes, which is a drift
+  // waiting for the first theme that moves its code surface.
+  const theme = getComputedStyle(document.documentElement);
+  // An unresolved token yields '' · the key is then dropped rather than
+  // defaulted, so mermaid falls back to its own dark theme instead of to a
+  // second copy of the palette living here.
+  const fromTheme = (vars: Record<string, string>) =>
+    Object.fromEntries(
+      Object.entries(vars)
+        .map(([key, name]) => [key, theme.getPropertyValue(name).trim()])
+        .filter(([, value]) => value !== ''),
+    );
+
   window.mermaid!.initialize({
     startOnLoad: false,
     theme: 'dark',
     themeVariables: {
-      background: '#0f0f10',
+      // The diagram sits on the code surface · see the host styles below.
+      ...fromTheme({
+        background: '--rik-code__bg',
+        edgeLabelBackground: '--rik-code__bg',
+        textColor: '--rik-code__text',
+      }),
+      /* rikiki:allow-hex · a diagram's own geometry · no token describes a node
+         fill, a node border or an edge on the code surface. Giving diagrams a
+         theme-aware palette is a visual decision with its own measurements,
+         not a token substitution. */
       mainBkg: '#2a2a2a',
       nodeBorder: '#555',
       lineColor: '#777',
-      textColor: '#e5e5e5',
       fontSize: '13px',
-      edgeLabelBackground: '#111',
     },
     flowchart: { curve: 'basis', htmlLabels: true, padding: 12 },
     // 'strict' is mermaid's own secure default · it encodes HTML in labels and
@@ -137,6 +160,10 @@ export class DeckMermaid extends LitElement {
       // escaped before it reaches the innerHTML sink below · and again in the
       // overview thumbnail, which re-injects `renderedSvg` into a second tree.
       const msg = e instanceof Error ? e.message : String(e);
+      /* rikiki:allow-hex · an error on the code surface, and no token is tuned
+         for it · --rik-status-danger__text is a paper color and measures
+         4.92:1 on rikiki, 3.97:1 on siliceum against --rik-code__bg, under the
+         4.5 AA floor. This red measures 6.93:1 on both. */
       this._svg = `<pre style="color:#f87171">${escapeHtml(msg)}</pre>`;
     }
   }

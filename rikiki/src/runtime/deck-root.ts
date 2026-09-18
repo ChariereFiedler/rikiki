@@ -151,7 +151,7 @@ export class DeckRoot extends LitElement {
     }
     .dot {
       width: 6px; height: 6px; border-radius: 50%;
-      background: var(--deck-root-dot-bg, #d4d4d0);
+      background: var(--deck-root-dot-bg, var(--rik-border-default));
       transition: background 0.2s;
     }
     .dot.active { background: var(--deck-root-dot-active-bg, var(--rik-accent)); }
@@ -228,6 +228,8 @@ export class DeckRoot extends LitElement {
       z-index: 9999;
       cursor: pointer;
     }
+    /* rikiki:allow-hex · blanking the projector is not a theme decision · the
+       room goes to true black or true white whatever the deck is wearing. */
     #blank[data-tone="black"] { background: #000; }
     #blank[data-tone="white"] { background: #fff; }
 
