@@ -10,6 +10,21 @@
 // Pure string work · no parser, no DOM, unit-testable.
 // ════════════════════════════════════════════════════════════════
 
+// Components that draw glyphs from the shared set themselves, so no
+// `<deck-icon name>` in the deck ever names them.
+const COMPONENT_GLYPHS = {
+  'deck-check': ['check', 'cross'],
+};
+
+/** Glyphs the deck needs because it uses a component that draws them. */
+export function componentGlyphsIn(html) {
+  const names = new Set();
+  for (const [tag, glyphs] of Object.entries(COMPONENT_GLYPHS)) {
+    if (new RegExp(`<${tag}\\b`, 'i').test(html)) for (const g of glyphs) names.add(g);
+  }
+  return names;
+}
+
 /** Every `name` a deck writes on a `<deck-icon>` · quoted or not. */
 export function iconNamesIn(html) {
   const names = new Set();
@@ -58,9 +73,10 @@ export function pruneIcons(js, html) {
     return { js, pruned: false, reason: `unknown icon name: ${unknown.join(', ')}` };
   }
 
+  const needed = new Set([...used, ...componentGlyphsIn(html)]);
   const kept = {};
   for (const name of Object.keys(found.set)) {
-    if (used.has(name)) kept[name] = found.set[name];
+    if (needed.has(name)) kept[name] = found.set[name];
   }
   // Escape whichever quote character wraps it, so the swap is valid in place.
   const replacement = JSON.stringify(kept).replace(
