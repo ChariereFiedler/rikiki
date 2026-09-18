@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · core catalogue</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+</head>
+<!--
+  The core components no other fixture rendered.
+
+  Thirteen elements shipped in the default bundle were written on no slide in
+  decks/, so the render nets that measure this directory · slide-budget, ink,
+  a11y · had never once looked at them. The opt-in surface had that guard
+  since the extras were added; the core never did. This deck is what makes
+  `every registered element is written on a slide somewhere` true for both.
+
+  Each slide is a real composition rather than a specimen on a blank canvas,
+  because a component that only ever renders alone is a component whose
+  spacing against a neighbour is still unmeasured.
+-->
+<body>
+<deck-root transition="slide">
+
+  <deck-cover brand="rikiki · core catalogue" speaker="fixture" audience="every core element, once">
+    <h1>The core, <span class="accent">rendered</span></h1>
+    <p class="sub">thirteen elements that shipped without ever being drawn</p>
+  </deck-cover>
+
+  <deck-feature-cards eyebrow="Tiering">
+    <h1 slot="title">A tier list reads top to bottom, and says why</h1>
+    <p slot="lead">Each step names what it costs, so the ladder argues instead of ranking.</p>
+    <deck-tier-list>
+      <deck-tier name="Interpreter" desc="Bytecode, no warmup" speed="×1"></deck-tier>
+      <deck-tier-arrow>after ~6 runs</deck-tier-arrow>
+      <deck-tier name="Baseline JIT" desc="Compiles hot paths" speed="×10" severity="warn"></deck-tier>
+      <deck-tier-arrow>when the shape stays stable</deck-tier-arrow>
+      <deck-tier name="Optimising JIT" desc="Speculates, deoptimises" speed="×100" hot></deck-tier>
+    </deck-tier-list>
+    <div slot="left">A tier earns its row by naming a cost, not a rank.</div>
+    <div slot="right">The arrow carries the condition that moves you down it.</div>
+  </deck-feature-cards>
+
+  <deck-feature eyebrow="Evidence">
+    <h1 slot="title">A number needs its source on the same slide</h1>
+    <deck-kicker>Parse pass, 2026-09</deck-kicker>
+    <deck-metric-list>
+      <deck-metric severity="bad" value="13">Core elements drawn by nothing</deck-metric>
+      <deck-metric severity="warn" value="23">Opt-in elements, already guarded</deck-metric>
+      <deck-metric severity="ok" value="59">Registered elements in total</deck-metric>
+    </deck-metric-list>
+    <deck-source href="https://gitlab.com/tordu-jardin/rikiki">scripts/component.test.mjs</deck-source>
+  </deck-feature>
+
+  <deck-feature eyebrow="Keys">
+    <h1 slot="title">A shortcut list is a contract with the room</h1>
+    <p>Press <deck-kbd>?</deck-kbd> in any deck and the same list appears.</p>
+    <deck-shortcut-list gap="3">
+      <deck-shortcut keys="→ Space" label="Advance" note="one step, then one slide"></deck-shortcut>
+      <deck-shortcut keys="O" label="Overview" note="every slide at once"></deck-shortcut>
+      <deck-shortcut keys="P" label="Presenter" note="notes on the second screen"></deck-shortcut>
+      <deck-shortcut keys="B" label="Blank" note="the room looks at you instead"></deck-shortcut>
+    </deck-shortcut-list>
+  </deck-feature>
+
+  <deck-feature eyebrow="Labelling">
+    <h1 slot="title">A badge carries a verdict, never a decoration</h1>
+    <deck-stack gap="3">
+      <p><deck-badge type="bad">Anti-pattern</deck-badge> a helper with one consumer, kept in shared/</p>
+      <p><deck-badge type="warn">Watch</deck-badge> a component rendered by no fixture</p>
+      <p><deck-badge type="ok">Held</deck-badge> a rule with a test that has been seen to fail</p>
+      <p><deck-badge type="info">Note</deck-badge> a badge with no verdict is a coloured box</p>
+    </deck-stack>
+  </deck-feature>
+
+  <deck-photo
+    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='900' viewBox='0 0 1600 900'%3E%3Crect width='1600' height='900' fill='%231e2840'/%3E%3Ccircle cx='1180' cy='300' r='190' fill='%23f07020'/%3E%3C/svg%3E"
+    darken="0.45">
+    <h1>A full-bleed slide still owes the room one sentence</h1>
+    <p class="sub">the image is the argument · the caption says what to look at</p>
+  </deck-photo>
+
+</deck-root>
+</body>
+</html>
