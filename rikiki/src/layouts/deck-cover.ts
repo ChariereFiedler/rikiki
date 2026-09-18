@@ -17,8 +17,14 @@ import { customElement, property } from 'lit/decorators.js';
 import { slideBase } from '../shared-styles.js';
 
 interface MetaItem {
+  /** The source attribute name · exposed as data-field, so one meta row can be
+   *  addressed on its own inside the shadow render (`part` covers the block,
+   *  not each row). */
+  key: string;
   l: string;
   v: string;
+  /** Optional logo shown before the value · decorative, the value names it. */
+  src?: string;
 }
 
 @customElement('deck-cover')
@@ -93,6 +99,11 @@ export class DeckCover extends LitElement {
       color: var(--deck-cover-text, var(--rik-text-inverse));
       font-size: var(--rik-font-size-body); font-weight: 600;
     }
+    .meta-value { display: flex; align-items: center; gap: var(--rik-space-2); }
+    .meta-logo {
+      /* em, so the logo keeps the height of the value it stands beside. */
+      height: 1.6em; width: auto; display: block;
+    }
   `,
   ];
 
@@ -100,6 +111,8 @@ export class DeckCover extends LitElement {
   @property({ type: String, attribute: 'brand-src' }) brandSrc?: string;
   @property({ type: String }) speaker?: string;
   @property({ type: String }) company?: string;
+  /** Optional client logo shown before the company name. */
+  @property({ type: String, attribute: 'company-src' }) companySrc?: string;
   @property({ type: String }) duration?: string;
   @property({ type: String }) audience?: string;
   @property({ type: String }) runtime?: string;
@@ -134,11 +147,24 @@ export class DeckCover extends LitElement {
     const brandName = parts[0] ?? '';
     const context = parts.slice(1).join(' · ');
     const items: MetaItem[] = [
-      this.speaker && { l: this.speakerLabel ?? label.speaker, v: this.speaker },
-      this.company && { l: this.companyLabel ?? label.company, v: this.company },
-      this.duration && { l: this.durationLabel ?? label.duration, v: this.duration },
-      this.audience && { l: this.audienceLabel ?? label.audience, v: this.audience },
-      this.runtime && { l: this.runtimeLabel ?? 'Runtime', v: this.runtime },
+      this.speaker && { key: 'speaker', l: this.speakerLabel ?? label.speaker, v: this.speaker },
+      this.company && {
+        key: 'company',
+        l: this.companyLabel ?? label.company,
+        v: this.company,
+        src: this.companySrc,
+      },
+      this.duration && {
+        key: 'duration',
+        l: this.durationLabel ?? label.duration,
+        v: this.duration,
+      },
+      this.audience && {
+        key: 'audience',
+        l: this.audienceLabel ?? label.audience,
+        v: this.audience,
+      },
+      this.runtime && { key: 'runtime', l: this.runtimeLabel ?? 'Runtime', v: this.runtime },
     ].filter((x): x is MetaItem => !!x);
 
     const hasMark = !!this.brandSrc;
@@ -160,7 +186,14 @@ export class DeckCover extends LitElement {
         <div class="meta" part="meta">
           ${items.map(
             (i) => html`
-            <div class="meta-item"><strong>${i.l}</strong><span>${i.v}</span></div>
+            <div class="meta-item" data-field="${i.key}">
+              <strong>${i.l}</strong>
+              ${
+                i.src
+                  ? html`<div class="meta-value"><img class="meta-logo" src="${i.src}" alt=""><span>${i.v}</span></div>`
+                  : html`<span>${i.v}</span>`
+              }
+            </div>
           `,
           )}
         </div>`
