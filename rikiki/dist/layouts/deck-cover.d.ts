@@ -5,6 +5,8 @@ export declare class DeckCover extends LitElement {
     brandSrc?: string;
     speaker?: string;
     company?: string;
+    /** Optional client logo shown before the company name. */
+    companySrc?: string;
     duration?: string;
     audience?: string;
     runtime?: string;

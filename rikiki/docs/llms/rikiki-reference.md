@@ -227,7 +227,7 @@ Direct children of `<deck-root>`. Each is one slide.
 
 | Tag | Purpose | Key attributes | Slots |
 |-----|---------|----------------|-------|
-| `deck-cover` | Opening slide, dark, with brand + meta | `brand` (split on " · "), `brand-src` (logo URL), `speaker`, `company`, `duration`, `audience`, `runtime`; per-row label overrides `speaker-label`, `company-label`, `duration-label`, `audience-label`, `runtime-label` | default `<h1>`, `.sub`/`p[slot=sub]` |
+| `deck-cover` | Opening slide, dark, with brand + meta | `brand` (split on " · "), `brand-src` (logo URL), `speaker`, `company`, `company-src` (client logo URL, shown before the company name), `duration`, `audience`, `runtime`; per-row label overrides `speaker-label`, `company-label`, `duration-label`, `audience-label`, `runtime-label` | default `<h1>`, `.sub`/`p[slot=sub]` |
 | `deck-section` | Chapter divider (also a chapter boundary for 2D nav) | `num` | default `<h1>` (may use `<em>`) |
 | `deck-feature` | Headline + lead + one focal block | `eyebrow` | `title` (`<h1>`), `lead`, default (focal block, e.g. `deck-code`) |
 | `deck-split` | Two or three columns side by side | `eyebrow`, `cols` (`1-1`/`1-2`/`2-1`/`3`), `gap` (1..6 or raw CSS length), `col-gap` (1..6 or raw CSS length) | `title`, `lead`; `left`/`right` (2-col) or `a`/`b`/`c` (3-col) |
