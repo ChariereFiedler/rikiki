@@ -66,10 +66,29 @@ export class DeckTimeline extends LitElement {
       width: var(--deck-timeline-axis-width, 2px);
       height: auto;
     }
+    /* Alternate · the axis runs through the middle, odd milestones sit above it
+       and even ones below. Each spans two columns: its neighbours are on the
+       other side, so the note gets twice the width without touching them. */
+    :host([alternate]:not([direction='column'])) {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(var(--_cols, 2), minmax(0, 1fr));
+      grid-template-rows: 1fr 1fr;
+      row-gap: 0;
+      padding-top: 0;
+    }
+    :host([alternate]:not([direction='column']))::before {
+      top: calc(50% - var(--deck-timeline-axis-width, 2px) / 2);
+    }
+    ::slotted(deck-milestone[side]) { grid-column: var(--_col) / span 2; }
+    ::slotted(deck-milestone[side='up']) { grid-row: 1; align-self: end; }
+    ::slotted(deck-milestone[side='down']) { grid-row: 2; align-self: start; }
   `;
 
   /** `row` (default) or `column`. */
   @property({ type: String, reflect: true }) direction: 'row' | 'column' = 'row';
+
+  /** Row only · milestones alternate above and below the axis, each twice as wide. */
+  @property({ type: Boolean, reflect: true }) alternate = false;
 
   /** Walk the trajectory one milestone per step.
    *
@@ -99,8 +118,29 @@ export class DeckTimeline extends LitElement {
     });
   }
 
+  override updated(): void {
+    this._arrange();
+  }
+
+  /** Tell each milestone its side and column · a grid cannot count its items,
+   *  so the index is written where the slotted rule can read it. */
+  private _arrange = (): void => {
+    const milestones = [...this.querySelectorAll<HTMLElement>('deck-milestone')];
+    const alternating = this.alternate && this.direction !== 'column';
+    milestones.forEach((el, i) => {
+      if (alternating) {
+        el.setAttribute('side', i % 2 ? 'down' : 'up');
+        el.style.setProperty('--_col', String(i + 1));
+      } else {
+        el.removeAttribute('side');
+        el.style.removeProperty('--_col');
+      }
+    });
+    this.style.setProperty('--_cols', String(milestones.length + 1));
+  };
+
   override render() {
-    return html`<slot></slot>`;
+    return html`<slot @slotchange=${this._arrange}></slot>`;
   }
 }
 
@@ -156,6 +196,16 @@ export class DeckMilestone extends LitElement {
       font-size: var(--rik-font-size-body);
       color: var(--deck-milestone-note-color, var(--rik-text-default--muted));
       line-height: 1.35;
+    }
+    /* Set by an alternating timeline · the dot moves to the axis side and its
+       centre lands on the axis, the text keeps its reading order. */
+    :host([side]) { padding-block: var(--rik-space-2); }
+    :host([side='up']) .dot {
+      order: 1;
+      margin-bottom: calc(var(--deck-milestone-dot-size, 1em) / -2 - var(--rik-space-2));
+    }
+    :host([side='down']) .dot {
+      margin-top: calc(var(--deck-milestone-dot-size, 1em) / -2 - var(--rik-space-2));
     }
     @media print {
       :host { opacity: 1; }
