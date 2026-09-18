@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · timelines</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-timeline.js"></script>
+</head>
+<body>
+<deck-root no-hint no-arrows>
+
+  <deck-feature id="s-plain" eyebrow="timeline">
+    <h1 slot="title">A plain row</h1>
+    <deck-timeline id="tl-plain">
+      <deck-milestone date="1" label="One" note="first"></deck-milestone>
+      <deck-milestone date="2" label="Two" note="second"></deck-milestone>
+      <deck-milestone date="3" label="Three" note="third"></deck-milestone>
+      <deck-milestone date="4" label="Four" note="fourth"></deck-milestone>
+    </deck-timeline>
+  </deck-feature>
+
+  <deck-feature id="s-alternate" eyebrow="timeline">
+    <h1 slot="title">Above and below the axis</h1>
+    <deck-timeline id="tl-alternate" alternate>
+      <deck-milestone date="1" label="One" note="first"></deck-milestone>
+      <deck-milestone date="2" label="Two" note="second"></deck-milestone>
+      <deck-milestone date="3" label="Three" note="third"></deck-milestone>
+      <deck-milestone date="4" label="Four" note="fourth"></deck-milestone>
+    </deck-timeline>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>
