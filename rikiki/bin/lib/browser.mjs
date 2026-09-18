@@ -52,6 +52,29 @@ export async function loadChromium() {
   );
 }
 
+/**
+ * Launch the full Chromium build rather than Playwright's default headless shell.
+ *
+ * The shell positions glyphs differently: a paragraph that wraps onto six lines
+ * in Chrome can fit on five there, so a card that spills in every real browser
+ * measured clean and `CONTENT_ESCAPES_BOX` stayed silent. The full build wraps
+ * like the browser the deck is actually opened in. When it is not installed the
+ * default build still runs, and `note` says the measurements may be off.
+ */
+export async function launchChromium(chromium, note = (line) => console.error(line)) {
+  try {
+    return await chromium.launch({ channel: 'chromium' });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    if (!message.includes("Executable doesn't exist")) throw e;
+    note(
+      'rikiki · note · the full Chromium build is not installed · falling back to the headless shell, ' +
+        'whose text wrapping differs from a real browser · run `npx playwright install chromium`',
+    );
+    return chromium.launch();
+  }
+}
+
 /** True when `abs` is inside `root` · `/srv/deck` must not admit `/srv/deck-x`.
  *  Exported because a path check nobody can test is a path check nobody trusts. */
 export function isInside(root, abs) {
@@ -248,7 +271,7 @@ export async function withDeck(deckPath, fn, { timeoutMs = PAGE_LOAD_TIMEOUT_MS,
   const chromium = await loadChromium();
   const { rootDir, urlPath } = deckLocation(deckPath);
   const server = await serveDir(rootDir);
-  const browser = await chromium.launch();
+  const browser = await launchChromium(chromium);
   const missing = [];
   const errors = [];
 
