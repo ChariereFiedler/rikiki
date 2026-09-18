@@ -428,6 +428,14 @@ async function cmdExport(argv) {
     console.error('rikiki export · WARNING · the deck could not load:');
     for (const url of [...new Set(result.missing)].slice(0, 10)) console.error('    · ' + url);
   }
+  // One slide, one page · any gap either way means the paper does not match
+  // the deck, whether a slide was dropped or one spilled onto a second page.
+  if (result.pages !== result.slides) {
+    console.error(
+      `rikiki export · WARNING · ${result.slides} slides but ${result.pages} pages · ` +
+        'compare the PDF with the deck outline',
+    );
+  }
   console.error(`rikiki · wrote ${outputPath} · ${result.pages} pages`);
 }
 

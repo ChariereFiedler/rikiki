@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -242,4 +242,50 @@ test('the exported PDF is navigable · real pages, an outline and a tagged tree'
 
   const raw = readFileSync(out);
   expect(raw.includes('/Outlines'), 'the PDF carries a bookmark outline').toBe(true);
+});
+
+test('a deck-versus slide prints its own page', async ({ page }) => {
+  // deck-versus in slide mode draws its own slide shell instead of taking
+  // slideShell, and that shell had no print rules: off screen it stayed
+  // display:none on paper, so the comparison vanished from the PDF.
+  const deck = '/rikiki/decks/tests/figure.html';
+  await page.goto(deck);
+  const slides = await slideCount(page);
+
+  const file = await printDeck(page, deck, 'versus.pdf');
+  expect(pdfInfo(file).pages, `${slides} slides must print as ${slides} pages`).toBe(slides);
+  expect(pdfText(file)).toContain('the decision');
+});
+
+test('graph edges are drawn before the PDF is taken', async ({ page }) => {
+  // An edge is measured from its nodes' boxes, and a slide that never showed on
+  // screen has none · the arrows only exist once print layout has run a frame.
+  // Taking the PDF straight away printed every diagram without its arrows.
+  const { preparePrint } = await import('../bin/lib/export-pdf.mjs');
+  await page.goto('/rikiki/decks/tests/extras-more.html');
+  await expect(page.locator('deck-root > [active]')).toHaveCount(1);
+  await preparePrint(page);
+
+  const graphs = await page.evaluate(() =>
+    [...document.querySelectorAll('deck-graph')].map((g) => ({
+      id: g.id,
+      drawn: g.shadowRoot?.querySelectorAll('.edge').length ?? 0,
+      declared: g.querySelectorAll('deck-edge').length,
+    })),
+  );
+  expect(graphs.length, 'the fixture has graphs').toBeGreaterThan(0);
+  for (const g of graphs) expect(g.drawn, `edges drawn in #${g.id}`).toBe(g.declared);
+});
+
+test('rikiki export reports the pages the PDF really has', async () => {
+  // The CLI announced the slide count, not the page count · a deck that lost a
+  // slide on paper still read "N pages", and nobody opened the PDF to check.
+  const out = join(workDir, 'count.pdf');
+  const run = spawnSync(
+    process.execPath,
+    ['bin/rikiki.mjs', 'export', 'decks/tests/figure.html', '--output', out],
+    { cwd: PKG_DIR, encoding: 'utf8' },
+  );
+  const reported = Number(/· (\d+) pages/.exec(run.stderr)?.[1]);
+  expect(reported, run.stderr).toBe(pdfInfo(out).pages);
 });
