@@ -48,6 +48,13 @@ describe('pruneIcons', () => {
     expect(findIconData(result.js).set).toEqual({ check: 'M20 6 9 17l-5-5' });
   });
 
+  it('keeps the glyphs a component draws itself', () => {
+    // <deck-check no> draws the cross from the shared set · no <deck-icon> names it.
+    const result = pruneIcons(bundle(), '<deck-checklist><deck-check no>KO</deck-check></deck-checklist>');
+    expect(result.pruned).toBe(true);
+    expect(result.kept).toEqual(['check', 'cross']);
+  });
+
   it('empties the set for a deck that writes no name', () => {
     // A deck using only slotted SVGs needs none of the built-in glyphs.
     const result = pruneIcons(bundle(), '<deck-icon><svg/></deck-icon>');
