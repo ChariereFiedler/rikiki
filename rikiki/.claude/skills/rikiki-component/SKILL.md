@@ -75,6 +75,28 @@ declare global {
 6. **Cover** it in the Playwright render net if it changes rendering (add a
    fixture deck or extend `e2e/`).
 
+## What is enforced (and will fail your build)
+
+`scripts/component-contract.test.mjs` holds the shape of the pattern above.
+Six rules, each verified to fail when broken:
+
+- the file opens with a `//` header block showing the intended HTML
+- it declares its tags on `HTMLElementTagNameMap`
+- it styles through `static override styles`
+- it defines the element it is named after (extra child elements are fine)
+- it hardcodes no colour · exception: `rikiki:allow-hex <reason>`, which covers
+  its line and the block below it up to the next blank line. Read the value and
+  give a real reason · both live exceptions carry a measurement.
+- every registered tag appears in `docs/llms/rikiki-reference.md`
+
+Two more, in `scripts/component.test.mjs`:
+
+- every attribute you declare appears in the component's catalogue entry
+  (`site/src/pages/docs/components.astro`) · a genuinely author-invisible
+  attribute goes in `UNDOCUMENTED_ATTRIBUTES` with a sentence saying why
+- every registered tag is written on a slide under `decks/tests/` · a component
+  no fixture renders is measured by no render net
+
 ## Rules
 
 - One responsibility per component; compose rather than add options.
