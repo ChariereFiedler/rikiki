@@ -25,3 +25,9 @@ export class DeckKicker extends LitElement {
   }
 }
 customElements.define('deck-kicker', DeckKicker);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'deck-kicker': DeckKicker;
+  }
+}
