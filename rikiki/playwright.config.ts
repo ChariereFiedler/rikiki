@@ -32,6 +32,14 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   forbidOnly: !!process.env.CI,
   retries: 0, // flaky tests are bugs to fix, not retry away (test-discipline)
+  // A deadline measures the machine, not the code. The same suite runs in 5.7
+  // minutes here and 16 on the CI runner · a test that converges in a second
+  // locally has under two seconds of real work inside a 30 s budget there.
+  // Two Firefox tests have already timed out on CI while passing in the exact
+  // CI image locally, which is a budget too tight for the box, not a defect
+  // the assertion caught. Raised on CI only, and only the deadline: `retries`
+  // stays at 0, so a genuinely flaky test still fails the run.
+  timeout: process.env.CI ? 90_000 : 30_000,
   // On GitHub, also emit `::error file=…::` annotations. They are the only
   // part of a run that a reader without a token can see · the logs answer 403
   // on a public repository, and a failure nobody outside can read is a failure
