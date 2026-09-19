@@ -1117,7 +1117,7 @@ const childCount = optionalChildren.length;
 
 <h2 id="optional">Optional modules</h2>
 <p>
-  These elements live in <code>src/extras</code>. They are compiled as separate
+  These elements are not imported by the default bundle. They are compiled as separate
   modules and reach the browser only when a deck imports them, so a deck that
   does not use one pays nothing for it. Import the matching file from
   <code>rikiki/dist/</code> after the core runtime. Several modules also define

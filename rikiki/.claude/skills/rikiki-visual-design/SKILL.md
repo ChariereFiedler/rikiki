@@ -1,6 +1,6 @@
 ---
 name: rikiki-visual-design
-description: Use before making any VISUAL decision on a rikiki deck component or theme — what a slide looks like, not how it is wired. Triggers on "the component is ugly", "c'est moche", "make it look better", "redesign deck-*", a new visual in src/extras/, or any change to a colour, a surface, a type scale or a layout rhythm. Repo-only. Load frontend-design FIRST, this second, rikiki-component third.
+description: Use before making any VISUAL decision on a rikiki deck component or theme — what a slide looks like, not how it is wired. Triggers on "the component is ugly", "c'est moche", "make it look better", "redesign deck-*", a new opt-in visual component, or any change to a colour, a surface, a type scale or a layout rhythm. Repo-only. Load frontend-design FIRST, this second, rikiki-component third.
 ---
 
 # Designing what a rikiki slide looks like
@@ -21,7 +21,7 @@ constraints that are specific to rikiki and measured in this repo.
 3. **`rikiki-component`** for the Lit mechanics, the buckets, the build.
 4. **`de-ai-slop-frontend`** last, as a sweep for named surface effects.
 
-Skipping step 1 is how `src/extras/` ended up with a signature made entirely of
+Skipping step 1 is how the opt-in visuals ended up with a signature made entirely of
 the 2026 tells · mono uppercase micro-labels, hairline rules at zero radius,
 01 / 02 / 03 numbering, middle-dot meta strings · and was rejected three times.
 
