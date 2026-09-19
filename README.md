@@ -7,25 +7,34 @@
 [![license](https://img.shields.io/npm/l/rikiki-deck)](LICENSE)
 [![dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](#the-contract)
 
-**Slide decks written in HTML, by people who write code, that still open in five
-years without a toolchain to resurrect.**
+**A slide deck a model can write on the first try: plain HTML, no build step,
+and a `check` command that hands back the defects as JSON.**
 
-You write `<deck-cover>`, `<deck-feature>`, `<deck-code>`. You serve the folder
-with any static HTTP server. That is the whole workflow. There is no build step
-between you and your finished deck, no `node_modules` in your presentation, and
-nothing to migrate when the next major lands.
+Slides are `<deck-cover>`, `<deck-feature>`, `<deck-code>` · slots and
+attributes, a format every model already knows cold. Nothing to learn, nothing
+to compile, and no toolchain error to debug in a loop. The agent writes a
+file, serves it, measures it, and fixes what the measurement found.
 
-- **36 elements in the default bundle**, and 23 more you
-  load only when a slide needs one.
-- **43 KB gzip** for a deck that has loaded everything it needs
-  to render: engine, Lit, markdown. Measured, not estimated · see below.
+That was not designed for agents. It fell out of designing for a deck that
+still opens in five years: source is output, web standards only, no build to
+resurrect. The same three choices turn out to be exactly what a model needs,
+which is the useful thing about them.
+
+- **The reference ships in the package**, 1721 lines of it, and
+  the test suite holds it against the code · an agent reads ground truth, not
+  documentation somebody meant to update.
+- **`check` returns the defects as data** · clipped text, unreadable contrast,
+  a title that names a topic instead of making a claim. The loop closes with
+  no human in it.
+- **36 elements in the default bundle**, and 23 more
+  behind one `<script>` tag each.
+- **43 KB gzip** for a deck with everything it needs to
+  render. Measured, not estimated · see below.
 - **Zero production dependencies.** `npm install rikiki-deck` pulls nothing.
-- **2 themes** (`rikiki` and `siliceum`), re-themed by editing CSS custom
-  properties. No package to fork.
-- **A CLI** that renders your deck to pictures, measures what is wrong with it,
-  exports a PDF, or folds the whole thing into one file that works offline.
 
-[Quickstart](#quickstart) · [The contract](#the-contract) · [Why you should not trust any of the above](#why-you-should-not-trust-any-of-the-above) · [The CLI](#the-cli) · [Contributing](CONTRIBUTING.md)
+**[Documentation, live demos and the component catalogue](https://rikiki.tordu-jardin.fr)**
+
+[Quickstart](#quickstart) · [Writing decks with an agent](#writing-decks-with-an-agent) · [The contract](#the-contract) · [Why you should not trust any of the above](#why-you-should-not-trust-any-of-the-above) · [The CLI](#the-cli) · [Contributing](CONTRIBUTING.md)
 
 ## What this is not
 
@@ -84,6 +93,34 @@ rikiki · wrote talk-offline.html · 170 KB
 That file inlines the runtime, the CSS, the fonts and the images. It opens from
 a USB stick, on a machine that has never heard of npm.
 
+## Writing decks with an agent
+
+**The package ships its own documentation.** `npm install rikiki-deck` puts
+`llms.txt` inside `node_modules`, next to an element reference of
+1721 lines and a working guide of 536, where
+an agent finds them with no network call. The site serves them as well, at
+[`/llms.txt`](https://rikiki.tordu-jardin.fr/llms.txt), for the ones that fetch rather than read
+from disk.
+
+**That reference is held by the test suite, not written once.** Every
+registered element must appear in it, and every attribute an element declares
+must appear in its catalogue entry · a component that grows an attribute and
+does not document it fails the build. The file an agent reads is the file the
+code is checked against, which is a stronger claim than "the docs are current".
+
+**3 Claude Code skills ship with it** · `rikiki-deck`, `rikiki-theme`, `rikiki-debug` · and
+`npx rikiki-deck skills` installs them into a project's `.claude/skills/`.
+They carry what a reference cannot: which composition fits which intent, what
+to try first when a deck renders wrong, and the editorial rules that keep a
+deck from becoming twenty slides of bullet points.
+
+**The loop closes without a human.** `rikiki check <deck> --json` returns the
+defects as data, and `rikiki render --steps` gives one picture per revealed
+state when looking beats reading. Write, measure, fix, measure again.
+
+None of this makes a deck good. It removes the part where a model guesses at
+an API and a human finds out on a projector.
+
 ## The contract
 
 **1 · Source is output, for the reader of your deck.** A deck folder contains
@@ -111,46 +148,51 @@ semantic `--rik-*` tokens, so one declaration re-themes every instance.
 
 ## Why you should not trust any of the above
 
-Every number in this file is a claim, and claims rot. Here is what is
-mechanical rather than hoped for.
+Every number on this page is a claim, and claims rot. None of them is here
+because someone remembered to update it. Clone the repository and check:
 
-**The figures above were measured while this page was written.** This README is
-generated from `README.template.md` by `scripts/build-readme.mjs`, which reads
-the sizes off the built artifact and the component counts out of what
-`src/index.ts` imports. There is no number here for a human to update, and CI
-fails if the committed file no longer matches what the generator produces ·
-the same treatment `dist/` and the bundled examples already get.
+| The claim | What proves it |
+|---|---|
+| the figures on this page | `npm run readme -- --check` |
+| the sizes, the counts, the docs | `npm test` |
+| both themes clear the WCAG floor | `npx vitest run scripts/theme-contrast.test.mjs` |
+| the shipped `dist/` matches the source | `npm run build && git diff --exit-code -- dist` |
+| every component renders, on three engines | `npx playwright test` |
 
-**Contrast is measured from the theme files.** Not sampled once and written
-into a comment. `theme-contrast.test.mjs` parses both themes and fails on a
-pair below the WCAG floor, which is how a red that reads fine on paper was
-caught measuring 3.97:1 on a dark code surface.
+The first one is the load-bearing habit. This README is generated from
+`README.template.md`, and the guard says so out loud when you drift:
+
+```console
+$ npm run readme -- --check
+readme · stale · run `npm run readme` and commit README.md
+```
+
+`dist/` and the bundled examples get the identical treatment. Generated,
+committed, and a job that fails on the difference · because a committed
+artifact nobody regenerates is worse than no artifact at all.
+
+Three claims that a command cannot make for itself:
+
+**Contrast is measured from the theme files**, not sampled once and written
+into a comment. Both themes are parsed and every pair is scored, which is how
+a red that reads fine on paper was caught at 3.97:1 on a dark code surface,
+under the 4.5 floor.
 
 **Every guard has been seen to fail.** A test nobody has watched go red is a
 test that defends nothing. The architecture rules, the component contract and
-the tree rules were each broken on purpose, one at a time, to check they bite.
-
-**The render net loads every fixture deck in a real browser, on three
-engines.** Chromium runs everything including print-to-PDF and accessibility;
-Firefox and WebKit run the contract. A component that appears in no fixture is
-measured by nothing, so a test refuses to let one exist.
-
-**The published `dist/` is reproducible.** It is committed, which is the whole
-zero-build promise, and that makes drift the obvious failure mode. A clean
-clone by someone who is not the maintainer rebuilds it byte for byte, and CI
-fails on any difference.
+the source-tree rules were each broken on purpose, one at a time, and the
+failure message read, before being trusted.
 
 **It says no, too.** `e2e/ink.spec.ts` reports where the ink sits on a slide
 and deliberately does not fail on it: the engine does not own vertical
 distribution yet, so a threshold there would encode taste, and a test that
-encodes taste gets worked around within a month. Two other checks were written,
-measured and deleted · a `part=` rule that could not tell a missing wrapper
-from a component that needs none, and a dead-property detector whose every
-remaining finding turned out to be a false positive.
+encodes taste gets worked around within a month. Two other checks were
+written, measured and deleted · a `part=` rule that could not tell a missing
+wrapper from a component that needs none, and a dead-property detector whose
+every remaining finding turned out to be a false positive.
 
-The reasoning behind the design lives in [`MANIFESTO.md`](./MANIFESTO.md) and
-the decisions in [`docs/design/`](./docs/design/), including the ones that were
-rejected and why.
+The reasoning lives in [`MANIFESTO.md`](./MANIFESTO.md), and the decisions ·
+including the rejected ones and why · in [`docs/design/`](./docs/design/).
 
 ## The CLI
 
