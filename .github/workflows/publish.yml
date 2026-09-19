@@ -1,0 +1,57 @@
+# Publish rikiki-deck, with provenance.
+#
+# This job moved here from GitLab, and the move is the point. npm provenance
+# needs an OIDC identity the registry trusts; docs/design/oss-readiness.md
+# recorded it as a future enhancement blocked on GitLab `id_tokens` config.
+# GitHub Actions issues that token natively, so the same publish now carries
+# a signed, verifiable link between the tarball and the commit that produced
+# it · a thing a consumer can check, which matters more for a package with no
+# dependencies than almost anything else in the release.
+#
+# prepublishOnly (see rikiki/package.json) rebuilds dist/ and runs the suite,
+# so a tag cut from a tree whose dist/ drifted fails before anything is
+# published rather than shipping an artifact nobody tested.
+
+name: Publish
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: read
+  # Required for provenance · this is what signs the attestation.
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          cache: npm
+          cache-dependency-path: rikiki/package-lock.json
+      - run: npm ci --prefer-offline --no-audit
+        working-directory: rikiki
+
+      # The tag and the manifest must agree · a tag that says v1.2.3 while
+      # package.json says 1.2.2 would publish the wrong version under the
+      # right name, and npm would accept it.
+      - name: the tag matches the manifest
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          test "$tag" = "$pkg" || {
+            echo "tag v$tag does not match package.json $pkg"; exit 1;
+          }
+        working-directory: rikiki
+
+      - run: npm publish --access public --provenance
+        working-directory: rikiki
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
