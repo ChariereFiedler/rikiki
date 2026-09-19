@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url)); // rikiki/scripts
 export const REPO_ROOT = resolve(here, '..', '..');
-const PKG_DIR = resolve(here, '..');
+export const PKG_DIR = resolve(here, '..');
 
 const at = (...p) => resolve(REPO_ROOT, ...p);
 const inPkg = (...p) => resolve(PKG_DIR, ...p);
