@@ -152,16 +152,20 @@ describe('every attribute an element declares is in its catalogue entry', () => 
 // ────────────────────────────────────────────────────────────────
 
 describe('every opt-in component appears in a fixture deck', () => {
-  const EXTRAS_DIR = resolve(PKG_DIR, 'src', 'extras');
   const FIXTURES = resolve(PKG_DIR, 'decks', 'tests');
 
-  /** Every element registered under src/extras/, the opt-in surface. */
-  const extras = readdirSync(EXTRAS_DIR)
-    .filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'))
-    .flatMap((f) => [
-      ...readFileSync(join(EXTRAS_DIR, f), 'utf8').matchAll(/@customElement\('([^']+)'\)/g),
-    ])
-    .map((m) => m[1])
+  /** Every element an author can write · the whole registered surface, core
+   *  and opt-in alike.
+   *
+   *  This used to read src/extras/ and so covered the opt-in half only. The
+   *  core half was never held to the same bar, and thirteen elements had
+   *  shipped without appearing on any slide · deck-badge, deck-kbd, the
+   *  metric pair, the tier trio, the shortcut pair, deck-kicker, deck-source,
+   *  deck-photo, deck-feature-cards. decks/tests/core-catalogue.html is what
+   *  closed that, and reading the registry instead of a directory is what
+   *  stops the gap from reopening the next time a bucket moves. */
+  const authored = registeredElements()
+    .filter((tag) => !NOT_IN_CATALOGUE.includes(tag))
     .sort();
 
   const decks = readdirSync(FIXTURES)
@@ -169,11 +173,16 @@ describe('every opt-in component appears in a fixture deck', () => {
     .map((f) => readFileSync(join(FIXTURES, f), 'utf8'))
     .join('\n');
 
-  it('finds the opt-in components to check', () => {
-    expect(extras.length).toBeGreaterThan(10);
+  it('finds the components to check', () => {
+    expect(authored.length).toBeGreaterThan(40);
   });
 
-  it.each(extras)('%s is written on a slide somewhere', (tag) => {
-    expect(decks, `<${tag}> appears in no deck under decks/tests/`).toContain(`<${tag}`);
+  it.each(authored)('%s is written on a slide somewhere', (tag) => {
+    // Word boundary on the tag · `<deck-tier` must not be satisfied by
+    // `<deck-tier-list`, which is how two of the thirteen hid.
+    expect(
+      new RegExp(`<${tag}(?![\\w-])`).test(decks),
+      `<${tag}> appears in no deck under decks/tests/`,
+    ).toBe(true);
   });
 });
