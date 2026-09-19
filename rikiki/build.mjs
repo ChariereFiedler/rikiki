@@ -72,10 +72,25 @@ const cdnRewrite = {
     // browser fetches them on demand. deck-root uses
     //   await import('./deck-overview.js')
     // which would otherwise be inlined back into deck-root.
-    b.onResolve({ filter: /^\.\/(deck-overview|deck-help|deck-transition|deck-presenter|livereload)\.js$/ }, (args) => ({
-      path: args.path,
-      external: true,
-    }));
+    //
+    // What decides this is the import KIND, not the path shape. index.ts
+    // imports the same modules statically · those belong in the bundle, and
+    // externalising them would move bytes out of the measured initial load
+    // without the browser downloading one byte less.
+    //
+    // The filter matches the BASENAME because dist/ is flat while src/ is a
+    // tree: the same module is './livereload.js' to a sibling and
+    // './engine/livereload.js' to index.ts. The previous path-anchored filter
+    // told the two kinds apart only by accident of directory depth, and
+    // silently inlined the poller into every deck once livereload moved into
+    // engine/. scripts/size.test.mjs is what caught it.
+    const LAZY = /(^|\/)(deck-overview|deck-help|deck-transition|deck-presenter|livereload)\.js$/;
+    b.onResolve({ filter: LAZY }, (args) => {
+      if (args.kind !== 'dynamic-import') return null;
+      // Rewritten to the flat sibling · esbuild leaves an external specifier
+      // verbatim, and './engine/livereload.js' 404s against a flat dist/.
+      return { path: `./${args.path.slice(args.path.lastIndexOf('/') + 1)}`, external: true };
+    });
   },
 };
 

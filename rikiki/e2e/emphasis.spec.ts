@@ -21,7 +21,7 @@ import {
   flatten,
   isOpaque,
   parseColor,
-} from '../src/shared/contrast.js';
+} from '../tools/contrast.js';
 import { createDeckPage } from './pages/deck.page';
 import { settled } from './support/settle';
 import { type Box, sampleAround } from './support/ink';

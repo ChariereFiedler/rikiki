@@ -1672,7 +1672,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
-===== dompurify@3.4.9 ((MPL-2.0 OR Apache-2.0)) =====
+===== dompurify@3.4.15 ((MPL-2.0 OR Apache-2.0)) =====
 Evidence: installed-candidate-not-proven-embedded
 Source: node_modules/dompurify/LICENSE
 
@@ -3008,9 +3008,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 
-===== mermaid@10.9.6 (MIT) =====
+===== mermaid@10.9.8 (MIT) =====
 Evidence: upstream-package
-Source: https://raw.githubusercontent.com/mermaid-js/mermaid/v10.9.6/LICENSE
+Source: https://raw.githubusercontent.com/mermaid-js/mermaid/v10.9.8/LICENSE
 The MIT License (MIT)
 
 Copyright (c) 2014 - 2022 Knut Sveidqvist

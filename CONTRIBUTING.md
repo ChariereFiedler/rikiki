@@ -56,15 +56,36 @@ Then open <http://localhost:7799/examples/rikiki-tour/> or
 
 ## Adding a component
 
-Sources are organised by design-system bucket: `atoms/`, `molecules/`,
-`layouts/`, `runtime/`, `plugins/`.
+Start with the generator, which writes a component that already passes every
+guard, plus a fixture slide that renders it:
 
-1. Create `rikiki/src/<bucket>/deck-<name>.ts` extending `LitElement` (pick the
-   bucket: a slide is a `layout`, an inline element an `atom`/`molecule`).
-2. Import shared styles from `../shared-styles.js` if it is a slide layout.
-3. Register the element with the decorator: `@customElement('deck-<name>')`.
-4. Export and register it in `rikiki/src/index.ts`.
-5. Rebuild: `npm run build`. The `dist/` change ships with the PR.
+```sh
+cd rikiki
+npm run new:component -- <family> deck-<name>          # opt-in, the default
+npm run new:component -- <family> deck-<name> --core   # joins the default bundle
+```
+
+Sources are organised by **family** — what a component serves, not how big it
+is ([ADR-004](./docs/design/adr-004-source-modulith-by-family.md)):
+`engine/` pilots the deck, `layout/` frames a whole slide, `structure/`
+arranges blocks inside one, `text/` is what a slide says, `data/` what it
+proves, `media/` what it embeds or draws. `shared/` holds only what two
+families use; a helper with one consumer lives with that consumer, and a test
+says so.
+
+`rikiki/src/index.ts` is the manifest: what it imports is the default bundle,
+everything else is opt-in and the deck loads it itself.
+
+If you write one by hand instead:
+
+1. Create `rikiki/src/<family>/deck-<name>.ts` extending `LitElement`.
+2. Import shared styles from `../shared/shared-styles.js` if it is a slide layout.
+3. Register the element with the decorator: `@customElement('deck-<name>')`,
+   and declare it on `HTMLElementTagNameMap`.
+4. Add it to `rikiki/src/index.ts` only if it belongs in the default bundle.
+5. Document it in `rikiki/docs/llms/rikiki-reference.md` and in the catalogue
+   page — both are checked by tests.
+6. Rebuild: `npm run build`. The `dist/` change ships with the MR.
 
 ## Pull requests
 

@@ -76,3 +76,61 @@ architecture items are deliberately post-release work.
 
 - [ ] **Post-1.0:** Declare npm workspaces across root / `rikiki/` / `site/` so the CI shim
       `rikiki-monorepo` becomes a real workspace root (`npm -w rikiki test`).
+
+---
+
+## Second pass · 2026-09-19
+
+Re-audited against the state of the tree rather than against the list above,
+which was written on 2026-09-09 and had drifted. Everything below was
+measured, not assumed.
+
+### What was wrong, and is now fixed
+
+- **Two shipped security advisories.** `npm audit --omit=dev` reported none,
+  which is exactly the blind spot: mermaid and its dompurify are **vendored**
+  into `dist/vendor/` and published, where audit cannot see them. Prototype
+  pollution in mermaid's config APIs and a DOMPurify hook bypass, both closed
+  by non-major bumps (10.9.6 → 10.9.8, 3.4.9 → 3.4.15). The guard in
+  `packaging.test.mjs` that pins the vendored version to the declared one is
+  what caught the lockfile-only half of the fix.
+- **A licence notice went missing on the bump** and the inventory printed
+  `NOTICE MISSING — release review required` rather than shipping a gap. The
+  review was done for real: v10.9.8's LICENSE fetched and compared byte for
+  byte with v10.9.6's.
+- **89 absolute paths from the maintainer's machine**, and a client name, in
+  six tracked files. Neutralised.
+- **Docs described a source tree that no longer exists** (ADR-004). README,
+  CONTRIBUTING, five site pages and two skills corrected.
+
+### What was verified rather than claimed
+
+- **A fresh clone builds and passes.** `git clone` → `npm ci` → `npm run
+  build` → `npm run typecheck` → `vitest run`: 1210 tests green, and
+  `git diff -- dist` empty, so the committed `dist/` is reproducible from a
+  clean checkout by someone who is not the maintainer.
+- **The published artifact works as installed.** `scripts/release-smoke.mjs`
+  packs, installs into a temp workspace and drives the CLI to a PDF.
+- **No secret anywhere in history** (scan over all refs, excluding generated
+  bundles, for AWS keys, private keys, Stripe/GitLab/GitHub tokens).
+- **Production dependencies: zero.** Nothing to audit, nothing to break.
+
+### What remains, and why it is not done
+
+- **Five dev-only advisories** need major bumps of vitest, vite and esbuild.
+  They reach no consumer. A major toolchain bump is its own piece of work with
+  its own regression surface, not a line in a release checklist.
+- **The history still holds** the absolute paths and the client name, in the
+  init commit among others. Purging means `git filter-repo`, which is worth
+  its blast radius only if the repository is actually made public · today's
+  decision (Lot 4) is that the OSS surface is the **npm package** and the repo
+  stays on `gitlab.com/tordu-jardin`. **If that decision changes, this becomes
+  a P0 and must happen before the repo is flipped.**
+- **`dist/index.js` carries ~7.7 KB gzip of components a typical deck never
+  uses** · 34 registered in the barrel against 5 to 14 written on a real
+  deck. Removing any of them is a breaking change for existing decks. The
+  non-breaking answer is an additional `dist/auto.js` entry that scans the DOM
+  and imports only the tags present, which the flat `dist/` and the family
+  split now make straightforward. Own ADR, own release.
+- **npm workspaces** (Lot 6) still open. The root `rikiki-monorepo` shim is
+  the first thing a visitor's `npm install` meets.

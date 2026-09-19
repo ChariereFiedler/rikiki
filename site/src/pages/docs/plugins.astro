@@ -26,7 +26,7 @@ const mermaidModuleKb = toKb(sizes.lazy['deck-mermaid']);
 // Where the overview switches layouts · read from deck-overview's own
 // threshold so the figure on this page cannot drift from the runtime.
 const overviewSource = readFileSync(
-  resolve(process.cwd(), '../rikiki/src/runtime/deck-overview.ts'),
+  resolve(process.cwd(), '../rikiki/src/engine/deck-overview.ts'),
   'utf8',
 );
 const sidebarThreshold = overviewSource.match(/const useSidebar = total > (\d+);/);
@@ -228,7 +228,7 @@ const clickStagesPreview = `<deck-feature>
 
 <h2 id="extra-components">Optional component modules</h2>
 <p>
-  The elements below are compiled from <code>src/extras</code> and ship as
+  The elements below are not imported by the default bundle and ship as
   separate files. Import the file only when the deck uses that element; the
   complete catalogue, attributes, and examples live in the
   <a href="/docs/components#optional">component reference</a>.

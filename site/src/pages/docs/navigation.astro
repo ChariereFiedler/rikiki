@@ -6,7 +6,7 @@ import Docs from '../../layouts/Docs.astro';
 // Where the overview switches layouts · read from deck-overview's own
 // threshold so the figure on this page cannot drift from the runtime.
 const overviewSource = readFileSync(
-  resolve(process.cwd(), '../rikiki/src/runtime/deck-overview.ts'),
+  resolve(process.cwd(), '../rikiki/src/engine/deck-overview.ts'),
   'utf8',
 );
 const sidebarThreshold = overviewSource.match(/const useSidebar = total > (\d+);/);
