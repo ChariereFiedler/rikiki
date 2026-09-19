@@ -41,7 +41,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `python3 -m http.server ${PORT} --directory ..`,
+    command: `node scripts/static-server.mjs ${PORT} ..`,
     url: `http://localhost:${PORT}/rikiki/dist/index.js`,
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,
