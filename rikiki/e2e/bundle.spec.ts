@@ -127,3 +127,26 @@ test('a bundled deck keeps its opt-in components and renders them offline', asyn
   );
   expect(drawn).toBe(1);
 });
+
+test('a bundled deck carries the components its components render', async ({ page }) => {
+  // deck-figure renders <deck-source> for its credit line, and figure.html
+  // never writes that tag. The curated bundle is built from the tags in the
+  // DECK, so deck-source used to be left out: the credit line still showed
+  // its text (it is slotted) but as an unregistered element, unstyled and
+  // without its shadow root. Nothing caught it · the text was identical, and
+  // `rikiki check` only walks the light DOM.
+  const file = bundle('decks/tests/figure.html', 'figure.html');
+  const { failed } = await requestsFor(page, file);
+  expect(failed, `no request may fail · ${failed.join(', ')}`).toEqual([]);
+
+  const rendered = await page.evaluate(() => {
+    const figure = document.querySelector('deck-figure');
+    const source = figure?.shadowRoot?.querySelector('deck-source');
+    return {
+      defined: customElements.get('deck-source') !== undefined,
+      upgraded: !!source?.shadowRoot,
+    };
+  });
+  expect(rendered.defined, 'deck-source is registered in the bundle').toBe(true);
+  expect(rendered.upgraded, 'deck-figure’s credit line is drawn by the component').toBe(true);
+});
