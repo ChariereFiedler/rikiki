@@ -96,11 +96,18 @@ Both are in the session scratchpad and must be placed by hand:
 - **The first mirror push is a force push**, since the histories diverge.
   Every push after it is a fast-forward.
 
-## Two decisions still open
+## Decided
 
-- **Author identities.** The history holds three, one a personal address.
-  Normalising rewrites the authorship of every commit; a `.mailmap` fixes only
-  the display. The rewrite script deliberately does neither.
-- **The disclosure contact.** `CODE_OF_CONDUCT.md` and `SECURITY.md` point at
-  a personal address while `package.json` says `chariere.fiedler.cedric@gmail.com`. A public
-  repository should say the same thing in both places, on purpose.
+- **The public contact is `chariere.fiedler.cedric@gmail.com`**, everywhere:
+  `SECURITY.md` and `CODE_OF_CONDUCT.md` already said so, and `AUTHORS` and
+  the npm `author` field now agree. A reporter reading the package page and a
+  reporter reading the repository reach the same inbox.
+
+## Still open
+
+- **Author identities in the history.** Three of them, and the commits are
+  authored as `chariere.fiedler.cedric@gmail.com` while the package now names the personal
+  address · the inconsistency moved rather than disappeared. Normalising
+  rewrites the authorship of every commit and pairs naturally with the history
+  rewrite; a `.mailmap` fixes only the display and touches nothing. The
+  rewrite script deliberately does neither, so this stays a decision.
