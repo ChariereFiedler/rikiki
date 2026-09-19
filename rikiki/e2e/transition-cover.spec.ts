@@ -19,7 +19,7 @@
 // ════════════════════════════════════════════════════════════════
 
 import { expect, test } from '@playwright/test';
-import { deltaE, parseColor } from '../src/shared/contrast.js';
+import { deltaE, parseColor } from '../tools/contrast.js';
 import { createDeckPage } from './pages/deck.page';
 
 const DECK = '/rikiki/decks/tests/balance.html';

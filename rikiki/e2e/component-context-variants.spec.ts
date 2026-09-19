@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { contrastRatio, flatten, isOpaque, parseColor } from '../src/shared/contrast.js';
+import { contrastRatio, flatten, isOpaque, parseColor } from '../tools/contrast.js';
 import { createDeckPage } from './pages/deck.page';
 
 const EXTRAS = '/rikiki/decks/tests/extras.html';

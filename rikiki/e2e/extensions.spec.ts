@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { contrastRatio, parseColor } from '../src/shared/contrast.js';
+import { contrastRatio, parseColor } from '../tools/contrast.js';
 import { createDeckPage } from './pages/deck.page';
 
 // Four extensions of components that already existed. Each was chosen over a

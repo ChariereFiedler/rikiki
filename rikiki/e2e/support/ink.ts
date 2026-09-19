@@ -12,7 +12,7 @@
 // ════════════════════════════════════════════════════════════════
 
 import type { Page } from '@playwright/test';
-import type { Rgb } from '../../src/shared/contrast.js';
+import type { Rgb } from '../../tools/contrast.js';
 
 export interface Box {
   x: number;
