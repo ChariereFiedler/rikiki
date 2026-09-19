@@ -54,6 +54,12 @@ three-engine suite twice.
 
 ## Prepared, in this repository
 
+Validated with `actionlint` (exit 0, no findings), which checks the Actions
+schema, the expression syntax and — through shellcheck — the shell inside
+every `run:` block. Worth stating because these three files are the one part
+of the cutover that cannot be exercised before the repository exists: YAML
+that parses is not a workflow that runs.
+
 - `.github/workflows/ci.yml` · the check suite a contributor sees
 - `.github/workflows/mirror.yml` · pushes `main` and tags to the deployment
   remote. The remote URL is a secret, not a literal, for the same reason the
