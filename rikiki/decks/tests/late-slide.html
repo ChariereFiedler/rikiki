@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · a slide the engine meets before its module</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-versus.js"></script>
+</head>
+<!--
+  The first slide is an OPT-IN component.
+
+  Every other fixture opens on a layout the default bundle registers, so
+  deck-root has always met a slide that was already upgraded. Here it does
+  not: <deck-versus slide> comes from its own script tag, and the engine can
+  reach firstUpdated before that module has run.
+
+  What that breaks is _applyLetterbox: it reads the active slide's computed
+  background once, and an element that is not upgraded yet reports a
+  transparent one. The bands then stay unpainted with nothing to recompute
+  them. e2e/lifecycle.spec.ts pins the behaviour.
+-->
+<body>
+<deck-root>
+
+  <deck-versus slide>
+    <h1 slot="title">The engine can meet a slide before its module</h1>
+    <div slot="left">
+      <h2>Opt-in</h2>
+      <p>Loaded by its own script tag, after the bundle.</p>
+    </div>
+    <div slot="right">
+      <h2>Core</h2>
+      <p>Registered by the bundle, upgraded before the engine looks.</p>
+    </div>
+  </deck-versus>
+
+  <deck-section num="02"><h1>A second slide<br>to navigate to</h1></deck-section>
+
+  <deck-takeaway>
+    <h1 slot="title">The bands must carry the slide's own colour</h1>
+    <p>Whatever order the modules happened to arrive in.</p>
+  </deck-takeaway>
+
+</deck-root>
+</body>
+</html>
