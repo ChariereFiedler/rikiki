@@ -88,6 +88,12 @@ Run against `main` at `fd5a0e3`, and verified rather than trusted:
 | files at the tip | 612 → 609 |
 | **file contents changed at the tip** | **0** |
 
+And the rewritten repository was not merely inspected, it was **used**: cloned
+fresh, `npm ci`, typecheck, **1226 tests**, `npm run build` with no `dist`
+drift, and the site builds with its links resolving. Removing three files from
+every commit broke nothing, which is what the earlier check ("no test or
+script reads them") predicted and this confirms.
+
 The last row is the one that matters: the only difference at the tip is the
 three intended removals. Every other blob is byte-identical, so the text
 replacements touched history and nothing else.
