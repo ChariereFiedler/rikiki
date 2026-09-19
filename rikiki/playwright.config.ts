@@ -32,7 +32,15 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   forbidOnly: !!process.env.CI,
   retries: 0, // flaky tests are bugs to fix, not retry away (test-discipline)
-  reporter: [['list'], ['json', { outputFile: 'test-results/e2e-report.json' }]],
+  // On GitHub, also emit `::error file=…::` annotations. They are the only
+  // part of a run that a reader without a token can see · the logs answer 403
+  // on a public repository, and a failure nobody outside can read is a failure
+  // nobody outside can fix.
+  reporter: [
+    ['list'],
+    ['json', { outputFile: 'test-results/e2e-report.json' }],
+    ...(process.env.GITHUB_ACTIONS ? [['github'] as const] : []),
+  ],
   use: {
     baseURL: `http://localhost:${PORT}`,
     // retries stay at 0, so a retry-gated trace would never fire · keep the
