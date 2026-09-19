@@ -97,6 +97,18 @@ the deploy files, and the eighth is the commit that neutralised the paths in
 the working tree · the rewrite does globally what it did locally, so its diff
 becomes empty. Verified one by one, by subject.
 
+**The client's deck was never committed.** Checked against every path that
+ever existed in history: no `js-loading/` file was tracked, so no deliverable
+is in there. What was in there was the *mention* · a `.gitignore` comment, a
+few planning docs, one commit subject.
+
+**Replacing the name was not enough.** The `.gitignore` comment read
+`Local-only client deck, not part of the OSS project`, and the middleware plus the product identify a studio as precisely
+as its name does to anyone in that industry. Renaming to "client" would have
+published the same fact in two words instead of one. All three go, and the
+census now counts all three · a first pass reported "0 mentions" while the
+line was still sitting there.
+
 `.cloud/nginx.conf` and `.cloud/site-check.Dockerfile` are **kept**, and the
 script fails if they are not: they describe how the static site is served and
 how that is checked, hold nothing internal, and `ci.yml` builds that image.
