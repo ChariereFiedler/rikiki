@@ -4,6 +4,24 @@ import { defineConfig, devices } from '@playwright/test';
 // repo root is the web root. Serve it from the package dir via `--directory ..`.
 const PORT = 7799;
 
+// Specs that take no `page`. They shell out to `rikiki render` / `rikiki check`,
+// which drive a Chromium of their own, so the engine project they run under
+// changes nothing about what they exercise · running them once per engine ran
+// them three times for one result. `render-check` alone cost 5.5 minutes a
+// project, 16 of the suite's 35 minutes, and the contention between those
+// extra browsers is what made its slowest case miss a 60 s page load.
+// `scripts/e2e-projects.test.mjs` keeps this list honest.
+const CLI_ONLY = [/render-check\.spec\.ts/, /workflow-recipes\.spec\.ts/];
+
+// Chromium-only capabilities · skipped on the other engines because the engine
+// cannot do it, never because it is inconvenient.
+const CHROMIUM_ONLY = [
+  /print\.spec\.ts/,
+  /presenter\.spec\.ts/,
+  /emphasis\.spec\.ts/,
+  /ink\.spec\.ts/,
+];
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -22,22 +40,23 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   projects: [
-    // Chromium runs the whole suite · it is the only engine Playwright can
+    // The CLI contract, once. Named apart so the report says which it is.
+    { name: 'cli', testMatch: CLI_ONLY },
+    // Chromium runs every browser spec · it is the only engine Playwright can
     // drive `page.pdf()` on, and the only one with the multi-screen APIs the
     // presenter uses.
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: CLI_ONLY },
     // Firefox and WebKit run the BASE contract: rendering, navigation, scaling,
-    // bento, offline bundles, security. What they skip is skipped because the
-    // capability is Chromium-only, never because it is inconvenient.
+    // bento, offline bundles, security.
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
-      testIgnore: [/print\.spec\.ts/, /presenter\.spec\.ts/, /emphasis\.spec\.ts/, /ink\.spec\.ts/],
+      testIgnore: [...CLI_ONLY, ...CHROMIUM_ONLY],
     },
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
-      testIgnore: [/print\.spec\.ts/, /presenter\.spec\.ts/, /emphasis\.spec\.ts/, /ink\.spec\.ts/],
+      testIgnore: [...CLI_ONLY, ...CHROMIUM_ONLY],
     },
   ],
   webServer: {

@@ -1,6 +1,6 @@
 # Cutover · GitHub as the source of truth, GitLab as the deployment
 
-**Status**: prepared, not executed · 2026-09-19
+**Status**: executed on GitHub, not yet on GitLab · 2026-09-19
 
 Reverses the hosting decision in `oss-readiness.md` lot 4 ("no public mirror,
 the OSS surface is the npm package"). The package was already public and MIT;
@@ -144,39 +144,48 @@ it was written alongside.
 3. **Create the GitHub repository private**, push the rewritten history,
    recreate the tags, let `ci.yml` run, then *look at what is visible*.
    Reviewing a private repository costs nothing and is the last cheap moment.
-4. **Flip to public** only after that review.
+4. **Flip to public** only after that review. → done. The published history
+   was then audited a second time, from an **anonymous clone** rather than
+   from the mirror that produced it: the four scrubbed terms and the absolute
+   paths all count 0, one author identity, five tags. A census run on the
+   repository that did the scrubbing only proves the script agrees with
+   itself.
 5. **Repoint GitLab last**: force-push the rewritten history, set the external
    CI config path, delete nothing by hand (the rewrite already removed the
    deploy files), and restrict write access to the mirror token alone.
 
-## Open · the GitHub CI fails on the dist/ drift guard
+## Settled · the GitHub CI failure was not a drift at all
 
-The rewritten history is pushed and `.github/workflows/ci.yml` runs on it.
-Three jobs pass · site lint, package, site build. The e2e job fails at
-**`dist/ is in sync with src/`**, on the current head.
-
-Two hypotheses were tested and both are dead:
+The rewritten history was pushed, `.github/workflows/ci.yml` ran, and the e2e
+job failed at **`dist/ is in sync with src/`**. Two hypotheses were tested
+first and both were dead:
 
 - **The rewrite altered a `dist/` blob.** It did not · every file under
-  `rikiki/dist/` is byte-identical between the GitLab `main` and the pushed
+  `rikiki/dist/` was byte-identical between the GitLab `main` and the pushed
   GitHub `main`.
 - **The build is not reproducible in that image.** It is · `npm ci` plus
   `npm run build` inside `mcr.microsoft.com/playwright:v1.60.0-noble`, on the
   same commit, leaves `git diff -- dist` empty.
 
-So the difference is in the GitHub runner rather than the image or the
-content. The likely candidates are the ones that bit this repository once
-already: a platform-dependent optional dependency changing what
-`build-vendor.mjs` records, or a file-mode bit set by building as root.
+The answer was in the exit code: **129**, which the guard was throwing away.
+A drift exits 1; 129 is git refusing to run at all. The e2e job runs in a
+container while `actions/checkout` writes as the runner user, so git rejected
+the working tree as dubiously owned. Both local reproductions had masked it by
+setting `safe.directory` before building.
 
-**What is needed to settle it:** the run log, which `actions/runs/<id>/logs`
-refuses without a token (403). The guard now writes `git diff --stat` and
-`--summary` to the run summary before failing, so the answer is legible on
-the run page without downloading anything.
+Two fixes, and the second is the one worth keeping: the job now adds
+`safe.directory`, **and the guard reports git's own exit status instead of
+assuming every failure is a drift**. A guard that cannot fail for a reason
+other than the one it names will eventually name the wrong one.
 
-Nothing downstream is affected while this is red: `mirror.yml` is gated on CI
-passing and correctly skipped both runs, so GitLab has received nothing and
-the site deploys as before.
+Finding it took the **check-run annotations**, which are public on a public
+repository while `actions/runs/<id>/logs` returns 403 without a token. Worth
+remembering: on a public repo the annotations are readable anonymously and
+carry the failing step's last lines.
+
+Nothing downstream was affected while this was red: `mirror.yml` is gated on
+CI passing and correctly skipped every run, so GitLab received nothing and the
+site deployed as before.
 
 ## Docs that go stale the day of the cutover
 
@@ -209,9 +218,10 @@ must stay third.
    of the public tree deliberately). Until they exist, `mirror.yml` has
    nothing to push with.
 
-2. **A green CI on GitHub.** It is red today for a reason now understood and
-   fixed · see the section above · but that fix reaches GitHub only when this
-   branch merges and the rewrite is replayed.
+2. **A green CI on GitHub.** The cause is understood and fixed · see the
+   section above · and the fix reaches GitHub with the replayed rewrite. It
+   has to be watched once there: the failure was in the runner, not in the
+   content, so nothing local can prove it in advance.
 
 3. **Then, last, repoint GitLab** · `ci_config_path` to
    `rikiki/deploy.gitlab-ci.yml@tordu-jardin/cloud`. This is one API call and
@@ -227,11 +237,14 @@ must stay third.
   the npm `author` field now agree. A reporter reading the package page and a
   reporter reading the repository reach the same inbox.
 
-## Still open
+- **One author identity in the history.** There were three · two spellings of
+  the name against the professional address, and one against the personal
+  one. Left alone, the commits would have contradicted the contact the package
+  publishes. A `.mailmap` fixes only the display; normalising for real
+  rewrites every commit, which is exactly what was already happening, so the
+  script does it in the same pass rather than asking for a second rewrite
+  later. The census asserts the count is **1**, not merely that it dropped.
 
-- **Author identities in the history.** Three of them, and the commits are
-  authored as `chariere.fiedler.cedric@gmail.com` while the package now names the personal
-  address · the inconsistency moved rather than disappeared. Normalising
-  rewrites the authorship of every commit and pairs naturally with the history
-  rewrite; a `.mailmap` fixes only the display and touches nothing. The
-  rewrite script deliberately does neither, so this stays a decision.
+  The same reasoning applied to the address *inside* files · older `AUTHORS`
+  and `package.json` versions carry it in their content, where a mailmap does
+  not reach, so the text replacement handles those.
