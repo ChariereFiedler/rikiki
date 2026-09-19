@@ -1242,7 +1242,7 @@ Pick one deliberately · they make different promises.
 
 **Served** · the folder as you wrote it. HTML, CSS and JS stay separate files,
 so editing a slide needs no build. ES modules mean it needs a **static HTTP
-server**, not a double-click: `python3 -m http.server`, `npx serve`, anything.
+server**, not a double-click: `npx serve .`, or anything that speaks HTTP.
 Offline once every asset is local.
 
 **Standalone** · one HTML file, produced by `rikiki bundle deck.html out.html`.

@@ -39,9 +39,7 @@ cd rikiki/rikiki
 npm install
 npm run build`;
 
-const serve = `# Any static server works · pick one you already have:
-python3 -m http.server 7799
-# or
+const serve = `# Any static server works · you already have this one:
 npx serve .
 # ES modules require http://; do not double-click the file`;
 
@@ -63,8 +61,27 @@ const minDeckPreview = `<deck-cover brand="my-talk">
 <Docs
   title="Getting started"
   eyebrow="Quickstart"
-  description="For a first deck: install, write one slide, serve the folder, then check and export it. Four steps, no build, no toolchain."
+  description="For a first deck: install, write one slide, serve the folder, then check and export it. Four steps, no build, no toolchain. Or hand the whole thing to an agent."
 >
+
+<h2 id="agent">Or let an agent do it</h2>
+<p>
+  Two commands, then ask in plain words. The skills carry the compositions, the
+  editorial rules and the order to try fixes in; the agent writes the HTML,
+  runs <code>rikiki check</code>, and fixes what comes back.
+</p>
+<CodeBlock
+  label="terminal"
+  lang="bash"
+  code={`npm i rikiki-deck
+npx rikiki-deck skills   # installs 3 skills into .claude/skills/`}
+/>
+<p>
+  Not using Claude Code? Point whatever you use at
+  <code>node_modules/rikiki-deck/docs/llms/rikiki-workflow.md</code> · the
+  brief-to-deck path written for an agent, which assumes nothing beyond a shell
+  and a browser. The rest of this page is the same job by hand.
+</p>
 
 <h2 id="install">1 · Install</h2>
 <p>
