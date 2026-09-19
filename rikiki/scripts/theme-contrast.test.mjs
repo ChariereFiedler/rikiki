@@ -9,7 +9,7 @@ import {
   isOpaque,
   readTokens,
   resolveColor,
-} from '../src/shared/contrast.ts';
+} from '../tools/contrast.ts';
 import { ROOT } from './css-source.mjs';
 import { citeSite, isStateSurface, isThin, paintedSurfaces } from './paint-surfaces.mjs';
 

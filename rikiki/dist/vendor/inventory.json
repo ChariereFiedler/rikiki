@@ -27,7 +27,7 @@
     },
     {
       "file": "mermaid.min.js",
-      "sha256": "eda3a0ad572bbe69a318c1be0163e8233dd824f3f12939e5168feba207767151",
+      "sha256": "8d607d7ef1d077a8aa202e18e62212bfa992c68bfeabc5cf45d51a128fe6675d",
       "provenance": "opaque-upstream-umd",
       "embeddedVersions": [
         {
@@ -1582,9 +1582,9 @@
       "dependencies": []
     },
     {
-      "id": "dompurify@3.4.9:node_modules/dompurify",
+      "id": "dompurify@3.4.15:node_modules/dompurify",
       "name": "dompurify",
-      "version": "3.4.9",
+      "version": "3.4.15",
       "license": "(MPL-2.0 OR Apache-2.0)",
       "location": "node_modules/dompurify",
       "notices": [
@@ -2007,14 +2007,14 @@
       ]
     },
     {
-      "id": "mermaid@10.9.6:node_modules/mermaid",
+      "id": "mermaid@10.9.8:node_modules/mermaid",
       "name": "mermaid",
-      "version": "10.9.6",
+      "version": "10.9.8",
       "license": "MIT",
       "location": "node_modules/mermaid",
       "notices": [
         {
-          "source": "https://raw.githubusercontent.com/mermaid-js/mermaid/v10.9.6/LICENSE",
+          "source": "https://raw.githubusercontent.com/mermaid-js/mermaid/v10.9.8/LICENSE",
           "text": "The MIT License (MIT)\n\nCopyright (c) 2014 - 2022 Knut Sveidqvist\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n"
         }
       ],
@@ -2035,7 +2035,7 @@
         "d3@7.9.0:node_modules/d3",
         "dagre-d3-es@7.0.13:node_modules/dagre-d3-es",
         "dayjs@1.11.21:node_modules/dayjs",
-        "dompurify@3.4.9:node_modules/dompurify",
+        "dompurify@3.4.15:node_modules/dompurify",
         "elkjs@0.9.3:node_modules/elkjs",
         "katex@0.16.47:node_modules/katex",
         "khroma@2.1.0:node_modules/khroma",

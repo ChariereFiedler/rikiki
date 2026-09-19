@@ -6,7 +6,7 @@ import {
   contrastRatio,
   readTokens,
   resolveColor,
-} from '../../../../rikiki/src/shared/contrast';
+} from '../../../../rikiki/tools/contrast';
 import Docs from '../../layouts/Docs.astro';
 import CodeBlock from '../../components/CodeBlock.astro';
 import ComponentPreview from '../../components/ComponentPreview.astro';
@@ -22,7 +22,7 @@ const themeTokenCount = new Set(
 ).size;
 
 // Contrast figures are MEASURED from the theme files with the same module the
-// contrast tests use (rikiki/src/shared/contrast.ts), so a palette change moves
+// contrast tests use (rikiki/tools/contrast.ts), so a palette change moves
 // the published ratio and the pass/fail verdict with it · nothing here is typed.
 const themeTokens = (name: string) =>
   readTokens(readFileSync(resolve(process.cwd(), `../rikiki/themes/${name}.css`), 'utf8'));
@@ -48,7 +48,7 @@ function onPage(theme: string, token: string) {
 // string so the percentage, the canvas default and the fluid clamp on this page
 // are the ones the engine ships, not a transcription of them.
 const deckRootSource = readFileSync(
-  resolve(process.cwd(), '../rikiki/src/runtime/deck-root.ts'),
+  resolve(process.cwd(), '../rikiki/src/engine/deck-root.ts'),
   'utf8',
 );
 const fixedRem = deckRootSource.match(

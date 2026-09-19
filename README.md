@@ -87,12 +87,12 @@ fills) its own container without touching the host page's scroll or typography.
 
 ## Contributing
 
-Sources are in `rikiki/src/**/*.ts` (organised by DS bucket · runtime/, layouts/, molecules/, atoms/, plugins/). Build with:
+Sources are in `rikiki/src/**/*.ts`, organised by family · what a component serves: `engine/`, `layout/`, `structure/`, `text/`, `data/`, `media/`, plus `core/` for the navigation domain. Build with:
 
 ```bash
 cd rikiki
 npm install
-npm run build      # node build.mjs (esbuild) + tsc --emitDeclarationOnly
+npm run build      # esbuild → flat dist/*.js, then flat dist/*.d.ts beside them
 npm run typecheck  # tsc --noEmit
 npm test           # release-consistency suite (vitest)
 ```

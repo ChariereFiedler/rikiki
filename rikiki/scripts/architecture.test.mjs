@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 // this file does.
 
 const PKG_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const DOMAIN_DIR = resolve(PKG_DIR, 'src/domain');
+const DOMAIN_DIR = resolve(PKG_DIR, 'src/core/domain');
 
 function sourcesIn(dir) {
   return readdirSync(dir, { withFileTypes: true })
@@ -24,7 +24,7 @@ function sourcesIn(dir) {
     .filter((f) => !f.endsWith('.test.ts'));
 }
 
-const APPLICATION_DIR = resolve(PKG_DIR, 'src/application');
+const APPLICATION_DIR = resolve(PKG_DIR, 'src/core/application');
 
 const domainFiles = sourcesIn(DOMAIN_DIR);
 const applicationFiles = sourcesIn(APPLICATION_DIR);
@@ -60,11 +60,11 @@ const BROWSER_GLOBALS = [
 
 /** Directories the domain must never import from · everything there depends on
  *  the domain, so an import back would make the cycle the ADR forbids. */
-const OUTWARD = ['runtime', 'layouts', 'atoms', 'molecules', 'plugins', 'infrastructure'];
+const OUTWARD = ['engine', 'layout', 'structure', 'text', 'data', 'media', 'infrastructure'];
 
 describe('the navigation domain stays pure', () => {
   it('has source files to check', () => {
-    expect(domainFiles.length, 'src/domain is not empty').toBeGreaterThan(0);
+    expect(domainFiles.length, 'src/core/domain is not empty').toBeGreaterThan(0);
   });
 
   it.each(domainFiles)('%s imports no framework', (file) => {
@@ -107,7 +107,7 @@ function existsSyncSafe(path) {
 
 describe('the application layer orchestrates without reaching for the browser', () => {
   it('has source files to check', () => {
-    expect(applicationFiles.length, 'src/application is not empty').toBeGreaterThan(0);
+    expect(applicationFiles.length, 'src/core/application is not empty').toBeGreaterThan(0);
   });
 
   it.each(applicationFiles)('%s imports no framework', (file) => {
@@ -136,13 +136,13 @@ describe('the application layer orchestrates without reaching for the browser', 
 });
 
 describe('the edge delegates instead of deciding', () => {
-  const EDGE = resolve(PKG_DIR, 'src/runtime/deck-root.ts');
+  const EDGE = resolve(PKG_DIR, 'src/engine/deck-root.ts');
   const edge = readFileSync(EDGE, 'utf8');
 
   it('asks the domain and the application where to go', () => {
     // If these imports disappear, a rule has moved back into the component.
-    expect(edge, 'the edge uses the navigation model').toMatch(/from '\.\.\/domain\//);
-    expect(edge, 'the edge uses the application layer').toMatch(/from '\.\.\/application\//);
+    expect(edge, 'the edge uses the navigation model').toMatch(/from '\.\.\/core\/domain\//);
+    expect(edge, 'the edge uses the application layer').toMatch(/from '\.\.\/core\/application\//);
   });
 
   it('holds no deep-link grammar of its own', () => {
@@ -167,7 +167,7 @@ describe('the edge delegates instead of deciding', () => {
 });
 
 describe('adapters implement ports, they do not own rules', () => {
-  const INFRA_DIR = resolve(PKG_DIR, 'src/infrastructure');
+  const INFRA_DIR = resolve(PKG_DIR, 'src/core/infrastructure');
   const infraFiles = sourcesIn(INFRA_DIR);
 
   it('has source files to check', () => {
@@ -176,7 +176,7 @@ describe('adapters implement ports, they do not own rules', () => {
 
   it.each(infraFiles)('%s depends only on the layers above it', (file) => {
     const outward = importsOf(file).filter((s) =>
-      ['runtime', 'layouts', 'atoms', 'molecules', 'plugins'].some((d) => s.includes(`/${d}/`)),
+      ['engine', 'layout', 'structure', 'text', 'data', 'media'].some((d) => s.includes(`/${d}/`)),
     );
     expect(outward, `${rel(file)} reaches into the engine: ${outward.join(', ')}`).toEqual([]);
   });
