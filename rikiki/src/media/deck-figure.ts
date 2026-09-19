@@ -12,7 +12,7 @@
 
 import { LitElement, css, html, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { signature } from './signature.js';
+import { signature } from '../shared/signature.js';
 
 // deck-source is a core atom, registered by dist/index.js · every opt-in
 // module is documented as "loaded next to the bundle" (§20), so it is always

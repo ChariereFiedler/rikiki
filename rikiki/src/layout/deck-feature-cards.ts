@@ -10,7 +10,7 @@
 
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { slideBase } from '../shared-styles.js';
+import { slideBase } from '../shared/shared-styles.js';
 
 @customElement('deck-feature-cards')
 export class DeckFeatureCards extends LitElement {

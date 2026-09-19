@@ -20,7 +20,7 @@
 
 import { LitElement, css, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { signature } from './signature.js';
+import { signature } from '../shared/signature.js';
 
 @customElement('deck-persona')
 export class DeckPersona extends LitElement {

@@ -22,7 +22,7 @@
 // entering the offline artifact.
 // ════════════════════════════════════════════════════════════════
 
-import { setDeckCodeHighlighter } from '../atoms/deck-code-highlighter.js';
+import { setDeckCodeHighlighter } from './deck-code-highlighter.js';
 
 interface InstallOpts {
   /** Bundled theme · currently 'one-dark-pro'. */

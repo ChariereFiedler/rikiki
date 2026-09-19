@@ -26,7 +26,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { FitController } from '../shared/fit-controller.js';
-import { parseCsv } from '../shared/parse-csv.js';
+import { parseCsv } from './parse-csv.js';
 
 @customElement('deck-csv')
 export class DeckCsv extends LitElement {
