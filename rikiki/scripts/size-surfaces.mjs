@@ -131,6 +131,15 @@ export const SIZE_SURFACES = [
     find: /([\d.]+) KB gzip/g,
     expect: 'initialLoadGzip',
   },
+  {
+    // The README says its numbers are derived rather than typed. This row is
+    // what makes that sentence true · the pattern is anchored on the bold
+    // headline figure so the other sizes in that file are not swept in.
+    file: at('README.md'),
+    label: 'README initial load',
+    find: /\*\*([\d.]+) KB gzip\*\*/g,
+    expect: 'initialLoadGzip',
+  },
 ];
 
 /* The plugins page and the docs overview used to publish their sizes as typed
