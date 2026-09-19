@@ -1,0 +1,135 @@
+# The verification a contributor sees.
+#
+# Mirrors the `check` stage of .gitlab-ci.yml, which needs no secret and no
+# self-hosted runner · it already ran on public images. Everything that needs
+# a credential (the container registry, the Portainer redeploy) stays on
+# GitLab, where the deployment lives; nothing here can be blocked by a
+# credential a fork does not have.
+#
+# The one job that is NOT a copy is publish · see publish.yml.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A force-push or a quick second commit should cancel the previous run rather
+# than race it · the 3-engine suite is 30 minutes of runner time.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Quality gate · em-dash linter + `astro check`. First because a forbidden
+  # dash or a TS error should short-circuit in seconds, not after the browser
+  # matrix.
+  site-lint:
+    name: site · lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - run: npm ci --prefer-offline --no-audit
+        working-directory: site
+      - run: npm run lint
+        working-directory: site
+
+  # The published package · typecheck, biome, and the consistency suite that
+  # holds every derived figure (sizes, component counts, the contract guards).
+  package:
+    name: package · typecheck, lint, tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: rikiki/package-lock.json
+      - run: npm ci --prefer-offline --no-audit
+        working-directory: rikiki
+      - run: npm run typecheck
+        working-directory: rikiki
+      - run: npm run lint
+        working-directory: rikiki
+      - run: npm test
+        working-directory: rikiki
+
+  # Render net · every fixture deck in a real browser, on three engines.
+  # Chromium runs everything; Firefox and WebKit run the base contract.
+  e2e:
+    name: e2e · three engines
+    runs-on: ubuntu-latest
+    container:
+      # Pinned to the installed @playwright/test version, as GitLab does.
+      image: mcr.microsoft.com/playwright:v1.60.0-noble
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: rikiki/package-lock.json
+      # poppler reads the PDFs e2e/print.spec.ts produces · without it the
+      # print contract would silently go untested.
+      - run: apt-get update -qq && apt-get install -y -qq poppler-utils
+      - run: npm ci --prefer-offline --no-audit
+        working-directory: rikiki
+      # The decks load ../../dist · build before serving them.
+      - run: npm run build
+        working-directory: rikiki
+      # The committed dist/ is what consumers actually run · a rebuild that
+      # differs means src/ and dist/ drifted, and the tests below would
+      # green-light an artifact nobody ships.
+      - name: dist/ is in sync with src/
+        run: git diff --exit-code -- dist
+        working-directory: rikiki
+      # examples/*/index.html are generated single-file bundles served in
+      # production · the same drift guard, for the same reason.
+      - name: the committed examples are current
+        run: |
+          for src in ../examples/*/source.html; do
+            node bundle.mjs "$src" "$(dirname "$src")/index.html"
+          done
+          git diff --exit-code -- ../examples
+        working-directory: rikiki
+      - run: node scripts/release-smoke.mjs
+        working-directory: rikiki
+      - run: npx playwright test
+        working-directory: rikiki
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: rikiki/test-results/
+          retention-days: 7
+
+  # The site builds, and the image that will serve it builds too. Both are
+  # artifacts of the deploy, checked here so a broken one never reaches the
+  # GitLab pipeline that ships it.
+  site-build:
+    name: site · build and serve
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - run: npm ci --prefer-offline --no-audit
+        working-directory: site
+      - run: npm run build
+        working-directory: site
+      - name: the nginx image builds around it
+        run: docker build -f .cloud/site-check.Dockerfile .
