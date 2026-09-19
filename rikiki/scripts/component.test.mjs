@@ -12,14 +12,14 @@ import {
   PKG_DIR,
   REPO_ROOT,
   UNDOCUMENTED_ATTRIBUTES,
-  coreElements,
-  optInElements,
+  bundledElements,
+  separateElements,
   registeredElements,
 } from './component-surfaces.mjs';
 
 const elements = registeredElements();
-const core = coreElements();
-const optIn = optInElements();
+const core = bundledElements();
+const optIn = separateElements();
 
 describe('the component count is derived, not typed', () => {
   it('finds every registered element, both registration styles', () => {
