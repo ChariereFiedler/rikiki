@@ -59,6 +59,7 @@
     "lint": "biome check src scripts tools",
     "format": "biome format --write src scripts tools",
     "bump": "node scripts/bump-version.mjs",
+    "new:component": "node scripts/new-component.mjs",
     "prepublishOnly": "npm run build && npm test"
   },
   "devDependencies": {

@@ -97,9 +97,7 @@ describe('a family owns its helpers', () => {
   // rule than this one: its layers may only point inward. Checking it here
   // too would read application -> domain, its correct direction, as a family
   // crossing.
-  const outsideCore = allSources.filter(
-    (f) => familyOf(f) !== 'shared' && familyOf(f) !== 'core',
-  );
+  const outsideCore = allSources.filter((f) => familyOf(f) !== 'shared' && familyOf(f) !== 'core');
 
   it.each(outsideCore)('%s imports no other family’s helper', (file) => {
     const mine = familyOf(file);

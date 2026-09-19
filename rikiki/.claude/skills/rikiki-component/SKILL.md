@@ -1,24 +1,55 @@
 ---
 name: rikiki-component
-description: Use when adding or modifying a rikiki deck component — a new deck-* layout, molecule, or atom in the framework source (Lit/TypeScript). Triggers on "new rikiki component", "add a deck- element", "rikiki layout/molecule/atom", "extend rikiki". Repo-only — needs the TypeScript sources, not the npm package.
+description: Use when adding or modifying a rikiki deck component — a new deck-* element in the framework source (Lit/TypeScript). Triggers on "new rikiki component", "add a deck- element", "rikiki layout/text/data/media component", "extend rikiki". Repo-only — needs the TypeScript sources, not the npm package.
 ---
 
 # Adding a rikiki component
 
-Components are Lit elements in `src/`, organized by design-system bucket:
-`runtime/` (engine), `layouts/` (full-slide), `molecules/` (composite),
-`atoms/` (leaf). A consumer of the npm package can't do this — it needs the repo
-sources and a rebuild.
+## Start with the generator
 
-Read a sibling in the same bucket before writing; `src/layouts/deck-takeaway.ts`
-is the canonical minimal example. Match its shape exactly.
+```sh
+npm run new:component -- <family> <deck-tag>     # opt-in, the default
+npm run new:component -- <family> <deck-tag> --core   # joins the bundle every deck loads
+```
+
+It writes a component that already passes every gate below, plus a fixture
+slide, and prints the two things it cannot do for you (the reference entry and
+the catalogue entry). `scripts/new-component.test.mjs` runs it into a temp
+directory and checks its output against the contract, so the template cannot
+drift away from the rules.
+
+Write by hand only if the generator does not fit — then read a sibling in the
+same family first.
+
+## Where it goes · one axis, the family it serves
+
+Components are Lit elements in `src/`, sorted by **what they serve**
+(ADR-004), never by how big they are:
+
+| Family | What lives there |
+|---|---|
+| `engine/` | what pilots the deck · deck-root and the chrome around it |
+| `layout/` | the frame of a whole slide |
+| `structure/` | how blocks are arranged inside one |
+| `text/` | what a slide says |
+| `data/` | what it proves |
+| `media/` | what it embeds or draws |
+| `shared/` | only what **two families** import · a one-family helper belongs with its consumer |
+| `core/` | ADR-001's navigation domain · not a place for components |
+
+`src/index.ts` is the **manifest**: what it imports is the default bundle,
+everything else is opt-in and the deck loads it itself. Being opt-in is
+recorded there, not by living in a directory.
+
+A consumer of the npm package can't add a component — it needs the repo
+sources and a rebuild.
 
 ## Pattern
 
 ```ts
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { slideBase } from '../shared-styles.js'; // layouts only
+import { slideBase } from '../shared/shared-styles.js'; // layout/ only
 
 @customElement('deck-thing')
 export class DeckThing extends LitElement {
@@ -52,7 +83,7 @@ declare global {
 
 ## Steps
 
-1. **Create** `src/<bucket>/deck-thing.ts` from the pattern. Lead with a comment
+1. **Create** `src/<family>/deck-thing.ts` from the pattern. Lead with a comment
    block showing the intended HTML usage (every component does this).
 2. **Style** with semantic `--rik-*` tokens only; expose per-instance knobs as
    `--deck-thing-*` tokens that default to a `--rik-*` value. Never hardcode
@@ -62,13 +93,17 @@ declare global {
    skill: load `frontend-design` then `rikiki-visual-design` before deciding a
    surface, a scale or a layout rhythm. Token discipline is not taste, and this
    list only covers the former.
-3. **Register** by adding `import './<bucket>/deck-thing.js';` to `src/index.ts`
-   in the matching bucket section (note the `.js` extension — these are ESM
-   specifiers resolved post-build).
-4. **Build** with `npm run build` (esbuild flattens the `dist/` **`.js`** files
-   regardless of bucket — deck-root's dynamic imports rely on the flat layout;
-   the emitted `.d.ts` keep the bucket tree, which is fine). `dist/` is
-   committed; commit the rebuilt output with the source.
+3. **Register** only if it belongs in the default bundle: add
+   `import './<family>/deck-thing.js';` to `src/index.ts` in the matching
+   family section (note the `.js` extension — these are ESM specifiers
+   resolved post-build). Leave it out and the deck loads
+   `dist/deck-thing.js` itself. Either way a published count moves, and
+   `scripts/component.test.mjs` names the pages to update.
+4. **Build** with `npm run build`. `dist/` is entirely flat — both the `.js`
+   (esbuild, because deck-root's dynamic imports rely on it) and the `.d.ts`
+   (`build-types.mjs`, so every module ships its types beside it). Your
+   family never appears in `dist/`. `dist/` is committed; commit the rebuilt
+   output with the source.
 5. **Document** the new tag, its slots, attributes, and `--deck-*` tokens in
    `docs/llms/rikiki-reference.md` (in the matching Layouts / Molecules / Atoms
    table) — it is the source of truth and the tests and skills read it.
@@ -120,7 +155,7 @@ Two more, in `scripts/component.test.mjs`:
   `docs/llms/rikiki-reference.md`), and `deck-graph`/`deck-flow` render
   `<deck-icon>` trusting the deck author loaded `dist/deck-icon.js`
   themselves (documented in-component as "needs dist/deck-icon.js loaded
-  too"). If your component nests a tag from another bucket or another
+  too"). If your component nests a tag from another family or another
   opt-in module, do the same thing · use the tag, add a one-line comment
   saying what must already be loaded and why, and do **not** `import` that
   module's file.
