@@ -91,8 +91,26 @@ jobs:
       # The committed dist/ is what consumers actually run · a rebuild that
       # differs means src/ and dist/ drifted, and the tests below would
       # green-light an artifact nobody ships.
+      # Names the files and writes them to the run summary before failing.
+      # `git diff` alone dumps minified JavaScript into the log, which is
+      # unreadable on the run page and useless in a bug report · the point of
+      # a drift guard is to say WHAT drifted.
       - name: dist/ is in sync with src/
-        run: git diff --exit-code -- dist
+        run: |
+          if git diff --quiet -- dist; then exit 0; fi
+          {
+            echo '### dist/ drifted from src/'
+            echo
+            echo '```'
+            git diff --stat -- dist
+            echo '```'
+            echo
+            echo 'File modes, in case the difference is only a permission bit:'
+            echo '```'
+            git diff --summary -- dist | head -20
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          exit 1
         working-directory: rikiki
       # examples/*/index.html are generated single-file bundles served in
       # production · the same drift guard, for the same reason.

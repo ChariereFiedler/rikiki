@@ -148,6 +148,35 @@ it was written alongside.
    CI config path, delete nothing by hand (the rewrite already removed the
    deploy files), and restrict write access to the mirror token alone.
 
+## Open · the GitHub CI fails on the dist/ drift guard
+
+The rewritten history is pushed and `.github/workflows/ci.yml` runs on it.
+Three jobs pass · site lint, package, site build. The e2e job fails at
+**`dist/ is in sync with src/`**, on the current head.
+
+Two hypotheses were tested and both are dead:
+
+- **The rewrite altered a `dist/` blob.** It did not · every file under
+  `rikiki/dist/` is byte-identical between the GitLab `main` and the pushed
+  GitHub `main`.
+- **The build is not reproducible in that image.** It is · `npm ci` plus
+  `npm run build` inside `mcr.microsoft.com/playwright:v1.60.0-noble`, on the
+  same commit, leaves `git diff -- dist` empty.
+
+So the difference is in the GitHub runner rather than the image or the
+content. The likely candidates are the ones that bit this repository once
+already: a platform-dependent optional dependency changing what
+`build-vendor.mjs` records, or a file-mode bit set by building as root.
+
+**What is needed to settle it:** the run log, which `actions/runs/<id>/logs`
+refuses without a token (403). The guard now writes `git diff --stat` and
+`--summary` to the run summary before failing, so the answer is legible on
+the run page without downloading anything.
+
+Nothing downstream is affected while this is red: `mirror.yml` is gated on CI
+passing and correctly skipped both runs, so GitLab has received nothing and
+the site deploys as before.
+
 ## Docs that go stale the day of the cutover
 
 No test or script reads the three removed files · checked. Only prose refers
