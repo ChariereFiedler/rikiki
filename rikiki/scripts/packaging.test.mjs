@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -74,6 +74,31 @@ describe('published surface', () => {
       if (!existsSync(resolve(PKG_DIR, file))) missing.push(`${subpath} -> ${file}`);
     }
     expect(missing, `unresolvable exports: ${missing.join(', ')}`).toEqual([]);
+  });
+
+  it('ships a declaration beside every module it publishes', () => {
+    // dist/*.js is flat; the declarations used to mirror src/, so
+    // dist/deck-table.js was typed by dist/extras/deck-table.d.ts and
+    // `import 'rikiki-deck/dist/deck-table.js'` resolved no types at all.
+    // build-types.mjs flattens them · this is what keeps them flat.
+    const dist = resolve(PKG_DIR, 'dist');
+    const orphans = readdirSync(dist)
+      .filter((f) => f.endsWith('.js'))
+      // The single-file bundle is assembled by build-standalone.mjs from the
+      // built output · it is not a TypeScript entry point and types nothing.
+      .filter((f) => f !== 'standalone.js')
+      .filter((f) => !existsSync(resolve(dist, f.replace(/\.js$/, '.d.ts'))));
+    expect(orphans, `published without types: ${orphans.join(', ')}`).toEqual([]);
+  });
+
+  it('keeps the declarations flat, with no mirrored source tree left behind', () => {
+    // tsc does not clean its output · a directory move would otherwise leave
+    // the previous tree in dist/ and publish both.
+    const dist = resolve(PKG_DIR, 'dist');
+    const nested = readdirSync(dist, { withFileTypes: true })
+      .filter((e) => e.isDirectory() && e.name !== 'vendor')
+      .map((e) => e.name);
+    expect(nested, `dist/ holds a nested tree: ${nested.join(', ')}`).toEqual([]);
   });
 
   it('lists every file the exports map points at inside `files`', () => {
