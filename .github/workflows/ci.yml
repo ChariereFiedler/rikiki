@@ -97,11 +97,7 @@ jobs:
       # examples/*/index.html are generated single-file bundles served in
       # production · the same drift guard, for the same reason.
       - name: the committed examples are current
-        run: |
-          for src in ../examples/*/source.html; do
-            node bundle.mjs "$src" "$(dirname "$src")/index.html"
-          done
-          git diff --exit-code -- ../examples
+        run: npm run examples -- --check
         working-directory: rikiki
       - run: node scripts/release-smoke.mjs
         working-directory: rikiki
