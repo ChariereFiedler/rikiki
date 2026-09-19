@@ -73,9 +73,10 @@ Deliberately not committed. `rewrite-history.sh` lists exactly what was
 scrubbed, so publishing it would undo the scrubbing; `gitlab-deploy.yml` is
 the topology itself.
 
-- `gitlab-deploy.yml` → a **private** repo. Point the GitLab project at it via
-  *Settings → CI/CD → CI configuration file*
-  (`rikiki/deploy.gitlab-ci.yml@tordu-jardin/cloud`).
+- `gitlab-deploy.yml` → **done**. It sits in the private `tordu-jardin/cloud`
+  at `rikiki/deploy.gitlab-ci.yml`, 160 lines, two jobs (`build-image`,
+  `smoke-test`) over two stages. Nothing is activated by its presence: the
+  rikiki project still reads its own `.gitlab-ci.yml`.
 - `rewrite-history.sh` → run on a clone. Backup bundle first, census before
   and after, and it **fails** if anything survives. It pushes nothing.
 - `rikiki-before-rewrite.bundle` → the way back. `git clone` it.
@@ -114,12 +115,19 @@ ever existed in history: no `js-loading/` file was tracked, so no deliverable
 is in there. What was in there was the *mention* · a `.gitignore` comment, a
 few planning docs, one commit subject.
 
-**Replacing the name was not enough.** The `.gitignore` comment read
-`Local-only client deck, not part of the OSS project`, and the middleware plus the product identify a studio as precisely
-as its name does to anyone in that industry. Renaming to "client" would have
-published the same fact in two words instead of one. All three go, and the
-census now counts all three · a first pass reported "0 mentions" while the
-line was still sitting there.
+**Replacing the name was not enough.** The `.gitignore` comment named the
+client twice: once by name, and once by the middleware and the product they
+ship it in, which identify a studio just as precisely to anyone in that
+industry. Scrubbing only the name would have published the same fact in two
+words instead of one. The census counts all three terms now · a first pass
+reported "0 mentions" while the second half of the line sat untouched, which
+is a guard measuring the wrong thing and returning the right number.
+
+This paragraph deliberately names none of them. An earlier draft quoted the
+line to explain what was removed, and the rewrite then scrubbed the runbook
+itself · leaving a paragraph that claimed the comment "read" its own redacted
+form and referred to a middleware it no longer named. A document about a
+scrub has to survive that scrub.
 
 `.cloud/nginx.conf` and `.cloud/site-check.Dockerfile` are **kept**, and the
 script fails if they are not: they describe how the static site is served and
@@ -141,6 +149,35 @@ it was written alongside.
    CI config path, delete nothing by hand (the rewrite already removed the
    deploy files), and restrict write access to the mirror token alone.
 
+## Open · the GitHub CI fails on the dist/ drift guard
+
+The rewritten history is pushed and `.github/workflows/ci.yml` runs on it.
+Three jobs pass · site lint, package, site build. The e2e job fails at
+**`dist/ is in sync with src/`**, on the current head.
+
+Two hypotheses were tested and both are dead:
+
+- **The rewrite altered a `dist/` blob.** It did not · every file under
+  `rikiki/dist/` is byte-identical between the GitLab `main` and the pushed
+  GitHub `main`.
+- **The build is not reproducible in that image.** It is · `npm ci` plus
+  `npm run build` inside `mcr.microsoft.com/playwright:v1.60.0-noble`, on the
+  same commit, leaves `git diff -- dist` empty.
+
+So the difference is in the GitHub runner rather than the image or the
+content. The likely candidates are the ones that bit this repository once
+already: a platform-dependent optional dependency changing what
+`build-vendor.mjs` records, or a file-mode bit set by building as root.
+
+**What is needed to settle it:** the run log, which `actions/runs/<id>/logs`
+refuses without a token (403). The guard now writes `git diff --stat` and
+`--summary` to the run summary before failing, so the answer is legible on
+the run page without downloading anything.
+
+Nothing downstream is affected while this is red: `mirror.yml` is gated on CI
+passing and correctly skipped both runs, so GitLab has received nothing and
+the site deploys as before.
+
 ## Docs that go stale the day of the cutover
 
 No test or script reads the three removed files · checked. Only prose refers
@@ -160,6 +197,28 @@ to them, and it must be corrected in the same change rather than left to rot:
 - **Existing clones must be re-cloned.** There is one.
 - **The first mirror push is a force push**, since the histories diverge.
   Every push after it is a fast-forward.
+
+## What is left, and in what order
+
+Everything that can be prepared is prepared. Three acts remain, and the third
+must stay third.
+
+1. **Two secrets on GitHub**, in the repository settings:
+   `GITLAB_PUSH_TOKEN` (a GitLab project access token with
+   `write_repository`) and `GITLAB_HOST_PATH` (the deployment remote, kept out
+   of the public tree deliberately). Until they exist, `mirror.yml` has
+   nothing to push with.
+
+2. **A green CI on GitHub.** It is red today for a reason now understood and
+   fixed · see the section above · but that fix reaches GitHub only when this
+   branch merges and the rewrite is replayed.
+
+3. **Then, last, repoint GitLab** · `ci_config_path` to
+   `rikiki/deploy.gitlab-ci.yml@tordu-jardin/cloud`. This is one API call and
+   could be made at any moment, which is precisely why it is worth writing
+   down that it must not be: it strips every check from the GitLab pipeline.
+   Do it while GitHub CI is red or the mirror is unwired, and the project has
+   no working verification left on either side.
 
 ## Decided
 

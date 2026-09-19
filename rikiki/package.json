@@ -51,6 +51,7 @@
     "clean": "rm -rf dist",
     "bundle": "node bundle.mjs",
     "examples": "node scripts/rebuild-examples.mjs",
+    "readme": "node scripts/build-readme.mjs",
     "deck": "node bin/rikiki.mjs assemble",
     "deck:example": "node bin/rikiki.mjs assemble decks/example/deck.config.js",
     "test": "vitest run",

@@ -75,6 +75,11 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.60.0-noble
     steps:
       - uses: actions/checkout@v4
+      # This job runs in a container while the checkout belongs to the runner
+      # user, so git refuses the working tree as dubiously owned · the drift
+      # guards below are git commands and fail opaquely without this.
+      - name: let git read a workspace it does not own
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -91,13 +96,49 @@ jobs:
       # The committed dist/ is what consumers actually run · a rebuild that
       # differs means src/ and dist/ drifted, and the tests below would
       # green-light an artifact nobody ships.
+      # Names the files and writes them to the run summary before failing.
+      # `git diff` alone dumps minified JavaScript into the log, which is
+      # unreadable on the run page and useless in a bug report · the point of
+      # a drift guard is to say WHAT drifted.
       - name: dist/ is in sync with src/
-        run: git diff --exit-code -- dist
+        run: |
+          # Report git's own failure rather than swallowing it · the first run
+          # of this workflow exited 129 here, which is a git usage error and
+          # not a drift, and the bare command said nothing about which.
+          # set +e around it on purpose: the job shell is `bash -eo pipefail`,
+          # so a non-zero here would end the step before it can explain.
+          set +e
+          git diff --quiet -- dist
+          status=$?
+          set -e
+          [ "$status" -eq 0 ] && exit 0
+          if [ "$status" -ne 1 ]; then
+            echo "git exited $status · this is not a drift, read the message above"
+            exit "$status"
+          fi
+          {
+            echo '### dist/ drifted from src/'
+            echo
+            echo '```'
+            git diff --stat -- dist
+            echo '```'
+            echo
+            echo 'File modes, in case the difference is only a permission bit:'
+            echo '```'
+            git diff --summary -- dist | head -20
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          exit 1
         working-directory: rikiki
       # examples/*/index.html are generated single-file bundles served in
       # production · the same drift guard, for the same reason.
       - name: the committed examples are current
         run: npm run examples -- --check
+        working-directory: rikiki
+      # The root README is generated from README.template.md with measured
+      # figures · the same drift guard, for the same reason.
+      - name: the committed README is current
+        run: npm run readme -- --check
         working-directory: rikiki
       - run: node scripts/release-smoke.mjs
         working-directory: rikiki
