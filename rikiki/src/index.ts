@@ -10,12 +10,12 @@
 // ════════════════════════════════════════════════════════════════
 
 // Runtime · orchestrators, hidden chrome
-import './runtime/deck-root.js';
-import './runtime/deck-transition.js';
-import './runtime/deck-help.js';
-import './runtime/deck-overview.js';
-import './runtime/deck-presenter.js';
-import './runtime/deck-notes.js';
+import './engine/deck-root.js';
+import './engine/deck-transition.js';
+import './engine/deck-help.js';
+import './engine/deck-overview.js';
+import './engine/deck-presenter.js';
+import './engine/deck-notes.js';
 
 // Layouts · slide-level
 import './layouts/deck-cover.js';
@@ -55,7 +55,7 @@ import './atoms/deck-source.js';
 // deck-code highlighter hook, re-exported so authors import them from the one
 // bundle they already load (importing from the per-component dist files would
 // double-define the elements those files register).
-export type { DeckPlugin, DeckContext } from './runtime/deck-root.js';
+export type { DeckPlugin, DeckContext } from './engine/deck-root.js';
 export type { DeckCodeHighlighter } from './atoms/deck-code.js';
 export { setDeckCodeHighlighter } from './atoms/deck-code-highlighter.js';
 
@@ -65,5 +65,5 @@ export { setDeckCodeHighlighter } from './atoms/deck-code-highlighter.js';
 // Livereload · opt-in via ?live · le poller n'est chargé que sur demande.
 // (Sinon, charger directement dist/livereload.js l'active aussi.)
 if (new URLSearchParams(location.search).has('live')) {
-  import('./livereload.js');
+  import('./engine/livereload.js');
 }
