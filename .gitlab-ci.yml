@@ -81,8 +81,8 @@ package-check:
 # Three engines: Chromium runs everything; Firefox and WebKit run the base
 # contract (they skip print, which needs page.pdf, and the presenter, which
 # needs the multi-screen APIs).
-# Uses the official Playwright image (browsers + python3 for the static server)
-# pinned to the installed @playwright/test version.
+# Uses the official Playwright image for its browsers, pinned to the installed
+# @playwright/test version. The static server is node (scripts/static-server.mjs).
 e2e:
   stage: check
   image: mcr.microsoft.com/playwright:v1.60.0-noble
