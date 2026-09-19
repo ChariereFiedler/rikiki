@@ -10,14 +10,15 @@
 and a `check` command that hands back the defects as JSON.**
 
 Slides are `<deck-cover>`, `<deck-feature>`, `<deck-code>` · slots and
-attributes, a format every model already knows cold. Nothing to learn, nothing
-to compile, and no toolchain error to debug in a loop. The agent writes a
-file, serves it, measures it, and fixes what the measurement found.
+attributes. A model already knows that format cold, so there is no syntax to
+teach it, no build to run, and no toolchain error for it to flail at. Write
+the file, serve it, measure it, fix what the measurement found.
 
-That was not designed for agents. It fell out of designing for a deck that
-still opens in five years: source is output, web standards only, no build to
-resurrect. The same three choices turn out to be exactly what a model needs,
-which is the useful thing about them.
+None of that was designed for agents. It fell out of wanting a deck that
+still opens in five years: source is output, web standards only, nothing to
+resurrect. Turns out the three choices that keep a deck alive are the same
+three that let a model write one. I did not plan that, and it is the most
+useful thing about this project.
 
 - **The reference ships in the package**, {{ referenceLines }} lines of it, and
   the test suite holds it against the code · an agent reads ground truth, not
@@ -37,12 +38,12 @@ which is the useful thing about them.
 
 ## What this is not
 
-Presentation frameworks drifted. Reveal.js (2011) still speaks in global CSS
-classes and imperative JS plugins. Slidev (2021) ships Vue, Vite, UnoCSS,
-Shiki, Monaco and Mermaid · a quarter of a gigabyte of `node_modules` to render
-twenty slides. Both made defensible choices for the people they serve. Neither
-fits someone who wants to write a technical deck, give the talk, and reopen it
-next year without archaeology.
+Presentation frameworks drifted. Reveal.js (2011) is a fossil still speaking
+in global CSS classes and imperative JS plugins. Slidev (2021) ships Vue,
+Vite, UnoCSS, Shiki, Monaco and Mermaid · a quarter of a gigabyte of
+`node_modules` to render twenty slides. Both made defensible choices. Neither
+helps you write a technical deck, give the talk, and reopen it next year
+without drama.
 
 So rikiki refuses things on purpose:
 
@@ -94,6 +95,30 @@ a USB stick, on a machine that has never heard of npm.
 
 ## Writing decks with an agent
 
+Two commands, then ask:
+
+```console
+$ npm i rikiki-deck && npx rikiki-deck skills
+rikiki skills · installed rikiki-deck → .claude/skills/rikiki-deck
+rikiki skills · installed rikiki-theme → .claude/skills/rikiki-theme
+rikiki skills · installed rikiki-debug → .claude/skills/rikiki-debug
+rikiki skills · 3 skill(s) installed · restart Claude Code to pick them up
+```
+
+Now *"make me a deck about our Q3 incident review"* is enough. The skill
+tells the agent the compositions, the editorial rules and the order to try
+fixes in; it writes the HTML, runs `rikiki check`, and fixes what comes back.
+
+Not using Claude Code? Point whatever you use at one file:
+
+```
+node_modules/rikiki-deck/docs/llms/rikiki-workflow.md
+```
+
+That is the brief-to-deck path written for an agent · seven steps, nine
+compositions by intent with checked HTML, and what to try when a slide
+renders wrong. It assumes nothing beyond a shell and a browser.
+
 **The package ships its own documentation.** `npm install rikiki-deck` puts
 `llms.txt` inside `node_modules`, next to an element reference of
 {{ referenceLines }} lines and a working guide of {{ workflowLines }}, where
@@ -122,11 +147,11 @@ an API and a human finds out on a projector.
 
 ## The contract
 
-**1 · Source is output, for the reader of your deck.** A deck folder contains
-the whole application. No transpilation, no toolchain for the author to
-maintain. The framework itself is written in TypeScript and compiled · that
-build belongs to contributors, and the promise does not extend to them. It is
-worth being precise about which half of a promise you are making.
+**1 · Source is output, for whoever opens your deck.** A deck folder contains
+the whole application. No transpilation, no toolchain to maintain, no "it
+worked before the Vite update". The framework itself is written in TypeScript
+and compiled, and that build belongs to contributors · the promise does not
+extend to them. Worth saying which half of a promise you are making.
 
 **2 · Standards first, Lit second.** Custom Elements, Shadow DOM, ES Modules,
 CSS Custom Properties · stable W3C specifications since 2018. Lit is used for
@@ -167,8 +192,9 @@ readme · stale · run `npm run readme` and commit README.md
 ```
 
 `dist/` and the bundled examples get the identical treatment. Generated,
-committed, and a job that fails on the difference · because a committed
-artifact nobody regenerates is worse than no artifact at all.
+committed, and a job that fails on the difference · a committed artifact
+nobody regenerates is worse than no artifact at all. This bit me twice in one
+day, which is why it is a command now and not a loop buried in a CI file.
 
 Three claims that a command cannot make for itself:
 
