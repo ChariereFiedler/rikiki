@@ -12,7 +12,7 @@ import { customElement, state } from 'lit/decorators.js';
 // Bare specifier · build.mjs rewrites it to ./vendor/marked.js (offline);
 // the standalone build inlines it. marked ships its own types.
 import { marked } from 'marked';
-import { expandCards } from '../shared/cards-syntax.js';
+import { expandCards } from './cards-syntax.js';
 
 marked.setOptions({ gfm: true, breaks: false });
 

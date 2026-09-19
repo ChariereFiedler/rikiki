@@ -34,7 +34,7 @@ import {
   placeMarks,
   stepsForMarks,
   visibleCount,
-} from '../shared/annotation-marks.js';
+} from './annotation-marks.js';
 
 // deck-source is a core atom, registered by dist/index.js · every opt-in
 // module is documented as "loaded next to the bundle" (§20), so it is always

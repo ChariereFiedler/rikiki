@@ -14,7 +14,7 @@
 
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { slideBase } from '../shared-styles.js';
+import { slideBase } from '../shared/shared-styles.js';
 
 interface MetaItem {
   /** The source attribute name · exposed as data-field, so one meta row can be

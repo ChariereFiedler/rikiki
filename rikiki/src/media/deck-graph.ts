@@ -27,8 +27,8 @@
 
 import { LitElement, css, html, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { arrange, edgeGeometry } from '../shared/graph-layout.js';
-import { signature } from './signature.js';
+import { arrange, edgeGeometry } from './graph-layout.js';
+import { signature } from '../shared/signature.js';
 
 interface PixelPoint {
   x: number;

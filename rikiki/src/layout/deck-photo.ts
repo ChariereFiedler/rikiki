@@ -19,7 +19,7 @@
 
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { slideShell } from '../shared-styles.js';
+import { slideShell } from '../shared/shared-styles.js';
 
 @customElement('deck-photo')
 export class DeckPhoto extends LitElement {

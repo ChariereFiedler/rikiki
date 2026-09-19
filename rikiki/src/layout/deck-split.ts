@@ -17,7 +17,7 @@
 
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { slideBase } from '../shared-styles.js';
+import { slideBase } from '../shared/shared-styles.js';
 import { spreadValue } from './slide-fill.js';
 
 export type DeckSplitCols = '1-1' | '1-2' | '2-1' | '3';

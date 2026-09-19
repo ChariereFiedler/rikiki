@@ -12,7 +12,7 @@
 
 import { LitElement, css, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { parseSegments, remainder, sizeSegments } from '../shared/bar-segments.js';
+import { parseSegments, remainder, sizeSegments } from './bar-segments.js';
 
 export type DeckBarTone = 'accent' | 'ok' | 'warn' | 'danger' | 'info' | 'muted';
 
