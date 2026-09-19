@@ -9,7 +9,7 @@ const siteDir = process.cwd();
 const repoRoot = resolve(siteDir, '..');
 
 /** How many slides a deck holds · the direct `deck-*` children of `<deck-root>`,
- *  the same set the runtime collects in src/runtime/deck-root.ts and the same
+ *  the same set the runtime collects in src/engine/deck-root.ts and the same
  *  number `rikiki render` reports as `slideCount`. A `deck-section` counts:
  *  it is a chapter opener the audience sees, not a wrapper. */
 function slideCount(publicPath: string): number {

@@ -26,9 +26,11 @@ npm run build        # vendor chunks, esbuild, standalone bundle, then tsc --emi
 npm run watch        # esbuild in watch mode, for iterating on a deck
 npm run typecheck    # tsc --noEmit
 npm test             # vitest run · sizes, versions, CLI and assembler
-npm run lint         # biome check src scripts`;
+npm run lint         # biome check src scripts tools
 
-const newComponent = `// src/molecules/deck-myname.ts  (or layouts/, atoms/, runtime/)
+npm run new:component -- text deck-myname   # scaffolds a conforming component`;
+
+const newComponent = `// src/text/deck-myname.ts  (a family: layout, structure, text, data, media)
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
