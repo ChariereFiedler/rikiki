@@ -94,6 +94,9 @@ export const COUNT_SURFACES = [
     label: 'cheatsheet intro',
     find: /Rikiki has (\d+) components/g,
   },
+  // The root README is generated from README.template.md with this same
+  // count · `npm run readme -- --check` holds it, and a surface row here
+  // would be a second mechanism for one property. See size-surfaces.mjs.
 ];
 
 export const CATALOGUE_PAGE = at('site/src/pages/docs/components.astro');
