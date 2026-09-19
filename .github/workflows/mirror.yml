@@ -1,0 +1,57 @@
+# Feed the deployment remote.
+#
+# GitHub is the source of truth; GitLab only deploys the site to
+# rikiki.tordu-jardin.fr, where the registry, the Portainer stack and the
+# self-hosted runners live. GitLab's own pull mirroring is a paid feature on
+# gitlab.com, so the push comes from here.
+#
+# Only main and release tags are mirrored · GitLab is a deployment surface,
+# not a copy of every branch under review. Pull requests never reach it.
+#
+# Runs after CI, and only if CI passed: the GitLab pipeline trusts the commit
+# it receives and re-checks only what guards the artifact it ships, rather
+# than paying for the three-engine suite a second time.
+
+name: Mirror to GitLab
+
+on:
+  workflow_run:
+    workflows: [CI]
+    branches: [main]
+    types: [completed]
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: read
+
+jobs:
+  mirror:
+    # A red CI must not reach the deployment remote. Tag pushes carry their
+    # own gate: the tag is cut from a commit main already verified.
+    if: github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history and tags · a shallow clone cannot be pushed on.
+          fetch-depth: 0
+          filter: tree:0
+      - name: push main and tags to GitLab
+        env:
+          # Both are repository secrets, deliberately · the deployment remote
+          # is the one piece of internal topology this public tree would
+          # otherwise name. The token is a GitLab project access token with
+          # write_repository, and the only identity allowed to write there.
+          GITLAB_TOKEN: ${{ secrets.GITLAB_PUSH_TOKEN }}
+          GITLAB_HOST_PATH: ${{ secrets.GITLAB_HOST_PATH }}
+        run: |
+          set -euo pipefail
+          : "${GITLAB_TOKEN:?missing GITLAB_PUSH_TOKEN}"
+          : "${GITLAB_HOST_PATH:?missing GITLAB_HOST_PATH, e.g. gitlab.example.com/group/project.git}"
+          remote="https://oauth2:${GITLAB_TOKEN}@${GITLAB_HOST_PATH}"
+          # Never --mirror: it would delete refs on the other side, including
+          # anything the deployment pipeline keeps there.
+          # The URL carries a token · keep it out of the log.
+          git push "$remote" HEAD:refs/heads/main 2>&1 | sed "s|${GITLAB_TOKEN}|***|g"
+          git push "$remote" --tags 2>&1 | sed "s|${GITLAB_TOKEN}|***|g"
