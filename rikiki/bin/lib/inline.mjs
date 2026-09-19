@@ -12,6 +12,7 @@ import { readFileSync, existsSync, writeFileSync, rmSync, mkdtempSync } from 'no
 import { resolve, dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { ExpectedError } from './cli-error.mjs';
+import { expandDeps } from './component-deps.mjs';
 
 // rolldown is an OPTIONAL peer dependency · it weighs ~55 MB of native bindings
 // and is only ever needed by `rikiki bundle` / `rikiki init --standalone`.
@@ -116,14 +117,27 @@ function explicitlyLoaded(html) {
 }
 
 /** Scan the deck for the <deck-*> components it actually uses · so the bundle
- *  carries only those (+ deck-root, + forced includes), not every element. */
+ *  carries only those (+ deck-root, + forced includes), not every element.
+ *
+ *  A tag written in the deck is not the whole story: a component can render
+ *  another component's tag, which appears in no deck source. deck-figure
+ *  renders <deck-source> for its credit line · a deck writing only
+ *  <deck-figure> used to bundle without deck-source and the credit line came
+ *  out as bare text. expandDeps() closes over that graph, read from dist/
+ *  (see component-deps.mjs). */
 function scanComponents(html, pkgRoot, include = []) {
   const tags = new Set(['deck-root', ...include]);
   for (const m of html.matchAll(/<(deck-[a-z0-9-]+)[\s/>]/gi)) tags.add(m[1].toLowerCase());
+  const dist = resolve(pkgRoot, 'dist');
+  const needed = expandDeps(
+    [...tags].filter((t) => existsSync(join(dist, `${t}.js`))),
+    dist,
+  );
+  // Dropped AFTER expansion · a module the deck loads itself must not be
+  // bundled a second time (see explicitlyLoaded), but it still contributes
+  // its own dependencies, which nothing else would pull in.
   const already = explicitlyLoaded(html);
-  return [...tags]
-    .filter((t) => !already.has(t))
-    .filter((t) => existsSync(resolve(pkgRoot, 'dist', `${t}.js`)));
+  return needed.filter((t) => !already.has(t));
 }
 
 /** Build the curated component bundle · one side-effect import per used tag. */

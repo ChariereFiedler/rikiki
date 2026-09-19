@@ -71,3 +71,46 @@ test('a re-attached deck keeps rescaling on resize', async ({ page }) => {
     )
     .toBeCloseTo(0.5, 2);
 });
+
+test('the letterbox takes the slide colour even when the slide upgrades late', async ({ page }) => {
+  // decks/tests/late-slide.html opens on an OPT-IN component, loaded from its
+  // own script tag. Nothing orders that against the bundle, so deck-root can
+  // reach firstUpdated while the slide is still an unknown element · which
+  // reports a transparent background. _applyLetterbox is the one measurement
+  // in the engine with no observer behind it, so before the fix the bands
+  // kept the page surface and nothing ever recomputed them.
+  //
+  // The delay makes the race certain rather than incidental.
+  await page.route('**/deck-versus.js', async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    await route.continue();
+  });
+  // A viewport off 16/9 · otherwise there are no bands to paint.
+  await page.setViewportSize({ width: 1200, height: 900 });
+
+  const deck = createDeckPage(page);
+  await deck.goto('/rikiki/decks/tests/late-slide.html');
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const slide = document.querySelector('deck-versus');
+          return !!slide?.shadowRoot;
+        }),
+      { message: 'the opt-in slide eventually upgrades' },
+    )
+    .toBe(true);
+
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const root = document.querySelector('deck-root') as HTMLElement;
+          const slide = document.querySelector('deck-versus') as HTMLElement;
+          const painted = root.style.getPropertyValue('--deck-letterbox-bg').trim();
+          return painted === getComputedStyle(slide).backgroundColor ? 'match' : `${painted || 'unset'}`;
+        }),
+      { message: 'the bands carry the slide background once it is known' },
+    )
+    .toBe('match');
+});

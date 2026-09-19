@@ -45,10 +45,14 @@ export const NOT_IN_CATALOGUE = ['deck-root'];
 /** Elements the DEFAULT bundle registers · everything src/index.ts imports.
  *
  *  The split matters for what the docs may claim. "Rikiki has N components" is
- *  a statement about what you get when you load dist/index.js; an opt-in module
- *  a deck may never import does not belong in that number. Manifesto principle
- *  3: light by default, extensible on demand. */
-export function coreElements() {
+ *  a statement about what you get when you load dist/index.js; a module a deck
+ *  may never load does not belong in that number. Manifesto principle 3: light
+ *  by default, extensible on demand.
+ *
+ *  Named for the fact, not for a rank · a component is in the convenience
+ *  bundle or it is not. "core" read as a first class with everything else
+ *  beneath it, which is not how they differ. */
+export function bundledElements() {
   const entry = readFileSync(resolve(SRC_DIR, 'index.ts'), 'utf8');
   const imported = new Set(
     [...entry.matchAll(/^\s*import\s+'\.\/([^']+)\.js'/gm)].map((m) => `${m[1]}.ts`),
@@ -64,10 +68,12 @@ export function coreElements() {
   return [...names].sort();
 }
 
-/** Registered, but only when the deck asks for the module · src/extras/**. */
-export function optInElements() {
-  const core = new Set(coreElements());
-  return registeredElements().filter((name) => !core.has(name));
+/** Registered, but only when the deck loads the module itself · everything
+ *  src/index.ts does not import. Not a lesser kind of component: the same
+ *  contract, the same guards, simply outside the convenience bundle. */
+export function separateElements() {
+  const bundled = new Set(bundledElements());
+  return registeredElements().filter((name) => !bundled.has(name));
 }
 
 /** Every page that publishes a component count. */

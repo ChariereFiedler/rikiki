@@ -649,6 +649,28 @@ export class DeckRoot extends LitElement {
     const bg = slide ? getComputedStyle(slide).backgroundColor : '';
     if (bg && isOpaqueColor(bg)) this.style.setProperty('--deck-letterbox-bg', bg);
     else this.style.removeProperty('--deck-letterbox-bg');
+    if (slide) this._repaintLetterboxWhenDefined(slide);
+  }
+
+  /** A slide can reach the engine before its own module does · an opt-in
+   *  component loads from its own script tag, and nothing orders the two.
+   *  Until it upgrades it has no shadow DOM and reports a TRANSPARENT
+   *  background, so the read above finds nothing and the bands keep the page
+   *  surface. This is the only measurement in the engine with no observer
+   *  behind it, so without this it would never be taken again.
+   *
+   *  Same shape as _stepWatcher below, which catches a step count that
+   *  arrives late for the same reason. */
+  private _repaintLetterboxWhenDefined(slide: Slide): void {
+    const tag = slide.localName;
+    if (!tag.startsWith('deck-') || customElements.get(tag)) return;
+    void customElements.whenDefined(tag).then(async () => {
+      // Defined is not painted · Lit renders in a microtask after the
+      // upgrade, and the background lives in the shadow root's styles.
+      await (slide as Slide & { updateComplete?: Promise<unknown> }).updateComplete;
+      // Only if it is still the slide on screen · the deck may have moved on.
+      if (this.slides[this.current] === slide) this._applyLetterbox(slide);
+    });
   }
 
   /** The scaling baseline is a framework concern, not a theme one: inject it
