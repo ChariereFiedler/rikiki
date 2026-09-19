@@ -1383,6 +1383,23 @@ script, so a standalone deck keeps them and stays offline. Forget the `<script>`
 and the tag stays an unknown element: it renders its text content, logs nothing,
 and the rest of the deck is unaffected.
 
+**Past about four added modules, stop adding script tags and bundle.** Each
+module is compiled on its own and carries its own copy of the shared code, and
+gzip compresses one large repetitive file far better than several small ones,
+so script tags stop paying off quickly. Measured on this release, gzipped:
+
+| what the deck loads | gzip |
+|---|---|
+| `dist/index.js` alone | 26 KB |
+| `dist/index.js` + 3 modules | 30 KB |
+| `dist/index.js` + 5 modules | 33 KB |
+
+`rikiki bundle` carries only the components the deck actually writes, in one
+file, so it is smaller than the plain bundle for any deck that does not use
+every component · and it is the only option that gets *smaller* as the deck
+gets simpler, rather than larger. Script tags are the convenient path for one
+or two extras, not the cheap one.
+
 Every evidence block below (`deck-csv`, `deck-table`, `deck-bar`,
 `deck-kpi-grid`, `deck-annotate`, and plain prose) takes a `deck-source`
 underneath it for the credit line · `deck-source` is a core atom (§6), not an

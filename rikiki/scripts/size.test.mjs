@@ -1,7 +1,15 @@
 import { readFileSync } from 'node:fs';
-import { relative } from 'node:path';
+import { relative, resolve } from 'node:path';
+import { gzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
-import { BUDGETS, REPO_ROOT, SIZE_SURFACES, measureSizes, toKb } from './size-surfaces.mjs';
+import {
+  BUDGETS,
+  PKG_DIR,
+  REPO_ROOT,
+  SIZE_SURFACES,
+  measureSizes,
+  toKb,
+} from './size-surfaces.mjs';
 
 // Every published size figure must match the artifact it describes, and the
 // v1.0 budgets must hold. Both were previously prose, copied by hand, and drifted.
@@ -66,3 +74,42 @@ describe('published size figures match the artifacts', () => {
 // names. It now reads those sizes from measureSizes() in its own Astro
 // frontmatter, so the table and this measurement are the same call and there is
 // no published literal left to compare.
+
+// ────────────────────────────────────────────────────────────────
+// The three figures the LLM reference publishes about script tags
+//
+// §20 tells an author when to stop adding <script> tags and bundle
+// instead. The advice is only worth following while its numbers are true,
+// and they move with every component that changes size. Derived here rather
+// than trusted, the same reason SIZE_SURFACES exists.
+// ────────────────────────────────────────────────────────────────
+
+describe('the script-tag table in the LLM reference', () => {
+  const REFERENCE = resolve(PKG_DIR, 'docs/llms/rikiki-reference.md');
+  const THREE = ['deck-bar', 'deck-quote', 'deck-table'];
+  const FIVE = [...THREE, 'deck-kpi-grid', 'deck-timeline'];
+
+  const gz = (file) => gzipSync(readFileSync(resolve(PKG_DIR, file))).length;
+  const withModules = (tags) =>
+    tags.reduce((sum, tag) => sum + gz(`dist/${tag}.js`), gz('dist/index.js'));
+
+  const rows = [
+    ['`dist/index.js` alone', gz('dist/index.js')],
+    ['`dist/index.js` + 3 modules', withModules(THREE)],
+    ['`dist/index.js` + 5 modules', withModules(FIVE)],
+  ];
+
+  it.each(rows)('%s states the measured size', (label, bytes) => {
+    const table = readFileSync(REFERENCE, 'utf8');
+    const row = table.split('\n').find((line) => line.startsWith(`| ${label} |`));
+    expect(row, `no row for "${label}" in the reference table`).toBeDefined();
+    expect(row).toContain(`| ${toKb(bytes)} KB |`);
+  });
+
+  it('still says adding tags costs more than it saves', () => {
+    // The advice itself, not its numbers · if five modules ever became
+    // cheaper than the bundle, the paragraph would be wrong rather than
+    // stale, and no size figure would say so.
+    expect(withModules(FIVE)).toBeGreaterThan(gz('dist/index.js'));
+  });
+});
