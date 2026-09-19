@@ -75,6 +75,11 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.60.0-noble
     steps:
       - uses: actions/checkout@v4
+      # This job runs in a container while the checkout belongs to the runner
+      # user, so git refuses the working tree as dubiously owned · the drift
+      # guards below are git commands and fail opaquely without this.
+      - name: let git read a workspace it does not own
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -97,7 +102,20 @@ jobs:
       # a drift guard is to say WHAT drifted.
       - name: dist/ is in sync with src/
         run: |
-          if git diff --quiet -- dist; then exit 0; fi
+          # Report git's own failure rather than swallowing it · the first run
+          # of this workflow exited 129 here, which is a git usage error and
+          # not a drift, and the bare command said nothing about which.
+          # set +e around it on purpose: the job shell is `bash -eo pipefail`,
+          # so a non-zero here would end the step before it can explain.
+          set +e
+          git diff --quiet -- dist
+          status=$?
+          set -e
+          [ "$status" -eq 0 ] && exit 0
+          if [ "$status" -ne 1 ]; then
+            echo "git exited $status · this is not a drift, read the message above"
+            exit "$status"
+          fi
           {
             echo '### dist/ drifted from src/'
             echo
