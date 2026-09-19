@@ -18,18 +18,18 @@ import './engine/deck-presenter.js';
 import './engine/deck-notes.js';
 
 // Layouts · slide-level
-import './layouts/deck-cover.js';
-import './layouts/deck-section.js';
-import './layouts/deck-feature.js';
-import './layouts/deck-split.js';
-import './layouts/deck-feature-cards.js';
-import './layouts/deck-photo.js';
-import './layouts/deck-takeaway.js';
-import './layouts/deck-bento.js';
+import './layout/deck-cover.js';
+import './layout/deck-section.js';
+import './layout/deck-feature.js';
+import './layout/deck-split.js';
+import './layout/deck-feature-cards.js';
+import './layout/deck-photo.js';
+import './layout/deck-takeaway.js';
+import './structure/deck-bento.js';
 
 // Molecules · containers, multi-slot, lifecycle
 import './molecules/deck-callout.js';
-import './molecules/deck-card.js';
+import './structure/deck-card.js';
 import './molecules/deck-md.js';
 import './molecules/deck-mermaid.js';
 import './molecules/deck-stat.js';
@@ -37,10 +37,10 @@ import './molecules/deck-metric.js';
 import './molecules/deck-tier-list.js';
 import './molecules/deck-step-list.js';
 import './molecules/deck-shortcut.js';
-import './molecules/deck-stack.js';
-import './molecules/deck-grid.js';
-import './molecules/deck-cell.js';
-import './molecules/deck-point.js';
+import './structure/deck-stack.js';
+import './structure/deck-grid.js';
+import './structure/deck-cell.js';
+import './structure/deck-point.js';
 import './molecules/deck-fit.js';
 import './molecules/deck-csv.js';
 
@@ -49,7 +49,7 @@ import './atoms/deck-badge.js';
 import './atoms/deck-kicker.js';
 import './atoms/deck-punch.js';
 import './atoms/deck-code.js';
-import './atoms/deck-source.js';
+import './structure/deck-source.js';
 
 // Public extension API · the plugin hook contract (deckRoot.use) and the
 // deck-code highlighter hook, re-exported so authors import them from the one

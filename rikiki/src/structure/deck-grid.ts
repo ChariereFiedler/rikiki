@@ -15,7 +15,7 @@
 
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { expandGap, expandTracks } from '../shared/grid-tracks.js';
+import { expandGap, expandTracks } from './grid-tracks.js';
 
 export type DeckGridAlign = 'start' | 'center' | 'end' | 'stretch';
 
