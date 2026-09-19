@@ -38,7 +38,7 @@ describe('the committed README says what the artifact measures', () => {
 
   it.each([
     ['the default bundle count', `**${bundledElements().length} elements in the default bundle**`],
-    ['the separately loaded count', `and ${separateElements().length} more you`],
+    ['the separately loaded count', `and ${separateElements().length} more`],
     ['the initial load', `**${toKb(sizes.initialLoadGzip)} KB gzip**`],
     ['the engine size', `${toKb(sizes.bundleGzip)} KB gzip of them`],
   ])('carries %s', (_label, expected) => {
