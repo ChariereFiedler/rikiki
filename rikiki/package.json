@@ -44,7 +44,7 @@
     ".claude/skills/rikiki-debug"
   ],
   "scripts": {
-    "build": "node build-vendor.mjs && node build.mjs && node build-standalone.mjs && tsc --emitDeclarationOnly -p tsconfig.build.json",
+    "build": "node build-vendor.mjs && node build.mjs && node build-standalone.mjs && node build-types.mjs",
     "vendor": "node build-vendor.mjs",
     "watch": "node build.mjs --watch",
     "typecheck": "tsc --noEmit",
