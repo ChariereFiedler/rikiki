@@ -14,7 +14,7 @@
 
 import { LitElement, css, html } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { coordsOf, outlineOf } from '../domain/deck-outline.js';
+import { coordsOf, outlineOf } from '../core/domain/deck-outline.js';
 
 interface Entry {
   readonly title: string;

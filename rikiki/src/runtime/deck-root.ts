@@ -16,20 +16,20 @@ import {
   coordsOf,
   outlineOf,
   supportsTwoD,
-} from '../domain/deck-outline.js';
-import { publishDeepLink, readDeepLink } from '../application/deep-link.js';
-import { parseHash } from '../domain/deck-link.js';
-import { isMove, keyIntent, resolveMove } from '../application/keymap.js';
-import { type MouseMechanism, mouseEnabled } from '../application/mouse-nav.js';
-import { FIT, type Viewport, clampPan, isAtFit, panBy, zoomAt } from '../domain/viewport.js';
-import { browserLocation } from '../infrastructure/browser-location.js';
+} from '../core/domain/deck-outline.js';
+import { publishDeepLink, readDeepLink } from '../core/application/deep-link.js';
+import { parseHash } from '../core/domain/deck-link.js';
+import { isMove, keyIntent, resolveMove } from '../core/application/keymap.js';
+import { type MouseMechanism, mouseEnabled } from '../core/application/mouse-nav.js';
+import { FIT, type Viewport, clampPan, isAtFit, panBy, zoomAt } from '../core/domain/viewport.js';
+import { browserLocation } from '../core/infrastructure/browser-location.js';
 import {
   advance as advanceFrom,
   back as backFrom,
   goToCoords as goToCoordsIn,
   goToSlide as goToSlideIn,
   samePosition,
-} from '../domain/navigation.js';
+} from '../core/domain/navigation.js';
 
 type Slide = HTMLElement & {
   applyStep?: (step: number) => void;
