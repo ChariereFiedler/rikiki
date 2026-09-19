@@ -73,6 +73,17 @@ jobs:
     container:
       # Pinned to the installed @playwright/test version, as GitLab does.
       image: mcr.microsoft.com/playwright:v1.60.0-noble
+    env:
+      # The job runs as root inside the container while the runner keeps its
+      # own HOME pointed at a directory root does not own. Chromium and WebKit
+      # do not care; Firefox refuses to launch and says so:
+      #   "Firefox is unable to launch if the $HOME folder isn't owned by the
+      #    current user."
+      # Every Firefox test then fails at browserType.launch, which reads like
+      # 179 broken tests and is one wrong variable. Same shape as the
+      # safe.directory step below · a container job inherits the runner's idea
+      # of who it is.
+      HOME: /root
     steps:
       - uses: actions/checkout@v4
       # This job runs in a container while the checkout belongs to the runner
