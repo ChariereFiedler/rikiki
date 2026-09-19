@@ -73,9 +73,10 @@ Deliberately not committed. `rewrite-history.sh` lists exactly what was
 scrubbed, so publishing it would undo the scrubbing; `gitlab-deploy.yml` is
 the topology itself.
 
-- `gitlab-deploy.yml` → a **private** repo. Point the GitLab project at it via
-  *Settings → CI/CD → CI configuration file*
-  (`rikiki/deploy.gitlab-ci.yml@tordu-jardin/cloud`).
+- `gitlab-deploy.yml` → **done**. It sits in the private `tordu-jardin/cloud`
+  at `rikiki/deploy.gitlab-ci.yml`, 160 lines, two jobs (`build-image`,
+  `smoke-test`) over two stages. Nothing is activated by its presence: the
+  rikiki project still reads its own `.gitlab-ci.yml`.
 - `rewrite-history.sh` → run on a clone. Backup bundle first, census before
   and after, and it **fails** if anything survives. It pushes nothing.
 - `rikiki-before-rewrite.bundle` → the way back. `git clone` it.
@@ -196,6 +197,28 @@ to them, and it must be corrected in the same change rather than left to rot:
 - **Existing clones must be re-cloned.** There is one.
 - **The first mirror push is a force push**, since the histories diverge.
   Every push after it is a fast-forward.
+
+## What is left, and in what order
+
+Everything that can be prepared is prepared. Three acts remain, and the third
+must stay third.
+
+1. **Two secrets on GitHub**, in the repository settings:
+   `GITLAB_PUSH_TOKEN` (a GitLab project access token with
+   `write_repository`) and `GITLAB_HOST_PATH` (the deployment remote, kept out
+   of the public tree deliberately). Until they exist, `mirror.yml` has
+   nothing to push with.
+
+2. **A green CI on GitHub.** It is red today for a reason now understood and
+   fixed · see the section above · but that fix reaches GitHub only when this
+   branch merges and the rewrite is replayed.
+
+3. **Then, last, repoint GitLab** · `ci_config_path` to
+   `rikiki/deploy.gitlab-ci.yml@tordu-jardin/cloud`. This is one API call and
+   could be made at any moment, which is precisely why it is worth writing
+   down that it must not be: it strips every check from the GitLab pipeline.
+   Do it while GitHub CI is red or the mirror is unwired, and the project has
+   no working verification left on either side.
 
 ## Decided
 
