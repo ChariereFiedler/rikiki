@@ -1,105 +1,201 @@
+![Rikiki](assets/header.webp)
+
 # Rikiki
 
-> A tiny Lit Web Components framework for technical presentations · zero-build for consumers, TypeScript for contributors.
+[![npm](https://img.shields.io/npm/v/rikiki-deck)](https://www.npmjs.com/package/rikiki-deck)
+[![license](https://img.shields.io/npm/l/rikiki-deck)](LICENSE)
+[![dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](#the-contract)
 
-This documentation tracks rikiki v0.7.1.
+**Slide decks written in HTML, by people who write code, that still open in five
+years without a toolchain to resurrect.**
 
-Serve the folder with any static HTTP server and open `index.html`. There is no consumer build step or toolchain to maintain; the shipped folder contains the runtime. Offline bundle tests verify that the delivered HTML loads without network requests · everything is Web standards (Custom Elements, Shadow DOM, ES Modules, CSS Custom Properties).
+You write `<deck-cover>`, `<deck-feature>`, `<deck-code>`. You serve the folder
+with any static HTTP server. That is the whole workflow. There is no build step
+between you and your finished deck, no `node_modules` in your presentation, and
+nothing to migrate when the next major lands.
 
-```
-.
-├── rikiki/                 · the framework (Lit components, themes, fonts)
-├── examples/               · example decks
-└── MANIFESTO.md            · why this exists
-```
+- **36 elements in the default bundle**, and 23 more you load only when a
+  slide needs one.
+- **43 KB gzip** for a deck that has loaded everything it needs to render:
+  engine, Lit, markdown. Measured, not estimated · see below.
+- **Zero production dependencies.** `npm install rikiki-deck` pulls nothing.
+- **Two themes**, re-themed by editing CSS custom properties. No package to fork.
+- **A CLI** that renders your deck to pictures, measures what is wrong with it,
+  exports a PDF, or folds the whole thing into one file that works offline.
 
-See [`MANIFESTO.md`](./MANIFESTO.md) for principles and [`ROADMAP.md`](./ROADMAP.md) for what's next.
+[Quickstart](#quickstart) · [The contract](#the-contract) · [Why you should not trust any of the above](#why-you-should-not-trust-any-of-the-above) · [The CLI](#the-cli) · [Contributing](CONTRIBUTING.md)
+
+## What this is not
+
+Presentation frameworks drifted. Reveal.js (2011) still speaks in global CSS
+classes and imperative JS plugins. Slidev (2021) ships Vue, Vite, UnoCSS,
+Shiki, Monaco and Mermaid · a quarter of a gigabyte of `node_modules` to render
+twenty slides. Both made defensible choices for the people they serve. Neither
+fits someone who wants to write a technical deck, give the talk, and reopen it
+next year without archaeology.
+
+So rikiki refuses things on purpose:
+
+- **No consumer build step.** Not "a fast one". None.
+- **No DSL.** No enhanced markdown, no `---` separators, no proprietary syntax.
+  Slides are HTML, because HTML is what will still parse in 2036.
+- **No plugin system** beyond one hook. A plugin architecture is a promise to
+  maintain an API for other people's code, forever.
+- **No embedded editor, no drawing tools, no SSR, no video recording, no
+  multiplexing.** Those are real features. They are somebody else's.
+
+If you want live-reloading MDX with a component marketplace, this is the wrong
+tool and Slidev is very good. If you have ever reopened a two-year-old deck and
+found a broken toolchain instead of a presentation, keep reading.
 
 ## Quickstart
 
-Start a static server at the repo root:
-
-```bash
-python3 -m http.server 7799
+```console
+$ npx rikiki-deck init talk.html
+rikiki · wrote talk.html · 1 KB
+rikiki · runtime copied to ./rikiki/ · serve this folder over HTTP, ES modules do not load from file://
+rikiki · next · edit talk.html · then `rikiki bundle talk.html` for one shareable file
 ```
 
-Then open one of the examples:
+Serve the folder with anything · `npx serve .` will do · and open `talk.html`.
+Edit the HTML, reload, done. ES modules do not load from `file://`, which is
+the only reason a server is involved at all.
 
-- <http://localhost:7799/examples/rikiki-tour/> · a guided tour of the layouts, atoms and navigation keys
-- <http://localhost:7799/rikiki/starter.html> · a blank template you can copy
-
-To author your own deck:
-
-1. Copy `rikiki/starter.html` to `examples/<my-deck>/index.html`
-2. Adjust the two paths inside:
-   ```html
-   <link rel="stylesheet" href="../../rikiki/tokens.css">
-   <script type="module" src="../../rikiki/dist/index.js"></script>
-   ```
-3. Write slides as `<deck-cover>`, `<deck-section>`, `<deck-feature>`, `<deck-split>`, `<deck-feature-cards>`, `<deck-takeaway>`, `<deck-photo>` · each is plain HTML with a few slots and attributes. See [`rikiki/docs/llms/rikiki-reference.md`](./rikiki/docs/llms/rikiki-reference.md) for the full tag/attribute/token list.
-4. Credit what you show with `<deck-source>`, and pair an image with its caption using `<deck-figure>`; `<deck-annotate>` badges take `above` / `below` / `left` / `right` anchors as well as pixel offsets, and `<deck-versus slide>` takes a `footer` slot under both sides.
-
-To see and measure the result: `npx rikiki render my-deck.html --steps` writes one picture per revealed state (`--baseline <dir>` says what moved since an earlier render), and `npx rikiki check my-deck.html --steps` reports what is wrong in every state, not only the opening one.
-
-## Themes
-
-Two themes ship by default. `tokens.css` is the **default theme** (Rikiki) · acid greens, mango orange, orchid pink on a deep nocturnal navy, with Unbounded + Inter + Space Mono. Use the alternative by importing it directly:
+A slide is an element with slots:
 
 ```html
-<!-- Default Rikiki theme -->
-<link rel="stylesheet" href="../../rikiki/tokens.css">
-
-<!-- Or the warm-paper Siliceum theme -->
-<link rel="stylesheet" href="../../rikiki/themes/siliceum.css">
+<deck-feature eyebrow="Measured">
+  <h1 slot="title">A slide states a message, not a topic</h1>
+  <deck-callout type="info">
+    Slots and attributes. No configuration object, no JSX.
+  </deck-callout>
+</deck-feature>
 ```
 
-Writing a third theme is a copy-paste of `rikiki/themes/rikiki.css` with the colors changed.
+Ship it as a single file that works with no network at all:
 
-## Navigation
+```console
+$ npx rikiki-deck bundle talk.html talk-offline.html
+rikiki · wrote talk-offline.html · 170 KB
+```
 
-Decks are **linear by default** · arrows move to the next / previous slide:
+That file inlines the runtime, the CSS, the fonts and the images. It opens from
+a USB stick, on a machine that has never heard of npm.
 
-- `←` / `→` (or `↑` / `↓`) · previous / next slide (or step)
-- `Space` / `PageDown` · advance · `PageUp` · back
-- `O` · overview grid · `Esc` to close
-- `P` · presenter / speaker-notes window
-- `Home` / `End` · first / last
-- `?` · help
+## The contract
 
-Mouse is on by default too: click to advance (Shift+click to go back), scroll
-wheel, and the bottom-left hint chips are clickable. Opt out with
-`mouse-nav="none"` on `<deck-root>`.
+**1 · Source is output, for the reader of your deck.** A deck folder contains
+the whole application. No transpilation, no toolchain for the author to
+maintain. The framework itself is written in TypeScript and compiled · that
+build belongs to contributors, and the promise does not extend to them. It is
+worth being precise about which half of a promise you are making.
 
-For chapter/slide **2D navigation**, opt in with `nav="2d"` on `<deck-root>`
-(with `<deck-section>` chapters): then `←` / `→` move between chapters and
-`↑` / `↓` within one.
+**2 · Standards first, Lit second.** Custom Elements, Shadow DOM, ES Modules,
+CSS Custom Properties · stable W3C specifications since 2018. Lit is used for
+ergonomics, about 7 KB gzip of it. If Lit vanished tomorrow the components
+would be rewritten on `customElements.define` and template strings, and your
+decks would keep running.
 
-URL hash stays flat (`#3` = slide 3, `#3.2` = slide 3 step 2) for shareability.
+**3 · Light by default.** The default bundle registers the 36 elements most
+decks use. The other 23 are one `<script>` tag each. Past about four of those,
+`rikiki bundle` is smaller than any combination of them · that threshold is
+measured and the figures are pinned by a test.
 
-## Rendering
+**4 · Themes are CSS, not packages.** Roughly a hundred custom properties.
+Writing a third theme is copying `themes/rikiki.css` and changing colours.
+Components expose their knobs as `--deck-*` properties that fall back to
+semantic `--rik-*` tokens, so one declaration re-themes every instance.
 
-By default a deck renders into a fixed logical canvas (1920×1080) scaled
-uniformly to fit, so every slide keeps an identical layout at any window size,
-letterboxed when the aspect differs. Add `fluid` on `<deck-root>` to opt out ·
-the deck then fills its box and reflows like a web page. Either way the deck is
-embed-safe · drop a `<deck-root>` inside a larger page and it scales to (or
-fills) its own container without touching the host page's scroll or typography.
+## Why you should not trust any of the above
+
+Every number in this file is a claim, and claims rot. Here is what is
+mechanical rather than hoped for.
+
+**Published figures are derived, not typed.** The size above is read from the
+built artifact by `scripts/size-surfaces.mjs`, and a test compares it against
+every page that quotes it · this README included. Type a number by hand and
+the build fails. The same holds for the component count: it comes from what
+`src/index.ts` imports, never from someone remembering to update a table.
+
+**Contrast is measured from the theme files.** Not sampled once and written
+into a comment. `theme-contrast.test.mjs` parses both themes and fails on a
+pair below the WCAG floor, which is how a red that reads fine on paper was
+caught measuring 3.97:1 on a dark code surface.
+
+**Every guard has been seen to fail.** A test nobody has watched go red is a
+test that defends nothing. The architecture rules, the component contract and
+the tree rules were each broken on purpose, one at a time, to check they bite.
+
+**The render net loads every fixture deck in a real browser, on three
+engines.** Chromium runs everything including print-to-PDF and accessibility;
+Firefox and WebKit run the contract. A component that appears in no fixture is
+measured by nothing, so a test refuses to let one exist.
+
+**The published `dist/` is reproducible.** It is committed, which is the whole
+zero-build promise, and that makes drift the obvious failure mode. A clean
+clone by someone who is not the maintainer rebuilds it byte for byte, and CI
+fails on any difference.
+
+**It says no, too.** `e2e/ink.spec.ts` reports where the ink sits on a slide
+and deliberately does not fail on it: the engine does not own vertical
+distribution yet, so a threshold there would encode taste, and a test that
+encodes taste gets worked around within a month. Two other checks were written,
+measured and deleted · a `part=` rule that could not tell a missing wrapper
+from a component that needs none, and a dead-property detector whose every
+remaining finding turned out to be a false positive.
+
+The reasoning behind the design lives in [`MANIFESTO.md`](./MANIFESTO.md) and
+the decisions in [`docs/design/`](./docs/design/), including the ones that were
+rejected and why.
+
+## The CLI
+
+`npx rikiki-deck <command>`. It needs Node; your deck does not.
+
+| Command | What it does |
+|---|---|
+| `init` | write an editable deck and its runtime, or one self-contained file |
+| `assemble` | build a deck from ordered partials |
+| `bundle` | fold an existing deck into a single offline file |
+| `render` | one PNG per slide, plus a gallery · `--steps` for each revealed state |
+| `check` | measure the deck and report what is wrong, from clipped text to a slide that says nothing |
+| `export` | PDF, one slide per page |
+| `skills` | install the Claude Code skills into a project |
+
+`check` is the one worth trying first. It opens the deck in a real browser and
+reports overflow, unreadable contrast, missing sources and slides whose title
+names a topic instead of stating a message.
 
 ## Contributing
 
-Sources are in `rikiki/src/**/*.ts`, organised by family · what a component serves: `engine/`, `layout/`, `structure/`, `text/`, `data/`, `media/`, plus `core/` for the navigation domain. Build with:
+Sources are organised by **family** · what a component serves, not how big it
+is: `engine/`, `layout/`, `structure/`, `text/`, `data/`, `media/`, plus
+`core/` for the navigation domain. One axis, held by tests.
 
 ```bash
-cd rikiki
-npm install
-npm run build      # esbuild → flat dist/*.js, then flat dist/*.d.ts beside them
-npm run typecheck  # tsc --noEmit
-npm test           # release-consistency suite (vitest)
+git clone https://github.com/ChariereFiedler/rikiki.git
+cd rikiki/rikiki && npm ci
+npm test                                   # the consistency suite
+npm run new:component -- text deck-thing   # scaffolds a conforming component
 ```
 
-Browser-verification fixtures live in `rikiki/decks/tests/*.html`. See
-[`CONTRIBUTING.md`](./CONTRIBUTING.md) for the full workflow.
+The generator writes a component that already passes every guard, and a test
+runs the generator and checks its output against those guards, so the template
+cannot quietly stop being right.
 
-## License
+[`CONTRIBUTING.md`](./CONTRIBUTING.md) for the workflow ·
+[`ROADMAP.md`](./ROADMAP.md) for what is next ·
+[`SECURITY.md`](./SECURITY.md) to report a vulnerability ·
+[`docs/llms/rikiki-reference.md`](./rikiki/docs/llms/rikiki-reference.md) for
+the full element reference, which is also what an agent reads.
 
-MIT.
+## The name
+
+*Rikiki* is French for "teeny", the word you use for something almost comically
+small. It was meant as a working title until the engine stopped growing, and
+then the engine stopped growing.
+
+This page documents rikiki v0.7.1 · the badge above tracks what is published,
+and `npm run bump` keeps the two from disagreeing.
+
+MIT licensed. Built by [Cédric Chariere Fiedler](https://github.com/ChariereFiedler).

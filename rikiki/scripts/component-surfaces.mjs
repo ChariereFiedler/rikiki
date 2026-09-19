@@ -94,6 +94,13 @@ export const COUNT_SURFACES = [
     label: 'cheatsheet intro',
     find: /Rikiki has (\d+) components/g,
   },
+  {
+    // The README claims its own figures are derived. That claim is only true
+    // while this row exists.
+    file: at('README.md'),
+    label: 'README default bundle',
+    find: /\*\*(\d+) elements in the default bundle\*\*/g,
+  },
 ];
 
 export const CATALOGUE_PAGE = at('site/src/pages/docs/components.astro');
