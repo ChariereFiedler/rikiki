@@ -35,7 +35,7 @@
 // their visibility. Respects prefers-reduced-motion.
 // ════════════════════════════════════════════════════════════════
 
-import type { DeckPlugin } from '../runtime/deck-root.js';
+import type { DeckPlugin } from './deck-root.js';
 
 type DocWithVT = Document & {
   startViewTransition?: (cb: () => void) => { finished: Promise<void> };

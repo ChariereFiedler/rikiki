@@ -60,7 +60,7 @@ const BROWSER_GLOBALS = [
 
 /** Directories the domain must never import from · everything there depends on
  *  the domain, so an import back would make the cycle the ADR forbids. */
-const OUTWARD = ['runtime', 'layouts', 'atoms', 'molecules', 'plugins', 'infrastructure'];
+const OUTWARD = ['engine', 'layout', 'structure', 'text', 'data', 'media', 'infrastructure'];
 
 describe('the navigation domain stays pure', () => {
   it('has source files to check', () => {
@@ -136,7 +136,7 @@ describe('the application layer orchestrates without reaching for the browser', 
 });
 
 describe('the edge delegates instead of deciding', () => {
-  const EDGE = resolve(PKG_DIR, 'src/runtime/deck-root.ts');
+  const EDGE = resolve(PKG_DIR, 'src/engine/deck-root.ts');
   const edge = readFileSync(EDGE, 'utf8');
 
   it('asks the domain and the application where to go', () => {
@@ -176,7 +176,7 @@ describe('adapters implement ports, they do not own rules', () => {
 
   it.each(infraFiles)('%s depends only on the layers above it', (file) => {
     const outward = importsOf(file).filter((s) =>
-      ['runtime', 'layouts', 'atoms', 'molecules', 'plugins'].some((d) => s.includes(`/${d}/`)),
+      ['engine', 'layout', 'structure', 'text', 'data', 'media'].some((d) => s.includes(`/${d}/`)),
     );
     expect(outward, `${rel(file)} reaches into the engine: ${outward.join(', ')}`).toEqual([]);
   });
