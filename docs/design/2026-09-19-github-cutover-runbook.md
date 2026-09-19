@@ -61,16 +61,47 @@ three-engine suite twice.
 - `.github/workflows/publish.yml` · tag-triggered publish with provenance,
   and a guard that the tag matches `package.json`
 
-## Prepared, outside this repository
+## Prepared, outside this repository · `~/lab/rikiki-cutover/`
 
-Both are in the session scratchpad and must be placed by hand:
+Deliberately not committed. `rewrite-history.sh` lists exactly what was
+scrubbed, so publishing it would undo the scrubbing; `gitlab-deploy.yml` is
+the topology itself.
 
 - `gitlab-deploy.yml` → a **private** repo. Point the GitLab project at it via
   *Settings → CI/CD → CI configuration file*
   (`rikiki/deploy.gitlab-ci.yml@tordu-jardin/cloud`).
-- `rewrite-history.sh` → run on a clone. It takes a backup bundle first,
-  counts the offending occurrences before and after, and **fails** if any
-  survive. It pushes nothing.
+- `rewrite-history.sh` → run on a clone. Backup bundle first, census before
+  and after, and it **fails** if anything survives. It pushes nothing.
+- `rikiki-before-rewrite.bundle` → the way back. `git clone` it.
+
+### Dry run, 2026-09-19
+
+Run against `main` at `fd5a0e3`, and verified rather than trusted:
+
+| check | result |
+|---|---|
+| absolute paths left in history | 0 |
+| mentions of the client | 0 |
+| commits touching the removed topology | 0 |
+| author identities | **1** |
+| tags carried over | v0.3.0 … v0.7.0 |
+| files at the tip | 612 → 609 |
+| **file contents changed at the tip** | **0** |
+
+The last row is the one that matters: the only difference at the tip is the
+three intended removals. Every other blob is byte-identical, so the text
+replacements touched history and nothing else.
+
+**Eight commits disappear**, all legitimately: seven touched only the CI or
+the deploy files, and the eighth is the commit that neutralised the paths in
+the working tree · the rewrite does globally what it did locally, so its diff
+becomes empty. Verified one by one, by subject.
+
+`.cloud/nginx.conf` and `.cloud/site-check.Dockerfile` are **kept**, and the
+script fails if they are not: they describe how the static site is served and
+how that is checked, hold nothing internal, and `ci.yml` builds that image.
+An earlier draft removed all of `.cloud/` and would have broken the public CI
+it was written alongside.
 
 ## Order, and why it is this order
 
@@ -85,6 +116,16 @@ Both are in the session scratchpad and must be placed by hand:
 5. **Repoint GitLab last**: force-push the rewritten history, set the external
    CI config path, delete nothing by hand (the rewrite already removed the
    deploy files), and restrict write access to the mirror token alone.
+
+## Docs that go stale the day of the cutover
+
+No test or script reads the three removed files · checked. Only prose refers
+to them, and it must be corrected in the same change rather than left to rot:
+
+- `docs/RUNBOOK.md` and `.claude/skills/ci-pipeline-orchestration/SKILL.md`
+  describe a GitLab pipeline that will no longer hold the checks.
+- `rikiki/.claude/skills/rikiki-component/SKILL.md` points a contributor at
+  `.gitlab-ci.yml` for the `dist/` drift guard, which moves to `ci.yml`.
 
 ## What breaks, and what it costs
 
