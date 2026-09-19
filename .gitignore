@@ -1,9 +1,6 @@
 # Dependencies
 node_modules/
 
-# Local-only client deck, not part of the OSS project
-js-loading/
-
 # Playwright
 test-results/
 playwright-report/
