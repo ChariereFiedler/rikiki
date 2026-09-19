@@ -193,6 +193,16 @@ export declare class DeckRoot extends LitElement {
      *  surface · removing the override lets the bands fall back to that same
      *  surface, which stays seamless too. */
     private _applyLetterbox;
+    /** A slide can reach the engine before its own module does · an opt-in
+     *  component loads from its own script tag, and nothing orders the two.
+     *  Until it upgrades it has no shadow DOM and reports a TRANSPARENT
+     *  background, so the read above finds nothing and the bands keep the page
+     *  surface. This is the only measurement in the engine with no observer
+     *  behind it, so without this it would never be taken again.
+     *
+     *  Same shape as _stepWatcher below, which catches a step count that
+     *  arrives late for the same reason. */
+    private _repaintLetterboxWhenDefined;
     /** The scaling baseline is a framework concern, not a theme one: inject it
      *  globally so any theme (or none) gets it. The rem unit tracks the logical
      *  canvas height · the #stage transform does the responsive scaling · and the
