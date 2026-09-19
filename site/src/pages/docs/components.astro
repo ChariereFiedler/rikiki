@@ -13,9 +13,9 @@ import TokenReference from '../../components/TokenReference.astro';
 const componentSurfaces = pathToFileURL(
   resolve(process.cwd(), '../rikiki/scripts/component-surfaces.mjs'),
 ).href;
-const { coreElements, optInElements } = await import(/* @vite-ignore */ componentSurfaces);
-const coreCount = coreElements().length;
-const optInCount = optInElements().length;
+const { bundledElements, separateElements } = await import(/* @vite-ignore */ componentSurfaces);
+const coreCount = bundledElements().length;
+const optInCount = separateElements().length;
 
 const layoutTags = new Set(['deck-cover', 'deck-section', 'deck-feature', 'deck-split', 'deck-feature-cards', 'deck-takeaway', 'deck-photo', 'deck-bento']);
 

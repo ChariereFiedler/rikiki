@@ -9,9 +9,9 @@ import { pathToFileURL } from 'node:url';
 const surfaces = pathToFileURL(
   resolve(process.cwd(), '../rikiki/scripts/component-surfaces.mjs'),
 ).href;
-const { catalogueCounts, optInElements } = await import(/* @vite-ignore */ surfaces);
+const { catalogueCounts, separateElements } = await import(/* @vite-ignore */ surfaces);
 const { layouts, atoms } = catalogueCounts();
-const optIn = optInElements().length;
+const optIn = separateElements().length;
 
 const sections = [
   {
