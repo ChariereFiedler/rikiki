@@ -27,7 +27,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { slideBase } from '../shared-styles.js';
-import { expandGap, expandTracks } from '../shared/grid-tracks.js';
+import { expandGap, expandTracks } from './grid-tracks.js';
 
 export type DeckBentoAlign = 'start' | 'center' | 'end' | 'stretch';
 

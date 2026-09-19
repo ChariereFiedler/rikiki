@@ -8,7 +8,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { slideBase } from '../shared-styles.js';
-import { spreadValue } from '../shared/slide-fill.js';
+import { spreadValue } from './slide-fill.js';
 
 @customElement('deck-takeaway')
 export class DeckTakeaway extends LitElement {

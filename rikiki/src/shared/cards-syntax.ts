@@ -15,7 +15,7 @@
 // and unit-testable.
 // ════════════════════════════════════════════════════════════════
 
-import { parseSpan } from './grid-tracks.js';
+import { parseSpan } from '../structure/grid-tracks.js';
 
 export interface CardOpts {
   cols?: number;
