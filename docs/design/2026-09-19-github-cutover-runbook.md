@@ -114,12 +114,19 @@ ever existed in history: no `js-loading/` file was tracked, so no deliverable
 is in there. What was in there was the *mention* · a `.gitignore` comment, a
 few planning docs, one commit subject.
 
-**Replacing the name was not enough.** The `.gitignore` comment read
-`Local-only client deck, not part of the OSS project`, and the middleware plus the product identify a studio as precisely
-as its name does to anyone in that industry. Renaming to "client" would have
-published the same fact in two words instead of one. All three go, and the
-census now counts all three · a first pass reported "0 mentions" while the
-line was still sitting there.
+**Replacing the name was not enough.** The `.gitignore` comment named the
+client twice: once by name, and once by the middleware and the product they
+ship it in, which identify a studio just as precisely to anyone in that
+industry. Scrubbing only the name would have published the same fact in two
+words instead of one. The census counts all three terms now · a first pass
+reported "0 mentions" while the second half of the line sat untouched, which
+is a guard measuring the wrong thing and returning the right number.
+
+This paragraph deliberately names none of them. An earlier draft quoted the
+line to explain what was removed, and the rewrite then scrubbed the runbook
+itself · leaving a paragraph that claimed the comment "read" its own redacted
+form and referred to a middleware it no longer named. A document about a
+scrub has to survive that scrub.
 
 `.cloud/nginx.conf` and `.cloud/site-check.Dockerfile` are **kept**, and the
 script fails if they are not: they describe how the static site is served and
