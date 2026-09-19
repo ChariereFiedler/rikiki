@@ -26,7 +26,7 @@
 
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { parseSpan, toTrack } from './grid-tracks.js';
+import { parseSpan, toTrack } from '../shared/grid-tracks.js';
 
 export type DeckCellAlign = 'start' | 'center' | 'end' | 'stretch';
 export type DeckCellJustify = 'start' | 'center' | 'end' | 'between';

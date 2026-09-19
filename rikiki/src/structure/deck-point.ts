@@ -44,7 +44,7 @@
 
 import { LitElement, css, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { parseSpan, toTrack } from './grid-tracks.js';
+import { parseSpan, toTrack } from '../shared/grid-tracks.js';
 
 export type DeckPointAlign = 'start' | 'center' | 'end' | 'stretch';
 
