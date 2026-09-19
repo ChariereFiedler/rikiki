@@ -187,6 +187,52 @@ Nothing downstream was affected while this was red: `mirror.yml` is gated on
 CI passing and correctly skipped every run, so GitLab received nothing and the
 site deployed as before.
 
+## Settled · then Firefox would not start, for the same kind of reason
+
+With the drift guard fixed, three more runs failed in the same job while the
+same commit was green on GitLab **and** green in `mcr.microsoft.com/playwright:v1.60.0-noble`
+on a workstation, `CI=1`, one worker: 606 passed, 0 failed. Image and content
+both exonerated by measurement, leaving only the runner.
+
+And the runner's answer was unreadable. On a public repository the logs and
+the uploaded report both answer 403 without a token; only the check-run
+annotations are anonymous, and the `list` reporter writes none. So the first
+fix was not a fix at all · adding Playwright's `github` reporter, which emits
+one annotation per failure. **A check nobody outside can read is a check that
+only works for whoever holds the token**, which for a public repository is the
+wrong half of the point.
+
+With it, the browser said it plainly:
+
+> Firefox is unable to launch if the `$HOME` folder isn't owned by the current
+> user.
+
+The job runs as root in the container while the runner keeps `HOME` on a
+directory root does not own. Chromium and WebKit do not mind. Firefox refuses,
+so all 179 of its tests died at `browserType.launch` · a wall of red from one
+variable. `HOME: /root` on the job, and **CI is green on GitHub**, all four
+jobs, first time.
+
+Both failures are the same lesson twice: a container job inherits the runner's
+idea of who it is, and finds out one subsystem at a time · git first, then the
+browser. Worth expecting a third.
+
+### A GitLab flake, which is a different animal · issue #25
+
+Not to be confused with the above. Three GitLab runs failed on a different
+Firefox test each time, never on an assertion, and the third died in
+`browser.newContext` rather than in a test at all. Raising the deadline to 90 s
+moved where it surfaced instead of fixing it, which is the useful thing a
+failed fix tells you. It fits resource exhaustion on that small VPS, and it
+stops mattering when step 3 moves the checks off it.
+
+One real saving came out of looking: `render-check.spec.ts` and
+`workflow-recipes.spec.ts` take no `page` · they shell out to the CLI, which
+drives its own Chromium · and they were running once per engine for one
+result. 16 of the suite's 35 minutes. They have their own `cli` project now,
+and `scripts/e2e-projects.test.mjs` derives the list from the sources so the
+next browser-free spec cannot quietly triple.
+
 ## Docs that go stale the day of the cutover
 
 No test or script reads the three removed files · checked. Only prose refers
@@ -207,6 +253,14 @@ to them, and it must be corrected in the same change rather than left to rot:
 - **The first mirror push is a force push**, since the histories diverge.
   Every push after it is a fast-forward.
 
+  Confirmed, and it says something better than it sounds: replaying the
+  rewrite on a `main` that has moved forward reproduces every earlier commit
+  **bit for bit** and appends the new ones. Four replays so far, four
+  fast-forwards to GitHub, no force after the first. So the rewrite is a
+  deterministic function of the history, not a one-time event · which is what
+  makes it safe to keep the two sides in step by replaying rather than by
+  remembering what was done.
+
 ## What is left, and in what order
 
 Everything that can be prepared is prepared. Three acts remain, and the third
@@ -218,10 +272,15 @@ must stay third.
    of the public tree deliberately). Until they exist, `mirror.yml` has
    nothing to push with.
 
-2. **A green CI on GitHub.** The cause is understood and fixed · see the
-   section above · and the fix reaches GitHub with the replayed rewrite. It
-   has to be watched once there: the failure was in the runner, not in the
-   content, so nothing local can prove it in advance.
+   **This one cannot be done from here.** Setting a repository secret is an
+   API call, and the only GitHub credential on this machine is an SSH key,
+   which pushes and reads nothing else. So the mirror stays unwired until
+   somebody with the web UI or a token adds them · and every replay until then
+   is the manual push standing in for it.
+
+2. **A green CI on GitHub.** → done. Four jobs green on the rewritten `main`.
+   Both causes were in the runner rather than the content, so nothing local
+   could have proved either in advance · see the two sections above.
 
 3. **Then, last, repoint GitLab** · `ci_config_path` to
    `rikiki/deploy.gitlab-ci.yml@tordu-jardin/cloud`. This is one API call and
