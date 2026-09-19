@@ -99,6 +99,11 @@ jobs:
       - name: the committed examples are current
         run: npm run examples -- --check
         working-directory: rikiki
+      # The root README is generated from README.template.md with measured
+      # figures · the same drift guard, for the same reason.
+      - name: the committed README is current
+        run: npm run readme -- --check
+        working-directory: rikiki
       - run: node scripts/release-smoke.mjs
         working-directory: rikiki
       - run: npx playwright test

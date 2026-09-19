@@ -105,6 +105,9 @@ e2e:
     # examples/*/index.html are generated single-file bundles served in
     # production · the same drift guard dist/ gets, for the same reason.
     - npm run examples -- --check
+    # The root README is generated from README.template.md with measured
+    # figures · the same drift guard dist/ and the examples get.
+    - npm run readme -- --check
     - node scripts/release-smoke.mjs
     - npx playwright test
   artifacts:

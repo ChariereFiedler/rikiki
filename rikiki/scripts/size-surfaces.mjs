@@ -131,15 +131,12 @@ export const SIZE_SURFACES = [
     find: /([\d.]+) KB gzip/g,
     expect: 'initialLoadGzip',
   },
-  {
-    // The README says its numbers are derived rather than typed. This row is
-    // what makes that sentence true · the pattern is anchored on the bold
-    // headline figure so the other sizes in that file are not swept in.
-    file: at('README.md'),
-    label: 'README initial load',
-    find: /\*\*([\d.]+) KB gzip\*\*/g,
-    expect: 'initialLoadGzip',
-  },
+  // The root README is NOT a surface: it is generated from
+  // README.template.md with these same measurements, and
+  // `npm run readme -- --check` is what holds it. Checking a generated file
+  // against the source it was generated from is a second mechanism for one
+  // property, and the weaker of the two · it would pass on a README that had
+  // drifted in every other respect.
 ];
 
 /* The plugins page and the docs overview used to publish their sizes as typed
