@@ -12,13 +12,14 @@
     "declarationMap": false,
     "emitDeclarationOnly": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    // rootDir lives in tsconfig.build.json · it constrains what is EMITTED,
+    // and tools/ is type-checked here without ever being emitted.
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "noUncheckedIndexedAccess": false,
     "noImplicitOverride": true
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "tools/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

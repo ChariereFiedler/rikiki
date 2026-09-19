@@ -56,8 +56,8 @@
     "test:e2e": "playwright test",
     "test:smoke": "playwright test --grep @smoke",
     "release:smoke": "node scripts/release-smoke.mjs",
-    "lint": "biome check src scripts",
-    "format": "biome format --write src scripts",
+    "lint": "biome check src scripts tools",
+    "format": "biome format --write src scripts tools",
     "bump": "node scripts/bump-version.mjs",
     "prepublishOnly": "npm run build && npm test"
   },
