@@ -75,6 +75,29 @@ package-check:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
 
+# Lockfile drift guard · `npm ci` refuses a lock out of sync with package.json
+# (EUSAGE), so package-check and e2e both die in their install step with a raw
+# error buried in a heavy job. This runs the same coherence check on its own, in
+# the cheap `check` stage, and fails fast with an actionable message before those
+# jobs waste minutes installing. `--dry-run` validates package.json ↔ lock
+# without writing node_modules; `--prefer-offline` skips re-resolving `^` ranges,
+# so a patch published upstream between commit and run cannot make it flaky.
+lockfile-sync:
+  stage: check
+  image: ${NODE_IMAGE}
+  script:
+    - cd rikiki
+    - |
+      npm ci --dry-run --prefer-offline --no-audit || {
+        echo "ERROR · rikiki/package-lock.json drifted from rikiki/package.json"
+        echo "Repair it: cd rikiki && npm install, then commit the updated package-lock.json"
+        exit 1
+      }
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+
 # Render net · loads every fixture deck in a real browser and asserts the
 # engine upgrades, slides render, navigation works and content has no JS errors.
 # Also runs the offline-bundle, print/PDF and accessibility suites.
