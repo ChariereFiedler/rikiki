@@ -1359,7 +1359,9 @@ export class DeckRoot extends LitElement {
     for (const p of this._plugins) {
       p.applyStep?.(this.step, slide, this._context());
     }
-    this.dispatchEvent(new CustomEvent('step-change', { detail: { step: this.step, steps: this._maxSteps() } }));
+    this.dispatchEvent(
+      new CustomEvent('step-change', { detail: { step: this.step, steps: this._maxSteps() } }),
+    );
   }
 
   /** Keep numbering on all slide layouts; hide it only in overlay modes. */

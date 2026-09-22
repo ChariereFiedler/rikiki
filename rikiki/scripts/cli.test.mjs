@@ -178,7 +178,10 @@ describe('bundle · what it refuses', () => {
   });
 
   it('names rolldown and exits non-zero when it is absent', () => {
-    writeFileSync(join(dir, 'deck.html'), `<script type="module">console.log("bundle fixture")</script><deck-root><deck-takeaway/></deck-root>`);
+    writeFileSync(
+      join(dir, 'deck.html'),
+      `<script type="module">console.log("bundle fixture")</script><deck-root><deck-takeaway/></deck-root>`,
+    );
     const run = cliWithoutRolldown('bundle', 'deck.html');
     expect(run.status).toBe(1);
     expect(run.stderr).toMatch(/npm i -D rolldown/);

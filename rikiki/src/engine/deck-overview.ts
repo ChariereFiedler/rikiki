@@ -432,7 +432,12 @@ function snapshotSlide(slide: Slide, idx: number): HTMLElement {
 
 /** Build a cell's thumbnail · awaits in-flight mermaid renders first so the
  *  snapshot serializes real SVG even for never-visited slides. */
-async function buildThumb(cell: HTMLElement, src: Slide, cache: Map<Slide, CachedThumb>, contextKey: string): Promise<void> {
+async function buildThumb(
+  cell: HTMLElement,
+  src: Slide,
+  cache: Map<Slide, CachedThumb>,
+  contextKey: string,
+): Promise<void> {
   const key = contextKey + ':' + cell.dataset['idx'] + ':' + src.outerHTML;
   const cached = cache.get(src);
   if (cached?.key === key) {
@@ -457,7 +462,8 @@ async function buildThumb(cell: HTMLElement, src: Slide, cache: Map<Slide, Cache
   }
   const preview = document.createElement('deck-root');
   preview.setAttribute('data-overview-snapshot', '');
-  for (const attr of ['preview', 'no-hint', 'no-arrows', 'no-counter']) preview.setAttribute(attr, '');
+  for (const attr of ['preview', 'no-hint', 'no-arrows', 'no-counter'])
+    preview.setAttribute(attr, '');
   const sourceRoot = src.closest('deck-root');
   for (const attr of ['width', 'height', 'class', 'lang', 'dir', 'style']) {
     const value = sourceRoot?.getAttribute(attr);
@@ -487,20 +493,33 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
   }
 
   let cache = thumbCaches.get(host);
-  if (!cache) { cache = new Map(); thumbCaches.set(host, cache); }
+  if (!cache) {
+    cache = new Map();
+    thumbCaches.set(host, cache);
+  }
   const liveSlides = new Set(opts.slides);
   for (const [slide, entry] of cache) {
-    if (!liveSlides.has(slide)) { entry.thumb.remove(); cache.delete(slide); }
+    if (!liveSlides.has(slide)) {
+      entry.thumb.remove();
+      cache.delete(slide);
+    }
   }
-  const contextKey = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
-    .filter(node => !node.id.startsWith('rik-deck-'))
-    .map(node => node.outerHTML).join('') +
-    ['width', 'height', 'class', 'lang', 'dir', 'style'].map(name => host.getAttribute(name)).join('|');
+  const contextKey =
+    Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+      .filter((node) => !node.id.startsWith('rik-deck-'))
+      .map((node) => node.outerHTML)
+      .join('') +
+    ['width', 'height', 'class', 'lang', 'dir', 'style']
+      .map((name) => host.getAttribute(name))
+      .join('|');
 
-  const viewKey = contextKey + opts.slides.map(sourceKey).join('') + JSON.stringify(opts.chapters.map(c => c.startIdx));
+  const viewKey =
+    contextKey +
+    opts.slides.map(sourceKey).join('') +
+    JSON.stringify(opts.chapters.map((c) => c.startIdx));
   const previous = views.get(host);
   if (previous?.key === viewKey) {
-    grid.querySelectorAll<HTMLElement>('.ov-cell').forEach(cell => {
+    grid.querySelectorAll<HTMLElement>('.ov-cell').forEach((cell) => {
       const current = Number(cell.dataset['idx']) === opts.currentIdx;
       cell.toggleAttribute('data-current', current);
       if (current) cell.setAttribute('aria-current', 'true');
@@ -619,19 +638,24 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
         if (!src) continue;
         cell.dataset['building'] = '1';
         lazyObserver.unobserve(cell);
-        const build = () => { void buildThumb(cell, src, cache!, contextKey).catch((err) => {
-          // Release the cell on failure · the next scroll-into-view retries
-          // instead of leaving the thumbnail permanently blank. Cap the retries
-          // so a slide that deterministically fails to snapshot doesn't re-throw
-          // (and re-warn) on every scroll.
-          const tries = Number(cell.dataset['tries'] ?? '0') + 1;
-          cell.dataset['tries'] = String(tries);
-          console.warn('[rikiki/overview] thumbnail build failed', err);
-          delete cell.dataset['building'];
-          if (tries < 3 && !disposed) lazyObserver.observe(cell);
-        }); };
-        if (host.hasAttribute("overview")) build();
-        else { pending.push(build); schedule(); }
+        const build = () => {
+          void buildThumb(cell, src, cache!, contextKey).catch((err) => {
+            // Release the cell on failure · the next scroll-into-view retries
+            // instead of leaving the thumbnail permanently blank. Cap the retries
+            // so a slide that deterministically fails to snapshot doesn't re-throw
+            // (and re-warn) on every scroll.
+            const tries = Number(cell.dataset['tries'] ?? '0') + 1;
+            cell.dataset['tries'] = String(tries);
+            console.warn('[rikiki/overview] thumbnail build failed', err);
+            delete cell.dataset['building'];
+            if (tries < 3 && !disposed) lazyObserver.observe(cell);
+          });
+        };
+        if (host.hasAttribute('overview')) build();
+        else {
+          pending.push(build);
+          schedule();
+        }
       }
     },
     { root: null, rootMargin: '300px 0px', threshold: 0 },
