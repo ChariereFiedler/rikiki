@@ -8,7 +8,7 @@
 // Used by both `rikiki bundle <deck.html>` and `rikiki init --standalone`.
 // ════════════════════════════════════════════════════════════════
 
-import { readFileSync, existsSync, writeFileSync, rmSync, mkdtempSync } from 'node:fs';
+import { readFileSync, existsSync, writeFileSync, rmSync, mkdtempSync, realpathSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { ExpectedError } from './cli-error.mjs';
@@ -47,6 +47,8 @@ const MIME = {
   woff2: 'font/woff2', woff: 'font/woff', ttf: 'font/ttf', otf: 'font/otf',
   svg: 'image/svg+xml', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg',
   gif: 'image/gif', webp: 'image/webp', avif: 'image/avif',
+  mp4: 'video/mp4', webm: 'video/webm', ogv: 'video/ogg',
+  mp3: 'audio/mpeg', wav: 'audio/wav', ogg: 'audio/ogg', m4a: 'audio/mp4',
 };
 
 /** Read a local file as a `data:<mime>;base64,…` URI. */
@@ -215,7 +217,7 @@ export async function inlineDeck({
 
   // Precompute the curated component bundle from the original markup (before we
   // inline big <script> blocks the tag scan must not see).
-  const curated = (cure && !all) ? await curatedBundle(html, pkgRoot, { include, minify: minifyJs }) : null;
+  const curated = (cure && !all) ? scanComponents(html, pkgRoot, include) : null;
 
   // ── Asset passes run BEFORE script bundling · their regexes must never see
   //    the inlined JS (which contains <img>/style= in string literals). ──────
@@ -233,12 +235,13 @@ export async function inlineDeck({
     return extra ? svg.replace(/<svg\b/, `<svg${extra}`) : svg;
   });
 
-  // b. any image-bearing attribute (img/deck-photo src, deck-cover brand-src,
-  //    video poster, …) pointing at a local image → base64 data URI.
+  // b. image/media attributes (including video/audio/source src) pointing at
+  //    local assets → base64 data URI. Never inline JS in this pass.
   out = out.replace(/\b(src|brand-src|poster|data-src)=(["'])([^"']+)\2/gi, (m, name, q, ref) => {
     if (ref.startsWith('data:') || isExternal(ref)) return m;
-    if (!/\.(png|jpe?g|gif|webp|avif|svg)$/i.test(ref)) return m;   // only images, never JS
-    const abs = resolveRef(ref, baseDir, pkgRoot);
+    const clean = ref.split(/[?#]/)[0];
+    if (!/\.(png|jpe?g|gif|webp|avif|svg|mp4|webm|ogv|mp3|wav|ogg|m4a)$/i.test(clean)) return m;
+    const abs = resolveRef(clean, baseDir, pkgRoot);
     return existsSync(abs) ? `${name}=${q}${dataUri(abs)}${q}` : m;
   });
 
@@ -262,31 +265,49 @@ export async function inlineDeck({
     return `<style>\n${css}\n</style>`;
   });
 
-  // 2. inline <script type="module">…</script> WITH imports → bundle.
-  out = await replaceAsync(out, /<script\b[^>]*\btype=["']module["'][^>]*>([\s\S]*?)<\/script>/gi,
-    async (full, body) => {
-      if (!/\bimport\b/.test(body)) return full;
-      const code = await bundleInlineModule(body, baseDir, pkgRoot, { minify: minifyJs });
-      return `<script type="module">\n${escapeScript(code)}\n</script>`;
-    });
-
-  // 3. <script src="..."> → inline. The rikiki barrel (dist/index.js) is swapped
-  //    for the curated bundle; other module scripts bundle as-is; classic
-  //    scripts (mermaid UMD) are inlined verbatim.
-  out = await replaceAsync(out, /<script\b([^>]*)\bsrc=["']([^"']+)["']([^>]*)><\/script>/gi,
-    async (full, pre, src, post) => {
-      if (isExternal(src)) return full;
-      const abs = resolveRef(src, baseDir, pkgRoot);
-      const isModule = /type=["']module["']/.test(pre + post);
-      const isBarrel = abs === resolve(pkgRoot, 'dist', 'index.js');
-      const code = curated && isBarrel ? curated
-        : isModule ? await bundleEntry(abs, { minify: minifyJs })
-        : readFileSync(abs, 'utf8');
-      // Tag the inlined framework bundle so the presenter can re-inject it into
-      // its preview iframes (no external index.js to <script src> in one file).
-      const attrs = isModule ? ' type="module" data-rikiki-bundle' : '';
-      return `<script${attrs}>\n${escapeScript(code)}\n</script>`;
-    });
+  // One graph for all deferred local modules: shared chunks and custom element
+  // registrations must execute once, including barrel + granular imports.
+  const modules = [];
+  const marker = '<!-- rikiki-module-entry -->';
+  out = out.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi, (full, attrs, body) => {
+    const src = attr(attrs, 'src');
+    if (!/\btype\s*=\s*["']module["']/i.test(attrs)) {
+      if (!src || isExternal(src)) return full;
+      return `<script>\n${escapeScript(readFileSync(resolveRef(src, baseDir, pkgRoot), 'utf8'))}\n</script>`;
+    }
+    if (/\basync\b/i.test(attrs) || (src && isExternal(src))) {
+      throw new ExpectedError('bundle requires deferred local module scripts; async or remote module scripts cannot share its offline graph');
+    }
+    if (src) {
+      const abs = realpathSync(resolveRef(src, baseDir, pkgRoot));
+      const barrel = resolve(pkgRoot, 'dist/index.js');
+      if (curated && existsSync(barrel) && abs === realpathSync(barrel)) {
+        modules.push(...curated.map(tag => ({ path: realpathSync(resolve(pkgRoot, 'dist', `${tag}.js`)) })));
+      } else modules.push({ path: abs });
+    } else if (body.trim()) modules.push({ source: body });
+    return modules.length ? marker : '';
+  });
+  if (modules.length) {
+    const rolldown = await loadRolldown();
+    const virtual = '\0rikiki-entry';
+    const inline = new Map(modules.filter(m => m.source).map((m, i) => [`\0rikiki-inline-${i}`, m.source]));
+    let inlineIndex = 0;
+    const entry = modules.map(m => `import ${JSON.stringify(m.path ?? `\0rikiki-inline-${inlineIndex++}`)};`).join('\n');
+    const bundle = await rolldown({ input: virtual, logLevel: 'silent', plugins: [{
+      name: 'rikiki-deck-modules',
+      resolveId(id, importer) {
+        if (id === virtual || inline.has(id)) return id;
+        if (inline.has(importer) && id.startsWith('.')) return realpathSync(resolveRef(id, baseDir, pkgRoot));
+        return null;
+      },
+      load(id) { return id === virtual ? entry : inline.get(id) ?? null; },
+    }] });
+    try {
+      const { output } = await bundle.generate({ format: 'esm', codeSplitting: false, minify: minifyJs });
+      const script = `<script type="module" data-rikiki-bundle>\n${escapeScript(output[0].code)}\n</script>`;
+      out = out.replace(marker, () => script).replaceAll(marker, '');
+    } finally { await bundle.close?.(); }
+  }
 
   // Optional · collapse blank lines / trailing spaces (safe, conservative).
   if (minifyHtml) out = out.replace(/[ \t]+$/gm, '').replace(/\n{2,}/g, '\n');

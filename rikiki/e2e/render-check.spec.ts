@@ -76,6 +76,30 @@ const reportFast = (name: string) => {
 };
 const codes = (r: { json: any }) => r.json.diagnostics.map((d: any) => d.code);
 
+test('checks third-party custom elements without treating unknown namespaces as errors', () => {
+  deck('third-party', `<deck-feature><h1 slot="title">Extensions</h1>
+    <script>
+      customElements.define('sales-box', class extends HTMLElement {
+        static get observedAttributes() { return ['label']; }
+        connectedCallback() {
+          this.attachShadow({ mode: 'open' }).innerHTML = '<style>:host([compact]) { padding: 0 }</style><slot></slot>';
+        }
+      });
+    </script>
+    <sales-box label="Valid" compact logo="ignored"><p slot="missing">Lost</p></sales-box>
+    <sales-bxo></sales-bxo><external-widget></external-widget>
+    <svg><font-face></font-face></svg>
+  </deck-feature>`);
+  const r = reportFast('third-party');
+  const diagnostics = r.json.diagnostics;
+  expect(diagnostics.some((d: any) => d.code === 'UNKNOWN_ATTRIBUTE' && d.message.includes('logo='))).toBe(true);
+  expect(diagnostics.some((d: any) => d.code === 'UNKNOWN_ATTRIBUTE' && d.message.includes('compact='))).toBe(false);
+  expect(diagnostics.some((d: any) => d.code === 'CONTENT_NOT_RENDERED' && d.message.includes('sales-box'))).toBe(true);
+  expect(diagnostics.some((d: any) => d.code === 'UNKNOWN_ELEMENT' && d.message.includes('sales-bxo') && d.severity === 'error')).toBe(true);
+  expect(diagnostics.some((d: any) => d.code === 'UNKNOWN_ELEMENT' && d.message.includes('external-widget') && d.severity === 'warning')).toBe(true);
+  expect(diagnostics.some((d: any) => d.code === 'UNKNOWN_ELEMENT' && d.message.includes('font-face'))).toBe(false);
+});
+
 test.describe('render', () => {
   test('writes one picture per slide, a gallery and a manifest that ties them together', () => {
     deck(
@@ -598,6 +622,193 @@ test.describe('graph geometry', () => {
     expect(r.json.diagnostics.map((d: any) => d.code), r.stdout).not.toContain(
       'GRAPH_NODE_OVERLAPS_NODE',
     );
+  });
+
+  test('reports a group label painted under a node', () => {
+    // A deck-group hangs its caption on its own top border · a node parked on
+    // that corner hides it, and the generic sibling rule skips everything
+    // inside a graph.
+    deck('graph-label', `<script type="module" src="rikiki/dist/deck-graph.js"></script>
+      <deck-feature id="graph-label"><h1 slot="title">Graph</h1>
+        <deck-graph>
+          <deck-group at="10,20,80,70" label="Réseau partagé"></deck-group>
+          <deck-node id="onlabel" at="18,20" boxed label="Gateway" note="ingress"></deck-node>
+          <deck-node id="far" at="80,70" boxed label="Service"></deck-node>
+        </deck-graph>
+      </deck-feature>`);
+    const r = report('graph-label');
+    const found = r.json.diagnostics.find((d: any) => d.code === 'GRAPH_NODE_COVERS_LABEL');
+    expect(found, r.stdout).toBeTruthy();
+    expect(found.severity).toBe('error');
+    expect(found.message).toContain('Réseau partagé');
+    expect(found.measurement.node).toContain('deck-node#onlabel');
+  });
+
+  test('leaves a group label nothing is painted over', () => {
+    deck('graph-label-clear', `<script type="module" src="rikiki/dist/deck-graph.js"></script>
+      <deck-feature id="graph-label-clear"><h1 slot="title">Graph</h1>
+        <deck-graph>
+          <deck-group at="10,20,80,70" label="Réseau partagé"></deck-group>
+          <deck-node id="low" at="25,60" boxed label="Gateway"></deck-node>
+          <deck-node id="lower" at="75,60" boxed label="Service"></deck-node>
+        </deck-graph>
+      </deck-feature>`);
+    const r = report('graph-label-clear');
+    expect(codes(r), r.stdout).not.toContain('GRAPH_NODE_COVERS_LABEL');
+  });
+
+  test('reports an edge that misses horizontal by a hair', () => {
+    deck('graph-skew', `<script type="module" src="rikiki/dist/deck-graph.js"></script>
+      <deck-feature id="graph-skew"><h1 slot="title">Graph</h1>
+        <deck-graph>
+          <deck-node id="a" at="20,50" boxed label="A"></deck-node>
+          <deck-node id="b" at="80,52" boxed label="B"></deck-node>
+          <deck-edge from="a" to="b"></deck-edge>
+        </deck-graph>
+      </deck-feature>`);
+    const r = report('graph-skew');
+    const found = r.json.diagnostics.find((d: any) => d.code === 'GRAPH_EDGE_SKEWED');
+    expect(found, r.stdout).toBeTruthy();
+    expect(found.severity).toBe('warning');
+    expect(found.measurement.axis).toBe('horizontal');
+    expect(found.measurement.deviationPx).toBeGreaterThan(1);
+    expect(found.element).toContain('deck-edge');
+  });
+
+  test('leaves a frank diagonal alone', () => {
+    deck('graph-diagonal', `<script type="module" src="rikiki/dist/deck-graph.js"></script>
+      <deck-feature id="graph-diagonal"><h1 slot="title">Graph</h1>
+        <deck-graph>
+          <deck-node id="a" at="20,15" boxed label="A"></deck-node>
+          <deck-node id="b" at="80,85" boxed label="B"></deck-node>
+          <deck-edge from="a" to="b"></deck-edge>
+        </deck-graph>
+      </deck-feature>`);
+    const r = report('graph-diagonal');
+    expect(codes(r), r.stdout).not.toContain('GRAPH_EDGE_SKEWED');
+  });
+
+  test('reports two nodes that nearly share a row, and stays quiet when they do', () => {
+    deck('graph-offaxis', `<script type="module" src="rikiki/dist/deck-graph.js"></script>
+      <deck-feature id="graph-offaxis"><h1 slot="title">Graph</h1>
+        <deck-graph>
+          <deck-node id="left" at="20,50" boxed label="Left"></deck-node>
+          <deck-node id="right" at="80,52" boxed label="Right"></deck-node>
+        </deck-graph>
+      </deck-feature>`);
+    const r = report('graph-offaxis');
+    const found = r.json.diagnostics.find((d: any) => d.code === 'GRAPH_NODES_OFF_AXIS');
+    expect(found, r.stdout).toBeTruthy();
+    expect(found.severity).toBe('warning');
+    expect(found.measurement.axis).toBe('y');
+    expect(found.measurement.offsetPx).toBeGreaterThan(1);
+    // One sloppy row, one diagnostic · not one per pair.
+    expect(r.json.diagnostics.filter((d: any) => d.code === 'GRAPH_NODES_OFF_AXIS')).toHaveLength(1);
+
+    deck('graph-onaxis', `<script type="module" src="rikiki/dist/deck-graph.js"></script>
+      <deck-feature id="graph-onaxis"><h1 slot="title">Graph</h1>
+        <deck-graph>
+          <deck-node id="left" at="20,50" boxed label="Left"></deck-node>
+          <deck-node id="right" at="80,50" boxed label="Right"></deck-node>
+        </deck-graph>
+      </deck-feature>`);
+    const clean = report('graph-onaxis');
+    expect(codes(clean), clean.stdout).not.toContain('GRAPH_NODES_OFF_AXIS');
+  });
+
+  test('reports two nodes of one row that nearly share a height', () => {
+    // Same row, same wording, one note longer than the box · the taller box is
+    // a few percent off the other, which reads as an accident.
+    deck('graph-sizes', `<script type="module" src="rikiki/dist/deck-graph.js"></script>
+      <deck-feature id="graph-sizes"><h1 slot="title">Graph</h1>
+        <deck-graph>
+          <deck-node id="short" at="25,50" boxed label="Ingest" style="width:200px;height:120px"></deck-node>
+          <deck-node id="tall" at="75,50" boxed label="Serve" style="width:200px;height:132px"></deck-node>
+        </deck-graph>
+      </deck-feature>`);
+    const r = report('graph-sizes');
+    const found = r.json.diagnostics.find((d: any) => d.code === 'GRAPH_NODE_SIZES_MIXED');
+    expect(found, r.stdout).toBeTruthy();
+    expect(found.severity).toBe('warning');
+    expect(found.measurement.dimension).toBe('height');
+    expect(found.measurement.differencePx).toBeGreaterThan(3);
+  });
+
+  test('leaves two nodes that are plainly different sizes', () => {
+    deck('graph-sizes-intent', `<script type="module" src="rikiki/dist/deck-graph.js"></script>
+      <deck-feature id="graph-sizes-intent"><h1 slot="title">Graph</h1>
+        <deck-graph>
+          <deck-node id="small" at="25,50" boxed label="Ingest" style="width:200px;height:90px"></deck-node>
+          <deck-node id="big" at="75,50" boxed label="Serve" style="width:200px;height:220px"></deck-node>
+        </deck-graph>
+      </deck-feature>`);
+    const r = report('graph-sizes-intent');
+    expect(codes(r), r.stdout).not.toContain('GRAPH_NODE_SIZES_MIXED');
+  });
+
+  test('reports hand-placed coordinates that spell out a row, and accepts the semantic form', () => {
+    deck('graph-handrow', `<script type="module" src="rikiki/dist/deck-graph.js"></script>
+      <deck-feature id="graph-handrow"><h1 slot="title">Graph</h1>
+        <deck-graph>
+          <deck-node id="a" at="20,50" boxed label="A"></deck-node>
+          <deck-node id="b" at="50,50" boxed label="B"></deck-node>
+          <deck-node id="c" at="80,50" boxed label="C"></deck-node>
+        </deck-graph>
+      </deck-feature>`);
+    const r = report('graph-handrow');
+    const found = r.json.diagnostics.find((d: any) => d.code === 'GRAPH_LAYOUT_NOT_SEMANTIC');
+    expect(found, r.stdout).toBeTruthy();
+    expect(found.severity).toBe('warning');
+    expect(found.measurement.arrangement).toBe('row');
+    expect(found.suggestion).toContain('layout="row"');
+
+    deck('graph-semantic', `<script type="module" src="rikiki/dist/deck-graph.js"></script>
+      <deck-feature id="graph-semantic"><h1 slot="title">Graph</h1>
+        <deck-graph layout="row">
+          <deck-node id="a" boxed label="A"></deck-node>
+          <deck-node id="b" boxed label="B"></deck-node>
+          <deck-node id="c" boxed label="C"></deck-node>
+        </deck-graph>
+      </deck-feature>`);
+    const clean = report('graph-semantic');
+    expect(codes(clean), clean.stdout).not.toContain('GRAPH_LAYOUT_NOT_SEMANTIC');
+  });
+});
+
+test.describe('typography', () => {
+  // Where a line breaks is a font metric, and a test that depends on one is a
+  // test that fails on the next machine. The break is pinned with a <br>: what
+  // is under test is the rule reading the painted lines, not the wrapping.
+  test('reports a paragraph whose last line is a lone stub', () => {
+    deck('orphan', `<deck-feature id="orphan"><h1 slot="title">Titre</h1>
+        <p>Le calendrier de bascule est arrêté avec les équipes régionales<br>(annexe B)</p>
+      </deck-feature>`);
+    const r = reportFast('orphan');
+    const found = r.json.diagnostics.find((d: any) => d.code === 'TEXT_LAST_LINE_ORPHAN');
+    expect(found, r.stdout).toBeTruthy();
+    expect(found.severity).toBe('warning');
+    expect(found.slideId).toBe('orphan');
+    expect(found.measurement.lastLineRatio).toBeLessThan(0.25);
+    expect(found.excerpt).toContain('annexe');
+  });
+
+  test('leaves a heading and a short block alone', () => {
+    // A title finishing on a stub is the composition, and a four-word block
+    // has no paragraph to break badly · neither is a typographic accident.
+    deck('orphan-quiet', `<deck-feature id="orphan-quiet"><h1 slot="title">Un titre assez long pour passer à la ligne<br>seul</h1>
+        <p>Quatre mots et<br>puis</p>
+      </deck-feature>`);
+    const r = reportFast('orphan-quiet');
+    expect(codes(r), r.stdout).not.toContain('TEXT_LAST_LINE_ORPHAN');
+  });
+
+  test('says nothing about a code block that breaks where it was typed', () => {
+    deck('orphan-code', `<deck-feature id="orphan-code"><h1 slot="title">Code</h1>
+        <deck-code lang="ts">const configuration = loadRegionalConfiguration(regionName, options);
+const x = 1;</deck-code>
+      </deck-feature>`);
+    const r = reportFast('orphan-code');
+    expect(codes(r), r.stdout).not.toContain('TEXT_LAST_LINE_ORPHAN');
   });
 });
 

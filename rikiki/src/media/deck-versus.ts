@@ -132,18 +132,25 @@ export class DeckVersus extends LitElement {
       text-align: center;
       isolation: isolate;
     }
+    /* Divider and badge are both centred on the pivot column by hand ·
+       an absolutely positioned pseudo-element ignores the grid's
+       place-items, so without the translate the circle lands off the line. */
     .pivot::before {
       content: '';
       position: absolute;
       inset-block: 0;
       left: 50%;
       width: 1px;
+      transform: translateX(-50%);
       background: var(--deck-versus-rule, var(--rik-border-default));
       z-index: -2;
     }
     .pivot::after {
       content: '';
       position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
       width: 52px;
       height: 52px;
       border: 1px solid var(--deck-versus-rule, var(--rik-border-default));
@@ -180,7 +187,15 @@ export class DeckVersus extends LitElement {
       :host([slide]) .side.right { grid-row: 4; }
       :host([slide]) .footer { grid-row: 5; }
       .pivot { min-height: 44px; }
-      .pivot::before { inset-block: 50%; inset-inline: 0; width: auto; height: 1px; }
+      /* Stacked: the divider turns horizontal, so the same centring moves
+         to the vertical axis · the badge keeps its two-axis translate. */
+      .pivot::before {
+        inset-block: 50% auto;
+        inset-inline: 0;
+        width: auto;
+        height: 1px;
+        transform: translateY(-50%);
+      }
       .pivot::after { width: 44px; height: 44px; }
     }
     @media print {

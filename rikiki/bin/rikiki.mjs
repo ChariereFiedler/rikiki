@@ -27,6 +27,7 @@ import { inlineDeck } from './lib/inline.mjs';
 import { starterHtml } from './lib/starter.mjs';
 import { formatExternal, scanExternal } from './lib/scan-external.mjs';
 import { pruneIcons } from './lib/prune-icons.mjs';
+import { resolveCheckPlugins } from './lib/check-plugins.mjs';
 import { exportPdf } from './lib/export-pdf.mjs';
 import { ExpectedError, formatCliError } from './lib/cli-error.mjs';
 import { assembleDeck } from './lib/assemble.mjs';
@@ -45,7 +46,8 @@ const HELP = `rikiki · self-contained slide decks
   rikiki render <deck.html> [options]               one PNG per slide, plus a gallery and a manifest
   rikiki check <deck.html> [--json] [--no-visual] [--steps]  measure the deck and report what is wrong
   rikiki export <deck.html> [--output deck.pdf]     render the deck to PDF, one slide per page
-  rikiki skills [--dir <path>] [--force]            install the Claude Code skills into a project
+  rikiki skills [--agent codex|claude] [--plugin package] [--dir path] [--force]
+                                                  install core and module agent skills
 
 Options:
   --title "…"          deck title (init)
@@ -63,6 +65,12 @@ Options:
   --width, --height    render/check: canvas size in pixels (default 1920×1080)
   --json               check / render --baseline: write the report to stdout as JSON
   --no-visual          check: skip the pixel pass (one screenshot per slide)
+  --config <file>      check/skills: explicit rikiki.config.json
+  --plugin <package>   check/skills: activate a module (repeatable)
+  --no-plugins         check: disable module checks explicitly
+  --narrative-out <file>    check: prepare review material for the current agent
+  --narrative-review <file> check: import the current agent's structured review
+  --plugin-timeout <ms>     check: execution deadline per plugin call (default 5000)
   --steps              check: measure every revealed state of each slide, not just the first
   --no-fonts           drop fonts instead of inlining them (smaller, system fonts)
   --all                bundle every component (skip the used-only curation)
@@ -373,6 +381,12 @@ async function cmdCheck(argv) {
     options: {
       json: { type: 'boolean', default: false },
       'no-visual': { type: 'boolean', default: false },
+      config: { type: 'string' },
+      plugin: { type: 'string', multiple: true },
+      'no-plugins': { type: 'boolean', default: false },
+      'narrative-out': { type: 'string' },
+      'narrative-review': { type: 'string' },
+      'plugin-timeout': { type: 'string' },
       steps: { type: 'boolean', default: false },
       width: { type: 'string' },
       height: { type: 'string' },
@@ -384,6 +398,12 @@ async function cmdCheck(argv) {
     height: pixels(values, 'height', 1080),
     visual: !values['no-visual'],
     steps: values.steps,
+    config: values.config,
+    plugins: values.plugin,
+    noPlugins: values['no-plugins'],
+    narrativeOut: values['narrative-out'],
+    narrativeReview: values['narrative-review'],
+    pluginTimeoutMs: values['plugin-timeout'] === undefined ? 5000 : Number(values['plugin-timeout']),
   });
 
   // In --json mode stdout carries the report and nothing else, so a caller can
@@ -500,12 +520,22 @@ const DISTRIBUTED_SKILLS = ['rikiki-deck', 'rikiki-theme', 'rikiki-debug'];
 function cmdSkills(argv) {
   const { values } = parseArgs({
     args: argv,
-    options: { dir: { type: 'string' }, force: { type: 'boolean', default: false } },
+    options: { dir: { type: 'string' }, force: { type: 'boolean', default: false },
+      agent: { type: 'string', default: 'claude' }, plugin: { type: 'string', multiple: true }, config: { type: 'string' } },
   });
-  const targetRoot = resolve(process.cwd(), values.dir || '.claude/skills');
+  if (!['codex', 'claude'].includes(values.agent)) throw new ExpectedError('--agent must be codex or claude');
+  const targetRoot = resolve(process.cwd(), values.dir || (values.agent === 'codex' ? '.agents/skills' : '.claude/skills'));
+  const sources = DISTRIBUTED_SKILLS.map(name => ({ name, src: join(PKG_ROOT, '.claude', 'skills', name) }));
+  const resolution = resolveCheckPlugins(join(process.cwd(), 'deck.html'), { config: values.config, plugins: values.plugin });
+  if (resolution.diagnostics.length) throw new ExpectedError(resolution.diagnostics.map(d => d.message).join('\n'));
+  for (const plugin of resolution.plugins) for (const skill of plugin.skills ?? []) sources.push(skill);
+  const skillNames = new Set();
+  for (const { name } of sources) {
+    if (skillNames.has(name)) throw new ExpectedError(`duplicate skill name: ${name}`);
+    skillNames.add(name);
+  }
   let copied = 0;
-  for (const name of DISTRIBUTED_SKILLS) {
-    const src = join(PKG_ROOT, '.claude', 'skills', name);
+  for (const { name, src } of sources) {
     if (!existsSync(src)) continue; // not in this install (e.g. running from a trimmed tarball)
     const dest = join(targetRoot, name);
     if (existsSync(dest) && !values.force) {
@@ -514,10 +544,10 @@ function cmdSkills(argv) {
     }
     mkdirSync(dirname(dest), { recursive: true });
     cpSync(src, dest, { recursive: true });
-    console.error(`rikiki skills · installed ${name} → ${join(values.dir || '.claude/skills', name)}`);
+    console.error(`rikiki skills · installed ${name} → ${dest}`);
     copied++;
   }
-  if (copied) console.error(`rikiki skills · ${copied} skill(s) installed · restart Claude Code to pick them up`);
+  if (copied) console.error(`rikiki skills · ${copied} skill(s) installed for ${values.agent} · reload the agent if needed`);
   else console.error('rikiki skills · nothing installed');
 }
 
