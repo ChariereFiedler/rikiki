@@ -210,15 +210,17 @@ function readState(host: DeckRoot): PresenterState {
     current: current + 1,
     total: slides.length,
     step: host.step,
-    steps: Number(slide?.getAttribute("steps") || slide?.getAttribute("data-steps") || 0),
+    steps: Number(slide?.getAttribute('steps') || slide?.getAttribute('data-steps') || 0),
     slideHtml: slide?.outerHTML ?? '',
     nextHtml: next?.outerHTML ?? null,
     notes,
     themeHref,
     previewStyles: Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
-      .map((node) => node.outerHTML).join('\n'),
-    moduleHrefs: Array.from(document.querySelectorAll<HTMLScriptElement>('script[type="module"][src]'))
-      .map((script) => script.src),
+      .map((node) => node.outerHTML)
+      .join('\n'),
+    moduleHrefs: Array.from(
+      document.querySelectorAll<HTMLScriptElement>('script[type="module"][src]'),
+    ).map((script) => script.src),
     baseHref: document.baseURI,
     lang: document.documentElement.lang,
     canvasWidth: host.width,
@@ -586,20 +588,16 @@ function withoutClickNav(nav: string | null): string {
 export function installPresenter(host: DeckRoot): void {
   installed = installed ?? new WeakSet<DeckRoot>();
   if (installed.has(host)) {
-
     teardown(host);
     return;
   }
   installed.add(host);
-
 
   const originalMouseNav = host.mouseNav;
 
   channel = new BroadcastChannel(CHANNEL);
 
   host.addEventListener('step-change', () => broadcast(host));
-
-
 
   channel.addEventListener('message', (e: MessageEvent) => {
     const data = e.data as {
@@ -617,9 +615,6 @@ export function installPresenter(host: DeckRoot): void {
         new KeyboardEvent('keydown', { key: data.key, shiftKey: !!data.shift, bubbles: true }),
       );
     } else if (data?.type === 'click') {
-
-
-
       const { x, y, target } = resolveTarget(host, data);
       const base = {
         bubbles: true,
@@ -659,18 +654,11 @@ export function installPresenter(host: DeckRoot): void {
         );
       }
     } else if (data?.type === 'config' && typeof data.advanceOnClick === 'boolean') {
-
-
       host.mouseNav = data.advanceOnClick ? originalMouseNav : withoutClickNav(originalMouseNav);
     } else if (data?.type === 'hello') {
-
       broadcast(host);
     }
   });
-
-
-
-
 
   const known = cachedScreens;
   const external = known?.screens.find((s) => s !== known.currentScreen) ?? null;
@@ -681,7 +669,6 @@ export function installPresenter(host: DeckRoot): void {
       if (!s) return;
       const ext = s.screens.find((x) => x !== s.currentScreen);
       if (ext) sendDeckToScreen(host, ext);
-
 
       if (popup && s.currentScreen) movePopupTo(popup, s.currentScreen);
     });
@@ -694,7 +681,6 @@ export function installPresenter(host: DeckRoot): void {
   popup = window.open('', 'rikiki-presenter', features);
   if (!popup) {
     console.warn('[rikiki/presenter] popup was blocked · allow popups for this site');
-
 
     teardown(host);
     return;

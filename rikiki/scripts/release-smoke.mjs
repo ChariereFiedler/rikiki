@@ -105,7 +105,9 @@ try {
     await page.locator('body > deck-root > [active]').waitFor();
     assert.equal(
       await page
-        .locator('body > deck-root > deck-cover, body > deck-root > deck-feature, body > deck-root > deck-takeaway')
+        .locator(
+          'body > deck-root > deck-cover, body > deck-root > deck-feature, body > deck-root > deck-takeaway',
+        )
         .count(),
       3,
     );
