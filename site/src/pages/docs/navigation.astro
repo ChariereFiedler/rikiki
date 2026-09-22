@@ -97,8 +97,9 @@ const overviewPathMax = sidebarThreshold[1];
 </p>
 
 <p>
-  The overview module is <strong>lazy-loaded</strong> · the JS and CSS
-  fetch on first <kbd>O</kbd>. Same for the help overlay below.
+  The overview prepares its thumbnails progressively while the deck is idle,
+  then retains its grid between openings. Content and theme changes refresh the
+  cached previews. The help overlay loads on first use.
 </p>
 
 <h2 id="help">Help overlay</h2>
@@ -112,7 +113,10 @@ const overviewPathMax = sidebarThreshold[1];
   Press <kbd>P</kbd> to open a second window for the speaker. It mirrors the
   current slide, previews the next one, shows the text of the slide's
   <code>&lt;deck-notes&gt;</code> and runs a timer; the two windows stay in
-  sync while you navigate from either. The module loads on the first
+  sync while you navigate from either. The current preview mirrors the active
+  reveal step and its annotations; the footer shows the step number. Preview
+  documents stay loaded between slides. Slide numbering also appears on cover
+  layouts unless <code>no-counter</code> is set. The module loads on the first
   <kbd>P</kbd>, so a deck whose speaker never presses it never fetches it.
   <a href="/docs/plugins#presenter">Optional modules · presenter</a> covers
   the second-screen placement and the notes element.

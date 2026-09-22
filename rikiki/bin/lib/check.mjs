@@ -18,6 +18,8 @@ import { BOX_GEOMETRY_READER } from './box-geometry.mjs';
 import { GRAPH_GEOMETRY_READER } from './graph-hit.mjs';
 import { measureSlides } from './visual.mjs';
 import { scanExternal } from './scan-external.mjs';
+import { resolveCheckPlugins, startCheckPlugins, runCheckPlugins, pluginReport } from './check-plugins.mjs';
+import { collectNarrative, narrativeRequest, applyNarrativeReview } from './narrative.mjs';
 
 export const REPORT_SCHEMA = 1;
 
@@ -54,6 +56,33 @@ const LIMITS = {
   // Two boxes sharing a few pixels at a corner is normal layout slop; sharing
   // this many on both axes is one painted over the other.
   siblingOverlapPx: 8,
+  // Under a pixel, two coordinates are the same coordinate · a percentage
+  // resolved into device pixels lands a hair apart and means nothing by it.
+  graphAlignFloorPx: 1,
+  // How far apart two graph centres may sit and still read as an attempt at
+  // the same row or the same column. A few tens of pixels on a 1920 canvas is
+  // the band where the eye says "almost" · beyond it the author moved the node
+  // somewhere else on purpose.
+  graphAlignSlackPx: 24,
+  // An edge whose smaller delta is under this share of its larger one was
+  // aiming at horizontal or vertical. Above it the line is a diagonal, and a
+  // diagonal is a choice nobody needs told about.
+  graphSkewRatio: 0.3,
+  // Two nodes of one row differing by less than this share read as a failed
+  // attempt at the same size; differing by more reads as a deliberate
+  // hierarchy. Paired with a floor, because text metrics move a box by a
+  // pixel or two on nothing but the glyphs in it.
+  graphSizeSlack: 0.3,
+  graphSizeFloorPx: 3,
+  // Below three nodes, one row is not an arrangement · two nodes side by side
+  // are just two nodes, and `layout` would say less than the coordinates do.
+  graphSemanticMinNodes: 3,
+  // A last line narrower than this share of the widest one is a stub hanging
+  // under the block · the classic orphan of a slide.
+  orphanLineRatio: 0.25,
+  // Under this many words there is no paragraph to break badly: a two-word
+  // label wrapping is the layout, not a typographic accident.
+  orphanMinWords: 8,
 };
 
 const diagnostic = (code, severity, message, extra = {}) => ({
@@ -265,6 +294,101 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, only = n
     return worst;
   };
 
+  /** Where a component re-renders the author's own prose into its shadow tree ·
+   *  the lines the browser broke are in there, not in the light DOM. */
+  const PROSE_IN_SHADOW = new Set(['deck-md']);
+
+  /** Text whose line breaks are not the browser's to judge: a code listing
+   *  breaks where it was typed, a diagram and a table lay their own text out,
+   *  and notes are never shown. */
+  const NOT_PROSE = new Set(['deck-notes', 'deck-code', 'deck-mermaid', 'deck-table', 'deck-graph', 'deck-annotate']);
+  const HEADINGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
+  const INLINE_DISPLAY = new Set(['inline', 'inline-block', 'inline-flex', 'contents']);
+
+  /** The words the browser put on the line starting at `lineTop` · measured
+   *  one word at a time, because nothing short of a rect says where a line
+   *  actually broke. Only ever asked of the block already found guilty. */
+  const wordsOnLine = (el, lineTop) => {
+    const out = [];
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    const range = document.createRange();
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      for (const m of (node.textContent ?? '').matchAll(/\S+/g)) {
+        range.setStart(node, m.index);
+        range.setEnd(node, m.index + m[0].length);
+        const r = range.getBoundingClientRect();
+        if (r.height && Math.abs(r.top - lineTop) < r.height / 2) out.push(m[0]);
+      }
+    }
+    return out.join(' ');
+  };
+
+  /** The worst `TEXT_LAST_LINE_ORPHAN` offender on a slide: a block of prose
+   *  whose last line is a stub of the ones above it.
+   *
+   *  The lines are read with a Range over the block's own contents · the
+   *  stylesheet says where text *may* break, only the painted rects say where
+   *  it did. Headings and short blocks are left alone: a title wrapping onto a
+   *  second line is the composition, not an accident. */
+  const worstOrphan = (slide) => {
+    let worst = null;
+    const consider = (el) => {
+      const tag = el.tagName.toLowerCase();
+      if (HEADINGS.has(tag) || NOT_PROSE.has(tag) || isInside(el, NOT_PROSE)) return;
+      if (el.ownerSVGElement) return;
+      const style = getComputedStyle(el);
+      if (style.display === 'none' || style.visibility === 'hidden') return;
+      if (INLINE_DISPLAY.has(style.display)) return;
+      if (style.whiteSpace.startsWith('pre')) return;
+      // A container is judged through its children, never as one block: a
+      // Range over it would read every line of every paragraph it holds and
+      // call the last one an orphan of the first.
+      for (const child of el.children) {
+        if (!INLINE_DISPLAY.has(getComputedStyle(child).display)) return;
+      }
+      const words = ((el.textContent ?? '').match(/[\p{L}\p{N}'’-]+/gu) ?? []).length;
+      if (words < limits.orphanMinWords) return;
+
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const rects = [...range.getClientRects()].filter((r) => r.width > 0.5 && r.height > 0.5);
+      if (rects.length < 2) return;
+      // Several rects share one line · an <em> mid-sentence is a rect of its
+      // own, not a line of its own.
+      const lines = [];
+      for (const r of rects) {
+        const line = lines.find((l) => Math.abs(l.top - r.top) < r.height / 2);
+        if (line) {
+          line.left = Math.min(line.left, r.left);
+          line.right = Math.max(line.right, r.right);
+        } else {
+          lines.push({ top: r.top, left: r.left, right: r.right });
+        }
+      }
+      if (lines.length < 2) return;
+      const last = lines[lines.length - 1];
+      const widest = Math.max(...lines.map((l) => l.right - l.left));
+      if (!widest) return;
+      const ratio = (last.right - last.left) / widest;
+      if (ratio >= limits.orphanLineRatio) return;
+      if (ratio < (worst?.ratio ?? Number.POSITIVE_INFINITY)) {
+        worst = { ratio, lines: lines.length, path: pathOf(el), tail: wordsOnLine(el, last.top).slice(0, 40) };
+      }
+    };
+
+    const seen = new Set();
+    const scan = (root) => {
+      for (const el of root.querySelectorAll('*')) {
+        if (seen.has(el)) continue;
+        seen.add(el);
+        if (el.shadowRoot && PROSE_IN_SHADOW.has(el.tagName.toLowerCase())) scan(el.shadowRoot);
+        consider(el);
+      }
+    };
+    scan(slide);
+    return worst;
+  };
+
   const measured = slides.map((slide, index) => {
     const outline = {
       index: index + 1,
@@ -345,6 +469,7 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, only = n
       tiny: tiny.slice(0, 3),
       escapesBox: worstEscape(boxes),
       overlapsSibling: worstOverlap(boxes),
+      lastLineOrphan: worstOrphan(slide),
     };
   });
 
@@ -380,7 +505,7 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, only = n
   const styledCache = new Map();
   for (const el of scanDocument ? document.querySelectorAll('*') : []) {
     const tag = el.tagName.toLowerCase();
-    if (!tag.startsWith('deck-')) continue;
+    if (!tag.includes('-')) continue;
     const ctor = customElements.get(tag);
     if (!ctor) continue;
     if (!styledCache.has(tag)) styledCache.set(tag, styledAttrsOf(el));
@@ -400,7 +525,7 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, only = n
   for (const el of scanDocument ? document.querySelectorAll('*') : []) {
     const parent = el.parentElement;
     if (!parent?.shadowRoot) continue;
-    if (!parent.tagName.toLowerCase().startsWith('deck-')) continue;
+    if (!parent.tagName.toLowerCase().includes('-')) continue;
     if (el.assignedSlot) continue;
     if (el.tagName.toLowerCase() === 'deck-notes') continue; // read by the presenter, never shown
     const offered = [...parent.shadowRoot.querySelectorAll('slot')].map((n) => n.name || '(default)');
@@ -415,10 +540,16 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, only = n
   // A tag that was never defined renders as an empty inline box: the author
   // typed `deck-callot`, and the slide simply lost a block with no error.
   const unknown = [];
-  for (const el of scanDocument ? document.querySelectorAll('*') : []) {
+  const elements = scanDocument ? [...document.querySelectorAll('*')] : [];
+  const knownPrefixes = new Set(['deck']);
+  for (const el of elements) {
     const tag = el.tagName.toLowerCase();
-    if (tag.startsWith('deck-') && !customElements.get(tag)) {
-      unknown.push({ tag, path: pathOf(el) });
+    if (customElements.get(tag)) knownPrefixes.add(tag.split('-')[0]);
+  }
+  for (const el of elements) {
+    const tag = el.tagName.toLowerCase();
+    if (el.namespaceURI === 'http://www.w3.org/1999/xhtml' && tag.includes('-') && !customElements.get(tag)) {
+      unknown.push({ tag, path: pathOf(el), knownPrefix: knownPrefixes.has(tag.split('-')[0]) });
     }
   }
 
@@ -473,6 +604,117 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, only = n
       }
     }
 
+    // A caption painted under a node is a caption nobody reads. The generic
+    // sibling rule skips everything inside a graph — the component stacks its
+    // own layers by design — so the region and edge captions have no net but
+    // this one. They live in shadow trees: the graph paints the edge labels,
+    // each deck-group / deck-lane paints its own.
+    const labels = [];
+    for (const tag of graph.shadowRoot?.querySelectorAll('.edge-label') ?? []) {
+      labels.push({ el: tag, kind: 'edge', text: tag.textContent?.trim() ?? '', box: tag.getBoundingClientRect() });
+    }
+    for (const region of graph.querySelectorAll('deck-group, deck-lane')) {
+      const tag = region.shadowRoot?.querySelector('.tag');
+      if (!tag) continue;
+      const kind = region.tagName.toLowerCase() === 'deck-lane' ? 'lane' : 'group';
+      labels.push({ el: region, kind, text: region.getAttribute('label') ?? '', box: tag.getBoundingClientRect() });
+    }
+    for (const label of labels) {
+      if (!label.box.width || !label.box.height) continue;
+      let covered = null;
+      for (const candidate of nodes) {
+        const x = Math.min(candidate.box.right, label.box.right) - Math.max(candidate.box.left, label.box.left);
+        const y = Math.min(candidate.box.bottom, label.box.bottom) - Math.max(candidate.box.top, label.box.top);
+        if (x <= limits.siblingOverlapPx || y <= limits.siblingOverlapPx) continue;
+        if (x * y > (covered?.area ?? 0)) {
+          covered = { area: x * y, entry: candidate, overlap: { x: Math.round(x), y: Math.round(y) } };
+        }
+      }
+      if (covered) {
+        graphIssues.push({ kind: 'label-covered', slide: slideIndex, graph: pathOf(graph), label: pathOf(label.el), labelKind: label.kind, text: label.text, node: pathOf(covered.entry.node), nodeId: covered.entry.id || null, overlap: covered.overlap });
+      }
+    }
+
+    // What the author meant to line up, and what the browser painted. These
+    // read the centres rather than the authored `at`: a percentage is resolved
+    // against the canvas, and two nodes written 2% apart are as misaligned as
+    // the canvas is wide.
+    const centres = nodes.map((entry) => ({
+      ...entry,
+      cx: (entry.box.left + entry.box.right) / 2,
+      cy: (entry.box.top + entry.box.bottom) / 2,
+    }));
+
+    // One sloppy row must not produce one diagnostic per pair · the worst
+    // offender names the row, and fixing it is what the author does anyway.
+    let offAxis = null;
+    for (let i = 0; i < centres.length; i++) {
+      for (let j = i + 1; j < centres.length; j++) {
+        for (const axis of ['x', 'y']) {
+          const delta = Math.abs(axis === 'x' ? centres[i].cx - centres[j].cx : centres[i].cy - centres[j].cy);
+          if (delta <= limits.graphAlignFloorPx || delta > limits.graphAlignSlackPx) continue;
+          if (delta > (offAxis?.delta ?? 0)) offAxis = { delta, axis, a: centres[i], b: centres[j] };
+        }
+      }
+    }
+    if (offAxis) {
+      graphIssues.push({ kind: 'nodes-off-axis', slide: slideIndex, graph: pathOf(graph), axis: offAxis.axis, pixels: Math.round(offAxis.delta), node: pathOf(offAxis.a.node), other: pathOf(offAxis.b.node), a: offAxis.a.id || null, b: offAxis.b.id || null });
+    }
+
+    /** The nodes grouped into rows (`cy`) or columns (`cx`) · a run of centres
+     *  no further apart than the alignment slack is one row. */
+    const runsOn = (key) => {
+      const sorted = [...centres].sort((a, b) => a[key] - b[key]);
+      const runs = [];
+      let run = [];
+      for (const entry of sorted) {
+        if (run.length && entry[key] - run[run.length - 1][key] > limits.graphAlignSlackPx) {
+          runs.push(run);
+          run = [];
+        }
+        run.push(entry);
+      }
+      if (run.length) runs.push(run);
+      return runs.filter((r) => r.length > 1);
+    };
+    // A ragged edge down a column, or an uneven baseline across a row · the
+    // dimension compared is the one whose mismatch is visible as a ragged
+    // line, so a row is judged on height and a column on width.
+    let mixedSizes = null;
+    const compareSizes = (run, dimension, along) => {
+      for (let i = 0; i < run.length; i++) {
+        for (let j = i + 1; j < run.length; j++) {
+          const a = run[i].box[dimension];
+          const b = run[j].box[dimension];
+          const diff = Math.abs(a - b);
+          const largest = Math.max(a, b);
+          if (!largest || diff <= limits.graphSizeFloorPx) continue;
+          if (diff / largest >= limits.graphSizeSlack) continue;
+          if (diff > (mixedSizes?.diff ?? 0)) {
+            mixedSizes = { diff, ratio: diff / largest, dimension, along, a: run[i], b: run[j] };
+          }
+        }
+      }
+    };
+    for (const row of runsOn('cy')) compareSizes(row, 'height', 'row');
+    for (const column of runsOn('cx')) compareSizes(column, 'width', 'column');
+    if (mixedSizes) {
+      graphIssues.push({ kind: 'sizes-mixed', slide: slideIndex, graph: pathOf(graph), dimension: mixedSizes.dimension, along: mixedSizes.along, pixels: Math.round(mixedSizes.diff), share: Math.round(mixedSizes.ratio * 100), node: pathOf(mixedSizes.a.node), other: pathOf(mixedSizes.b.node), a: mixedSizes.a.id || null, b: mixedSizes.b.id || null });
+    }
+
+    // Hand-placed coordinates that spell out an arrangement the component
+    // already has a word for. `layout` reflects, and its default reflects as
+    // `free`, so both readings mean "the author placed every node".
+    const declaredLayout = (graph.getAttribute('layout') ?? 'free').toLowerCase();
+    if (declaredLayout === 'free' && centres.length >= limits.graphSemanticMinNodes) {
+      const spread = (key) => Math.max(...centres.map((c) => c[key])) - Math.min(...centres.map((c) => c[key]));
+      const arrangement =
+        spread('cy') <= limits.graphAlignSlackPx ? 'row' : spread('cx') <= limits.graphAlignSlackPx ? 'column' : null;
+      if (arrangement) {
+        graphIssues.push({ kind: 'layout-not-semantic', slide: slideIndex, graph: pathOf(graph), layout: arrangement, nodes: centres.length });
+      }
+    }
+
     // An edge is a band of ink, not a mathematical line. Half the stroke width
     // on each side of the centre line paints, so a line that misses a node by
     // one pixel still crosses it on screen · that half width is the tolerance,
@@ -501,6 +743,19 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, only = n
         if (geometry.polylineHitsRect(points, candidate.box, inkMargin)) {
           graphIssues.push({ kind: 'edge-crosses-node', slide: slideIndex, graph: pathOf(graph), edge: pathOf(edge), node: pathOf(candidate.node), from: from.id, to: to.id });
         }
+      }
+      // An arrow that almost lands on horizontal or vertical reads as a slip;
+      // a frank diagonal reads as a decision. Only the first offending segment
+      // is reported · an ortho route bends at right angles and never fires.
+      for (let p = 1; p < points.length; p++) {
+        const dx = Math.abs(points[p].x - points[p - 1].x);
+        const dy = Math.abs(points[p].y - points[p - 1].y);
+        const minor = Math.min(dx, dy);
+        const major = Math.max(dx, dy);
+        if (!major || minor <= limits.graphAlignFloorPx || minor > limits.graphAlignSlackPx) continue;
+        if (minor / major >= limits.graphSkewRatio) continue;
+        graphIssues.push({ kind: 'edge-skewed', slide: slideIndex, graph: pathOf(graph), edge: pathOf(edge), from: from.id, to: to.id, axis: dx >= dy ? 'horizontal' : 'vertical', pixels: Math.round(minor), slope: Math.round((minor / major) * 100) });
+        break;
       }
     }
   }
@@ -597,9 +852,9 @@ function diagnose(page, source, limits) {
             element: u.path,
             suggestion: 'escape the angle brackets (&lt; &gt;) where the deck talks about markup',
           })
-        : diagnostic('UNKNOWN_ELEMENT', SEVERITY.error, `<${u.tag}> is not a rikiki element · it renders as nothing`, {
+        : diagnostic('UNKNOWN_ELEMENT', u.knownPrefix || u.tag.startsWith('deck-') ? SEVERITY.error : SEVERITY.warning, `<${u.tag}> is not defined · its component behavior is unavailable`, {
             element: u.path,
-            suggestion: 'check the spelling against the reference · an undefined custom element is silently empty',
+            suggestion: 'check the spelling and load the module that defines this custom element',
           }),
     );
   }
@@ -658,6 +913,54 @@ function diagnose(page, source, limits) {
           element: issue.edge,
           measurement: { obstructingNode: issue.node, from: issue.from, to: issue.to },
           suggestion: 'move the obstructing node or split the route into a clear path; an orthogonal route is preferable when available',
+        }),
+      );
+    } else if (issue.kind === 'label-covered') {
+      found.push(
+        diagnostic('GRAPH_NODE_COVERS_LABEL', SEVERITY.error, `a node is painted over the "${issue.text}" ${issue.labelKind} label · ${issue.overlap.x}x${issue.overlap.y}px of it`, {
+          ...where,
+          element: issue.label,
+          measurement: { overlapPx: issue.overlap, node: issue.node },
+          suggestion: issue.labelKind === 'edge'
+            ? 'move the node with `at`, or the caption with `label-offset` · a label under a node is a label nobody reads'
+            : 'move the node with `at`, or the region with its own `at` · a label under a node is a label nobody reads',
+        }),
+      );
+    } else if (issue.kind === 'edge-skewed') {
+      found.push(
+        diagnostic('GRAPH_EDGE_SKEWED', SEVERITY.warning, `the ${issue.from} → ${issue.to} edge misses ${issue.axis} by ${issue.pixels}px`, {
+          ...where,
+          element: issue.edge,
+          measurement: { deviationPx: issue.pixels, slopePercent: issue.slope, axis: issue.axis },
+          suggestion: 'give both nodes the same `at` coordinate on that axis, or set `route="ortho"` · a frank diagonal is a choice, a three-degree slope is a slip',
+        }),
+      );
+    } else if (issue.kind === 'nodes-off-axis') {
+      const name = (id, path) => (id ? `"${id}"` : path);
+      const line = issue.axis === 'x' ? 'column' : 'row';
+      found.push(
+        diagnostic('GRAPH_NODES_OFF_AXIS', SEVERITY.warning, `the ${name(issue.a, issue.node)} and ${name(issue.b, issue.other)} nodes miss the same ${line} by ${issue.pixels}px`, {
+          ...where,
+          measurement: { offsetPx: issue.pixels, axis: issue.axis, nodes: [issue.node, issue.other] },
+          suggestion: `give them the same \`at\` coordinate on that axis · this close, they were meant to share a ${line}`,
+        }),
+      );
+    } else if (issue.kind === 'sizes-mixed') {
+      const name = (id, path) => (id ? `"${id}"` : path);
+      found.push(
+        diagnostic('GRAPH_NODE_SIZES_MIXED', SEVERITY.warning, `the ${name(issue.a, issue.node)} and ${name(issue.b, issue.other)} nodes share a ${issue.along} but differ by ${issue.pixels}px in ${issue.dimension} · ${issue.share}%`, {
+          ...where,
+          measurement: { differencePx: issue.pixels, sharePercent: issue.share, dimension: issue.dimension, nodes: [issue.node, issue.other] },
+          suggestion: 'set `width` or `--deck-node-size` on both, or even out their notes · near-equal boxes read as a failed attempt at the same size, clearly different ones read as a hierarchy',
+        }),
+      );
+    } else if (issue.kind === 'layout-not-semantic') {
+      found.push(
+        diagnostic('GRAPH_LAYOUT_NOT_SEMANTIC', SEVERITY.warning, `every node of this graph sits on one ${issue.layout} · the \`at\` coordinates spell out what layout="${issue.layout}" already says`, {
+          ...where,
+          element: issue.graph,
+          measurement: { nodes: issue.nodes, arrangement: issue.layout },
+          suggestion: `set layout="${issue.layout}" and drop the \`at\` · the arrangement then survives a node added or removed`,
         }),
       );
     }
@@ -723,6 +1026,18 @@ function diagnose(page, source, limits) {
         }),
       );
     }
+    if (slide.lastLineOrphan) {
+      const o = slide.lastLineOrphan;
+      found.push(
+        diagnostic('TEXT_LAST_LINE_ORPHAN', SEVERITY.warning, `"${o.tail}" hangs alone on the last line · ${Math.round(o.ratio * 100)}% of the width above it`, {
+          ...where,
+          element: o.path,
+          measurement: { lastLineRatio: Math.round(o.ratio * 100) / 100, lines: o.lines, floorRatio: limits.orphanLineRatio },
+          excerpt: o.tail,
+          suggestion: 'set `text-wrap: pretty`, shorten the wording, or bind the last words with a non-breaking space · on a wall this reads as a typographic accident',
+        }),
+      );
+    }
     for (const t of slide.tiny) {
       found.push(
         diagnostic('TEXT_TOO_SMALL', SEVERITY.warning, `text renders at ${t.px}px · the back row will not read it`, {
@@ -777,8 +1092,13 @@ const MEASURED_IN_MESSAGE = new Set([
   'SLIDE_DENSE',
   'SLIDE_TOP_HEAVY',
   'TEXT_TOO_SMALL',
+  'TEXT_LAST_LINE_ORPHAN',
   'GRAPH_NODE_OUT_OF_BOUNDS',
   'GRAPH_NODE_OVERLAPS_NODE',
+  'GRAPH_NODE_COVERS_LABEL',
+  'GRAPH_EDGE_SKEWED',
+  'GRAPH_NODES_OFF_AXIS',
+  'GRAPH_NODE_SIZES_MIXED',
   'TALK_SHORTER_THAN_ANNOUNCED',
 ]);
 
@@ -793,7 +1113,7 @@ function dedupeStateDiagnostics(diagnostics) {
   for (const d of diagnostics) {
     const message = String(d.message ?? '');
     const wording = MEASURED_IN_MESSAGE.has(d.code) ? message.replace(/[\d.]+/g, '#') : message;
-    const key = JSON.stringify([d.code, d.slide ?? null, d.element ?? null, wording]);
+    const key = JSON.stringify([d.plugin ?? 'rikiki', d.code, d.slide ?? null, d.element ?? null, d.key ?? wording]);
     const prior = kept.get(key);
     if (!prior || d.state < prior.state) kept.set(key, d);
   }
@@ -811,10 +1131,11 @@ function dedupeStateDiagnostics(diagnostics) {
  *
  *  Whatever does not depend on which slide is showing is asked once, on the
  *  first pass, rather than once per state. */
-async function diagnoseAllStates(page, slideCount, inspectOpts, source, limits, { steps }) {
+async function diagnoseAllStates(page, slideCount, inspectOpts, source, limits, { steps, plugins, pluginTimeoutMs }) {
   const found = [];
   let statesInspected = 0;
   for (let index = 1; index <= slideCount; index++) {
+    if (page.isClosed()) break;
     try {
       await goToSlide(page, index);
     } catch {
@@ -837,6 +1158,8 @@ async function diagnoseAllStates(page, slideCount, inspectOpts, source, limits, 
       const snapshot = await page.evaluate(inspectPage, { ...inspectOpts, only: index, scanDocument });
       statesInspected += 1;
       for (const d of diagnose(snapshot, source, limits)) found.push(steps ? { ...d, state } : d);
+      found.push(...await runCheckPlugins(page, plugins, { slide: index, state, documentPass: scanDocument }, pluginTimeoutMs));
+      if (page.isClosed()) break;
       if (!steps || !(await advanceStep(page))) break;
       state += 1;
     }
@@ -850,10 +1173,13 @@ async function diagnoseAllStates(page, slideCount, inspectOpts, source, limits, 
  */
 export async function checkDeck(
   deckPath,
-  { timeoutMs = PAGE_LOAD_TIMEOUT_MS, width = 1920, height = 1080, visual = true, steps = false } = {},
+  { timeoutMs = PAGE_LOAD_TIMEOUT_MS, width = 1920, height = 1080, visual = true, steps = false,
+    config, plugins = [], noPlugins = false, pluginTimeoutMs = 5000, narrativeOut, narrativeReview } = {},
 ) {
   const source = readFileSync(deckPath, 'utf8');
   const limits = LIMITS;
+  const resolution = resolveCheckPlugins(deckPath, { config, plugins, noPlugins });
+  if (!Number.isFinite(pluginTimeoutMs) || pluginTimeoutMs < 1) throw new Error('pluginTimeoutMs must be positive');
 
   return withDeck(
     deckPath,
@@ -875,8 +1201,13 @@ export async function checkDeck(
 
       let diagnostics;
       let statesInspected;
-      if (settled && observed.slides.length) {
-        const walked = await diagnoseAllStates(page, observed.slides.length, inspectOpts, source, limits, { steps });
+      if (settled) await startCheckPlugins(page, resolution, pluginTimeoutMs);
+      else for (const plugin of resolution.plugins) {
+        plugin.status = 'skipped';
+        resolution.notChecked.push(`plugin ${plugin.id} · deck did not settle`);
+      }
+      if (settled && observed.slides.length && !page.isClosed()) {
+        const walked = await diagnoseAllStates(page, observed.slides.length, inspectOpts, source, limits, { steps, plugins: resolution, pluginTimeoutMs });
         diagnostics = walked.diagnostics;
         statesInspected = walked.statesInspected;
       } else {
@@ -884,17 +1215,37 @@ export async function checkDeck(
         // all. One whole-document pass is all there is to report · on a deck
         // that never settled the geometry is unreliable anyway, but saying
         // nothing about it would be worse.
-        const whole = observed.slides.length
+        const whole = observed.slides.length && !page.isClosed()
           ? await page.evaluate(inspectPage, { ...inspectOpts, only: null }).catch(() => observed)
           : observed;
         diagnostics = diagnose(whole, source, limits);
         statesInspected = observed.slides.length;
       }
+      diagnostics.push(...resolution.diagnostics);
+
+      let narrative = { status: 'not-run' };
+      if ((narrativeOut || narrativeReview) && !page.isClosed() && settled) {
+        const slides = await page.evaluate(collectNarrative);
+        const request = narrativeRequest(deckPath, source, slides, { width, height }, resolution.config.narrative);
+        if (narrativeOut) {
+          const { writeFileSync } = await import('node:fs');
+          writeFileSync(narrativeOut, JSON.stringify(request, null, 2) + '\n');
+          narrative = { status: 'pending', digest: request.digest, request: narrativeOut };
+        }
+        if (narrativeReview) {
+          const reviewed = applyNarrativeReview(request, narrativeReview);
+          narrative = reviewed.narrative;
+          diagnostics.push(...reviewed.diagnostics);
+        }
+      } else if (narrativeOut || narrativeReview) {
+        narrative = { status: 'failed' };
+        diagnostics.push(diagnostic('NARRATIVE_UNAVAILABLE', 'error', 'Narrative review requires a settled deck and an open browser'));
+      }
 
       // The pixel pass needs a settled deck and one screenshot per slide · it
       // is the slowest thing here, so it is skippable.
       let visualMeasured = false;
-      if (visual && settled && observed.slides.length) {
+      if (visual && settled && observed.slides.length && !page.isClosed()) {
         const goTo = async (index) => {
           await page.evaluate((i) => {
             window.location.hash = `#${i}`;
@@ -949,8 +1300,12 @@ export async function checkDeck(
         visualMeasured,
         summary,
         diagnostics,
+        plugins: pluginReport(resolution),
+        narrative,
         // Named so a reader does not mistake silence for a clean bill.
         notChecked: [
+          ...resolution.notChecked,
+          ...(narrative.status === 'completed' ? [] : [`narrative composition · ${narrative.status} (review by the current agent)`]),
           ...(observed.runtimeLoaded
             ? []
             : ['layout · the runtime never ran, so nothing about size or fit was measured']),

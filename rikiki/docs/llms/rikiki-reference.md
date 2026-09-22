@@ -1,6 +1,6 @@
 # Rikiki · LLM reference
 
-This reference documents rikiki v0.7.1.
+This reference documents rikiki v0.7.2.
 
 Exhaustive, self-consistent reference for authoring valid **rikiki** decks. Every
 tag, attribute, slot, and token below was derived from the source in this repo
@@ -807,12 +807,18 @@ an `element` path that reaches into the Shadow DOM (`deck-feature#detail
 | `SLIDE_TOP_HEAVY` | warning | measured on the pixels · the ink sits in the top with a dead band under it |
 | `TALK_SHORTER_THAN_ANNOUNCED` | warning | the notes carry far less speech than the cover announces |
 | `TEXT_TOO_SMALL` | warning | below the readable floor once the canvas is scaled |
+| `TEXT_LAST_LINE_ORPHAN` | warning | a block of prose ends on a stub under a quarter of the width above it · measured on the painted lines, headings and short blocks excepted · worst one per slide |
 | `UNKNOWN_ATTRIBUTE` | warning | an attribute the element neither reads nor styles on · the value is dropped |
 | `DUPLICATE_SLIDE_ID` | warning | two slides answer to the same name |
 | `EXTERNAL_DEPENDENCY` | warning | the deck fetches from the network at runtime |
 | `GRAPH_NODE_OUT_OF_BOUNDS` | error | a `deck-node` is painted outside its `deck-graph` canvas · move it inward with `at`, shorten its note, or constrain it with `width` |
 | `GRAPH_EDGE_CROSSES_NODE` | warning | the line a `deck-edge` actually paints, bends and stroke width included, runs over a node it does not connect · move the obstructing node, or route the edge around it |
 | `GRAPH_NODE_OVERLAPS_NODE` | error | two `deck-node` of the same `deck-graph` are painted on top of each other · one of them is unreadable |
+| `GRAPH_NODE_COVERS_LABEL` | error | a `deck-node` is painted over a `deck-group` / `deck-lane` / edge caption · move the node with `at`, or the region with its own `at` |
+| `GRAPH_EDGE_SKEWED` | warning | an edge misses horizontal or vertical by a few pixels · a frank diagonal is left alone, a three-degree slope is a slip · align the two `at` coordinates, or set `route="ortho"` |
+| `GRAPH_NODES_OFF_AXIS` | warning | two nodes sit within the alignment slack of the same row or column without sharing it · worst offender per graph |
+| `GRAPH_NODE_SIZES_MIXED` | warning | two nodes of one row (or column) differ by a few pixels in height (or width) · near-equal boxes read as a failed attempt at the same size, plainly different ones are left alone |
+| `GRAPH_LAYOUT_NOT_SEMANTIC` | warning | every node of a graph of three or more sits on one axis, with no `layout` · the `at` coordinates re-do what `layout="row"` / `layout="column"` says |
 
 The report also carries `notChecked`, which names what was **not** looked at:
 revealed steps, accessibility, wording and facts, other viewports, text inside
@@ -1719,3 +1725,7 @@ when a clipping box loses more than a few pixels of content.
 **Too empty is a judgement.** A section title is meant to be sparse. The same
 spec measures how much of the canvas each slide uses and attaches the report to
 the run, without failing · the numbers are advice, and §19 is the answer.
+
+## Presentation previews (0.7.2)
+
+Overview prepares thumbnails incrementally while idle and keeps its grid for reopening. Content or theme changes invalidate the cache. Presenter previews retain their documents and mirror the current slide step, including annotations; the footer reports the current step. Cover layouts display slide numbers unless `no-counter` is set. Custom components can implement `applyStep(step)` to synchronize their reveal state.

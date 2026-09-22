@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-09-23
+
+### Fixed
+- Preserve author themes and desktop layouts in overview and presenter previews.
+- Prepare overview thumbnails during idle time and reuse the complete grid.
+- Keep presenter preview documents alive during navigation and synchronize slide steps and annotations.
+- Show slide numbers on cover layouts.
+- Preserve shared module registrations when bundling extension components.
+
+### Added
+- Extensible check API and module checks, with narrative and rendered-layout diagnostics.
+
 ## [0.7.1] - 2026-09-12
 ### Fixed
 - **`deck-annotate` never keeps a collapsed frame as the picture rectangle.**

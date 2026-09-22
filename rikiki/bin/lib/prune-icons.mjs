@@ -28,6 +28,13 @@ export function componentGlyphsIn(html) {
 /** Every `name` a deck writes on a `<deck-icon>` · quoted or not. */
 export function iconNamesIn(html) {
   const names = new Set();
+  // Modules may render deck-icon inside their shadow DOM from an icon attribute.
+  // Keep those glyphs without coupling the bundler to any particular module.
+  for (const tag of html.matchAll(/<[a-z][\w]*-[\w-]+\b([^>]*)>/gi)) {
+    const m = /(?:^|\s)icon\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/i.exec(tag[1]);
+    const value = (m?.[1] ?? m?.[2] ?? m?.[3] ?? '').trim().toLowerCase();
+    if (value) names.add(value);
+  }
   for (const tag of html.matchAll(/<deck-icon\b([^>]*)>/gi)) {
     const attrs = tag[1] ?? '';
     const m = /\bname\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/i.exec(attrs);

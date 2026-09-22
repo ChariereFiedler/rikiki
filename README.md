@@ -21,7 +21,7 @@ resurrect. Turns out the three choices that keep a deck alive are the same
 three that let a model write one. I did not plan that, and it is the most
 useful thing about this project.
 
-- **The reference ships in the package**, 1721 lines of it, and
+- **The reference ships in the package**, 1731 lines of it, and
   the test suite holds it against the code · an agent reads ground truth, not
   documentation somebody meant to update.
 - **`check` returns the defects as data** · clipped text, unreadable contrast,
@@ -122,7 +122,7 @@ renders wrong. It assumes nothing beyond a shell and a browser.
 
 **The package ships its own documentation.** `npm install rikiki-deck` puts
 `llms.txt` inside `node_modules`, next to an element reference of
-1721 lines and a working guide of 536, where
+1731 lines and a working guide of 536, where
 an agent finds them with no network call. The site serves them as well, at
 [`/llms.txt`](https://rikiki.tordu-jardin.fr/llms.txt), for the ones that fetch rather than read
 from disk.
@@ -267,7 +267,7 @@ the full element reference, which is also what an agent reads.
 small. It was meant as a working title until the engine stopped growing, and
 then the engine stopped growing.
 
-This page documents rikiki v0.7.1 · the badge above tracks what is
+This page documents rikiki v0.7.2 · the badge above tracks what is
 published, and `npm run bump` keeps the two from disagreeing.
 
 MIT licensed. Built by [Cédric Chariere Fiedler](https://github.com/ChariereFiedler).
