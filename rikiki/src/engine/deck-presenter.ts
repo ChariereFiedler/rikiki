@@ -34,6 +34,8 @@ const RIKIKI_BUNDLE_URL = new URL('./index.js', import.meta.url).href;
 interface PresenterState {
   current: number;
   total: number;
+  step: number;
+  steps: number;
   // Outer HTML of the active slide (live mirror in the presenter)
   slideHtml: string;
   // Outer HTML of the next slide (or null if at the end)
@@ -42,6 +44,13 @@ interface PresenterState {
   notes: string;
   // Tokens.css URL so the popup looks like the deck (served decks)
   themeHref: string;
+  // Preserve the complete author cascade and opt-in component registrations.
+  previewStyles: string;
+  moduleHrefs: string[];
+  baseHref: string;
+  lang: string;
+  canvasWidth: number;
+  canvasHeight: number;
   // Inlined theme CSS · for self-contained single-file decks where the theme
   // is a <style> block, not a <link> (empty for served decks).
   inlineStyles: string;
@@ -200,10 +209,20 @@ function readState(host: DeckRoot): PresenterState {
   return {
     current: current + 1,
     total: slides.length,
+    step: host.step,
+    steps: Number(slide?.getAttribute("steps") || slide?.getAttribute("data-steps") || 0),
     slideHtml: slide?.outerHTML ?? '',
     nextHtml: next?.outerHTML ?? null,
     notes,
     themeHref,
+    previewStyles: Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+      .map((node) => node.outerHTML).join('\n'),
+    moduleHrefs: Array.from(document.querySelectorAll<HTMLScriptElement>('script[type="module"][src]'))
+      .map((script) => script.src),
+    baseHref: document.baseURI,
+    lang: document.documentElement.lang,
+    canvasWidth: host.width,
+    canvasHeight: host.height,
     inlineStyles,
     bundleHref: RIKIKI_BUNDLE_URL,
     bundleInline,
@@ -272,7 +291,7 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${escapeHtml(initial.themeHr
      container lets the iframe size against the pane in cq units. */
   #current .body { display: grid; place-items: center; container-type: size; }
   .panel iframe { border: 0; background: #0f1422; display: block; }
-  #current-frame {
+  #current-viewport {
     aspect-ratio: 16 / 9;
     width: min(100cqw, calc(100cqh * 16 / 9));
     height: auto;
@@ -280,11 +299,17 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${escapeHtml(initial.themeHr
   }
   /* Next sizes its 16:9 box from the column width (its pane row is auto), so
      the panel hugs the thumbnail instead of stretching full-height. */
-  #next-frame {
+  #next-viewport {
     aspect-ratio: 16 / 9;
     width: 100%;
     height: auto;
     display: block;
+  }
+  .preview-viewport { position: relative; overflow: hidden; }
+  .preview-viewport iframe {
+    position: absolute; top: 0; left: 0;
+    width: ${initial.canvasWidth}px; height: ${initial.canvasHeight}px;
+    transform-origin: top left;
   }
   #notes { font-size: 17px; line-height: 1.6; white-space: pre-wrap; padding: 20px; overflow: auto; color: #e8e4f0; }
   #notes:empty::before { content: 'No notes for this slide.'; color: rgba(232,228,240,0.4); font-style: italic; }
@@ -317,11 +342,11 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${escapeHtml(initial.themeHr
 <div class="grid">
   <section class="panel" id="current">
     <header>Current</header>
-    <div class="body"><iframe id="current-frame" srcdoc=""></iframe></div>
+    <div class="body"><div class="preview-viewport" id="current-viewport"><iframe id="current-frame" srcdoc=""></iframe></div></div>
   </section>
   <section class="panel" id="next">
     <header>Next</header>
-    <div class="body"><iframe id="next-frame" srcdoc=""></iframe></div>
+    <div class="body"><div class="preview-viewport" id="next-viewport"><iframe id="next-frame" srcdoc=""></iframe></div></div>
   </section>
   <section class="panel" id="notes-panel">
     <header>Speaker notes</header>
@@ -329,7 +354,7 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${escapeHtml(initial.themeHr
   </section>
   <div id="footer">
     <div><span id="timer">00:00</span> <button id="timer-toggle">Pause</button> <button id="timer-reset">Reset</button></div>
-    <div id="counter">${initial.current} / ${initial.total}</div>
+    <div><span id="counter">${initial.current} / ${initial.total}</span> <span id="stepper"></span></div>
     <div>
       <label class="opt"><input type="checkbox" id="opt-advance" checked> Advance on click</label>
       <span class="ghost">· P to close</span>
@@ -340,6 +365,14 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${escapeHtml(initial.themeHr
   const channel = new BroadcastChannel('${CHANNEL}');
   const current = document.getElementById('current-frame');
   const next = document.getElementById('next-frame');
+
+
+  const previewResize = new ResizeObserver(entries => {
+    for (const entry of entries) {
+      entry.target.querySelector('iframe').style.transform = 'scale(' + (entry.contentRect.width / ${initial.canvasWidth}) + ')';
+    }
+  });
+  document.querySelectorAll('.preview-viewport').forEach(el => previewResize.observe(el));
   const notes = document.getElementById('notes');
   const counter = document.getElementById('counter');
   const timerEl = document.getElementById('timer');
@@ -367,31 +400,30 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${escapeHtml(initial.themeHr
   };
   resetBtn.onclick = () => { startedAt = Date.now(); elapsed = 0; running = true; toggleBtn.textContent = 'Pause'; };
 
-  // Presentation options · push each change to the live deck over the channel.
   document.getElementById('opt-advance').addEventListener('change', (e) => {
     channel.postMessage({ type: 'config', advanceOnClick: e.target.checked });
   });
 
   function wrapFrame(slideHtml, forward) {
-    const themeHref    = ${JSON.stringify(initial.themeHref)};
-    const inlineStyles = ${JSON.stringify(initial.inlineStyles)};
+    const previewStyles = ${JSON.stringify(initial.previewStyles).replace(/</g, '\\u003c')};
+    const moduleHrefs = ${JSON.stringify(initial.moduleHrefs).replace(/</g, '\\u003c')};
+    const baseHref = ${JSON.stringify(initial.baseHref).replace(/</g, '\\u003c')};
+    const lang = ${JSON.stringify(initial.lang).replace(/</g, '\\u003c')};
     const bundleHref   = ${JSON.stringify(initial.bundleHref)};
     const bundleInline = ${JSON.stringify(initial.bundleInline)};
-    // Both values come from the host document, so they are only as trustworthy
-    // as the deck · escape before they become markup. escAttr closes an attribute
-    // breakout; escStyle stops a </style> inside the deck's own CSS (a string or
-    // a comment) from ending the block early.
+
+
+
+
     const escAttr  = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
     const escStyle = (s) => s.replace(/<\\/(style|script)/gi, '<\\\\/$1');
-    const themeLink  = themeHref ? '<link rel="stylesheet" href="' + escAttr(themeHref) + '">' : '';
-    const themeStyle = inlineStyles ? '<style>' + escStyle(inlineStyles) + '</style>' : '';
-    // Bootstrap rikiki inside the iframe so its <deck-*> elements upgrade.
-    //  · single-file deck → the framework is inlined and tagged · re-inline it
-    //    so the module base is the iframe document URL (a <script src="data:">
-    //    or a non-existent ./index.js would break new URL(rel, import.meta.url)
-    //    and abort registration). Escape any script end-tag so it can't close
-    //    this block early (this comment must avoid the literal too).
-    //  · served deck → load the real bundle URL with <script src>.
+
+
+
+
+
+
+
     let bundleTag;
     const esc = (c) => c.replace(/<\\/script/gi, '<\\\\/script');
     if (bundleInline) {
@@ -405,12 +437,12 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${escapeHtml(initial.themeHr
     } else {
       bundleTag = '<script type="module" src="' + bundleHref + '"><' + '/script>';
     }
-    // Mark the cloned slide [active] so its real component CSS applies
-    // (:host([active]){display:flex}) instead of forcing display via !important.
+
+
     const activeSlide = slideHtml.replace(/^(\\s*<deck-[a-z-]+)/i, '$1 active');
-    // Only the "Current" pane is a control surface · it captures key/click/wheel
-    // and posts them to this popup window, which relays them onto the channel so
-    // the live deck acts on them. Coords are normalised 0..1 over the iframe.
+
+
+
     const forwarder = forward
       ? '<scr' + 'ipt>(function(){' +
         'var post=function(o){o.source="rikiki-presenter-input";parent.postMessage(o,"*");};' +
@@ -419,46 +451,75 @@ ${initial.themeHref ? `<link rel="stylesheet" href="${escapeHtml(initial.themeHr
         'addEventListener("wheel",function(e){if(e.ctrlKey||e.metaKey)return;post({type:"wheel",x:e.clientX/innerWidth,y:e.clientY/innerHeight,dx:e.deltaX,dy:e.deltaY});},{passive:true});' +
         '})();<' + '/scr' + 'ipt>'
       : '';
-    // The deck always letterboxes into its logical canvas, so the slide keeps
-    // its 16:9 proportions regardless of the pane's shape · just drop the
-    // hint / nav-arrow chrome for a clean, correctly-shaped thumbnail.
-    return '<!doctype html><html><head><meta charset="UTF-8">' + themeLink + themeStyle +
-      bundleTag +
+
+
+
+    return '<!doctype html><html lang="' + escAttr(lang) + '"><head><meta charset="UTF-8"><base href="' + escAttr(baseHref) + '">' + previewStyles +
+      bundleTag + moduleHrefs.filter((href) => href !== bundleHref).map((href) => '<script type="module" src="' + escAttr(href) + '"><' + '/script>').join('') +
       '<style>html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#0f1422}' +
       'deck-root{position:absolute;inset:0}</style>' +
-      '</head><body><deck-root no-hint no-arrows no-counter preview>' + activeSlide + '</deck-root>' + forwarder + '</body></html>';
+      '</head><body><deck-root width="${initial.canvasWidth}" height="${initial.canvasHeight}" no-hint no-arrows no-counter preview data-overview-snapshot>' + activeSlide + '</deck-root>' + forwarder + '</body></html>';
   }
 
+
+  const frames = new Map();
+  function updateFrame(frame, html, step, forward) {
+    let state = frames.get(frame);
+    if (!state) {
+      state = { html, step, ready: false, painted: null };
+      frames.set(frame, state);
+      frame.addEventListener('load', () => {
+        state.ready = true;
+        paint();
+      });
+      frame.srcdoc = wrapFrame('', forward);
+    }
+    state.html = html;
+    state.step = step;
+    function paint() {
+      if (!state.ready) return;
+      const root = frame.contentDocument?.querySelector('deck-root');
+      if (!root) return;
+      if (state.painted !== state.html) {
+        root.innerHTML = state.html || '<div style="padding:3rem;color:white">End of deck</div>';
+        root.firstElementChild?.setAttribute('active', '');
+        state.painted = state.html;
+      }
+
+      Promise.resolve().then(async () => {
+        const elements = [root.firstElementChild, ...root.querySelectorAll('*')].filter(Boolean);
+        await Promise.all(elements.map(el => el.updateComplete));
+        elements.forEach(el => el.applyStep?.(state.step));
+      });
+    }
+    paint();
+  }
   channel.onmessage = (e) => {
     if (e.data?.type !== 'state') return;
     const s = e.data.state;
     counter.textContent = s.current + ' / ' + s.total;
+    document.getElementById('stepper').textContent = s.steps ? ' · Étape ' + s.step + ' / ' + s.steps : '';
     notes.textContent = s.notes;
-    if (s.slideHtml) current.srcdoc = wrapFrame(s.slideHtml, true);
-    if (s.nextHtml)  next.srcdoc = wrapFrame(s.nextHtml, false);
-    else next.srcdoc = '<!doctype html><html><body style="background:#0f1422;color:rgba(232,228,240,0.4);display:flex;align-items:center;justify-content:center;font-family:system-ui">End of deck</body></html>';
+    updateFrame(current, s.slideHtml, s.step, true);
+    updateFrame(next, s.nextHtml, 0, false);
   };
 
-  // Initial paint from the seed state
-  const seed = ${JSON.stringify(initial)};
+  const seed = ${JSON.stringify(initial).replace(/</g, '\\u003c')};
   channel.postMessage({ type: 'state', state: seed });
 
-  // Forward keys back to the main window (so the speaker can drive nav from the laptop)
   window.addEventListener('keydown', (e) => {
     if (e.target.matches && e.target.matches('input,textarea,button')) return;
     channel.postMessage({ type: 'key', key: e.key, shift: e.shiftKey });
   });
 
-  // Relay input captured inside the "Current" preview iframe (key/click/wheel)
-  // onto the channel · the iframe is a separate browsing context so its events
-  // never reach this window directly · it postMessages them here instead.
+
+
   window.addEventListener('message', (e) => {
     const d = e.data;
     if (!d || d.source !== 'rikiki-presenter-input') return;
     channel.postMessage({ type: d.type, key: d.key, shift: d.shift, x: d.x, y: d.y, dx: d.dx, dy: d.dy });
   });
 
-  // Tell main window we're alive
   channel.postMessage({ type: 'hello' });
 </script>
 </body>
@@ -525,24 +586,21 @@ function withoutClickNav(nav: string | null): string {
 export function installPresenter(host: DeckRoot): void {
   installed = installed ?? new WeakSet<DeckRoot>();
   if (installed.has(host)) {
-    // Toggle · already open, close it
+
     teardown(host);
     return;
   }
   installed.add(host);
 
-  // Capture the deck's own mouse-nav config so the "Advance on click" option can
-  // toggle clicks off and back on without losing the author's other settings.
+
   const originalMouseNav = host.mouseNav;
 
   channel = new BroadcastChannel(CHANNEL);
 
-  // When the main deck advances, push the new state to the popup.
-  host.addEventListener('slide-change', () => broadcast(host));
+  host.addEventListener('step-change', () => broadcast(host));
 
-  // Forward input events from the popup back to the live deck · the presenter's
-  // "Current" pane is a control surface: keys, positional clicks and wheel all
-  // act on the projected deck, which then re-broadcasts its new state.
+
+
   channel.addEventListener('message', (e: MessageEvent) => {
     const data = e.data as {
       type: string;
@@ -559,9 +617,9 @@ export function installPresenter(host: DeckRoot): void {
         new KeyboardEvent('keydown', { key: data.key, shiftKey: !!data.shift, bubbles: true }),
       );
     } else if (data?.type === 'click') {
-      // Positional click · land on the same element the speaker pointed at so a
-      // real sub-component (expandable card, button, …) opens, and plain slide
-      // areas advance through deck-root's own click-nav.
+
+
+
       const { x, y, target } = resolveTarget(host, data);
       const base = {
         bubbles: true,
@@ -601,20 +659,19 @@ export function installPresenter(host: DeckRoot): void {
         );
       }
     } else if (data?.type === 'config' && typeof data.advanceOnClick === 'boolean') {
-      // Presenter option · flip click-to-advance on the live deck, keeping the
-      // author's other mouse-nav mechanisms intact.
+
+
       host.mouseNav = data.advanceOnClick ? originalMouseNav : withoutClickNav(originalMouseNav);
     } else if (data?.type === 'hello') {
-      // Popup just appeared · send a fresh state snapshot
+
       broadcast(host);
     }
   });
 
-  // Send the slides fullscreen to the external screen · NEVER block the popup on
-  // the permission prompt. When the screen layout is already cached we can call
-  // requestFullscreen synchronously, riding this keypress's activation. The very
-  // first time the layout isn't known yet: prompt for it (best-effort fullscreen
-  // once it resolves) and cache it so the next P press works synchronously.
+
+
+
+
   const known = cachedScreens;
   const external = known?.screens.find((s) => s !== known.currentScreen) ?? null;
   if (external) {
@@ -624,8 +681,8 @@ export function installPresenter(host: DeckRoot): void {
       if (!s) return;
       const ext = s.screens.find((x) => x !== s.currentScreen);
       if (ext) sendDeckToScreen(host, ext);
-      // First press · the popup opened with default placement before the layout
-      // was known. Now that it resolved, move it onto the speaker's screen.
+
+
       if (popup && s.currentScreen) movePopupTo(popup, s.currentScreen);
     });
   }
@@ -637,20 +694,19 @@ export function installPresenter(host: DeckRoot): void {
   popup = window.open('', 'rikiki-presenter', features);
   if (!popup) {
     console.warn('[rikiki/presenter] popup was blocked · allow popups for this site');
-    // We may have already sent the deck fullscreen · don't strand it without a
-    // presenter window (teardown also closes the channel we just opened).
+
+
     teardown(host);
     return;
   }
   popup.document.open();
   popup.document.write(PRESENTER_HTML(state));
   popup.document.close();
-  // The main window is now the projected one · hide its hint chips / arrows.
+
   host.presenterActive = true;
-  // Track native fullscreen exits (Esc) so our flag doesn't go stale.
+
   document.addEventListener('fullscreenchange', onFullscreenChange);
 
-  // Tidy up if the popup is closed externally
   const watch = setInterval(() => {
     if (popup?.closed) {
       clearInterval(watch);

@@ -26,10 +26,18 @@ export interface OverviewOptions {
 
 const STYLE_TAG = 'data-deck-overview';
 const TOKEN_LINK_TAG = 'data-overview-tokens';
+type CachedThumb = { key: string; thumb: HTMLElement };
+const thumbCaches = new WeakMap<HTMLElement, Map<Slide, CachedThumb>>();
 
+const views = new WeakMap<HTMLElement, { key: string; dispose: () => void }>();
+function sourceKey(slide: Slide): string {
+  const html = slide.outerHTML;
+  const end = html.indexOf('>');
+  return html.slice(0, end).replace(/\sactive(?:="[^"]*")?/, '') + html.slice(end);
+}
 const STYLES = `
   :host([overview]) ::slotted(*) { display: none !important; }
-  :host([overview]) #overview-grid {
+  :host(:is([overview], [data-overview-warming])) #overview-grid {
     position: fixed; inset: 0;
     background: var(--rik-surface-page);
     overflow: hidden;
@@ -39,7 +47,7 @@ const STYLES = `
   }
 
   /* ── Top bar · search, slide count, close hint ─────── */
-  :host([overview]) .ov-bar {
+  :host(:is([overview], [data-overview-warming])) .ov-bar {
     display: flex; align-items: center; gap: 16px;
     padding: 14px 28px;
     background: var(--rik-surface-raised);
@@ -48,7 +56,7 @@ const STYLES = `
     letter-spacing: 0.10em;
     color: var(--rik-text-default--faint);
   }
-  :host([overview]) .ov-bar .ov-search {
+  :host(:is([overview], [data-overview-warming])) .ov-bar .ov-search {
     flex: 1;
     appearance: none;
     background: var(--rik-surface-raised--strong);
@@ -60,28 +68,28 @@ const STYLES = `
     letter-spacing: 0;
     max-width: 480px;
   }
-  :host([overview]) .ov-bar .ov-search:focus {
+  :host(:is([overview], [data-overview-warming])) .ov-bar .ov-search:focus {
     outline: none;
     border-color: var(--rik-accent);
     box-shadow: 0 0 0 3px var(--rik-accent--soft);
   }
-  :host([overview]) .ov-bar .ov-count { color: var(--rik-accent); }
-  :host([overview]) .ov-bar .ov-hint { letter-spacing: 0.16em; text-transform: uppercase; }
+  :host(:is([overview], [data-overview-warming])) .ov-bar .ov-count { color: var(--rik-accent); }
+  :host(:is([overview], [data-overview-warming])) .ov-bar .ov-hint { letter-spacing: 0.16em; text-transform: uppercase; }
 
   /* ── Sidebar layout (many slides) ───────────────── */
-  :host([overview]) .ov-body {
+  :host(:is([overview], [data-overview-warming])) .ov-body {
     display: grid;
     grid-template-columns: 240px 1fr;
     min-height: 0;
   }
-  :host([overview]) .ov-body.compact { grid-template-columns: 1fr; }
-  :host([overview]) .ov-aside {
+  :host(:is([overview], [data-overview-warming])) .ov-body.compact { grid-template-columns: 1fr; }
+  :host(:is([overview], [data-overview-warming])) .ov-aside {
     border-right: 1px solid var(--rik-border-default);
     background: var(--rik-surface-raised);
     overflow-y: auto;
     padding: 16px 0;
   }
-  :host([overview]) .ov-aside-item {
+  :host(:is([overview], [data-overview-warming])) .ov-aside-item {
     display: grid;
     grid-template-columns: 36px 1fr;
     gap: 10px;
@@ -92,84 +100,84 @@ const STYLES = `
     color: var(--rik-text-default--muted);
     transition: background 0.12s, color 0.12s, border-color 0.12s;
   }
-  :host([overview]) .ov-aside-item:hover {
+  :host(:is([overview], [data-overview-warming])) .ov-aside-item:hover {
     background: var(--rik-surface-tint);
     color: var(--rik-text-default);
   }
-  :host([overview]) .ov-aside-item[data-active] {
+  :host(:is([overview], [data-overview-warming])) .ov-aside-item[data-active] {
     background: var(--rik-accent--faint);
     border-left-color: var(--rik-accent);
     color: var(--rik-text-default);
   }
-  :host([overview]) .ov-aside-num {
+  :host(:is([overview], [data-overview-warming])) .ov-aside-num {
     font: 800 0.85rem/1 var(--rik-font-mono);
     color: var(--rik-accent);
   }
-  :host([overview]) .ov-aside-text {
+  :host(:is([overview], [data-overview-warming])) .ov-aside-text {
     font: 700 0.92rem/1.3 var(--rik-font-display, var(--rik-font-sans));
     letter-spacing: -0.005em;
   }
-  :host([overview]) .ov-aside-count {
+  :host(:is([overview], [data-overview-warming])) .ov-aside-count {
     font: 600 0.70rem/1 var(--rik-font-mono);
     color: var(--rik-text-default--faint);
     margin-top: 4px;
   }
 
   /* ── Main scroll area ─────────────────────────────── */
-  :host([overview]) .ov-main {
+  :host(:is([overview], [data-overview-warming])) .ov-main {
     overflow-y: auto;
     padding: 24px 32px 48px;
     display: flex; flex-direction: column;
     gap: 32px;
     min-width: 0;
   }
-  :host([overview]) .ov-chapter {
+  :host(:is([overview], [data-overview-warming])) .ov-chapter {
     display: flex; flex-direction: column;
     gap: 12px;
     scroll-margin-top: 24px;
   }
-  :host([overview]) .ov-chapter-head {
+  :host(:is([overview], [data-overview-warming])) .ov-chapter-head {
     display: flex; align-items: baseline; gap: 12px;
     padding-bottom: 6px;
     border-bottom: 2px solid var(--rik-accent);
   }
-  :host([overview]) .ov-chapter-num {
+  :host(:is([overview], [data-overview-warming])) .ov-chapter-num {
     font: 800 0.85rem/1 var(--rik-font-mono);
     color: var(--rik-accent);
     letter-spacing: 0.12em;
   }
-  :host([overview]) .ov-chapter-title {
+  :host(:is([overview], [data-overview-warming])) .ov-chapter-title {
     font: 800 1.2rem/1.2 var(--rik-font-display, var(--rik-font-sans));
     color: var(--rik-text-default);
     letter-spacing: -0.012em;
     flex: 1;
     min-width: 0;
   }
-  :host([overview]) .ov-chapter-count {
+  :host(:is([overview], [data-overview-warming])) .ov-chapter-count {
     font: 700 0.72rem/1 var(--rik-font-mono);
     color: var(--rik-text-default--faint);
     letter-spacing: 0.1em;
     text-transform: uppercase;
   }
-  :host([overview]) .ov-row {
+  :host(:is([overview], [data-overview-warming])) .ov-row {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(var(--ov-cell-min, 180px), 1fr));
     gap: 12px;
   }
 
   /* ── Path layout (≤ 60 slides) ────────────────────── */
-  :host([overview]) .ov-path .ov-row {
+  :host(:is([overview], [data-overview-warming])) .ov-path .ov-row {
     display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
   }
-  :host([overview]) .ov-path .ov-connector {
+  :host(:is([overview], [data-overview-warming])) .ov-path .ov-connector {
     flex: 0 0 auto;
     width: 16px; height: 2px;
     background: var(--rik-border-default);
   }
-  :host([overview]) .ov-path .ov-cell { flex: 0 0 auto; width: clamp(160px, 14vw, 260px); }
+  :host(:is([overview], [data-overview-warming])) .ov-path .ov-cell { flex: 0 0 auto; width: clamp(160px, 14vw, 260px); }
 
   /* ── Thumbnail cell ───────────────────────────────── */
-  :host([overview]) .ov-cell {
+  :host(:is([overview], [data-overview-warming])) .ov-cell {
     position: relative;
     aspect-ratio: 16 / 9;
     background:
@@ -189,24 +197,24 @@ const STYLES = `
   }
   /* The keyboard user must see where they are · without this the grid moves
      focus invisibly. */
-  :host([overview]) .ov-cell:focus-visible {
+  :host(:is([overview], [data-overview-warming])) .ov-cell:focus-visible {
     outline: var(--rik-focus-ring--width, 2px) solid var(--rik-focus-ring, currentColor);
     outline-offset: var(--rik-focus-ring--offset, 2px);
     z-index: 2;
   }
-  :host([overview]) .ov-cell:hover {
+  :host(:is([overview], [data-overview-warming])) .ov-cell:hover {
     transform: translateY(-2px) scale(1.015);
     border-color: var(--rik-accent--soft);
     box-shadow: var(--rik-elevation-3);
     z-index: 1;
   }
-  :host([overview]) .ov-cell[data-current] {
+  :host(:is([overview], [data-overview-warming])) .ov-cell[data-current] {
     border-color: var(--rik-accent);
     box-shadow: 0 0 0 3px var(--rik-accent--soft), var(--rik-elevation-2);
   }
-  :host([overview]) .ov-cell[data-filtered-out] { opacity: 0.10; pointer-events: none; transform: scale(0.96); }
-  :host([overview]) .ov-cell:not([data-loaded]) .ov-thumb { display: none; }
-  :host([overview]) .ov-cell:not([data-loaded])::before {
+  :host(:is([overview], [data-overview-warming])) .ov-cell[data-filtered-out] { opacity: 0.10; pointer-events: none; transform: scale(0.96); }
+  :host(:is([overview], [data-overview-warming])) .ov-cell:not([data-loaded]) .ov-thumb { display: none; }
+  :host(:is([overview], [data-overview-warming])) .ov-cell:not([data-loaded])::before {
     content: '';
     position: absolute; inset: 0;
     background:
@@ -226,7 +234,7 @@ const STYLES = `
   /* The thumb mirrors the letterboxed stage, so make it a size container too ·
      the cloned slide's cqw/cqh then resolve exactly as they do live instead of
      falling back to the (larger) window. */
-  :host([overview]) .ov-thumb {
+  :host(:is([overview], [data-overview-warming])) .ov-thumb {
     position: absolute; top: 0; left: 0;
     width: var(--ov-thumb-w, 1920px); height: var(--ov-thumb-h, 1080px);
     transform: scale(var(--overview-scale, 0.2));
@@ -234,8 +242,8 @@ const STYLES = `
     pointer-events: none;
     container-type: size;
   }
-  :host([overview]) .ov-thumb > * { display: flex !important; }
-  :host([overview]) .ov-mermaid-snap {
+  :host(:is([overview], [data-overview-warming])) .ov-thumb > * { display: flex !important; }
+  :host(:is([overview], [data-overview-warming])) .ov-mermaid-snap {
     display: flex; align-items: center; justify-content: center;
     background: var(--rik-code__bg);
     border: 1px solid var(--rik-code__border);
@@ -243,11 +251,11 @@ const STYLES = `
     padding: var(--rik-space-4);
     overflow: hidden; min-width: 0;
   }
-  :host([overview]) .ov-mermaid-snap svg {
+  :host(:is([overview], [data-overview-warming])) .ov-mermaid-snap svg {
     width: 100% !important; height: auto !important;
     max-width: 100% !important; max-height: 60cqh;
   }
-  :host([overview]) .ov-cell-label {
+  :host(:is([overview], [data-overview-warming])) .ov-cell-label {
     position: absolute; bottom: 6px; right: 8px;
     font: 700 0.70rem/1 var(--rik-font-mono);
     color: var(--rik-text-default);
@@ -256,7 +264,8 @@ const STYLES = `
     z-index: 2;
     pointer-events: none;
   }
-  :host(:not([overview])) #overview-grid { display: none; }
+  :host(:not([overview])) #overview-grid { visibility: hidden; pointer-events: none; }
+  :host(:not([overview]):not([data-overview-warming])) #overview-grid { display: none; }
 `;
 
 function ensureStyles(shadow: ShadowRoot): void {
@@ -433,14 +442,41 @@ function snapshotSlide(slide: Slide, idx: number): HTMLElement {
 
 /** Build a cell's thumbnail · awaits in-flight mermaid renders first so the
  *  snapshot serializes real SVG even for never-visited slides. */
-async function buildThumb(cell: HTMLElement, src: Slide): Promise<void> {
+async function buildThumb(cell: HTMLElement, src: Slide, cache: Map<Slide, CachedThumb>, contextKey: string): Promise<void> {
+  const key = contextKey + ':' + cell.dataset['idx'] + ':' + src.outerHTML;
+  const cached = cache.get(src);
+  if (cached?.key === key) {
+    cell.insertBefore(cached.thumb, cell.firstChild);
+    cell.dataset['loaded'] = '1';
+    delete cell.dataset['building'];
+    return;
+  }
   const pending = Array.from(src.querySelectorAll<MermaidLike>('deck-mermaid'))
     .map((m) => m.whenRendered)
     .filter((p): p is Promise<void> => !!p);
   if (pending.length) await Promise.all(pending).catch(() => undefined);
+  if (!cell.isConnected) return;
+  cached?.thumb.remove();
   const thumb = document.createElement('div');
   thumb.className = 'ov-thumb';
-  thumb.appendChild(snapshotSlide(src, Number(cell.dataset['idx'])));
+  // Isolate author styles from the overview controls, while preserving the
+  // deck-root ancestry used by themes and third-party layout components.
+  const surface = thumb.attachShadow({ mode: 'open' });
+  for (const node of document.querySelectorAll('link[rel="stylesheet"], style')) {
+    surface.appendChild(node.cloneNode(true));
+  }
+  const preview = document.createElement('deck-root');
+  preview.setAttribute('data-overview-snapshot', '');
+  for (const attr of ['preview', 'no-hint', 'no-arrows', 'no-counter']) preview.setAttribute(attr, '');
+  const sourceRoot = src.closest('deck-root');
+  for (const attr of ['width', 'height', 'class', 'lang', 'dir', 'style']) {
+    const value = sourceRoot?.getAttribute(attr);
+    if (value != null) preview.setAttribute(attr, value);
+  }
+  preview.style.cssText += ';position:absolute;inset:0;width:100%;height:100%;';
+  preview.appendChild(snapshotSlide(src, Number(cell.dataset['idx'])));
+  surface.appendChild(preview);
+  cache.set(src, { key, thumb });
   cell.insertBefore(thumb, cell.firstChild);
   cell.dataset['loaded'] = '1';
   delete cell.dataset['building'];
@@ -459,8 +495,37 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
     grid.id = 'overview-grid';
     shadow.appendChild(grid);
   }
-  grid.innerHTML = '';
 
+  let cache = thumbCaches.get(host);
+  if (!cache) { cache = new Map(); thumbCaches.set(host, cache); }
+  const liveSlides = new Set(opts.slides);
+  for (const [slide, entry] of cache) {
+    if (!liveSlides.has(slide)) { entry.thumb.remove(); cache.delete(slide); }
+  }
+  const contextKey = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+    .filter(node => !node.id.startsWith('rik-deck-'))
+    .map(node => node.outerHTML).join('') +
+    ['width', 'height', 'class', 'lang', 'dir', 'style'].map(name => host.getAttribute(name)).join('|');
+
+  const viewKey = contextKey + opts.slides.map(sourceKey).join('') + JSON.stringify(opts.chapters.map(c => c.startIdx));
+  const previous = views.get(host);
+  if (previous?.key === viewKey) {
+    grid.querySelectorAll<HTMLElement>('.ov-cell').forEach(cell => {
+      const current = Number(cell.dataset['idx']) === opts.currentIdx;
+      cell.toggleAttribute('data-current', current);
+      if (current) cell.setAttribute('aria-current', 'true');
+      else cell.removeAttribute('aria-current');
+    });
+    requestAnimationFrame(() => {
+      if (!host.hasAttribute('overview')) return;
+      const cell = grid!.querySelector<HTMLElement>('.ov-cell[data-current]');
+      cell?.scrollIntoView({ block: 'center' });
+      cell?.focus({ preventScroll: true });
+    });
+    return previous.dispose;
+  }
+  previous?.dispose();
+  grid.innerHTML = '';
   const total = opts.slides.length;
   const useSidebar = total > 60;
 
@@ -480,6 +545,11 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
 
   // Compute the per-cell scale after the first paint · cellWidth depends on
   // the grid's auto-fill resolution, which we can only measure post-mount.
+  const resize = new ResizeObserver(() => {
+    const cellW = grid!.querySelector<HTMLDivElement>('.ov-cell')?.clientWidth;
+    if (cellW) grid!.style.setProperty('--overview-scale', String(cellW / thumbW));
+  });
+  resize.observe(grid);
   requestAnimationFrame(() => {
     const cellW = grid!.querySelector<HTMLDivElement>('.ov-cell')?.clientWidth ?? cellMin;
     grid!.style.setProperty('--overview-scale', String(cellW / thumbW));
@@ -534,6 +604,21 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
   // the user scrolls. We keep a map idx → slide source so the observer
   // callback can build a clone on demand.
   const lazyLoad = new WeakMap<HTMLElement, Slide>();
+  let disposed = false;
+  const pending: (() => void)[] = [];
+  let scheduled = false;
+  const schedule = () => {
+    if (scheduled || disposed || !pending.length) return;
+    scheduled = true;
+    const run = () => {
+      scheduled = false;
+      if (disposed) return;
+      pending.shift()?.();
+      schedule();
+    };
+    if ('requestIdleCallback' in window) window.requestIdleCallback(run, { timeout: 1000 });
+    else setTimeout(run, 32);
+  };
   const lazyObserver = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {
@@ -544,7 +629,7 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
         if (!src) continue;
         cell.dataset['building'] = '1';
         lazyObserver.unobserve(cell);
-        buildThumb(cell, src).catch((err) => {
+        const build = () => { void buildThumb(cell, src, cache!, contextKey).catch((err) => {
           // Release the cell on failure · the next scroll-into-view retries
           // instead of leaving the thumbnail permanently blank. Cap the retries
           // so a slide that deterministically fails to snapshot doesn't re-throw
@@ -553,8 +638,10 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
           cell.dataset['tries'] = String(tries);
           console.warn('[rikiki/overview] thumbnail build failed', err);
           delete cell.dataset['building'];
-          if (tries < 3) lazyObserver.observe(cell);
-        });
+          if (tries < 3 && !disposed) lazyObserver.observe(cell);
+        }); };
+        if (host.hasAttribute("overview")) build();
+        else { pending.push(build); schedule(); }
       }
     },
     { root: null, rootMargin: '300px 0px', threshold: 0 },
@@ -705,6 +792,7 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
   // Scroll AND focus the current slide on open · scrolling alone leaves a
   // keyboard user with nothing selected and no way into the grid.
   requestAnimationFrame(() => {
+    if (!host.hasAttribute('overview')) return;
     const cur = grid!.querySelector<HTMLElement>('.ov-cell[data-current]');
     if (!cur) return;
     cur.scrollIntoView({ block: 'center' });
@@ -727,9 +815,15 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
     next?.scrollIntoView({ block: 'nearest' });
   });
 
-  return () => {
+  const dispose = () => {
+    disposed = true;
+    resize.disconnect();
+    pending.length = 0;
+    views.delete(host);
     io?.disconnect();
     lazyObserver.disconnect();
     if (grid) grid.innerHTML = '';
   };
+  views.set(host, { key: viewKey, dispose });
+  return dispose;
 }

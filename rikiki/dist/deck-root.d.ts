@@ -35,6 +35,9 @@ export interface DeckPlugin {
     navigate?(to: number, ctx: DeckContext, proceed: () => void): boolean | void;
 }
 export declare class DeckRoot extends LitElement {
+    /** Internal overview surface: author selectors still see deck-root, but the
+     *  outer thumbnail owns sizing and no presentation runtime is needed. */
+    private get _overviewSnapshot();
     static styles: import("lit").CSSResult;
     current: number;
     step: number;
@@ -333,9 +336,7 @@ export declare class DeckRoot extends LitElement {
     private _goToCoords;
     private _applyActive;
     private _applyStep;
-    /** The bottom-right slide counter is noise in modes where it shouldn't show:
-     *  the overview grid, a black/white blanked screen, and the cover slide (the
-     *  title slide has no business carrying a page number). */
+    /** Keep numbering on all slide layouts; hide it only in overlay modes. */
     private _counterHidden;
     private _updateUI;
     updated(changed: PropertyValues<this>): void;
