@@ -154,7 +154,7 @@ const highlighted = highlight(code.trim(), lang);
   .copy .icon { display: inline-flex; }
 </style>
 
-<script is:inline>
+<script>
   document.querySelectorAll('.code .copy').forEach((btn) => {
     btn.addEventListener('click', async () => {
       const code = btn.getAttribute('data-code') || '';

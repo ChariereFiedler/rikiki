@@ -99,13 +99,13 @@ const srcdoc = `<!doctype html><html><head>
     }
   </style>
 </head><body>
-  <deck-root no-hint no-counter no-arrows>${decks[type]}</deck-root>
+  <deck-root preview no-hint no-counter no-arrows>${decks[type]}</deck-root>
 </body></html>`;
 ---
 
 <div class="layout-preview" data-type={type}>
   <iframe
-    srcdoc={srcdoc}
+    data-preview-srcdoc={srcdoc}
     title={labels[type]}
     loading="lazy"
     aria-hidden="true"
@@ -136,17 +136,6 @@ const srcdoc = `<!doctype html><html><head>
   }
 </style>
 
-<script is:inline define:vars={{ type }}>
-  // Rescale each preview iframe so it fits the card width regardless of
-  // viewport. The deck inside is fixed at 1920×1080.
-  document.querySelectorAll('.layout-preview[data-type="' + type + '"]').forEach((el) => {
-    const iframe = el.querySelector('iframe');
-    if (!iframe) return;
-    const ro = new ResizeObserver(([entry]) => {
-      const w = entry.contentRect.width;
-      const s = w / 1920;
-      iframe.style.transform = 'scale(' + s + ')';
-    });
-    ro.observe(el);
-  });
+<script>
+  import '../scripts/previews';
 </script>
