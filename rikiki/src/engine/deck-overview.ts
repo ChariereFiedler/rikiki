@@ -25,7 +25,6 @@ export interface OverviewOptions {
 }
 
 const STYLE_TAG = 'data-deck-overview';
-const TOKEN_LINK_TAG = 'data-overview-tokens';
 type CachedThumb = { key: string; thumb: HTMLElement };
 const thumbCaches = new WeakMap<HTMLElement, Map<Slide, CachedThumb>>();
 
@@ -276,15 +275,6 @@ function ensureStyles(shadow: ShadowRoot): void {
   shadow.appendChild(style);
 }
 
-function ensureTokensLink(shadow: ShadowRoot, moduleUrl: string): void {
-  if (shadow.querySelector(`link[${TOKEN_LINK_TAG}]`)) return;
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.setAttribute(TOKEN_LINK_TAG, '1');
-  link.href = new URL('../tokens.css', moduleUrl).href;
-  shadow.appendChild(link);
-}
-
 function sectionTitleOf(chap: Chapter): string {
   const first = chap.slides[0];
   const h1 = first?.querySelector('h1');
@@ -487,7 +477,7 @@ export function mountOverview(host: HTMLElement, opts: OverviewOptions): () => v
   if (!shadow) return () => undefined;
 
   ensureStyles(shadow);
-  ensureTokensLink(shadow, import.meta.url);
+  // Theme tokens inherit from the deck; never fetch another stylesheet here.
 
   let grid = shadow.querySelector<HTMLDivElement>('#overview-grid');
   if (!grid) {
