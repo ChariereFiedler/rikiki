@@ -75,6 +75,11 @@ export interface DeckPlugin {
 
 @customElement('deck-root')
 export class DeckRoot extends LitElement {
+  /** Internal overview surface: author selectors still see deck-root, but the
+   *  outer thumbnail owns sizing and no presentation runtime is needed. */
+  private get _overviewSnapshot(): boolean {
+    return this.hasAttribute('data-overview-snapshot');
+  }
   /* Customization tokens:
        --deck-root-bg (page background under all slides)
        --deck-root-progress-color / --deck-root-progress-height
@@ -402,6 +407,7 @@ export class DeckRoot extends LitElement {
   }
 
   override firstUpdated(): void {
+    if (this._overviewSnapshot) return;
     this._installRuntime();
     this._scopeSlideStyles();
     this.slides = Array.from(this.querySelectorAll<Slide>(':scope > *')).filter(
@@ -416,6 +422,17 @@ export class DeckRoot extends LitElement {
     // Chapters are known only after firstUpdated; re-render so the kb hint
     // can show ↑↓ when 2D navigation applies.
     this.requestUpdate();
+    if (!this.hasAttribute('preview')) {
+      const warm = () => {
+        if (!this.isConnected || this.overview) return;
+        this.setAttribute('data-overview-warming', '');
+        void this._renderOverviewIfActive(true);
+      };
+      void document.fonts.ready.then(() => {
+        if ('requestIdleCallback' in window) window.requestIdleCallback(warm, { timeout: 1500 });
+        else setTimeout(warm, 300);
+      });
+    }
   }
 
   /** Canvas vars, scale and every listener the deck needs while connected.
@@ -742,6 +759,7 @@ export class DeckRoot extends LitElement {
 
   override connectedCallback(): void {
     super.connectedCallback();
+    if (this._overviewSnapshot) return;
     // Focusable when embedded · the keyboard is scoped to focus there, so the
     // deck needs a way to receive it. A full-page deck needs no tab stop.
     if (!this.hasAttribute('tabindex') && typeof document !== 'undefined') {
@@ -757,6 +775,9 @@ export class DeckRoot extends LitElement {
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
+    if (this._overviewSnapshot) return;
+    this._overviewTeardown?.();
+    this._overviewTeardown = null;
     document.documentElement.style.removeProperty('--deck-canvas-w');
     document.documentElement.style.removeProperty('--deck-canvas-h');
     // Last deck gone (this element is already detached here) · give the host
@@ -1179,13 +1200,10 @@ export class DeckRoot extends LitElement {
   }
 
   /** Lazy-import the overview module the first time the user opens it. */
-  private async _renderOverviewIfActive(): Promise<void> {
-    if (!this.overview) {
-      this._overviewTeardown?.();
-      this._overviewTeardown = null;
-      return;
-    }
+  private async _renderOverviewIfActive(warming = false): Promise<void> {
+    if (!this.overview && !warming) return;
     const { mountOverview } = await import('./deck-overview.js');
+    if (!this.isConnected) return;
     this._overviewTeardown = mountOverview(this, {
       slides: this.slides,
       chapters: this.chapters,
@@ -1341,14 +1359,12 @@ export class DeckRoot extends LitElement {
     for (const p of this._plugins) {
       p.applyStep?.(this.step, slide, this._context());
     }
+    this.dispatchEvent(new CustomEvent('step-change', { detail: { step: this.step, steps: this._maxSteps() } }));
   }
 
-  /** The bottom-right slide counter is noise in modes where it shouldn't show:
-   *  the overview grid, a black/white blanked screen, and the cover slide (the
-   *  title slide has no business carrying a page number). */
+  /** Keep numbering on all slide layouts; hide it only in overlay modes. */
   private _counterHidden(): boolean {
-    const active = this.slides[this.current];
-    return this.overview || this.blank !== null || active?.tagName.toLowerCase() === 'deck-cover';
+    return this.overview || this.blank !== null;
   }
 
   private _updateUI(): void {
@@ -1372,6 +1388,7 @@ export class DeckRoot extends LitElement {
   }
 
   override updated(changed: PropertyValues<this>): void {
+    if (this._overviewSnapshot) return;
     // A canvas resize after first render must republish the vars and rescale ·
     // firstUpdated only covers the initial values. Toggling `fluid` at runtime
     // goes through the same machinery: turning it off must re-engage the canvas
@@ -1434,6 +1451,7 @@ export class DeckRoot extends LitElement {
   }
 
   override render(): unknown {
+    if (this._overviewSnapshot) return html`<slot></slot>`;
     return html`
       <div id="progress"></div>
       <div id="live" aria-live="polite" aria-atomic="true">${this._liveLabel()}</div>
