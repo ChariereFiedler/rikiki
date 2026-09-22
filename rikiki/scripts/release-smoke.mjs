@@ -102,10 +102,10 @@ try {
     });
     page.on('pageerror', (e) => errors.push(e.message));
     await page.goto(url);
-    await page.locator('deck-root > [active]').waitFor();
+    await page.locator('body > deck-root > [active]').waitFor();
     assert.equal(
       await page
-        .locator('deck-root > deck-cover, deck-root > deck-feature, deck-root > deck-takeaway')
+        .locator('body > deck-root > deck-cover, body > deck-root > deck-feature, body > deck-root > deck-takeaway')
         .count(),
       3,
     );
