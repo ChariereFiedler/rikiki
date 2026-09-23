@@ -12,6 +12,7 @@
 // ════════════════════════════════════════════════════════════════
 
 import { basename } from 'node:path';
+import { reviewQuality } from './quality.mjs';
 import { readFileSync } from 'node:fs';
 import { NAVIGATION_TIMEOUT_MS, PAGE_LOAD_TIMEOUT_MS, SLIDE_TITLE_READER, advanceStep, goToSlide, waitForStillFrame, withDeck } from './browser.mjs';
 import { BOX_GEOMETRY_READER } from './box-geometry.mjs';
@@ -1174,7 +1175,7 @@ async function diagnoseAllStates(page, slideCount, inspectOpts, source, limits, 
 export async function checkDeck(
   deckPath,
   { timeoutMs = PAGE_LOAD_TIMEOUT_MS, width = 1920, height = 1080, visual = true, steps = false,
-    config, plugins = [], noPlugins = false, pluginTimeoutMs = 5000, narrativeOut, narrativeReview } = {},
+    config, plugins = [], noPlugins = false, pluginTimeoutMs = 5000, narrativeOut, narrativeReview, qualityOut, qualityReview, requireQuality = false } = {},
 ) {
   const source = readFileSync(deckPath, 'utf8');
   const limits = LIMITS;
@@ -1287,6 +1288,10 @@ export async function checkDeck(
         );
       }
 
+      const qualityResult = await reviewQuality({ page, deckPath, source, settled, width, height,
+        outDir: qualityOut, reviewFile: qualityReview, required: requireQuality });
+      diagnostics.push(...qualityResult.diagnostics);
+      const quality = qualityResult.quality;
       const summary = { error: 0, warning: 0 };
       for (const d of diagnostics) summary[d.severity] = (summary[d.severity] ?? 0) + 1;
 
@@ -1302,8 +1307,10 @@ export async function checkDeck(
         diagnostics,
         plugins: pluginReport(resolution),
         narrative,
+        quality,
         // Named so a reader does not mistake silence for a clean bill.
         notChecked: [
+          ...(quality.status === 'completed' ? [] : ['slide design quality · ' + quality.status + ' (requires screenshot review)']),
           ...resolution.notChecked,
           ...(narrative.status === 'completed' ? [] : [`narrative composition · ${narrative.status} (review by the current agent)`]),
           ...(observed.runtimeLoaded
@@ -1343,5 +1350,8 @@ export function formatReport(report) {
   lines.push(
     `${report.deck} · ${report.slideCount} slide(s) · ${error} error(s), ${warning} warning(s)`,
   );
+  lines.push('Design quality · ' + (report.quality?.status ?? 'not-run')
+    + (report.quality?.verdict ? ' · ' + report.quality.verdict : ' · NOT VERIFIED'));
+  if (report.quality?.request) lines.push('Review material · ' + report.quality.request);
   return lines.join('\n');
 }

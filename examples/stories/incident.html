@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Small releases, fast recovery · Rikiki</title>
+<link rel="stylesheet" href="../../rikiki/themes/rikiki.css">
+<script type="module" src="../../rikiki/dist/index.js"></script>
+<script type="module" src="../../rikiki/dist/deck-graph.js"></script>
+<style>html,body{margin:0;height:100%;overflow:hidden}deck-root{width:100%;height:100%}.comparison{font:900 150px/1 var(--rik-font-display);letter-spacing:-.06em;margin:32px 0}.comparison span{font:500 32px var(--rik-font-sans);letter-spacing:0}deck-cover h1{max-width:15ch}deck-cover .sub{max-width:50ch}</style>
+</head>
+<body>
+<deck-root swipe no-hint transition="fade">
+<deck-cover brand="Fieldnotes · Engineering" speaker="Platform team" audience="Incident review">
+  <h1>Ship small.<br><span class="accent">Recover fast.</span></h1>
+  <p class="sub">A smaller release gives you less to undo.</p>
+</deck-cover>
+<deck-split eyebrow="The evidence · illustrative scenario" cols="1-1" gap="5">
+  <h1 slot="title">Less to undo. Less time to recover.</h1>
+  <deck-card slot="left"><h3>One large release</h3><p class="comparison">18 <span>min</span></p><p>Find the faulty change among twelve bundled together.</p></deck-card>
+  <deck-card slot="right" color="green"><h3>One small release</h3><p class="comparison">3 <span>min</span></p><p>Identify one change, then roll it back.</p></deck-card>
+  <deck-notes>These timings illustrate the argument. Replace them with your own incident data before using this slide in a real review.</deck-notes>
+</deck-split>
+<deck-feature eyebrow="The next release" fill>
+  <h1 slot="title">Make the rollback path part of the plan.</h1>
+  <deck-graph layout="row">
+    <deck-node id="change" boxed label="One change" note="Small enough to review"></deck-node>
+    <deck-node id="canary" boxed tone="accent" label="One canary" note="Watch real traffic"></deck-node>
+    <deck-node id="decision" boxed label="A clear decision" note="Promote or roll back"></deck-node>
+    <deck-edge from="change" to="canary" label="deploy"></deck-edge>
+    <deck-edge from="canary" to="decision" label="observe"></deck-edge>
+  </deck-graph>
+  <deck-notes>Agree on a signal and a rollback owner before the release starts.</deck-notes>
+</deck-feature>
+</deck-root>
+<script>if(new URLSearchParams(location.search).has('embed')){const d=document.querySelector('deck-root');d.setAttribute('no-counter','');d.setAttribute('no-arrows','');}</script>
+</body></html>

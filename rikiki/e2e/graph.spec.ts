@@ -6,6 +6,13 @@ import { createDeckPage } from './pages/deck.page';
 // named, and that the author's percentages are what places everything.
 const DECK = '/rikiki/decks/tests/extras-more.html';
 
+test.beforeEach(async ({ page }) => {
+  // Geometry tests must not wait for the theme's optional remote fonts.
+  await page.route('https://fonts.googleapis.com/**', (route) =>
+    route.fulfill({ contentType: 'text/css', body: '' }),
+  );
+});
+
 /** Open the slide that CONTAINS an element, by id · a deep link by number
  *  breaks the moment a slide is inserted before it, which it just did. */
 async function gotoSlideWith(page: import('@playwright/test').Page, id: string) {
@@ -107,7 +114,46 @@ test('an orthogonal edge and label offset are author controlled', async ({ page 
   expect(result.route).toBe('ortho');
   // Four points: out of the source, across, down, into the target.
   expect(result.path).toMatch(/^M [-\d.]+ [-\d.]+( L [-\d.]+ [-\d.]+){3}$/);
-  expect(result.labelTop).toMatch(/px$/);
+  // Percent of the box plus the author's pixel offset.
+  // Browsers serialise `+ -18px` as `- 18px`.
+  expect(result.labelTop).toMatch(/^calc\([\d.]+% - 18px\)$/);
+});
+
+// Regression: on a screen that is not exactly the canvas size (reported in
+// Firefox at 2317 px wide), edge captions drifted by the deck's scale factor
+// onto the node on their left and were painted UNDER it. Captions are now
+// placed in percent of the measured box, on the painted segment, above nodes.
+test('an edge caption wider than the gap stays on top of the nodes', async ({ page }) => {
+  await gotoSlideWith(page, 'gr-row');
+  const probe = await page.evaluate(async () => {
+    const graph = document.getElementById('gr-row')!;
+    for (const id of ['c1', 'c2']) {
+      const node = document.getElementById(id)!;
+      node.setAttribute('boxed', '');
+      // Wide enough to leave a narrow gap, not so wide that the nodes overlap.
+      node.setAttribute('width', '15rem');
+    }
+    graph.querySelector('deck-edge')!.setAttribute('label', 'a caption far wider than the gap');
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const label = graph.shadowRoot!.querySelector<HTMLElement>('.edge-label')!;
+    const l = label.getBoundingClientRect();
+    const a = document.getElementById('c1')!.getBoundingClientRect();
+    const b = document.getElementById('c2')!.getBoundingClientRect();
+    // A point of the caption that lies inside the first node's box.
+    const x = Math.min(l.left + 4, a.right - 4);
+    const y = l.top + l.height / 2;
+    const top = graph.shadowRoot!.elementFromPoint(x, y);
+    return {
+      overlapsNode: l.left < a.right,
+      topmostIsLabel: top === label,
+      centredOnGap: Math.abs((l.left + l.right) / 2 - (a.right + b.left) / 2),
+    };
+  });
+  expect(probe.overlapsNode, 'the fixture must actually put the caption over a node').toBe(true);
+  expect(probe.topmostIsLabel, 'the caption paints above the node it overlaps').toBe(true);
+  // The test viewport is smaller than the canvas, so the deck is scaled down ·
+  // exactly the condition under which pixel positioning drifted.
+  expect(probe.centredOnGap, 'the caption is centred on the visible gap at any scale').toBeLessThan(2);
 });
 
 // `rikiki check` tests the line that was painted rather than re-deriving one of

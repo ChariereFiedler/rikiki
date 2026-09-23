@@ -1,119 +1,36 @@
-<div class="agent-loop" aria-label="LLM authoring and verification loop">
-  <div class="loop-label">
-    <span>Agent workflow</span>
-    <strong>Brief → HTML → diagnostics → files</strong>
-  </div>
-  <div class="stage">
-    <svg class="flow-lines" viewBox="0 0 1000 160" preserveAspectRatio="none" aria-hidden="true">
-      <path class="forward" d="M70 82 H930" />
-      <path class="feedback" d="M720 100 C720 145 500 145 500 100" />
-      <circle class="packet" r="5"><animateMotion dur="5s" repeatCount="indefinite" path="M70 82 H930" /></circle>
-      <circle class="packet feedback-packet" r="4"><animateMotion dur="3s" repeatCount="indefinite" path="M720 100 C720 145 500 145 500 100" /></circle>
-    </svg>
-    <ol>
-      <li><span class="loop-num">01</span><strong>Brief</strong><code>your brief</code></li>
-      <li><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">02</span><strong>Reference</strong><code>llms.txt</code></li>
-      <li><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">03</span><strong>Deck</strong><code>index.html</code></li>
-      <li class="doctor"><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">04</span><strong>Deck checks</strong><code>rikiki check</code></li>
-      <li><span class="loop-arrow" aria-hidden="true">→</span><span class="loop-num">05</span><strong>Delivery</strong><code>HTML · PDF · PNGs</code></li>
-    </ol>
-    <span class="feedback-label" aria-hidden="true">revise from diagnostics</span>
-  </div>
-  <a href="/rikiki/docs/llms/rikiki-workflow.md">Open the complete agent workflow (Markdown)</a>
-</div>
-
+---
+const stages = [
+  {title:'Brief', file:'Audience + evidence', detail:'You define the audience, the decision and the source material. The agent must mark missing facts instead of inventing them.'},
+  {title:'Reference', file:'Skills + components', detail:'The authoring skills provide layouts, component APIs and the review workflow. The agent can inspect the same reference you use.'},
+  {title:'Write', file:'Editable HTML', detail:'The agent turns the plan into HTML slides and speaker notes. You can inspect every claim and review the source in Git.'},
+  {title:'Check & revise', file:'Diagnostics + images', detail:'Browser checks report defects. The agent revises the HTML, reruns the checks and renders screenshots for visual review.'},
+  {title:'Review & deliver', file:'HTML / PDF', detail:'You approve the evidence, story and visual result. Then present the deck, bundle offline HTML or export a PDF.'},
+];
+---
+<section class="agent-loop" aria-label="Explore the agent authoring workflow">
+  <header><div><h3>A draft is the start of the loop.</h3><p>Explore each handoff, including the return from checks to source.</p></div><button class="play-loop" type="button">Play the loop <span aria-hidden="true">▶</span></button></header>
+  <ol>{stages.map((stage,i)=><li><button class="loop-step" type="button" data-stage={i} aria-pressed={i===0} aria-controls="loop-explanation"><span class="step-index">{i+1}</span><strong>{stage.title}</strong><span class="step-file">{stage.file}</span></button></li>)}</ol>
+  <svg class="flow-lines" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true"><defs><marker id="loop-arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1L8 5L0 9" fill="none" stroke="currentColor" stroke-width="1.5"/></marker></defs><path class="forward" d="M100 3V20H300V3M300 20H500V3M500 20H700V3M700 20H900V3"/><path class="feedback" d="M700 30C700 90 500 90 500 30" marker-end="url(#loop-arrowhead)"/><circle class="packet" r="5" cx="100" cy="20"><animateMotion class="flow-motion" dur="6s" begin="indefinite" fill="freeze" path="M0 0H200H400H600C600 65 400 65 400 10V0H800"/></circle></svg>
+  <div class="feedback-caption">Revise the source, then check again</div>
+  <div id="loop-explanation" class="explanation" aria-live="polite"><strong>{stages[0].title}</strong><p>{stages[0].detail}</p></div>
+  <div class="stage-data" hidden>{stages.map(stage=><p data-title={stage.title}>{stage.detail}</p>)}</div>
+  <a href="/rikiki/docs/llms/rikiki-workflow.md">Read the full authoring workflow ↗</a>
+</section>
+<script>
+const root=document.querySelector<HTMLElement>('.agent-loop');
+if(root){
+ const buttons=[...root.querySelectorAll<HTMLButtonElement>('.loop-step')];
+ const data=[...root.querySelectorAll<HTMLParagraphElement>('.stage-data p')];
+ const play=root.querySelector<HTMLButtonElement>('.play-loop')!;
+ const motion=root.querySelector<SVGAnimationElement>('.flow-motion');
+ let timers:ReturnType<typeof setTimeout>[]=[];
+ function stop(){timers.forEach(clearTimeout);timers=[];motion?.endElement();root!.classList.remove('playing');play.innerHTML='Play the loop <span aria-hidden="true">▶</span>';}
+ function select(i:number){buttons.forEach((button,n)=>button.setAttribute('aria-pressed',String(n===i)));root!.querySelector('.explanation strong')!.textContent=data[i].dataset.title!;root!.querySelector('.explanation p')!.textContent=data[i].textContent;}
+ buttons.forEach((button,i)=>button.addEventListener('click',()=>{stop();select(i);}));
+ play.addEventListener('click',()=>{if(root.classList.contains('playing')){stop();return;}stop();select(0);if(matchMedia('(prefers-reduced-motion: reduce)').matches){select(3);return;}root.classList.add('playing');play.innerHTML='Pause the loop <span aria-hidden="true">Ⅱ</span>';motion?.beginElement();[1,2,3,2,3,4].forEach((stage,i)=>timers.push(setTimeout(()=>select(stage),(i+1)*850)));timers.push(setTimeout(stop,6100));});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
+}
+</script>
 <style>
-  .agent-loop {
-    position:relative;
-    margin-top: var(--rik-space-6);
-    padding: var(--rik-space-4);
-    background: var(--rik-surface-inverse);
-    color: var(--rik-text-inverse);
-    border-radius: var(--rik-radius-md);
-    box-shadow: var(--rik-elevation-2);
-  }
-  .loop-label {
-    display: flex; justify-content: space-between; align-items: baseline;
-    gap: var(--rik-space-3); padding-bottom: var(--rik-space-3);
-    border-bottom: 1px solid var(--rik-border-inverse);
-  }
-  .loop-label span {
-    color: var(--rik-text-inverse--muted);
-    font: 600 var(--rik-font-size-sm)/1.3 var(--rik-font-sans);
-  }
-  .loop-label strong { font-family: var(--rik-font-display); }
-  /* The stage is exactly as tall as the feedback arc needs · the list sits
-     in its upper part, the arc dips under the list and its label closes the
-     stage. One token gives the height, so the SVG can never leave the panel. */
-  .stage {
-    --deck-loop-arc__height: calc(var(--rik-space-7) * 2);
-    position: relative;
-    min-height: var(--deck-loop-arc__height);
-  }
-  ol {
-    position: relative; z-index: 1;
-    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
-    list-style: none; padding: var(--rik-space-4) 0 0; margin: 0;
-  }
-  .flow-lines { position:absolute; z-index:0; inset:0; width:100%; height:var(--deck-loop-arc__height); overflow:hidden; color:var(--rik-status-success); pointer-events:none; }
-  .flow-lines path { fill:none; vector-effect:non-scaling-stroke; }
-  .forward { stroke:var(--rik-border-inverse--strong); stroke-width:1; }
-  .feedback { stroke:var(--rik-status-success); stroke-width:1.5; stroke-dasharray:5 7; animation:flow-dash 1.2s linear infinite; }
-  /* The label is DOM text under the arc's lowest point · the arc spans
-     x 500 to 720 of a 1000-wide stage, so its centre sits at 61%. */
-  .feedback-label {
-    position: absolute; left: 61%; bottom: 0; transform: translateX(-50%);
-    color: var(--rik-status-success); white-space: nowrap;
-    font: 600 var(--rik-font-size-xs)/1 var(--rik-font-sans);
-  }
-  .packet { fill:var(--rik-accent); filter:drop-shadow(0 0 5px var(--rik-accent)); }
-  .feedback-packet { fill:var(--rik-status-success); filter:drop-shadow(0 0 5px var(--rik-status-success)); }
-  @keyframes flow-dash { to { stroke-dashoffset:-12; } }
-  li {
-    position: relative; display: flex; flex-direction: column; gap: var(--rik-space-hair);
-    min-width: 0; padding: 0 var(--rik-space-3);
-  }
-  li:first-child { padding-left: 0; }
-  .loop-num { color: var(--rik-text-inverse--muted); font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono); }
-  li strong { font: 800 1rem/1.2 var(--rik-font-display); }
-  li code {
-    width: fit-content; max-width: 100%;
-    color: var(--rik-text-inverse--muted);
-    background: var(--rik-surface-inverse__overlay);
-    font-size: var(--rik-font-size-xs); overflow-wrap: anywhere;
-  }
-  .loop-arrow {
-    position: absolute; left: -5px; top: 22px;
-    color: var(--rik-text-inverse--ghost); font-family: var(--rik-font-mono);
-  }
-  .doctor {
-    margin: calc(-1 * var(--rik-space-1)) 0; padding-top: var(--rik-space-1); padding-bottom: var(--rik-space-1);
-    border: 1px solid var(--rik-status-success);
-    background: var(--rik-surface-inverse__overlay); border-radius: var(--rik-radius-sm);
-  }
-  .agent-loop > a {
-    position: relative; z-index: 1; display: inline-block; margin-top: var(--rik-space-3);
-    color: var(--rik-accent); font-size: var(--rik-font-size-body);
-    font-weight: 700; text-decoration: none;
-  }
-  .agent-loop > a:hover { text-decoration: underline; }
-  @media (max-width: 640px) {
-    .flow-lines, .feedback-label { display:none; }
-    .stage { min-height: 0; }
-    .agent-loop { padding: var(--rik-space-3); }
-    .loop-label { align-items: flex-start; flex-direction: column; }
-    ol { grid-template-columns: 1fr; gap: 0; padding: var(--rik-space-3) 0 0; }
-    li, li:first-child {
-      display: grid; grid-template-columns: 28px 1fr auto; align-items: center;
-      padding: 11px 8px; border-bottom: 1px solid var(--rik-border-inverse);
-    }
-    li:last-child { border-bottom: 0; }
-    li code { white-space: nowrap; }
-    .loop-arrow { display: none; }
-    .doctor { margin: 0; }
-  }
-  @media (prefers-reduced-motion:reduce) {
-    .packet { display:none; }
-    .feedback { animation:none; }
-  }
+.agent-loop{background:var(--rik-surface-inverse);color:var(--rik-text-inverse);padding:30px;border-radius:8px;margin-top:48px}header{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-bottom:28px}h3{font:750 22px/1.35 var(--rik-font-display);margin:0 0 10px}header p{font-size:14px;color:var(--rik-text-inverse--muted);margin:0;line-height:1.6}.play-loop{flex:none;border:1px solid var(--rik-border-inverse);background:transparent;color:var(--rik-text-inverse);padding:12px 16px;border-radius:4px;font:600 14px var(--rik-font-sans);cursor:pointer}.play-loop span{margin-left:12px}ol{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}li{min-width:0}.loop-step{width:100%;height:116px;padding:16px 12px;text-align:left;background:var(--rik-surface-inverse--soft-2);border:1px solid var(--rik-border-inverse);border-radius:5px;color:var(--rik-text-inverse);cursor:pointer}.loop-step[aria-pressed=true]{border-color:var(--rik-accent);background:var(--rik-surface-inverse__overlay)}.step-index{font:14px var(--rik-font-mono);color:var(--rik-accent);display:block;margin-bottom:10px}.loop-step strong{font:700 14px var(--rik-font-sans);display:block;margin-bottom:8px}.step-file{font:14px var(--rik-font-mono);color:var(--rik-text-inverse--muted)}.flow-lines{width:100%;height:94px;display:block;overflow:visible;color:var(--rik-accent)}.forward,.feedback{fill:none;stroke:var(--rik-border-inverse--strong);stroke-width:1.5;vector-effect:non-scaling-stroke}.feedback{stroke:var(--rik-accent);stroke-dasharray:4 5}.packet{display:none;fill:var(--rik-accent)}.playing .packet{display:block}.feedback-caption{text-align:center;font:14px var(--rik-font-sans);color:var(--rik-accent);margin:-4px 0 22px}.explanation{border-top:1px solid var(--rik-border-inverse);padding-top:20px;display:grid;grid-template-columns:180px 1fr;gap:24px;min-height:92px}.explanation strong{font-size:14px}.explanation p{font-size:14px;line-height:1.7;color:var(--rik-text-inverse--muted);margin:0;max-width:80ch}.agent-loop>a{display:inline-block;color:var(--rik-accent);font-size:14px;margin-top:12px;text-decoration:none}button:focus-visible,a:focus-visible{outline:2px solid var(--rik-accent);outline-offset:4px}@media(max-width:720px){.agent-loop{padding:22px 16px}header{display:block}h3{font-size:19px}.play-loop{margin-top:18px}ol{grid-template-columns:1fr;gap:8px}.loop-step{height:auto;min-height:70px;display:grid;grid-template-columns:24px 1fr;gap:5px 10px;align-items:center}.step-index{grid-row:1/3;margin:0}.loop-step strong{margin:0}.step-file{grid-column:2}.flow-lines{display:none}.feedback-caption{text-align:left;margin:18px 0;line-height:1.5}.explanation{grid-template-columns:1fr;gap:10px;min-height:145px}.explanation p{font-size:14px}}@media(prefers-reduced-motion:reduce){.packet{display:none!important}}
 </style>

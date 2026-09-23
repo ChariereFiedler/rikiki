@@ -1,0 +1,474 @@
+/* ════════════════════════════════════════════════════════════════
+   Quidditch · the saddler's catalogue
+   A dark clubhouse ground taken from the photograph, bone cards as the
+   one filled surface, brass as the mark. Bodoni Moda states, Jost reads.
+   Loaded after rikiki/themes/rikiki.css · palette → semantic → component.
+   ════════════════════════════════════════════════════════════════ */
+
+@font-face {
+  font-family: 'Bodoni Moda';
+  src: url('./fonts/bodoni-moda-normal-400-900.woff2') format('woff2');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Bodoni Moda';
+  src: url('./fonts/bodoni-moda-italic-400-900.woff2') format('woff2');
+  font-weight: 400 900;
+  font-style: italic;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Jost';
+  src: url('./fonts/jost-normal-300-700.woff2') format('woff2');
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  /* ── Palette · private ── */
+  --q-night: #220f13;
+  --q-panel: #33151b;
+  /* Bodoni Moda at its display optical size thins the hairlines until they
+     vanish on a projector · a text-size cut keeps them at wall distance. */
+  --q-optical: 'opsz' 18;
+  --q-oxblood: #5a2029;
+  --q-bone: #fbf3e4;
+  --q-bone-deep: #e6d9c0;
+  --q-ink: #2a1216;
+  --q-ink-soft: #4d2e2c;
+  /* Reading tones on the night page · every one clears 9:1 so the dark
+     ground never costs legibility, only the brass carries hue. */
+  --q-brass: #e8c27a;
+  --q-brass-deep: #7a5a24;
+  --q-parchment: #ece0cb;
+  --q-dust: #d2c3aa;
+
+  /* ── Semantic · surfaces ── */
+  --rik-surface-page: var(--q-night);
+  --rik-surface-raised: var(--q-panel);
+  --rik-surface-raised--strong: var(--q-panel);
+  --rik-surface-sunken: var(--q-panel);
+  --rik-surface-tint: rgba(239, 229, 210, 0.05);
+  --rik-surface-tint--strong: rgba(239, 229, 210, 0.09);
+  --rik-surface-inverse: var(--q-bone);
+  --rik-surface-inverse--soft: var(--q-bone);
+  --rik-surface-inverse--soft-2: var(--q-bone-deep);
+  --rik-surface-inverse--soft-3: var(--q-bone-deep);
+  --rik-surface-inverse--soft-4: var(--q-bone-deep);
+  --rik-surface-inverse--soft-5: var(--q-bone-deep);
+  --rik-surface-inverse__overlay: rgba(42, 18, 22, 0.06);
+
+  /* ── Semantic · text ── */
+  --rik-text-default: var(--q-bone);
+  --rik-text-default--muted: var(--q-parchment);
+  --rik-text-default--faint: var(--q-dust);
+  --rik-text-default--ghost: var(--q-oxblood);
+  --rik-text-inverse: var(--q-ink);
+  --rik-text-inverse--muted: var(--q-ink-soft);
+  --rik-text-inverse--faint: var(--q-ink-soft);
+  --rik-text-inverse--ghost: var(--q-bone-deep);
+
+  /* ── Semantic · lines, accent, status ── */
+  --rik-border-default: var(--q-oxblood);
+  --rik-border-default--subtle: var(--q-panel);
+  --rik-border-inverse: rgba(42, 18, 22, 0.18);
+  --rik-accent: var(--q-brass);
+  --rik-accent--soft: rgba(201, 162, 94, 0.18);
+  --rik-accent--faint: rgba(201, 162, 94, 0.06);
+  --rik-accent--strong: var(--q-brass);
+  --rik-accent__text: var(--q-brass);
+  --rik-accent__on: var(--q-ink);
+  --rik-status-info: var(--q-brass);
+  --rik-status-info__text: var(--q-brass);
+  --rik-status-info__bg: var(--q-panel);
+  --rik-status-info__bg--mid: var(--q-panel);
+  --rik-status-info__bg--strong: var(--q-oxblood);
+  --rik-status-info__border: var(--q-oxblood);
+  --rik-status-success: var(--q-brass);
+  --rik-status-success__text: var(--q-brass);
+  --rik-status-success__bg: var(--q-panel);
+  --rik-status-success__border: var(--q-oxblood);
+  --rik-status-warn: var(--q-parchment);
+  --rik-status-warn__text: var(--q-parchment);
+  --rik-status-warn__bg: var(--q-panel);
+  --rik-status-warn__border: var(--q-oxblood);
+  --rik-status-danger: var(--q-bone);
+  --rik-status-danger__text: var(--q-bone);
+  --rik-status-danger__bg: var(--q-panel);
+  --rik-status-danger__border: var(--q-oxblood);
+  --rik-selection__bg: var(--q-brass);
+  --rik-selection__text: var(--q-ink);
+  --rik-focus-ring: var(--q-brass);
+  --rik-link: var(--q-brass);
+  --rik-link--hover: var(--q-bone);
+  --rik-elevation-1: none;
+  --rik-elevation-2: none;
+  --rik-elevation-3: none;
+
+  /* ── Semantic · type ── */
+  --rik-font-display: 'Bodoni Moda', 'Bodoni 72', Didot, serif;
+  --rik-font-sans: 'Jost', 'Futura', 'Century Gothic', sans-serif;
+  --rik-font-mono: 'Jost', 'Futura', sans-serif;
+  --rik-font-size-body: 1.22rem;
+  --rik-font-size-lead: 1.5rem;
+  --rik-font-size-h2: 1.9rem;
+  --rik-font-size-h1: 3.4rem;
+  --rik-font-size-strong: 1.5rem;
+  --rik-font-size-big: 2.6rem;
+  --rik-font-size-mega: 5.6rem;
+  --rik-title-weight: 600;
+  --rik-title-tracking: -0.018em;
+  --rik-title-leading: 1.04;
+  --rik-rule-weight: 0px;
+
+  /* ── Semantic · space and shape ── */
+  --rik-slide-padding-x: 7.5rem;
+  --rik-slide-padding-y: 4.4rem;
+  --rik-radius-xs: 0px;
+  --rik-radius-sm: 0px;
+  --rik-radius-md: 0px;
+  --rik-radius-lg: 0px;
+  --rik-extras-mass: var(--q-bone);
+  --rik-extras-mass-text: var(--q-ink);
+  --rik-extras-edge: var(--q-brass);
+
+  /* ── Component · the catalogue's parts ── */
+  --deck-root-counter-color: var(--q-dust);
+  --deck-root-progress-color: var(--q-brass);
+  --deck-root-nav-color: var(--q-parchment);
+  --deck-root-nav-bg: transparent;
+  --deck-root-nav-opacity: 0.85;
+  --deck-cell-bg: transparent;
+  --deck-cell-border: transparent;
+  --deck-cell-padding-x: 0px;
+  --deck-cell-padding-y: 0px;
+  --deck-cell-gap: 1.1rem;
+  --deck-bento-gap: 3.2rem;
+  --deck-icon-color: var(--q-brass);
+  --deck-icon-stroke: 1.5;
+  --deck-stat-color: var(--q-ink);
+  --deck-stat-num-weight: 500;
+  --deck-stat-border-width: 0px;
+  --deck-stat-padding-x: 0px;
+  --deck-stat-padding-y: 0px;
+  --deck-versus-rule: var(--q-oxblood);
+  --deck-versus-winner-rule: var(--q-brass);
+  --deck-versus-loser-color: var(--q-dust);
+  --deck-versus-pivot-color: var(--q-brass);
+  /* The pivot sits inside a 52px ring drawn by the component. */
+  --deck-versus-pivot-size: 1.5rem;
+  --deck-versus-side-align: flex-end;
+  --deck-graph-edge: var(--q-brass);
+  --deck-graph-edge-width: 3;
+  --deck-graph-edge-label: var(--q-parchment);
+  --deck-graph-tag-size: 1.05rem;
+  --deck-node-note-size: 1.05rem;
+  --deck-node-note-color: var(--q-parchment);
+  --deck-group-border: var(--q-oxblood);
+  --deck-group-label-color: var(--q-parchment);
+  --deck-bar-height: 5.5rem;
+  --deck-bar-radius: 0px;
+  --deck-bar-track: var(--q-panel);
+  --deck-bar-divider: var(--q-night);
+  --deck-bar-label-color: var(--q-bone);
+  --deck-bar-value-color: var(--q-parchment);
+  --deck-callout-bg: transparent;
+  --deck-callout-border: transparent;
+  --deck-callout-color: var(--q-bone);
+  --deck-callout-stroke: var(--q-brass);
+  --deck-callout-padding-x: 0px;
+  --deck-callout-padding-y: 0px;
+  --deck-source-color: var(--q-dust);
+}
+
+/* Inherited into every shadow root · Jost has no optical axis and ignores it.
+   Light text on a dark ground reads thinner than it is, so Jost steps up
+   from its regular weight. */
+deck-root {
+  font-variation-settings: var(--q-optical);
+  font-weight: 450;
+}
+
+/* ── Slide titles · one voice for every layout ── */
+deck-root [slot='title'],
+deck-root deck-split h1 {
+  font-family: var(--rik-font-display);
+  font-variation-settings: var(--q-optical);
+  font-size: var(--rik-font-size-h1);
+  font-weight: var(--rik-title-weight);
+  letter-spacing: var(--rik-title-tracking);
+  line-height: var(--rik-title-leading);
+  color: var(--rik-text-default);
+  border: 0;
+  padding: 0;
+  margin: 0 0 var(--rik-space-5);
+  max-width: 26ch;
+  text-wrap: balance;
+}
+deck-root [slot='lead'] {
+  font-size: var(--rik-font-size-lead);
+  color: var(--rik-text-default--muted);
+}
+deck-root h3 {
+  font-family: var(--rik-font-display);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.08;
+}
+deck-root p {
+  text-wrap: pretty;
+}
+
+/* ── Cover · the catalogue plate ── */
+deck-photo#selection {
+  --deck-photo-overlay-color: linear-gradient(100deg, rgba(14, 4, 6, 0.55) 0%, rgba(14, 4, 6, 0) 55%);
+  --deck-photo-content-max-width: 24ch;
+  --deck-photo-padding-x: 7.5rem;
+  --deck-photo-padding-y: 5.2rem;
+}
+deck-photo#selection > h1 {
+  font-family: var(--rik-font-display);
+  font-size: 6.4rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 0.98;
+  color: var(--q-bone);
+  text-shadow: none;
+}
+deck-photo#selection > p {
+  max-width: 26ch;
+  margin-top: var(--rik-space-4);
+  font-size: var(--rik-font-size-lead);
+  line-height: 1.4;
+  color: var(--q-parchment);
+  text-shadow: none;
+}
+
+/* ── The one filled surface ── */
+deck-root .mass {
+  --deck-cell-bg: var(--rik-surface-inverse);
+  --deck-cell-padding-x: 3rem;
+  --deck-cell-padding-y: 2.6rem;
+  --rik-text-default: var(--rik-text-inverse);
+  --rik-text-default--muted: var(--rik-text-inverse--muted);
+  --rik-text-default--faint: var(--rik-text-inverse--muted);
+  --deck-icon-color: var(--q-brass-deep);
+  color: var(--rik-text-inverse);
+}
+deck-root .mass deck-stat {
+  --deck-stat-num-size: 13rem;
+  --deck-stat-num-weight: 600;
+  --deck-stat-claim-color: var(--q-ink);
+  --deck-stat-body-color: var(--q-ink-soft);
+}
+
+/* ── Course · the boxed outcome is a bone card, so its icon takes deep brass ── */
+#course deck-node[boxed] {
+  --deck-icon-color: var(--q-brass-deep);
+}
+#course deck-group {
+  --deck-group-border: var(--q-brass-deep);
+}
+
+/* ── Roles · four positions around the fleet figure ── */
+#roles deck-cell:not(.mass) {
+  --deck-cell-gap: 0.6rem;
+  border-top: 2px solid var(--q-oxblood);
+  padding-top: var(--rik-space-4);
+}
+
+/* ── Shortlist · three catalogue entries ── */
+#shortlist deck-point {
+  --deck-cell-padding-x: 0px;
+  --deck-cell-padding-y: 0px;
+  --deck-cell-gap: 1rem;
+  border-top: 2px solid var(--q-brass);
+  padding-top: var(--rik-space-4);
+}
+#shortlist h3 {
+  font-size: 2.8rem;
+  white-space: nowrap;
+  color: var(--q-bone);
+}
+#shortlist .role {
+  font-size: var(--rik-font-size-body);
+  color: var(--q-brass);
+}
+#shortlist .ask {
+  margin-top: var(--rik-space-5);
+  font-family: var(--rik-font-display);
+  font-style: italic;
+  font-size: 2.05rem;
+  line-height: 1.22;
+  color: var(--q-bone);
+}
+
+/* ── Decision · the two promises ── */
+#decision h2 {
+  font-family: var(--rik-font-display);
+  font-variation-settings: var(--q-optical);
+  font-size: 4.2rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  margin-bottom: var(--rik-space-4);
+}
+#decision [slot='left'] p,
+#decision [slot='right'] p {
+  font-size: var(--rik-font-size-lead);
+  line-height: 1.4;
+  max-width: 24ch;
+}
+#decision [slot='footer'] {
+  color: var(--q-parchment);
+}
+
+/* ── Allocation · one position in seven ── */
+#allocation deck-bar {
+  /* The six shared positions are the quiet part of the bar · oxblood, not grey. */
+  --rik-text-default--faint: var(--q-oxblood);
+  --deck-bar-legend-color: var(--q-parchment);
+  margin-block: var(--rik-space-4) var(--rik-space-6);
+  font-size: var(--rik-font-size-lead);
+}
+#allocation deck-callout {
+  font-family: var(--rik-font-display);
+  font-style: italic;
+  font-size: 2.2rem;
+}
+
+/* ── Crops of the one supplied photograph ──
+   A background crop is the same picture in every engine: the image is sized
+   and positioned inside its box, nothing overflows, and the element carries
+   role="img" with its own label in the markup. */
+deck-root .crop {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 12rem;
+  background-image: url('./quidditch.png');
+  background-repeat: no-repeat;
+  background-size: var(--crop-size, cover);
+  background-position: var(--crop-pos, center);
+}
+deck-root .crop-ferrule { --crop-size: 230% auto; --crop-pos: 66% 50%; }
+deck-root .crop-bristles { --crop-size: 190% auto; --crop-pos: 92% 34%; }
+deck-root .crop-head { --crop-size: cover; --crop-pos: 82% 45%; }
+deck-root .detail {
+  --deck-cell-padding-x: 0px;
+  --deck-cell-padding-y: 0px;
+}
+#maintenance deck-cell:not(.detail) {
+  --deck-cell-gap: 0.5rem;
+  border-top: 2px solid var(--q-oxblood);
+  padding-top: var(--rik-space-3);
+}
+
+/* ── Next · the plate beside the ask ── */
+#next deck-step-list {
+  --deck-step-gap: 1.6rem;
+  margin-top: var(--rik-space-4);
+}
+
+/* ── Outcomes · three words the purchase must change ── */
+#outcomes :is([slot='a'], [slot='b'], [slot='c']) h2 {
+  font-family: var(--rik-font-display);
+  font-size: 3.2rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--q-brass);
+  margin-bottom: var(--rik-space-4);
+}
+#outcomes :is([slot='a'], [slot='b'], [slot='c']) {
+  border-top: 2px solid var(--q-brass-deep);
+  padding-top: var(--rik-space-4);
+}
+#outcomes :is([slot='a'], [slot='b'], [slot='c']) p {
+  font-size: var(--rik-font-size-lead);
+  line-height: 1.4;
+}
+
+/* ── Candidate cases · one broom, one job ── */
+deck-root .case-portrait {
+  --crop-size: 190% auto;
+}
+#nimbus deck-checklist,
+#nimbus deck-stat {
+  margin-top: var(--rik-space-3);
+}
+#nimbus deck-stat {
+  --deck-stat-color: var(--q-brass);
+  --deck-stat-num-size: 6rem;
+}
+#firebolt deck-flow {
+  --deck-flow-gap: 2rem;
+  --deck-flow-step-outline: var(--q-oxblood);
+  --deck-flow-step-outline-width: 2px;
+  --deck-flow-link: var(--q-brass);
+  --deck-flow-step-pending-outline: var(--q-oxblood);
+  --deck-flow-step-pending-opacity: 1;
+  --deck-flow-step-accent: var(--q-brass-deep);
+}
+#firebolt deck-flow-step p {
+  font-size: var(--rik-font-size-body);
+}
+#firebolt deck-flow-step[active] {
+  --rik-text-default: var(--q-ink);
+  --rik-text-default--muted: var(--q-ink-soft);
+}
+deck-root .crop-band {
+  --crop-size: 100% auto;
+  --crop-pos: 50% 58%;
+  height: 16rem;
+  min-height: 0;
+}
+#stations deck-callout {
+  margin-top: var(--rik-space-6);
+  font-family: var(--rik-font-display);
+  font-style: italic;
+  font-size: 2rem;
+}
+#cleansweep deck-point {
+  --deck-cell-bg: transparent;
+  --deck-cell-border: transparent;
+  --deck-cell-padding-x: 0px;
+  border-top: 2px solid var(--q-brass);
+}
+#cleansweep deck-point h3 {
+  font-size: 2.2rem;
+}
+
+/* ── Stations · the course in order ── */
+#stations deck-step-list {
+  --deck-step-gap: 2rem;
+  font-size: var(--rik-font-size-lead);
+}
+
+/* ── Rubric · the observation sheet ── */
+#rubric table {
+  font-size: var(--rik-font-size-body);
+}
+#rubric thead th {
+  color: var(--q-brass);
+  border-bottom: 2px solid var(--q-brass);
+}
+#rubric tbody td {
+  border-bottom: 1px solid var(--q-oxblood);
+  padding-block: var(--rik-space-3);
+}
+#rubric td.pending {
+  color: var(--q-dust);
+  font-style: italic;
+}
+
+/* ── Procurement · who brings which answer ── */
+#procurement deck-grid {
+  --deck-persona-avatar-bg: var(--q-bone);
+  --deck-persona-initials-color: var(--q-ink);
+  --deck-persona-name-color: var(--q-bone);
+  --deck-persona-role-color: var(--q-brass);
+  --deck-persona-context-color: var(--q-parchment);
+}

@@ -68,6 +68,9 @@ Options:
   --config <file>      check/skills: explicit rikiki.config.json
   --plugin <package>   check/skills: activate a module (repeatable)
   --no-plugins         check: disable module checks explicitly
+  --quality-out <dir>      check: capture every state and prepare a design review
+  --quality-review <file>  check: import a screenshot-based design review
+  --require-quality       check: fail unless design review passes
   --narrative-out <file>    check: prepare review material for the current agent
   --narrative-review <file> check: import the current agent's structured review
   --plugin-timeout <ms>     check: execution deadline per plugin call (default 5000)
@@ -384,6 +387,9 @@ async function cmdCheck(argv) {
       config: { type: 'string' },
       plugin: { type: 'string', multiple: true },
       'no-plugins': { type: 'boolean', default: false },
+      'quality-out': { type: 'string' },
+      'quality-review': { type: 'string' },
+      'require-quality': { type: 'boolean', default: false },
       'narrative-out': { type: 'string' },
       'narrative-review': { type: 'string' },
       'plugin-timeout': { type: 'string' },
@@ -401,6 +407,9 @@ async function cmdCheck(argv) {
     config: values.config,
     plugins: values.plugin,
     noPlugins: values['no-plugins'],
+    qualityOut: values['quality-out'],
+    qualityReview: values['quality-review'],
+    requireQuality: values['require-quality'],
     narrativeOut: values['narrative-out'],
     narrativeReview: values['narrative-review'],
     pluginTimeoutMs: values['plugin-timeout'] === undefined ? 5000 : Number(values['plugin-timeout']),

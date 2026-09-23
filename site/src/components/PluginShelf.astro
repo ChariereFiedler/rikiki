@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import Eyebrow from './Eyebrow.astro';
+import LucideIcon from './landing/LucideIcon.astro';
 const packageDir = resolve(process.cwd(), '../rikiki');
 const measuredKb = (path: string) => {
   const kb = gzipSync(readFileSync(resolve(packageDir, path)), { level: 9 }).length / 1024;
@@ -26,7 +27,7 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
         modules load when their feature starts. A standalone bundle packages them locally.
       </p>
       <p class="budget">
-        Sizes below are measured from the current gzip-compressed build artifacts.
+        <LucideIcon name="info" size={18} /><span>Measured from this build. Sizes shown after gzip compression.</span>
       </p>
     </header>
 
@@ -253,7 +254,7 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
   .extras-list a { color: var(--rik-text-inverse); text-decoration: none; }
   .extras-list a:hover { color: var(--rik-accent); }
   .extras-note { margin: var(--rik-space-3) 0 0; max-width: 72ch; color: var(--rik-text-inverse--muted); font-size: var(--rik-font-size-md); line-height: 1.65; }
-  .extras-note code { color: var(--rik-text-inverse); font-family: var(--rik-font-mono); overflow-wrap: anywhere; }
+  .extras-note code { font-size: max(14px, .92em); color: var(--rik-text-inverse); font-family: var(--rik-font-mono); overflow-wrap: anywhere; }
   .extras-note a { color: var(--rik-accent); font-weight: 700; text-decoration: none; white-space: nowrap; }
 
   @media (max-width: 600px) {
@@ -274,4 +275,5 @@ const extras = ['deck-agenda', 'deck-flow', 'deck-graph', 'deck-kpi-grid', 'deck
     .how-code { overflow-wrap:anywhere; }
     .budget { line-height:1.45; border-radius:4px; }
   }
+.budget{display:flex;align-items:flex-start;gap:10px;background:none;border:0;border-radius:0;padding:0;font:400 14px/1.6 var(--rik-font-sans);max-width:40ch;margin-top:0}.budget :global(svg){flex:none;margin-top:2px}.head .lede{font-size:16px;line-height:1.7}.mass strong{font-size:48px}.body h3{font-size:20px}.summary{font-size:15px;line-height:1.65}.plugin{padding-block:28px}.head h2{font-size:clamp(30px,3vw,44px);line-height:1.12}.inner{max-width:1320px}@media(max-width:600px){.mass strong{font-size:38px}.head .lede{font-size:14px}.summary{font-size:14px}.plugin{padding-block:24px}}
 </style>

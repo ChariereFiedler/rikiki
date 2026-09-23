@@ -6,6 +6,14 @@ import { expect, test } from '@playwright/test';
 
 const DECK = '/rikiki/decks/tests/timeline.html';
 
+// These tests exercise marker geometry, not the external font service.
+// Keep its stylesheet request local so an unavailable font CDN cannot hang load.
+test.beforeEach(async ({ page }) => {
+  await page.route('https://fonts.googleapis.com/**', (route) =>
+    route.fulfill({ contentType: 'text/css', body: '' }),
+  );
+});
+
 interface Placed {
   top: number;
   bottom: number;
@@ -52,3 +60,25 @@ test('alternate gives each milestone more width than a plain row', async ({ page
   const alternate = await layoutOf(page, 2, 'tl-alternate');
   expect(alternate.items[0]!.width).toBeGreaterThan(plain.items[0]!.width * 1.3);
 });
+
+for (const [slide, id] of [[1, 'tl-plain'], [2, 'tl-alternate']] as const) {
+  test(id + ' keeps enlarged endpoint markers inside the clipping width', async ({ page }) => {
+    await layoutOf(page, slide, id);
+    const bounds = await page.evaluate((sel) => {
+      const timeline = document.getElementById(sel)!;
+      const milestones = [...timeline.querySelectorAll('deck-milestone')];
+      const endpoints = [milestones[0]!, milestones[milestones.length - 1]!];
+      endpoints.forEach((m) => m.setAttribute('active', ''));
+      const r = timeline.getBoundingClientRect();
+      const scale = r.width / (timeline as HTMLElement).offsetWidth;
+      return endpoints.map((m) => {
+        const dot = m.shadowRoot!.querySelector('.dot')!.getBoundingClientRect();
+        return { left: dot.left - 4 * scale, right: dot.right + 4 * scale, clipLeft: r.left, clipRight: r.right };
+      });
+    }, id);
+    for (const dot of bounds) {
+      expect(dot.left).toBeGreaterThanOrEqual(dot.clipLeft - 0.5);
+      expect(dot.right).toBeLessThanOrEqual(dot.clipRight + 0.5);
+    }
+  });
+}

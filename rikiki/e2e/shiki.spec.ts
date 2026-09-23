@@ -25,5 +25,15 @@ test('shiki replaces the built-in regex highlighter via the deck-code hook', asy
   // …and Shiki did produce token spans (it's not just an empty/plain render).
   expect(await page.locator('deck-code code span').count()).toBeGreaterThan(0);
 
+  const spacing = await code.evaluate((el) => {
+    const lines = [...el.querySelectorAll<HTMLElement>(':scope > .line')];
+    return lines.slice(1).map((line, i) => ({
+      distance: line.offsetTop - lines[i]!.offsetTop,
+      height: lines[i]!.offsetHeight,
+    }));
+  });
+  expect(spacing.length).toBeGreaterThan(0);
+  for (const line of spacing) expect(Math.abs(line.distance - line.height)).toBeLessThanOrEqual(1);
+
   expect(deck.consoleErrors, 'no JavaScript errors').toEqual([]);
 });

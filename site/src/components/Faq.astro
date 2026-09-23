@@ -4,11 +4,13 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import Eyebrow from './Eyebrow.astro';
+import CodeBlock from './CodeBlock.astro';
 
 const repoRoot = resolve(process.cwd(), '..');
 const pkg = JSON.parse(readFileSync(resolve(repoRoot, 'rikiki/package.json'), 'utf8'));
 const version = pkg.version;
 const nodeRange = pkg.engines.node;
+const readableNodeRange = nodeRange.replace(/\^(\d+)\.(\d+)\.\d+/g, "$1.$2+ ($1.x)").replace(/>=([\d]+)\.([\d]+)\.\d+/g, "$1.$2+").replace("||", "or");
 const changelog = readFileSync(resolve(repoRoot, 'CHANGELOG.md'), 'utf8');
 const released = new RegExp(`^## \\[${version}\\] - (\\d{4}-\\d{2}-\\d{2})`, 'm').exec(changelog);
 if (!released) throw new Error(`Faq · CHANGELOG.md has no dated entry for ${version}`);
@@ -73,8 +75,7 @@ const items = [
 
 <section id="faq" class="faq">
   <div class="inner">
-    <Eyebrow text="FAQ" />
-    <h2>Check the requirements before you start.</h2>
+    <header class="faq-intro"><Eyebrow text="Before you start" /><h2>A few practical answers.</h2><p>The deck runs in the browser. The authoring tools run locally. Here is what to expect.</p><a href="/docs/getting-started">Open the setup guide ↗</a></header>
 
     <div class="list">
       {items.map((it) => (
@@ -83,7 +84,7 @@ const items = [
             <span class="q">{it.q}</span>
             <span class="chev" aria-hidden="true">+</span>
           </summary>
-          <div class="a" set:html={it.a}></div>
+          {it.q === 'What requires Node.js?' ? <div class="a requirements"><p><strong>Presenting a deck?</strong> A browser is enough.</p><p><strong>Creating and checking one?</strong> The CLI needs Node.js. Supported versions: <strong>{readableNodeRange}</strong>.</p><div class="dependency"><h3>Browser checks, screenshots and PDF</h3><p><code>check</code>, <code>render</code> and <code>export</code> use Playwright and Chromium.</p><CodeBlock lang="sh" label="Browser tooling" code={'npm i -D playwright\nnpx playwright install chromium'} /></div><div class="dependency"><h3>Standalone HTML</h3><p><code>bundle</code> and <code>init --standalone</code> use the optional bundler.</p><CodeBlock lang="sh" label="Bundler" code="npm i -D rolldown" /></div></div> : <div class="a" set:html={it.a}></div>}
         </details>
       ))}
     </div>
@@ -176,4 +177,6 @@ const items = [
   @media (max-width:640px) {
     .faq { padding:var(--rik-space-6) var(--rik-space-3); }
   }
+.inner{max-width:1320px;display:grid;grid-template-columns:1fr 1.6fr;gap:70px;align-items:start}.faq-intro h2{font-size:clamp(28px,3vw,42px);line-height:1.15;margin-bottom:22px}.faq-intro>p{font-size:15px;line-height:1.7;color:var(--rik-text-default--muted);max-width:34ch}.faq-intro>a{font-size:14px;font-weight:600;color:var(--rik-accent--strong);display:inline-block;margin-top:20px}.list{min-width:0;max-width:none}summary{font:650 16px/1.5 var(--rik-font-sans);padding:8px 0}.chev{width:24px;height:24px;border:0;border-radius:4px;background:none}.a{font-size:14px;line-height:1.8;max-width:65ch;padding:12px 34px 16px 0}.a :global(code){font-size:14px}.requirements>p{margin:0 0 18px}.dependency{margin-top:24px}.dependency h3{font:700 14px/1.5 var(--rik-font-sans);margin-bottom:8px}.dependency p{font-size:14px;line-height:1.7;margin:0 0 12px}.dependency :global(pre){font-size:14px;padding:18px;white-space:pre-wrap;overflow-wrap:anywhere}.dependency :global(.code-block){margin:0}.dependency :global(code){background:transparent}@media(max-width:800px){.inner{grid-template-columns:1fr;gap:30px}.faq-intro>p{max-width:50ch}.a{padding-right:0}summary{font-size:15px}}
+.dependency :global(pre code){white-space:pre-wrap;padding:0;font-size:14px}.dependency :global(pre){line-height:1.8}.requirements>p strong{font-weight:650}.chev{border-radius:50%}
 </style>

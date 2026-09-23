@@ -85,7 +85,14 @@ export async function installShiki(opts: InstallOpts = {}): Promise<void> {
       // `--deck-code-syntax-*` tokens only drive the built-in highlighter; under
       // Shiki, the chosen `theme` owns the palette. The `class="line"` wrappers
       // survive, so per-line step dimming still works.
-      return out.replace(/^<pre[^>]*><code[^>]*>/, '').replace(/<\/code><\/pre>$/, '');
+      return (
+        out
+          .replace(/^<pre[^>]*><code[^>]*>/, '')
+          .replace(/<\/code><\/pre>$/, '')
+          // Each .line is already display:block in deck-code. A preserved
+          // newline between these spans would add a second visual line break.
+          .replace(/<\/span>\r?\n(?=<span class="line")/g, '</span>')
+      );
     } catch {
       return null; // lang not loaded · fall back to the regex highlighter
     }

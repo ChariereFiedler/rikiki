@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rikiki · Give your agent a feedback loop</title><link rel="stylesheet" href="../../rikiki/themes/rikiki.css"><script type="module" src="../../rikiki/dist/index.js"></script>
+<style>
+html,body{background:#06080f;margin:0;width:100%;height:100%;overflow:hidden}deck-root{width:100%;height:100%;--rik-surface-page:#06080f;--rik-text-default:#e8e4f0;--rik-text-default--muted:#b8b3c4;--rik-text-default--faint:#b8b3c4;--rik-border-default:#43424c;--rik-surface-raised:#101520;--rik-surface-sunken:#101520;--rik-accent:#f07020}deck-feature{--deck-slide-bg:#06080f}h1{font-family:var(--rik-font-display)}.intro-slide{height:100%;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr auto;gap:45px 75px}.brand{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;font:24px var(--rik-font-mono);color:var(--rik-text-default--muted)}.brand strong{display:flex;align-items:center;gap:16px;color:var(--rik-text-default);font:800 42px var(--rik-font-display)}.brand img{width:58px;height:58px}.pitch h2{font:850 88px/1.1 var(--rik-font-display);letter-spacing:-.04em;margin:0 0 30px;color:var(--rik-text-default)}.pitch h2 span{color:var(--rik-accent)}.pitch p{font:32px/1.55 var(--rik-font-sans);max-width:34ch;color:var(--rik-text-default--muted)}.workbench{border:2px solid var(--rik-border-default);border-radius:12px;padding:30px;background:var(--rik-surface-raised);align-self:center}.filename{font:22px var(--rik-font-mono);color:var(--rik-text-default--muted);margin-bottom:28px}.workbench pre{font:26px/1.65 var(--rik-font-mono);color:var(--rik-text-default);white-space:pre-wrap;margin:0}.workbench pre span{color:var(--rik-accent)}.check{border-top:1px solid var(--rik-border-default);margin-top:30px;padding-top:25px;font:24px/1.65 var(--rik-font-mono)}.check p{margin:0;color:var(--rik-text-default--muted)}.check b{color:var(--rik-accent);font-weight:400}.outputs{grid-column:1/-1;border-top:1px solid var(--rik-border-default);padding-top:30px;display:flex;justify-content:space-between;align-items:center;font:25px var(--rik-font-sans)}.outputs strong{color:var(--rik-accent)}.outputs span{color:var(--rik-text-default--muted)}
+
+/* Shared tour tokens, sized for a readable embedded 16:9 canvas. */
+deck-root{--rik-font-size-h1:3.5rem;--rik-font-size-h2:2.8rem;--rik-font-size-body:1.45rem;--rik-text-inverse:#e8e4f0;--rik-text-inverse--muted:#c6bfd0;--rik-surface-inverse:#06080f;--deck-icon-color:#f07020;--deck-flow-step-bg:#151a29;--deck-flow-step-color:#e8e4f0;--deck-flow-step-accent:#f07020;--deck-flow-step-pending-opacity:.6}
+[slot=title]{font-size:3.5rem;line-height:1.15;letter-spacing:-.045em}h2{font-family:var(--rik-font-display);font-size:2.6rem;line-height:1.18;letter-spacing:-.035em;margin:1rem 0 1.5rem}h3{font-family:var(--rik-font-display);font-size:1.9rem;line-height:1.25}p{font-size:1.45rem;line-height:1.5}deck-cell{padding:2rem;--deck-cell-bg:#141927;--deck-cell-border:#44404f}deck-cell code{display:block;white-space:normal;overflow-wrap:anywhere;font-size:1.05rem;line-height:1.6;color:#ffae76;margin-top:2rem}deck-code{font-size:1.15rem;--deck-code-font-size:1.15rem}deck-cell deck-icon{margin-bottom:1.5rem}.kicker,.component-label{font-size:1.05rem;line-height:1.5}.kicker{color:var(--rik-accent);text-transform:uppercase;letter-spacing:.1em}.component-label{color:var(--rik-text-default--muted);margin-top:2rem}.paper{--rik-surface-page:#f5efe5;--deck-slide-bg:#f5efe5;--rik-text-default:#201c26;--rik-text-default--muted:#554d60;--rik-accent:#aa3d08;--rik-surface-raised:#e9dfd2;--rik-border-default:#bcb0a3}.orange{color:#f07020}.delivery p{font-size:1.1rem;margin:.9rem 0 .4rem}
+</style><script type="module" src="../../rikiki/dist/deck-icon.js"></script><script type="module" src="../../rikiki/dist/deck-versus.js"></script><script type="module" src="../../rikiki/dist/deck-flow.js"></script><script type="module" src="../../rikiki/dist/deck-checklist.js"></script><script type="module" src="../../rikiki/dist/deck-table.js"></script><script type="module">import {installShiki} from "../../rikiki/dist/shiki.js";await customElements.whenDefined("deck-code");await installShiki({theme:"one-dark-pro",langs:["html","css"]});</script></head><body><deck-root no-hint swipe>
+<deck-feature id="rikiki-introduction" fill><div class="intro-slide">
+<div class="brand"><strong><svg width="58" height="58" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#06080f"/><circle cx="16" cy="16" r="7" fill="#f07020"/></svg>rikiki</strong><span>HTML slides · built for you and your agent</span></div>
+<div class="pitch"><h2>Your agent writes.<br><span>Rikiki checks.</span><br>You present.</h2><p>Turn a brief into slides you can inspect, improve and take into the room.</p></div>
+<div class="workbench"><div class="filename">talk.html / readable source</div><deck-code lang="html">&lt;deck-feature&gt;
+  &lt;h1 slot="title"&gt;
+    One idea. Clear evidence.
+  &lt;/h1&gt;
+  &lt;deck-code lang="ts"&gt;…&lt;/deck-code&gt;
+&lt;/deck-feature&gt;</deck-code><div class="check"><b>$ rikiki check talk.html --json</b><p>Read diagnostics → fix → render → review</p></div></div>
+<div class="outputs"><strong>Brief → HTML → checks → visual review</strong><span>Present live · share offline HTML · export PDF</span></div>
+</div><deck-notes>Rikiki is an HTML presentation toolkit. Give a coding agent a brief and the installed authoring skills, or write the HTML yourself. Components handle slide layouts. The check command inspects the rendered deck and returns diagnostics, including machine-readable JSON, for revision. Rendering produces screenshots for a separate visual review. Automated checks do not judge the argument or validate its evidence: that remains the author's job. Present the result in the browser, bundle standalone HTML or export a PDF. The commands shown are an authoring workflow, not an executed check result. Playwright and the bundler are optional dependencies documented in the setup guide.</deck-notes></deck-feature>
+
+<deck-bento id="compose" cols="3">
+<h1 slot="title">The layout is already a component.</h1>
+<deck-cell><deck-icon name="document" size="lg"></deck-icon><h3>Give ideas a place.</h3><p>This is a native bento. Three cells, one shared grid, room for a clear argument.</p><code>&lt;deck-bento&gt;</code></deck-cell>
+<deck-cell><deck-icon name="code" size="lg"></deck-icon><h3>Keep the evidence.</h3><p>Use code, tables, diagrams and images. Pick the form that explains the point.</p><code>&lt;deck-code&gt;</code></deck-cell>
+<deck-cell><deck-icon name="arrow" size="lg"></deck-icon><h3>Shape the rhythm.</h3><p>Switch layouts to give each idea its own rhythm.</p><code>&lt;deck-split&gt;</code></deck-cell>
+<deck-notes>The tour is itself made from the public components. This slide uses deck-bento and deck-cell, with deck-icon for the section markers. Layout components handle the composition while the author chooses the content and the theme.</deck-notes>
+</deck-bento>
+<deck-split id="source" cols="1-1" gap="6">
+<h1 slot="title">What you see is what you edit.</h1>
+<div slot="left"><p class="kicker">A file you own</p><h2>Open HTML.<br>Change an idea.</h2><p>Readable tags. Ordinary CSS. Keep the source in Git and review exactly what changed.</p><p class="component-label">This slide: deck-split + deck-code</p></div>
+<deck-code slot="right" lang="html">&lt;deck-bento cols="3"&gt;
+  &lt;h1 slot="title"&gt;
+    The layout is a component.
+  &lt;/h1&gt;
+  &lt;deck-cell&gt;
+    &lt;h3&gt;Give ideas a place.&lt;/h3&gt;
+    &lt;p&gt;One clear argument.&lt;/p&gt;
+  &lt;/deck-cell&gt;
+&lt;/deck-bento&gt;</deck-code>
+<deck-notes>This is a shortened example of the previous slide's markup. The full slide has three cells. There is no proprietary slide document behind it: the author edits HTML and CSS. The syntax-highlighted example is rendered by deck-code.</deck-notes>
+</deck-split>
+<deck-versus id="choices" slide pivot="vs">
+<h1 slot="title">Make the trade-off visible.</h1>
+<div slot="left"><p class="kicker">A quick draft</p><h2>Get the idea<br>onto the page.</h2><p>Choose a layout. Add a claim and its evidence.</p></div>
+<div slot="right"><p class="kicker">A deck for the room</p><h2>Make the idea<br>easy to follow.</h2><p>Check the rendering. Review the story. Rehearse the transitions.</p></div>
+<p slot="footer">Native deck-versus gives each side equal space. You supply the distinction.</p>
+<deck-notes>A draft is a useful intermediate state, not a completed presentation. The versus component creates a comparison without having to build its two-column structure by hand. Neither side is declared a winner: they are different stages of the work.</deck-notes>
+</deck-versus>
+<deck-feature id="reveal" spread="center">
+<h1 slot="title">Let the room follow your thinking.</h1>
+<p slot="lead">Advance to reveal the next step. The slide stays put.</p>
+<deck-flow cols="3" reveal>
+<deck-flow-step label="Claim" note="What should we understand?"><p>Start with one sentence.</p></deck-flow-step>
+<deck-flow-step label="Evidence" note="Why should we believe it?"><p>Show the source or the example.</p></deck-flow-step>
+<deck-flow-step label="Decision" note="What happens next?"><p>Make the requested action explicit.</p></deck-flow-step>
+</deck-flow>
+<deck-notes>Use the next arrow repeatedly. The native reveal controller advances the flow's internal states before moving to the next slide. This is a working demonstration, not a video or a simulated animation. The same states appear in presenter mode.</deck-notes>
+</deck-feature>
+<deck-split id="tokens" cols="1-1" gap="6" class="paper">
+<h1 slot="title">Same components. Your visual language.</h1>
+<div slot="left"><p class="kicker">Palette → semantics → components</p><h2>A theme is more<br>than an accent.</h2><p>Set the type, surfaces, contrast and spacing. Then give individual components their own treatment.</p><p class="component-label">This slide switches from night to paper.</p></div>
+<deck-code slot="right" lang="css">.paper {
+  --rik-surface-page: #f5efe5;
+  --rik-text-default: #201c26;
+  --rik-text-default--muted: #554d60;
+  --rik-accent: #aa3d08;
+}</deck-code>
+<deck-notes>This slide changes semantic tokens on the same native split layout. The three story decks below the hero take theming further, with different typography, palettes and narrative structures. Readability needs to be checked after a theme change, including component status colours.</deck-notes>
+</deck-split>
+<deck-bento id="agent-loop" cols="3">
+<h1 slot="title">Give your agent a feedback loop.</h1>
+<deck-cell><p class="kicker">01 / Brief</p><h3>Set the job.</h3><p>Name the audience, the decision and the sources. Install the authoring skills.</p><code>npx rikiki skills</code></deck-cell>
+<deck-cell><p class="kicker">02 / Inspect</p><h3>Find defects.</h3><p>Check the rendered deck. Send the diagnostics back for revision.</p><code>npx rikiki check talk.html --json</code></deck-cell>
+<deck-cell><p class="kicker">03 / Review</p><h3>Look at the result.</h3><p>Render screenshots, inspect them and revise. Revise until each slide makes its point.</p><code>npx rikiki render talk.html</code></deck-cell>
+<deck-notes>These commands describe the workflow; they are not a live check running in this embedded deck. The skills install the component reference and authoring process. Check and render require the optional Playwright dependency and a browser installation.</deck-notes>
+</deck-bento>
+<deck-versus id="review" slide pivot="+" class="paper">
+<h1 slot="title">A clean check is the start of a review.</h1>
+<div slot="left"><p class="kicker">Browser inspection</p><h2>Does it render<br>correctly?</h2><p>Catch reported defects in the rendered deck. Inspect every slide and reveal state.</p></div>
+<div slot="right"><p class="kicker">Editorial judgment</p><h2>Does it make<br>the point?</h2><p>Read the evidence. Judge the hierarchy, pacing and visual composition.</p></div>
+<p slot="footer">Zero reported errors does not certify a persuasive or beautiful presentation.</p>
+<deck-notes>Mechanical diagnostics and visual editorial review answer different questions. Rikiki's check is useful feedback, but it does not validate facts or guarantee design quality. An author or reviewer needs to inspect the result. This distinction is why the workflow includes screenshots.</deck-notes>
+</deck-versus>
+<deck-feature id="present" spread="center">
+<h1 slot="title">A deck built for the moment you present.</h1>
+<deck-step-list direction="row">
+<deck-step n="O" note="Jump to a slide in the overview." note-position="below">Find your place</deck-step>
+<deck-step n="P" note="Current slide, next slide and notes." note-position="below">Open presenter mode</deck-step>
+<deck-step n="→" note="Advance a reveal, then the slide." note-position="below">Keep the rhythm</deck-step>
+</deck-step-list>
+<p class="component-label">Open this tour full screen to try the shortcuts. These are native presentation controls.</p>
+<deck-notes>The keyboard shortcuts work when the deck has focus. In an iframe, click the deck first. Opening the tour in its own tab gives the overview and presenter window more room. Presenter mode includes the slide's internal reveal state as well as its number.</deck-notes>
+</deck-feature>
+<deck-split id="take-it" cols="1-1" gap="6">
+<h1 slot="title">From one file to the room.</h1>
+<div slot="left"><p class="kicker">Keep the editable source</p><h2>Share the work.<br><span class="orange">Make it yours.</span></h2><p>Present in the browser. Bundle offline HTML. Export a PDF for the audience.</p><p class="component-label">Start with the setup guide below this deck.</p></div>
+<div slot="right" class="delivery"><p>Start a deck</p><deck-code lang="sh">npx rikiki init talk.html</deck-code><p>Bundle a standalone file</p><deck-code lang="sh">npx rikiki bundle talk.html</deck-code><p>Export a PDF</p><deck-code lang="sh">npx rikiki export talk.html</deck-code></div>
+<deck-notes>The setup guide covers Node versions and optional dependencies: Playwright for browser-driven commands, and the bundler for standalone output. PDF is a static output; keep the HTML when you want interactivity and presenter features. This completes the tour.</deck-notes>
+</deck-split>
+</deck-root></body></html>

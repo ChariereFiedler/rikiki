@@ -1,0 +1,8 @@
+---
+import { readFileSync } from 'node:fs';
+interface Props { name: 'file-code' | 'scan-eye' | 'package-check' | 'info'; size?: number }
+const { name, size = 28 } = Astro.props;
+const raw = readFileSync(new URL(`../../../public/landing/icons/${name}.svg`, import.meta.url), 'utf8');
+const paths = raw.match(/<svg[^>]*>([\s\S]*?)<\/svg>/)?.[1] ?? '';
+---
+<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={paths} />

@@ -1,0 +1,525 @@
+/* ════════════════════════════════════════════════════════════════
+   ACME · the cartoon storyboard
+   The painting's desert sky as the page, the machine's vermilion as the
+   loud mass, letterbox black for ink. Barlow Condensed ExtraBold states
+   in poster capitals, Barlow reads. Hard offset shadows, square corners.
+   Loaded after rikiki/themes/rikiki.css · palette → semantic → component.
+   ════════════════════════════════════════════════════════════════ */
+
+@font-face {
+  font-family: 'Barlow Condensed';
+  src: url('./fonts/barlow-condensed-normal-800.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  src: url('./fonts/barlow-condensed-normal-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Barlow';
+  src: url('./fonts/barlow-normal-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Barlow';
+  src: url('./fonts/barlow-normal-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Barlow';
+  src: url('./fonts/barlow-normal-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Barlow';
+  src: url('./fonts/barlow-normal-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Barlow';
+  src: url('./fonts/barlow-italic-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: block;
+}
+
+:root {
+  /* ── Palette · private ── */
+  --a-sky: #f2e3b8;
+  --a-sky-deep: #e6d09a;
+  --a-ink: #191714;
+  --a-ink-soft: #3d3930;
+  --a-slate: #3f5a68;
+  --a-vermilion: #cf3e20;
+  --a-vermilion-deep: #a8301a;
+  --a-cream: #fff4d6;
+  --a-floor: #e59a62;
+  --a-cel-shadow: 0.55rem 0.55rem 0 var(--a-ink);
+
+  /* ── Semantic · surfaces ── */
+  --rik-surface-page: var(--a-sky);
+  --rik-surface-raised: var(--a-sky-deep);
+  --rik-surface-raised--strong: var(--a-sky-deep);
+  --rik-surface-sunken: var(--a-sky-deep);
+  --rik-surface-tint: rgba(25, 23, 20, 0.06);
+  --rik-surface-tint--strong: rgba(25, 23, 20, 0.1);
+  --rik-surface-inverse: var(--a-ink);
+  --rik-surface-inverse--soft: var(--a-ink);
+  --rik-surface-inverse--soft-2: var(--a-ink-soft);
+  --rik-surface-inverse--soft-3: var(--a-ink-soft);
+  --rik-surface-inverse--soft-4: var(--a-ink-soft);
+  --rik-surface-inverse--soft-5: var(--a-ink-soft);
+  --rik-surface-inverse__overlay: rgba(255, 244, 214, 0.06);
+
+  /* ── Semantic · text ── */
+  --rik-text-default: var(--a-ink);
+  --rik-text-default--muted: var(--a-ink-soft);
+  --rik-text-default--faint: var(--a-slate);
+  --rik-text-default--ghost: var(--a-sky-deep);
+  --rik-text-inverse: var(--a-cream);
+  --rik-text-inverse--muted: var(--a-sky);
+  --rik-text-inverse--faint: var(--a-sky-deep);
+  --rik-text-inverse--ghost: var(--a-ink-soft);
+
+  /* ── Semantic · lines, accent, status ── */
+  --rik-border-default: var(--a-ink);
+  --rik-border-default--subtle: var(--a-sky-deep);
+  --rik-border-inverse: rgba(255, 244, 214, 0.2);
+  --rik-accent: var(--a-vermilion);
+  --rik-accent--soft: rgba(207, 62, 32, 0.18);
+  --rik-accent--faint: rgba(207, 62, 32, 0.06);
+  --rik-accent--strong: var(--a-vermilion-deep);
+  --rik-accent__text: var(--a-vermilion-deep);
+  --rik-accent__on: var(--a-cream);
+  --rik-status-info: var(--a-slate);
+  --rik-status-info__text: var(--a-slate);
+  --rik-status-info__bg: var(--a-sky-deep);
+  --rik-status-info__bg--mid: var(--a-sky-deep);
+  --rik-status-info__bg--strong: var(--a-sky-deep);
+  --rik-status-info__border: var(--a-ink);
+  --rik-status-success: var(--a-slate);
+  --rik-status-success__text: var(--a-slate);
+  --rik-status-success__bg: var(--a-sky-deep);
+  --rik-status-success__border: var(--a-ink);
+  --rik-status-warn: var(--a-vermilion);
+  --rik-status-warn__text: var(--a-vermilion-deep);
+  --rik-status-warn__bg: var(--a-sky-deep);
+  --rik-status-warn__border: var(--a-ink);
+  --rik-status-danger: var(--a-vermilion);
+  --rik-status-danger__text: var(--a-vermilion);
+  --rik-status-danger__bg: var(--a-sky-deep);
+  --rik-status-danger__border: var(--a-ink);
+  --rik-selection__bg: var(--a-vermilion);
+  --rik-selection__text: var(--a-cream);
+  --rik-focus-ring: var(--a-ink);
+  --rik-link: var(--a-vermilion-deep);
+  --rik-link--hover: var(--a-ink);
+  --rik-elevation-1: none;
+  --rik-elevation-2: none;
+  --rik-elevation-3: none;
+
+  /* ── Semantic · type ── */
+  --rik-font-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --rik-font-sans: 'Barlow', 'Arial Narrow', sans-serif;
+  --rik-font-mono: 'Barlow', 'Arial Narrow', sans-serif;
+  --rik-font-size-body: 1.2rem;
+  --rik-font-size-lead: 1.45rem;
+  --rik-font-size-h2: 2.2rem;
+  --rik-font-size-h1: 4.3rem;
+  --rik-font-size-strong: 1.45rem;
+  --rik-font-size-big: 3rem;
+  --rik-font-size-mega: 6.4rem;
+  --rik-title-weight: 800;
+  --rik-title-tracking: 0.005em;
+  --rik-title-leading: 0.94;
+  --rik-rule-weight: 0px;
+
+  /* ── Semantic · space and shape ── */
+  --rik-slide-padding-x: 4.2rem;
+  --rik-slide-padding-y: 3.4rem;
+  --rik-radius-xs: 0px;
+  --rik-radius-sm: 0px;
+  --rik-radius-md: 0px;
+  --rik-radius-lg: 0px;
+  --rik-extras-mass: var(--a-vermilion);
+  --rik-extras-mass-text: var(--a-cream);
+  --rik-extras-edge: var(--a-ink);
+
+  /* ── Component · the storyboard's parts ── */
+  --deck-root-counter-color: var(--a-ink);
+  --deck-root-progress-color: var(--a-vermilion);
+  --deck-root-nav-color: var(--a-ink);
+  --deck-root-nav-bg: transparent;
+  --deck-root-nav-opacity: 0.85;
+  --deck-cell-bg: var(--a-sky);
+  --deck-cell-border: var(--a-ink);
+  --deck-cell-padding-x: 2rem;
+  --deck-cell-padding-y: 1.5rem;
+  --deck-cell-gap: 0.6rem;
+  --deck-bento-gap: 1.8rem;
+  --deck-icon-color: var(--a-ink);
+  --deck-icon-stroke: 2.5;
+  --deck-versus-rule: var(--a-ink);
+  --deck-versus-rule-width: 6px;
+  --deck-versus-winner-rule: var(--a-vermilion);
+  --deck-versus-loser-color: var(--a-slate);
+  --deck-versus-pivot-color: var(--a-vermilion);
+  /* The pivot sits inside a 52px ring drawn by the component. */
+  --deck-versus-pivot-size: 1.5rem;
+  --deck-versus-side-align: flex-start;
+  --deck-graph-edge: var(--a-ink);
+  --deck-graph-edge-width: 5;
+  --deck-graph-edge-label: var(--a-ink);
+  --deck-graph-tag-size: 1.1rem;
+  --deck-node-note-size: 1.1rem;
+  --deck-node-note-color: var(--a-sky);
+  --deck-node-bg: var(--a-ink);
+  --deck-node-boxed-color: var(--a-cream);
+  --deck-flow-gap: 3rem;
+  --deck-flow-step-outline: var(--a-ink);
+  --deck-flow-step-outline-width: 5px;
+  /* The component fades step notes to 0.7 · on ink they stay readable, on
+     vermilion they did not. */
+  --deck-flow-step-bg: var(--a-ink);
+  --deck-flow-step-color: var(--a-cream);
+  --deck-flow-step-accent: var(--a-cream);
+  --deck-flow-step-pending-outline: var(--a-ink);
+  --deck-flow-step-pending-opacity: 1;
+  --deck-flow-link: var(--a-ink);
+  --deck-table-mark-bg: var(--a-ink);
+  --deck-table-mark-color: var(--a-cream);
+  --deck-table-col-color: var(--a-vermilion-deep);
+  --deck-kpi-mass: var(--a-vermilion);
+  --deck-kpi-mass-text: var(--a-cream);
+  --deck-kpi-grid-rule: var(--a-ink);
+  --deck-kpi-grid-rule-width: 5px;
+  --deck-kpi-value-size: 6.6rem;
+  --deck-kpi-label-color: var(--a-ink);
+  --deck-kpi-note-color: var(--a-ink-soft);
+  --deck-callout-bg: var(--a-ink);
+  --deck-callout-border: var(--a-ink);
+  --deck-callout-color: var(--a-cream);
+  --deck-callout-strong-color: var(--a-cream);
+  --deck-callout-stroke: var(--a-vermilion);
+  --deck-callout-radius: 0px;
+  --deck-punch-color: var(--a-cream);
+  --deck-source-color: var(--a-ink-soft);
+}
+
+/* Set the fill on the component itself: typed callouts supply their own
+   background, which otherwise overrides the inherited dark-surface token. */
+deck-callout {
+  --deck-callout-bg: var(--a-ink);
+  --deck-callout-border: var(--a-ink);
+  --deck-callout-color: var(--a-cream);
+  --deck-callout-strong-color: var(--a-cream);
+  --deck-callout-stroke: var(--a-cream);
+}
+
+/* ── Slide titles · crate stencil ── */
+deck-root [slot='title'] {
+  font-family: var(--rik-font-display);
+  font-size: var(--rik-font-size-h1);
+  font-weight: var(--rik-title-weight);
+  letter-spacing: var(--rik-title-tracking);
+  line-height: var(--rik-title-leading);
+  color: var(--rik-text-default);
+  border: 0;
+  padding: 0;
+  margin: 0 0 var(--rik-space-4);
+  max-width: 28ch;
+  text-wrap: balance;
+}
+/* Capitals are the gag's voice, kept for the beats that land a punchline ·
+   the review slides speak in sentence case, as engineers do. */
+deck-root .shout [slot='title'] {
+  text-transform: uppercase;
+  font-size: 5rem;
+  max-width: 22ch;
+}
+deck-root [slot='lead'] {
+  font-size: var(--rik-font-size-lead);
+  font-weight: 500;
+  color: var(--a-slate);
+}
+deck-root h2,
+deck-root h3 {
+  font-family: var(--rik-font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 0.98;
+}
+deck-root p {
+  text-wrap: pretty;
+}
+
+/* ── Cover · the opening frame ── */
+deck-photo#operation {
+  --deck-photo-overlay-color: transparent;
+  --deck-photo-content-max-width: 30ch;
+  --deck-photo-padding-x: 5.2rem;
+  --deck-photo-padding-y: 5rem;
+  color: var(--a-ink);
+}
+deck-photo#operation > h1 {
+  font-family: var(--rik-font-display);
+  font-size: 8.2rem;
+  font-weight: 800;
+  line-height: 0.88;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: var(--a-ink);
+  text-shadow: none;
+}
+deck-photo#operation > p {
+  max-width: 22ch;
+  font-size: var(--rik-font-size-lead);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--a-ink);
+  text-shadow: none;
+}
+/* The counter sits on the painting's black letterbox while the cover shows. */
+deck-root:has(> #operation[active]) {
+  --deck-root-counter-color: var(--a-cream);
+  --deck-root-nav-color: var(--a-cream);
+}
+/* The cartoon freeze frame · the subject named in mock Latin. */
+deck-photo#operation > .freeze {
+  position: absolute;
+  right: 3.8rem;
+  bottom: 5.4rem;
+  max-width: none;
+  padding: 0.35rem 0.9rem;
+  background: var(--a-ink);
+  color: var(--a-cream);
+  font-size: var(--rik-font-size-body);
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* ── The loud mass · a cel over the background ── */
+deck-root .mass {
+  --deck-cell-bg: var(--a-vermilion);
+  --rik-text-default: var(--a-cream);
+  --rik-text-default--muted: var(--a-cream);
+  --deck-icon-color: var(--a-cream);
+  color: var(--a-cream);
+  border: 4px solid var(--a-ink);
+  box-shadow: var(--a-cel-shadow);
+}
+deck-root .ink {
+  --deck-cell-bg: var(--a-ink);
+  --rik-text-default: var(--a-cream);
+  --rik-text-default--muted: var(--a-sky);
+  --deck-icon-color: var(--a-vermilion);
+  color: var(--a-cream);
+}
+
+/* ── Problem and redesign · the two sides ── */
+deck-versus h2 {
+  font-size: 3.6rem;
+  margin: var(--rik-space-3) 0 var(--rik-space-3);
+}
+deck-versus [slot='left'] p,
+deck-versus [slot='right'] p {
+  font-size: var(--rik-font-size-lead);
+  font-weight: 500;
+  line-height: 1.3;
+  max-width: 26ch;
+}
+deck-versus [slot='footer'] {
+  font-weight: 600;
+  color: var(--a-ink);
+}
+
+/* ── Crops of the one supplied painting ──
+   Background crops render the same in every engine; the element carries
+   role="img" and its own label in the markup. */
+deck-root .still {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 12rem;
+  background-image: url('./acme.png');
+  background-repeat: no-repeat;
+  background-size: var(--crop-size, cover);
+  background-position: var(--crop-pos, center);
+  border: 4px solid var(--a-ink);
+}
+deck-root .still-load { --crop-size: 190% auto; --crop-pos: 96% 20%; }
+deck-root .still-mark { --crop-size: 260% auto; --crop-pos: 88% 92%; }
+deck-root .still-scene { --crop-size: cover; --crop-pos: 50% 55%; }
+deck-root .bleed {
+  --deck-cell-padding-x: 0px;
+  --deck-cell-padding-y: 0px;
+  border: 0;
+}
+
+/* ── Observations · known versus assumed ── */
+#observed deck-checklist {
+  --deck-check-yes: var(--a-ink);
+  --deck-check-no: var(--a-vermilion);
+  --deck-check-padding: 1.1rem;
+}
+#observed h2 {
+  font-size: 2.6rem;
+  margin-bottom: var(--rik-space-3);
+}
+
+/* ── Dependencies · the chain and its untested link ── */
+#mechanism deck-graph {
+  --deck-graph-tag-size: 1.1rem;
+}
+#mechanism deck-node[boxed] {
+  --deck-icon-color: var(--a-vermilion);
+}
+/* A filled status node paints its text in the page colour, which is too soft
+   on vermilion, so the page is re-pointed for that node only. */
+#mechanism deck-node[tone='danger'] {
+  --rik-surface-page: var(--a-cream);
+  --deck-icon-color: var(--a-cream);
+  --deck-node-note-color: var(--a-cream);
+}
+
+/* ── Intended sequence · the machine's own storyboard ── */
+#intended deck-step-list {
+  --deck-step-gap: 2.4rem;
+  font-size: var(--rik-font-size-lead);
+}
+#intended deck-callout {
+  margin-top: var(--rik-space-6);
+  font-size: var(--rik-font-size-lead);
+}
+
+/* ── The empty mark · one beat, one picture ── */
+#empty .still {
+  height: 30rem;
+}
+#empty [slot='right'] p:not(.beat) {
+  font-size: var(--rik-font-size-lead);
+  font-weight: 500;
+  line-height: 1.35;
+}
+#empty .beat {
+  font-family: var(--rik-font-display);
+  font-weight: 800;
+  font-size: 3.4rem;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--a-vermilion-deep);
+  margin-top: var(--rik-space-4);
+}
+
+/* ── Investigation · the annotated scene ── */
+#investigate deck-annotate {
+  --deck-annotate-mark-bg: var(--a-vermilion);
+  --deck-annotate-mark-color: var(--a-cream);
+  --deck-annotate-mark-size: 3rem;
+  --deck-annotate-leader: var(--a-ink);
+  --deck-annotate-leader-width: 3px;
+  --deck-annotate-legend-color: var(--a-ink);
+  --deck-annotate-legend-size: var(--rik-font-size-lead);
+  --deck-annotate-border: var(--a-ink);
+  --deck-figure-max-height: 40rem;
+}
+
+/* ── Timing · three storyboard frames ── */
+#timing deck-flow-step p {
+  font-size: var(--rik-font-size-body);
+}
+/* The active frame is an ink cel · cream text, a vermilion icon. */
+#timing deck-flow-step[active] {
+  --deck-icon-color: var(--a-vermilion);
+  --deck-flow-step-note-color: var(--a-cream);
+}
+
+/* ── Failure · the suspended load over the operator ── */
+#failure {
+  /* The bento runs to the bottom edge · keep it clear of the nav chevrons. */
+  --rik-slide-padding-y: 4.6rem;
+}
+
+/* ── Alternatives · the purchase list, crossed out ── */
+#redesign table {
+  font-size: var(--rik-font-size-lead);
+}
+#redesign thead th,
+#evidence thead th {
+  font-family: var(--rik-font-display);
+  font-size: 1.9rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--a-ink);
+  border-bottom: 5px solid var(--a-ink);
+}
+#redesign tbody td,
+#evidence tbody td {
+  border-bottom: 2px solid var(--a-ink);
+  padding-block: var(--rik-space-3);
+}
+#redesign tbody td:first-child {
+  text-decoration: line-through;
+  text-decoration-thickness: 3px;
+  text-decoration-color: var(--a-vermilion);
+  color: var(--a-slate);
+}
+
+/* ── Revision B · the deliberately short chain ── */
+#revision deck-graph {
+  --deck-graph-edge: var(--a-slate);
+  --deck-graph-tag-size: 1.1rem;
+  --deck-node-bg: var(--a-slate);
+}
+#revision deck-node[boxed] {
+  --deck-icon-color: var(--a-cream);
+}
+
+/* ── Evidence log · illustrative rows ── */
+#evidence table {
+  font-size: var(--rik-font-size-body);
+}
+#evidence td.example {
+  font-style: italic;
+  color: var(--a-slate);
+}
+
+/* ── Approval · the closing crate ── */
+#approval {
+  --deck-feature-cards-hero-flex: 0 0 auto;
+  --deck-feature-cards-detail-flex: 0 0 auto;
+  --deck-feature-cards-gap: var(--rik-space-5);
+  --deck-punch-size: 6.2rem;
+  --rik-surface-page: var(--a-vermilion);
+  --rik-text-default: var(--a-cream);
+  --rik-text-default--muted: var(--a-cream);
+  --rik-text-default--faint: var(--a-cream);
+}
+#approval deck-punch {
+  /* Barlow Condensed's content area is taller than its line box · the padding
+     gives the last line's descent room, so nothing counts as clipped. */
+  line-height: 1;
+  padding-bottom: 0.12em;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+#approval deck-point {
+  --deck-cell-bg: var(--a-ink);
+  --deck-cell-border: var(--a-ink);
+  --rik-text-default: var(--a-cream);
+  --rik-text-default--muted: var(--a-sky);
+}

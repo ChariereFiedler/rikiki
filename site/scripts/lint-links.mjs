@@ -21,6 +21,8 @@ import { join, relative, sep } from 'node:path';
 // vendors' strings, and marked's error message names github.com.
 const ROOTS = ['src', 'public'];
 const STAGED = new Set(['public/rikiki', 'public/embed', 'public/decks', 'public/sample', 'public/stress']);
+// Third-party OFL notices retain their authors' original attribution URLs.
+const VENDOR_LICENSES = /^public\/stories\/art\/fonts\/[a-z-]+-OFL\.txt$/;
 const FILES = ['astro.config.mjs'];
 const EXTENSIONS = new Set(['.astro', '.ts', '.tsx', '.js', '.mjs', '.css', '.html', '.md', '.txt', '.json']);
 const IGNORE = new Set(['node_modules', 'dist', '.astro', '.vscode', '.git']);
@@ -48,6 +50,7 @@ function walk(dir) {
     const dot = name.lastIndexOf('.');
     if (dot === -1) continue;
     if (!EXTENSIONS.has(name.slice(dot))) continue;
+    if (VENDOR_LICENSES.test(relative(CWD, p).split(sep).join('/'))) continue;
     scan(p);
   }
 }

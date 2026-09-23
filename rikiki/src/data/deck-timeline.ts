@@ -40,6 +40,11 @@ export class DeckTimeline extends LitElement {
       font-family: var(--rik-font-sans);
       padding-top: var(--rik-space-4);
     }
+    /* An active marker grows from its centre. Reserve room for its 0.3em
+       overhang and the 4px ring inside slides that clip their content. */
+    :host(:not([direction='column'])) {
+      padding-inline: calc(var(--deck-milestone-dot-size, 1em) * 0.3 + 4px);
+    }
     /* The axis runs behind the markers · one line, drawn once, so the spacing
        between milestones is what the reader measures. */
     :host::before {

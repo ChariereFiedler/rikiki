@@ -6,8 +6,9 @@ interface Props {
   lang?: 'html' | 'js' | 'ts' | 'css' | 'sh';
   code: string;
   label?: string;
+  wrap?: boolean;
 }
-const { lang = 'html', code, label } = Astro.props;
+const { lang = 'html', code, label, wrap = false } = Astro.props;
 
 function highlight(src: string, lang: string): string {
   let s = src.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -72,7 +73,7 @@ const highlighted = highlight(code.trim(), lang);
 <figure class="code">
   {label && <figcaption class="label">{label}</figcaption>}
   <div class="block">
-    <pre><code set:html={highlighted}></code></pre>
+    <pre class:list={{ wrap }}><code set:html={highlighted}></code></pre>
     <button type="button" class="copy" aria-label="Copy code to clipboard" data-code={code.trim()}>
       <span class="icon" aria-hidden="true">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -96,7 +97,7 @@ const highlighted = highlight(code.trim(), lang);
     min-width: 0;
   }
   .label {
-    font: 700 var(--rik-font-size-xs)/1 var(--rik-font-mono);
+    font: 700 max(14px, var(--rik-font-size-xs))/1 var(--rik-font-mono);
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--rik-text-default--faint);
@@ -110,10 +111,11 @@ const highlighted = highlight(code.trim(), lang);
     padding: var(--rik-space-4);
     overflow: auto;
     font-family: var(--rik-font-mono);
-    font-size: var(--rik-font-size-mono);
+    font-size: max(14px, var(--rik-font-size-mono));
     line-height: 1.7;
     box-shadow: var(--rik-elevation-2);
   }
+  pre.wrap { white-space: pre-wrap; overflow-wrap: anywhere; padding-top: 3.5rem; }
   code { display: block; font-size: inherit; }
   pre :global(.kw)   { color: var(--rik-code__syntax-keyword); }
   pre :global(.str)  { color: var(--rik-code__syntax-string); }

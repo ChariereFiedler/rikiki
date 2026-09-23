@@ -44,3 +44,8 @@ site/public/rikiki/
 # staged copies of example decks · rebuilt by site/scripts/stage-assets.mjs
 site/public/decks/showcase/
 site/public/decks/bento/
+
+# Staged story decks
+site/public/stories/*.html
+# Story theme assets are staged from examples/stories/art.
+site/public/stories/art/
