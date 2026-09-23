@@ -124,7 +124,7 @@ test('an embedded deck does not take the host page keyboard or URL', async ({ pa
   // deck must not rewrite an anchor the host page put in the URL.
   const deck = createDeckPage(page);
   await page.goto(`${EMBED}#host-title`);
-  await expect(page.locator('deck-root > [active]')).toHaveCount(1);
+  await expect(page.locator('deck-root:not([data-overview-snapshot]) > [active]')).toHaveCount(1);
 
   const firstHash = await page.evaluate(() => location.hash);
   expect(firstHash, 'the host anchor survives the deck booting').toBe('#host-title');

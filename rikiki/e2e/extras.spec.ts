@@ -127,7 +127,7 @@ test('the extras are genuinely opt-in', async ({ page }) => {
   expect(registered.bar, 'deck-bar is not in the default bundle').toBe(false);
   expect(registered.quote, 'deck-quote is not in the default bundle').toBe(false);
 
-  await expect(page.locator('deck-root > [active]')).toHaveCount(1);
+  await expect(page.locator('deck-root:not([data-overview-snapshot]) > [active]')).toHaveCount(1);
   expect(deck.consoleErrors, 'an unknown element is not an error').toEqual([]);
 });
 

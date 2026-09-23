@@ -18,9 +18,9 @@
 
 <deck-root transition="slide">
 
-  <deck-cover brand="rikiki · sample" speaker="Your Name" company="Your Org" duration="12 min" runtime="2026">
-    <h1>Hello, <span class="accent">stranger</span>.</h1>
-    <p class="sub">A starter deck you can fork in 30 seconds.</p>
+  <deck-cover brand="rikiki · starter" speaker="Your name" company="Your team" duration="5 min">
+    <h1>Your next talk.<br>One <span class="accent">HTML file.</span></h1>
+    <p class="sub">A small deck to edit, rehearse and share.</p>
   </deck-cover>
 
   <deck-section num="01">
@@ -46,11 +46,11 @@
     <p slot="lead" class="lead">What you give up · what you get back.</p>
     <deck-card slot="left" color="red">
       <h3>Without Rikiki</h3>
-      <p>Pick a build-time framework. Get HMR, ecosystems, npm install ceremony.</p>
+      <p>A build pipeline can add live previews, integrations and a larger ecosystem.</p>
     </deck-card>
     <deck-card slot="right" color="green">
       <h3>With Rikiki</h3>
-      <p>One HTML file. Open it in 2031, edit one character, give the talk again.</p>
+      <p>Write HTML, serve it locally, then bundle a standalone copy to share.</p>
     </deck-card>
   </deck-split>
 
@@ -68,26 +68,28 @@
   </deck-bento>
 
   <deck-section num="02">
-    <h1>Numbers</h1>
+    <h1>Ready to share</h1>
   </deck-section>
 
-  <deck-feature eyebrow="By the numbers">
-    <h1 slot="title">The framework, in three rows.</h1>
-    <deck-stack gap="3">
-      <deck-stat num="12" tone="yellow">
-        <h3 slot="claim">KB gzipped</h3>
-        Lit + 24 components + nav + theming. Anything bigger is opt-in.
-      </deck-stat>
-      <deck-stat num="0" tone="green">
-        <h3 slot="claim">Build steps for the author</h3>
-        Write HTML. Serve it. Done.
-      </deck-stat>
-      <deck-stat num="24" tone="orange">
-        <h3 slot="claim">Components</h3>
-        6 layouts (cover, section, feature, split, photo, takeaway) plus 18 atoms.
-      </deck-stat>
-    </deck-stack>
-  </deck-feature>
+  <deck-split eyebrow="From source to delivery" cols="3">
+    <h1 slot="title">Write. Check. Share.</h1>
+    <p slot="lead" class="lead">Three commands to take this deck to your audience.</p>
+    <deck-card slot="a">
+      <h3>01 · Preview</h3>
+      <p>Serve the folder and open the deck in your browser.</p>
+      <deck-code lang="sh">npx serve .</deck-code>
+    </deck-card>
+    <deck-card slot="b">
+      <h3>02 · Inspect</h3>
+      <p>Find layout issues, then review rendered slides.</p>
+      <deck-code lang="sh">npx rikiki check deck.html</deck-code>
+    </deck-card>
+    <deck-card slot="c">
+      <h3>03 · Deliver</h3>
+      <p>Package the runtime and assets into one HTML file.</p>
+      <deck-code lang="sh">npx rikiki bundle deck.html</deck-code>
+    </deck-card>
+  </deck-split>
 
   <deck-feature eyebrow="Tip">
     <h1 slot="title">Press the right keys.</h1>
@@ -101,7 +103,7 @@
 
   <deck-feature eyebrow="Bonus">
     <h1 slot="title">Same engine, two products.</h1>
-    <p slot="lead" class="lead">Three attributes turn this deck into a touch-friendly carousel.</p>
+    <p slot="lead" class="lead">Autoplay, looping and swipe turn a deck into a carousel.</p>
     <deck-code lang="html" hero>
 &lt;deck-root autoplay="4000" loop swipe transition="slide"&gt;
   &lt;deck-cover&gt;...&lt;/deck-cover&gt;
@@ -112,7 +114,7 @@
 
   <deck-takeaway kicker="The whole point">
     <deck-punch size="display">Source <span class="accent">=</span> output.</deck-punch>
-    <p class="caption on-dark">A deck is a folder · open it in 2031, edit one character, give the talk again.</p>
+    <p class="caption on-dark">Keep the source to edit. Share the bundle to present.</p>
   </deck-takeaway>
 
 </deck-root>

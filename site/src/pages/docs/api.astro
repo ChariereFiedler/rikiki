@@ -118,13 +118,21 @@ const carouselPreview = `<deck-feature><h1 slot="title">Slide 1</h1></deck-featu
 
 <h2 id="events">Events</h2>
 <p>
-  <code>deck-root</code> dispatches one event of its own,
+  <code>deck-root</code> dispatches
   <code>slide-change</code>, when the active slide changes · not on a step
   change within a slide. It does not bubble, so listen on the
   <code>deck-root</code> element itself. Its <code>detail</code> carries
   <code>current</code> and <code>previous</code>, the two slide elements
   (<code>previous</code> is <code>null</code> on the first render). The
   transition module and the presenter window are both built on it.
+</p>
+
+<p>
+  <code>step-change</code> reports a reveal-state update within the current slide.
+  Listen on <code>deck-root</code>; its <code>detail</code> contains
+  <code>step</code> (the current, zero-based state) and <code>steps</code>
+  (the number of reveal steps). The presenter uses it to keep its preview and
+  step counter in sync, including when you go backwards.
 </p>
 
 <h2 id="use">Registering an extension · <code>use()</code></h2>
@@ -191,7 +199,7 @@ const carouselPreview = `<deck-feature><h1 slot="title">Slide 1</h1></deck-featu
     <tr><td><kbd>Space</kbd> <kbd>PgDn</kbd></td><td>Linear next</td></tr>
     <tr><td><kbd>PgUp</kbd></td><td>Linear previous</td></tr>
     <tr><td><kbd>Home</kbd> <kbd>End</kbd></td><td>First / last slide</td></tr>
-    <tr><td><kbd>O</kbd></td><td>Toggle overview · lazy-loads <code>deck-overview.js</code> on first press</td></tr>
+    <tr><td><kbd>O</kbd></td><td>Toggle overview · previews are prepared during idle time and reused</td></tr>
     <tr><td><kbd>P</kbd></td><td>Toggle presenter window · lazy-loads <code>deck-presenter.js</code></td></tr>
     <tr><td><kbd>?</kbd> <kbd>H</kbd></td><td>Open help · lazy-loads <code>deck-help.js</code> on first press</td></tr>
     <tr><td><kbd>B</kbd> <kbd>.</kbd></td><td>Black screen (clicker convention) · any key dismisses</td></tr>

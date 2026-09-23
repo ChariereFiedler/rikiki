@@ -42,7 +42,7 @@ const anatomyCode = `<deck-feature eyebrow="Module">
        write on the first try is the reason to look at any of this. It used to
        sit seventh, after the gallery and the library. -->
   <Section id="agents" eyebrow="Two commands, then ask" title="An agent writes the deck, the checks tell it what is wrong">
-    <p class="section-lead"><code>npm i rikiki-deck</code> then <code>npx rikiki-deck skills</code>, and “make me a deck about our Q3 incident review” is enough. Slots and attributes are a format a model already knows, so there is no syntax to teach it and no build to run. The packaged reference is held against the code by the test suite, and <code>rikiki check --json</code> hands back the defects as data · the loop closes with no human in it. None of this was designed for agents: it fell out of wanting a deck that still opens in five years, and the same three choices turn out to be what a model needs.</p>
+    <p class="section-lead">Install with <code>npm i rikiki-deck</code>, then run <code>npx rikiki skills</code> to add the authoring skills. Give your agent a topic, audience and source material. It can write the HTML, run <code>rikiki check --json</code> and render screenshots for review. Check the story and evidence before sharing the finished deck.</p>
     <AgentLoop />
   </Section>
 

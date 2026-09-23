@@ -26,8 +26,8 @@ export function createDeckPage(page: Page) {
     }
   });
 
-  const root: Locator = page.locator('deck-root');
-  const activeSlide: Locator = page.locator('deck-root > [active]');
+  const root: Locator = page.locator('deck-root:not([data-overview-snapshot])');
+  const activeSlide: Locator = page.locator('deck-root:not([data-overview-snapshot]) > [active]');
 
   return {
     page,

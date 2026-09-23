@@ -53,7 +53,7 @@ async function printDeck(
 ): Promise<string> {
   const file = join(workDir, out);
   await page.goto(deckPath);
-  await expect(page.locator('deck-root > [active]')).toHaveCount(1);
+  await expect(page.locator('deck-root:not([data-overview-snapshot]) > [active]')).toHaveCount(1);
   // No width/height override · the deck sets its own @page size from its canvas.
   await page.pdf({ path: file, printBackground: true, preferCSSPageSize: true });
   return file;
@@ -111,7 +111,7 @@ test('every piece of on-screen chrome is hidden under print media', async ({ pag
   // carry no extractable text · they printed in the corners of every deck.
   // Asking the browser directly is the assertion that actually holds.
   await page.goto('/rikiki/decks/tests/demo.html');
-  await expect(page.locator('deck-root > [active]')).toHaveCount(1);
+  await expect(page.locator('deck-root:not([data-overview-snapshot]) > [active]')).toHaveCount(1);
   await page.emulateMedia({ media: 'print' });
 
   const shown = await page.evaluate(() => {
@@ -129,7 +129,7 @@ test('every piece of on-screen chrome is hidden under print media', async ({ pag
 test('the printed stage drops the zoom-to-fit transform', async ({ page }) => {
   // A stage still scaled to the viewport would print one shrunken slide.
   await page.goto('/rikiki/decks/tests/demo.html');
-  await expect(page.locator('deck-root > [active]')).toHaveCount(1);
+  await expect(page.locator('deck-root:not([data-overview-snapshot]) > [active]')).toHaveCount(1);
   await page.emulateMedia({ media: 'print' });
 
   const stage = await page.evaluate(() => {
@@ -263,7 +263,7 @@ test('graph edges are drawn before the PDF is taken', async ({ page }) => {
   // Taking the PDF straight away printed every diagram without its arrows.
   const { preparePrint } = await import('../bin/lib/export-pdf.mjs');
   await page.goto('/rikiki/decks/tests/extras-more.html');
-  await expect(page.locator('deck-root > [active]')).toHaveCount(1);
+  await expect(page.locator('deck-root:not([data-overview-snapshot]) > [active]')).toHaveCount(1);
   await preparePrint(page);
 
   const graphs = await page.evaluate(() =>

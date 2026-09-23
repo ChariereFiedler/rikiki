@@ -17,7 +17,7 @@ async function gotoSlideWith(page: import('@playwright/test').Page, id: string) 
   }, id);
   expect(index, `no slide contains #${id}`).toBeGreaterThan(0);
   await page.goto(`${DECK}#${index}`);
-  await expect(page.locator('deck-root > [active]')).toHaveCount(1);
+  await expect(page.locator('deck-root:not([data-overview-snapshot]) > [active]')).toHaveCount(1);
   await page.evaluate(
     () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
   );

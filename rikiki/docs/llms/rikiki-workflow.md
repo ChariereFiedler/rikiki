@@ -486,7 +486,7 @@ point.
   <h1 slot="title">We ship the assembler rather than drop it from the reference</h1>
   <deck-card slot="left" color="green">
     <h3>What we gain</h3>
-    <p>A documented command a consumer can actually run.</p>
+    <p>One documented command, ready to run.</p>
   </deck-card>
   <deck-card slot="right" color="grey">
     <h3>What it costs</h3>

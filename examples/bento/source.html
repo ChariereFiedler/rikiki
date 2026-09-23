@@ -21,7 +21,7 @@
 <deck-root transition="slide">
 
   <!-- ── Cover ─────────────────────────────────────────────────── -->
-  <deck-cover brand="rikiki · bento" speaker="Showcase" duration="every case">
+  <deck-cover brand="rikiki · bento" speaker="Layout examples">
     <h1>Bento layouts &<br><span class="accent">adaptive text</span></h1>
     <p class="sub">Cells share a grid · text adapts to the space it gets.</p>
   </deck-cover>
@@ -253,8 +253,8 @@ who owns the version, the flags, the patches
     </deck-cell>
     <deck-cell align="center" justify="center">
       <deck-stat num="92%" tone="green">
-        <h3 slot="claim">faster</h3>
-        cold start
+        <h3 slot="claim">complete</h3>
+        example rollout
       </deck-stat>
     </deck-cell>
     <deck-cell align="center" justify="center" tone="ok">
@@ -268,15 +268,15 @@ who owns the version, the flags, the patches
 
   <!-- ── Dashboard · dense real-world bento ─────────────────────── -->
   <deck-bento eyebrow="dashboard" cols="4" rows="2" gap="3">
-    <h1 slot="title">A metrics dashboard</h1>
+    <h1 slot="title">A metrics dashboard · illustrative data</h1>
     <deck-cell span="2x1" tone="info" align="center" justify="center">
-      <deck-punch fit fit-max="5">Q3 release health</deck-punch>
+      <deck-punch fit fit-max="5">Release review</deck-punch>
     </deck-cell>
     <deck-cell align="center" justify="center"><deck-stat num="1.2s" tone="green"><h3 slot="claim">p95</h3>latency</deck-stat></deck-cell>
     <deck-cell align="center" justify="center"><deck-stat num="0.3%" tone="orange"><h3 slot="claim">error</h3>rate</deck-stat></deck-cell>
     <deck-cell tone="ok"><h3>Uptime</h3><p>99.98% this quarter.</p></deck-cell>
     <deck-cell tone="warn"><h3>Backlog</h3><p>14 open · 3 blocking.</p></deck-cell>
-    <deck-cell span="2x1" align="center" justify="center"><deck-punch fit>All green · ship it</deck-punch></deck-cell>
+    <deck-cell span="2x1" align="center" justify="center"><deck-punch fit>Resolve blockers first</deck-punch></deck-cell>
   </deck-bento>
 
   <!-- ── Reveals · fit recomputes on each step ──────────────────── -->

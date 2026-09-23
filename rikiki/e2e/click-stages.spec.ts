@@ -17,7 +17,7 @@ test('click-stages reveals data-click elements step by step (hook migration)', a
 
   // First slide carries three opacity-revealed <p data-click> elements (a 4th
   // data-click SVG draws via stroke, not opacity) · all hidden at step 0.
-  const reveals = page.locator('deck-root > [active] p[data-click]');
+  const reveals = page.locator('deck-root:not([data-overview-snapshot]) > [active] p[data-click]');
   await expect(reveals).toHaveCount(3);
   const hidden = await reveals.evaluateAll((els) => els.map((e) => (e as HTMLElement).style.opacity));
   expect(hidden, 'every opacity-revealed data-click element starts hidden').toEqual(['0', '0', '0']);
