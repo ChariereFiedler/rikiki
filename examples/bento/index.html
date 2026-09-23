@@ -1497,8 +1497,7 @@ ${e.textContent??``}
     </deck-cell>
     <deck-cell plain>
       <h3>plain cell</h3>
-      <p>No chrome · still a size container, so child cqw/cqh type and
-        <code>fit</code> keep working. Use it to group content without a box.</p>
+      <p>No surface or border. Container-based type and <code>fit</code> still work.</p>
     </deck-cell>
   </deck-bento>
 
@@ -1570,9 +1569,8 @@ ${e.textContent??``}
     </deck-cell>
     <deck-cell tone="info" align="center" justify="center">
       <deck-fit>
-        <p style="text-align:center">A block of prose that <strong>auto-sizes</strong>
-          to whatever room the cell offers, growing on a wide slide and shrinking
-          on a tight one.</p>
+        <p style="text-align:center">This paragraph <strong>adapts to its cell</strong>: larger in wide spaces,
+          smaller in narrow spaces.</p>
       </deck-fit>
     </deck-cell>
   </deck-bento>
