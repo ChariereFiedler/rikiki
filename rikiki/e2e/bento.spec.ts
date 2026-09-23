@@ -70,7 +70,7 @@ test('a slotted image contains itself and a fit csv table never overflows its ce
 }) => {
   const deck = createDeckPage(page);
   await deck.goto(`${DECK}#3`); // jump straight to the media + csv slide
-  await expect(page.locator('deck-root > [active]')).toHaveCount(1);
+  await expect(page.locator('deck-root:not([data-overview-snapshot]) > [active]')).toHaveCount(1);
 
   // The image is contained within its cell (object-fit), so it never spills.
   const img = await page.evaluate(() => {
@@ -104,7 +104,7 @@ test('a fit punch recomputes when its slide is shown and its step revealed', asy
 
   // Move to slide 2 (the reveal lives there, hidden until clicked).
   await deck.advance();
-  await expect(page.locator('deck-root > [active]')).toHaveCount(1);
+  await expect(page.locator('deck-root:not([data-overview-snapshot]) > [active]')).toHaveCount(1);
 
   // Reveal the step · the punch becomes visible and must fit its now-sized cell.
   await deck.advance();

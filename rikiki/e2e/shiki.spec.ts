@@ -14,7 +14,7 @@ test('shiki replaces the built-in regex highlighter via the deck-code hook', asy
 
   // Playwright's CSS engine pierces the open shadow root · the highlighted spans
   // live in <deck-code>'s shadow <code>.
-  const code = page.locator('deck-code code');
+  const code = page.locator('deck-root:not([data-overview-snapshot]) > deck-feature deck-code code');
   await expect(code).toContainText('const answer = 42');
 
   // The built-in regex highlighter tags keywords with `.kw`; Shiki's output has

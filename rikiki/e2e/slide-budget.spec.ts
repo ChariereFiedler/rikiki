@@ -113,7 +113,7 @@ async function measure(
   const out: SlideBudget[] = [];
   for (let i = 0; i < count; i++) {
     await page.goto(`${deck}#${i + 1}`);
-    await expect(page.locator('deck-root > [active]')).toHaveCount(1);
+    await expect(page.locator('deck-root:not([data-overview-snapshot]) > [active]')).toHaveCount(1);
     // Two frames · the fit controllers measure after layout.
     await page.evaluate(
       () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),

@@ -31,7 +31,7 @@
 <deck-root transition="fade">
 
 <deck-cover brand="rikiki" speaker="Layout showcase" duration="~10 min" audience="Anyone judging the system">
-  <h1>Every shape a slide<br>can <span class="accent">take</span></h1>
+  <h1>Find the shape<br>for your <span class="accent">idea.</span></h1>
 </deck-cover>
 
 <!-- ═══════════════ 1 · The plain ones ═══════════════ -->
@@ -41,11 +41,11 @@
 <deck-feature eyebrow="A statement" spread="center">
   <h1 slot="title">A slide with one thing on it</h1>
   <p slot="lead" class="lead">The lead sits under the title and carries the sentence the title cannot.</p>
-  <deck-punch size="display">Say one thing, and say it at a size the back row can read.</deck-punch>
+  <deck-punch size="display">One idea.<br>Readable from the back row.</deck-punch>
 </deck-feature>
 
 <deck-split eyebrow="Two columns" cols="1-1" gap="5">
-  <h1 slot="title">Two columns of equal weight let a reader compare them directly</h1>
+  <h1 slot="title">Two columns make the comparison easy.</h1>
   <deck-stack slot="left" gap="3">
     <deck-callout type="info">A callout carries the aside that would otherwise crowd the prose.</deck-callout>
     <deck-md>Prose lives in **markdown**, with `inline code` and lists.
@@ -61,7 +61,7 @@
 </deck-split>
 
 <deck-split eyebrow="Asymmetric" cols="2-1" gap="5">
-  <h1 slot="title">An asymmetric split gives code the room and its commentary the margin</h1>
+  <h1 slot="title">Give the code room to breathe.</h1>
   <deck-code slot="left" lang="js">const deck = document.querySelector('deck-root');
 
 deck.addEventListener('slide-change', (e) => {
@@ -75,7 +75,7 @@ deck.addEventListener('slide-change', (e) => {
 </deck-split>
 
 <deck-split eyebrow="Three columns" cols="3" gap="4">
-  <h1 slot="title">Three columns carry three ideas, and stop working at a fourth</h1>
+  <h1 slot="title">Three columns hold three distinct ideas.</h1>
   <deck-stack slot="a" gap="2">
     <deck-icon name="database" size="xl" tone="accent"></deck-icon>
     <h3>What goes in</h3>
@@ -164,51 +164,51 @@ deck.addEventListener('slide-change', (e) => {
 <deck-section num="Three"><h1>Numbers, and<br>what they <em>mean</em></h1></deck-section>
 
 <deck-feature eyebrow="Figures" spread="center">
-  <h1 slot="title">Several figures read as one family when they share a scale</h1>
+  <h1 slot="title">Give related figures a shared scale.</h1>
   <deck-kpi-grid cols="3">
-    <deck-kpi value="35" label="components in the default bundle"></deck-kpi>
-    <deck-kpi value="14" label="more, one script tag each" tone="accent"></deck-kpi>
-    <deck-kpi value="0" label="network calls at runtime" note="a bundled deck runs offline"></deck-kpi>
+    <deck-kpi value="12" label="slides" note="Illustrative project"></deck-kpi>
+    <deck-kpi value="18 min" label="speaking time" tone="accent"></deck-kpi>
+    <deck-kpi value="3 min" label="questions"></deck-kpi>
   </deck-kpi-grid>
 </deck-feature>
 
 <deck-feature eyebrow="Proportions" spread="center">
-  <h1 slot="title">A proportion is easier to judge drawn than written as a number</h1>
+  <h1 slot="title">Show the share, not just the number.</h1>
   <deck-stack gap="4">
-    <deck-bar value="42" total="56" label="initial load, of the 56 KB budget" tone="accent"></deck-bar>
-    <deck-bar label="where the bytes go" segments="engine:25:accent|lit:7:info|marked:10:muted"></deck-bar>
+    <deck-bar value="42" total="56" label="Illustrative load budget · KB" tone="accent"></deck-bar>
+    <deck-bar label="Illustrative breakdown · KB" segments="engine:25:accent|lit:7:info|marked:10:muted"></deck-bar>
   </deck-stack>
 </deck-feature>
 
 <deck-split eyebrow="A comparison" cols="1-1" gap="5" pivot="vs" winner="right">
-  <h1 slot="title">Two ways, and the one that wins</h1>
+  <h1 slot="title">For this talk, choose a standalone file.</h1>
   <deck-stack slot="left" gap="2">
     <h3>A build step</h3>
     <deck-checklist>
-      <deck-check no>A toolchain to resurrect in 2031</deck-check>
-      <deck-check no>A dist/ that drifts from its source</deck-check>
+      <deck-check no>Build tools must remain available</deck-check>
+      <deck-check no>Rebuild after editing the source</deck-check>
       <deck-check>Tree shaking</deck-check>
     </deck-checklist>
   </deck-stack>
   <deck-stack slot="right" gap="2">
     <h3>No build step</h3>
     <deck-checklist>
-      <deck-check>Open index.html and it runs</deck-check>
-      <deck-check>The folder is the deliverable</deck-check>
+      <deck-check>Open the bundled HTML offline</deck-check>
+      <deck-check>One file to send to the venue</deck-check>
       <deck-check>Edit a file, reload, see it</deck-check>
     </deck-checklist>
   </deck-stack>
 </deck-split>
 
 <deck-feature eyebrow="A table" spread="center">
-  <h1 slot="title">A table needs one marked row, or the eye has nowhere to land</h1>
+  <h1 slot="title">Choose the format for your audience.</h1>
   <deck-table highlight-rows="2">
     <table>
-      <thead><tr><th>Framework</th><th>Runtime</th><th>Build</th><th>Opens in 2031</th></tr></thead>
+      <thead><tr><th>Format</th><th>Use</th><th>Delivery</th><th>Reveals</th></tr></thead>
       <tbody>
-        <tr><td>Reveal.js</td><td>~80 KB</td><td>optional</td><td>Probably</td></tr>
-        <tr><td>rikiki</td><td>~42 KB</td><td>none</td><td>Yes</td></tr>
-        <tr><td>Slidev</td><td>~250 KB</td><td>required</td><td>Unlikely</td></tr>
+        <tr><td>Source folder</td><td>Editing</td><td>Serve over HTTP</td><td>Yes</td></tr>
+        <tr><td>Bundled HTML</td><td>Presenting</td><td>Open offline</td><td>Yes</td></tr>
+        <tr><td>PDF</td><td>Reading later</td><td>PDF viewer</td><td>Static pages</td></tr>
       </tbody>
     </table>
   </deck-table>
@@ -219,18 +219,18 @@ deck.addEventListener('slide-change', (e) => {
 <deck-section num="Four"><h1>Chains, maps<br>and <em>time</em></h1></deck-section>
 
 <deck-feature eyebrow="A chain" spread="center" data-steps="4">
-  <h1 slot="title">A chain shows its whole shape before it walks you through it</h1>
+  <h1 slot="title">Highlight each step of the workflow.</h1>
   <deck-flow cols="4" reveal>
     <deck-flow-step label="Write" note="one HTML file"></deck-flow-step>
-    <deck-flow-step label="Preview" note="open it"></deck-flow-step>
+    <deck-flow-step label="Preview" note="serve locally"></deck-flow-step>
     <deck-flow-step label="Bundle" note="one command"></deck-flow-step>
     <deck-flow-step label="Present" note="offline"></deck-flow-step>
   </deck-flow>
-  <deck-notes>Step 0 shows the whole chain · its shape is half the message.</deck-notes>
+  <deck-notes>Advance to highlight each stage; go back to revisit it.</deck-notes>
 </deck-feature>
 
 <deck-feature eyebrow="A map" fill>
-  <h1 slot="title">An architecture reads as boxes and arrows, never as paragraphs</h1>
+  <h1 slot="title">Follow a request from browser to store.</h1>
   <deck-graph>
     <deck-lane at="6,34" label="edge"></deck-lane>
     <deck-group at="44,52,52,42" label="vpc · eu-west-3"></deck-group>
@@ -245,12 +245,12 @@ deck.addEventListener('slide-change', (e) => {
 </deck-feature>
 
 <deck-feature eyebrow="A trajectory" spread="center">
-  <h1 slot="title">A timeline earns its axis only when the dates carry meaning</h1>
+  <h1 slot="title">Plan the talk before the deadline.</h1>
   <deck-timeline direction="row">
-    <deck-milestone date="v0.1" label="Public MVP" note="TypeScript sources"></deck-milestone>
-    <deck-milestone date="v0.3" label="Presenter" note="second screen"></deck-milestone>
-    <deck-milestone date="v0.6" label="Opt-in set" note="fourteen components" tone="accent"></deck-milestone>
-    <deck-milestone date="v1.0" label="Release candidate" note="every promise measured"></deck-milestone>
+    <deck-milestone date="Week 1" label="Outline" note="Choose the argument"></deck-milestone>
+    <deck-milestone date="Week 2" label="Draft" note="Build the slides"></deck-milestone>
+    <deck-milestone date="Week 3" label="Rehearse" note="Check timing" tone="accent"></deck-milestone>
+    <deck-milestone date="Week 4" label="Present" note="Bring an offline copy"></deck-milestone>
   </deck-timeline>
 </deck-feature>
 
@@ -270,13 +270,13 @@ deck.addEventListener('slide-change', (e) => {
   </deck-quote>
 </deck-split>
 
-<deck-photo>
-  <h1>A full-bleed picture says what a paragraph would take too long to say</h1>
-  <p class="caption on-dark">Without a src this stays the inverse surface · the layout is the point.</p>
+<deck-photo src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201600%20900%22%20role%3D%22img%22%20aria-labelledby%3D%22title%20desc%22%3E%0A%20%20%3Ctitle%20id%3D%22title%22%3EAbstract%20presentation%20backdrop%3C%2Ftitle%3E%0A%20%20%3Cdesc%20id%3D%22desc%22%3EOrange%20and%20teal%20geometric%20forms%20over%20a%20dark%20background.%3C%2Fdesc%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23080b14%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23202943%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22beam%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%220%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23f07020%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2300c8a0%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%221600%22%20height%3D%22900%22%20fill%3D%22url(%23bg)%22%2F%3E%0A%20%20%3Ccircle%20cx%3D%221280%22%20cy%3D%22180%22%20r%3D%22360%22%20fill%3D%22%2300c8a0%22%20opacity%3D%22.18%22%2F%3E%0A%20%20%3Ccircle%20cx%3D%22260%22%20cy%3D%22760%22%20r%3D%22430%22%20fill%3D%22%23f07020%22%20opacity%3D%22.22%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M120%20650%20620%20180h860L980%20650Z%22%20fill%3D%22url(%23beam)%22%20opacity%3D%22.9%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M240%20690%20690%20270h570L810%20690Z%22%20fill%3D%22%23080b14%22%20opacity%3D%22.72%22%2F%3E%0A%3C%2Fsvg%3E%0A" darken="0.5">
+  <h1>Let the image<br>set the scene.</h1>
+  <p class="caption on-dark">A local illustration, a dark overlay, one short headline.</p>
 </deck-photo>
 
 <deck-takeaway kicker="What to look at">
-  <deck-punch size="display">Judge the shapes against each other, not one slide at a time.</deck-punch>
+  <deck-punch size="display">Choose a layout.<br>Make your point.</deck-punch>
   <p class="caption on-dark">Press O for the overview · every composition on one screen.</p>
 </deck-takeaway>
 

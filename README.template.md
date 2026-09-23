@@ -23,9 +23,9 @@ useful thing about this project.
 - **The reference ships in the package**, {{ referenceLines }} lines of it, and
   the test suite holds it against the code · an agent reads ground truth, not
   documentation somebody meant to update.
-- **`check` returns the defects as data** · clipped text, unreadable contrast,
-  a title that names a topic instead of making a claim. The loop closes with
-  no human in it.
+- **`check` returns the defects as data** · clipped text, undersized type,
+  missing assets and layout risks. Use the report to guide the next edit;
+  review the argument and evidence yourself.
 - **{{ bundled }} elements in the default bundle**, and {{ separate }} more
   behind one `<script>` tag each.
 - **{{ initialLoadKb }} KB gzip** for a deck with everything it needs to
@@ -228,8 +228,9 @@ including the rejected ones and why · in [`docs/design/`](./docs/design/).
 {{ cliTable }}
 
 `check` is the one worth trying first. It opens the deck in a real browser and
-reports overflow, unreadable contrast, missing sources and slides whose title
-names a topic instead of stating a message.
+reports clipped content, undersized text, missing assets and layout risks.
+It does not check contrast, focus order or factual accuracy. Narrative checks
+require a configured plugin; the default report says when they have not run.
 
 ## Contributing
 

@@ -42,8 +42,8 @@ async function requestsFor(page: import('@playwright/test').Page, file: string) 
   page.on('requestfailed', (r) => failed.push(r.url()));
   const url = pathToFileURL(file).href;
   await page.goto(url);
-  await expect(page.locator('deck-root')).toBeAttached();
-  await expect(page.locator('deck-root > [active]')).toHaveCount(1);
+  await expect(page.locator('deck-root:not([data-overview-snapshot])')).toBeAttached();
+  await expect(page.locator('deck-root:not([data-overview-snapshot]) > [active]')).toHaveCount(1);
   return { requested: requested.filter((u) => u !== url), failed, url };
 }
 

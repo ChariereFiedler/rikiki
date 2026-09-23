@@ -21,12 +21,12 @@ resurrect. Turns out the three choices that keep a deck alive are the same
 three that let a model write one. I did not plan that, and it is the most
 useful thing about this project.
 
-- **The reference ships in the package**, 1731 lines of it, and
+- **The reference ships in the package**, 1736 lines of it, and
   the test suite holds it against the code · an agent reads ground truth, not
   documentation somebody meant to update.
-- **`check` returns the defects as data** · clipped text, unreadable contrast,
-  a title that names a topic instead of making a claim. The loop closes with
-  no human in it.
+- **`check` returns the defects as data** · clipped text, undersized type,
+  missing assets and layout risks. Use the report to guide the next edit;
+  review the argument and evidence yourself.
 - **36 elements in the default bundle**, and 23 more
   behind one `<script>` tag each.
 - **43 KB gzip** for a deck with everything it needs to
@@ -122,7 +122,7 @@ renders wrong. It assumes nothing beyond a shell and a browser.
 
 **The package ships its own documentation.** `npm install rikiki-deck` puts
 `llms.txt` inside `node_modules`, next to an element reference of
-1731 lines and a working guide of 536, where
+1736 lines and a working guide of 536, where
 an agent finds them with no network call. The site serves them as well, at
 [`/llms.txt`](https://rikiki.tordu-jardin.fr/llms.txt), for the ones that fetch rather than read
 from disk.
@@ -235,8 +235,9 @@ including the rejected ones and why · in [`docs/design/`](./docs/design/).
 | `skills` | install the Claude Code skills into a project |
 
 `check` is the one worth trying first. It opens the deck in a real browser and
-reports overflow, unreadable contrast, missing sources and slides whose title
-names a topic instead of stating a message.
+reports clipped content, undersized text, missing assets and layout risks.
+It does not check contrast, focus order or factual accuracy. Narrative checks
+require a configured plugin; the default report says when they have not run.
 
 ## Contributing
 

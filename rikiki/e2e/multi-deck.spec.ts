@@ -16,7 +16,7 @@ async function openBoth(page: Page): Promise<string[]> {
   });
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.goto(DECK);
-  await expect(page.locator('deck-root > [active]')).toHaveCount(2);
+  await expect(page.locator('deck-root:not([data-overview-snapshot]) > [active]')).toHaveCount(2);
   return errors;
 }
 

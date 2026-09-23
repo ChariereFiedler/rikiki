@@ -63,7 +63,7 @@ test('the overview opens, moves and picks a slide with the keyboard alone', asyn
   // Enter picks the focused slide and closes the overview.
   await page.keyboard.press('Enter');
   await expect(page.locator('deck-root[overview]')).toHaveCount(0);
-  await expect(page.locator('deck-root > [active]')).toHaveCount(1);
+  await expect(page.locator('deck-root:not([data-overview-snapshot]) > [active]')).toHaveCount(1);
 });
 
 test('every on-screen control is a real, focusable button', async ({ page }) => {

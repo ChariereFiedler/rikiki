@@ -464,7 +464,12 @@ The `ctx` (`DeckContext`) is the only surface a plugin touches:
 
 Press **`P`** to open a speaker window. It mirrors the current slide and the
 next slide (rendered live via the rikiki bundle), shows a timer/clock, and
-displays the speaker notes for the current slide.
+displays the speaker notes, slide counter and current reveal step. The current
+preview follows forward and backward reveal changes without reloading its frame.
+
+Listen on `deck-root` for `slide-change` (`detail.current`, `detail.previous`)
+or `step-change` (`detail.step`, `detail.steps`). The latter reports the current
+zero-based reveal state and the number of reveal steps.
 
 On a Chromium browser with a second screen, pressing **`P`** sends the **deck
 fullscreen to the external screen** (the projector) and opens the **speaker
