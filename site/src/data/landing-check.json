@@ -1,0 +1,99 @@
+{
+  "flawed": {
+    "slideCount": 4,
+    "summary": {
+      "error": 3,
+      "warning": 2
+    },
+    "diagnostics": [
+      {
+        "code": "RESOURCE_MISSING",
+        "severity": "error",
+        "message": "the deck could not load http://127.0.0.1:44587/media/revenue.png (HTTP 404)",
+        "url": "http://127.0.0.1:44587/media/revenue.png",
+        "httpStatus": 404,
+        "suggestion": "check the path · a missing runtime leaves every slide raw, a missing image leaves a gap"
+      },
+      {
+        "code": "UNKNOWN_ELEMENT",
+        "severity": "error",
+        "message": "<deck-chart> is not defined · its component behavior is unavailable",
+        "element": "deck-root > deck-feature#results > deck-chart",
+        "suggestion": "check the spelling and load the module that defines this custom element"
+      },
+      {
+        "code": "CONTENT_CLIPPED",
+        "severity": "error",
+        "message": "content is cut off · 8px do not fit",
+        "slide": 3,
+        "slideId": "results",
+        "slideTag": "deck-feature",
+        "element": "deck-root > deck-feature#results > div",
+        "measurement": {
+          "clippedPx": 8,
+          "axis": "y"
+        },
+        "suggestion": "the engine clips rather than scrolls · cut a sentence, move detail into <deck-notes>, or split the slide"
+      },
+      {
+        "code": "TEXT_LAST_LINE_ORPHAN",
+        "severity": "warning",
+        "message": "\"segment we track.\" hangs alone on the last line · 14% of the width above it",
+        "slide": 3,
+        "slideId": "results",
+        "slideTag": "deck-feature",
+        "element": "deck-root > deck-feature#results > div",
+        "measurement": {
+          "lastLineRatio": 0.14,
+          "lines": 2,
+          "floorRatio": 0.25
+        },
+        "excerpt": "segment we track.",
+        "suggestion": "set `text-wrap: pretty`, shorten the wording, or bind the last words with a non-breaking space · on a wall this reads as a typographic accident"
+      },
+      {
+        "code": "TEXT_TOO_SMALL",
+        "severity": "warning",
+        "message": "text renders at 12px · the back row will not read it",
+        "slide": 3,
+        "slideId": "results",
+        "slideTag": "deck-feature",
+        "element": "deck-root > deck-feature#results > p",
+        "measurement": {
+          "renderedPx": 12,
+          "floorPx": 18
+        },
+        "excerpt": "Source: internal dashboard, Q3 export",
+        "suggestion": "use the deck type scale rather than a hardcoded size"
+      }
+    ],
+    "boxes": {
+      "deck-root > deck-feature#results > deck-chart": {
+        "x": 101.515625,
+        "y": 749.703125,
+        "width": 1716.96875,
+        "height": 0
+      },
+      "deck-root > deck-feature#results > div": {
+        "x": 101.515625,
+        "y": 800.453125,
+        "width": 1716.96875,
+        "height": 60
+      },
+      "deck-root > deck-feature#results > p": {
+        "x": 101.515625,
+        "y": 704.53125,
+        "width": 1716.96875,
+        "height": 19.796875
+      }
+    }
+  },
+  "fixed": {
+    "slideCount": 1,
+    "summary": {
+      "error": 0,
+      "warning": 0
+    },
+    "diagnostics": []
+  }
+}

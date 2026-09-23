@@ -534,3 +534,7 @@ read alone rather than presented.
 | Reveals, steps and animation | reference §7 |
 | The three ways a deck runs | reference §16 |
 | Diagnostic codes and the manifest | reference §12b |
+
+### Require a visual quality verdict
+
+Mechanical success does not approve the design. Run `rikiki check talk.html --quality-out review --require-quality` to capture every slide state and prepare `review/request.json`. Inspect every screenshot, then fill its review template with evidence for hierarchy, typography, readability, composition, visual evidence and theme coherence. Save the template as `review/verdict.json` and run `rikiki check talk.html --quality-review review/verdict.json --require-quality`. Missing, stale, incomplete and failed reviews block this mode. Do not approve unseen screenshots or infer visual quality from DOM checks.

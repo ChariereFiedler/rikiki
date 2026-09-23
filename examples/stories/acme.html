@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>This time. For sure. · Rikiki stories</title>
+  <link rel="stylesheet" href="../../rikiki/themes/rikiki.css">
+  <link rel="stylesheet" href="./art/acme.css">
+  <script type="module" src="../../rikiki/dist/index.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-icon.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-versus.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-graph.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-flow.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-table.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-kpi-grid.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-checklist.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-annotate.js"></script>
+</head>
+<body>
+<deck-root no-hint swipe>
+
+  <deck-photo id="operation" src="./art/acme.png" darken="0" align="top">
+    <h1>This time.<br>For sure.</h1>
+    <p>Operation Beep Beep: a design review of a capture plan with one very fast problem.</p>
+    <p class="freeze">Road Runner (Velocitus unconvincibus)</p>
+    <deck-notes>The inventor asked for this review to approve a larger machine. Let the picture carry the confidence: a tower, a counterweight, a suspended load and, bottom right, the only participant who has not agreed to anything. The review has a narrower job than the pitch: decide what is worth funding next. This is a fictional design exercise for the Rikiki example gallery: recommendations are scenario proposals, not measured results or canonical specifications. No rockets, explosives or cliff edges are proposed.</deck-notes>
+  </deck-photo>
+
+  <deck-versus id="goal" slide pivot="vs" winner="right">
+    <h1 slot="title">The goal is a caught bird, not a fired machine.</h1>
+    <div slot="left">
+      <deck-icon name="spark" size="xl"></deck-icon>
+      <h2>Mechanism success</h2>
+      <p>The load drops, on time, exactly where it was aimed.</p>
+    </div>
+    <div slot="right">
+      <deck-icon name="target" size="xl"></deck-icon>
+      <h2>Mission success</h2>
+      <p>The right subject is under the load when it&nbsp;does.</p>
+    </div>
+    <p slot="footer">Every previous report measured the left column. This review measures the right one.</p>
+    <deck-notes>The inventor's past reports all conclude that the machine worked. They are correct: it fired. The mission, though, was never "fire the machine". Stating the goal as an outcome on the target changes which evidence counts for the rest of this review.</deck-notes>
+  </deck-versus>
+
+  <deck-split id="observed" cols="1-1" gap="6">
+    <h1 slot="title">What we know, and what we are only assuming.</h1>
+    <div slot="left">
+      <h2>Observed</h2>
+      <deck-checklist>
+        <deck-check>The bird uses the desert road daily.</deck-check>
+        <deck-check>It inspects unfamiliar objects from a distance.</deck-check>
+        <deck-check>It leaves when approached.</deck-check>
+      </deck-checklist>
+    </div>
+    <div slot="right">
+      <h2>Assumed</h2>
+      <deck-checklist>
+        <deck-check no>It will take the bait.</deck-check>
+        <deck-check no>It will stop on the marked spot.</deck-check>
+        <deck-check no>It will wait for the cue.</deck-check>
+      </deck-checklist>
+    </div>
+    <deck-notes>Within this fictional premise, three things have been seen repeatedly and three have only been hoped for. Notice that every assumption concerns the bird's behaviour, and every observation contradicts one of them. That asymmetry is the finding of this review; the rest explains it.</deck-notes>
+  </deck-split>
+
+  <deck-feature id="mechanism" spread="center">
+    <h1 slot="title">Every arrow in the plan depends on the bird.</h1>
+    <p slot="lead">Three components are built. The link between them never was.</p>
+    <deck-graph layout="row" style="--deck-graph-ratio: 16 / 4">
+      <deck-node id="bait" label="Bait" note="Built and tested" icon="target" width="12rem" boxed></deck-node>
+      <deck-node id="bird" label="Bird on the mark" note="Never tested" icon="question" width="12rem" tone="danger" boxed></deck-node>
+      <deck-node id="cue" label="Trigger" note="Built and tested" icon="clock" width="12rem" boxed></deck-node>
+      <deck-node id="catch" label="Catch" note="Built and tested" icon="flag" width="12rem" boxed></deck-node>
+      <deck-edge from="bait" to="bird" dashed label="assumed" label-offset="0,-128"></deck-edge>
+      <deck-edge from="bird" to="cue" dashed label="assumed" label-offset="0,-128"></deck-edge>
+      <deck-edge from="cue" to="catch"></deck-edge>
+    </deck-graph>
+    <deck-notes>Read the chain left to right. Bait, trigger and catch are hardware; each has been bench tested and each works. The second box is not hardware at all: it is the bird choosing to stand on the mark. Both arrows touching it are dashed because nobody has ever observed either transition. The whole plan rests on a component that ACME does not manufacture.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="intended" spread="center">
+    <h1 slot="title">As designed, the trigger fires on weight, not on birds.</h1>
+    <deck-step-list direction="row">
+      <deck-step n="1" note="Seed placed on the marked plate." note-position="below">Bait the mark</deck-step>
+      <deck-step n="2" note="Anything heavier than a feather presses it." note-position="below">Weight on the plate</deck-step>
+      <deck-step n="3" note="Two seconds after the press, no check." note-position="below">Timer releases</deck-step>
+      <deck-step n="4" note="Straight down onto the plate." note-position="below">Load falls</deck-step>
+    </deck-step-list>
+    <deck-callout type="warn">Step two never asks <strong>whose</strong> weight is on the plate.</deck-callout>
+    <deck-notes>This is the inventor's own sequence, taken from the drawings. Look at step two: the trigger condition is "weight on the plate". It does not ask what the weight is. That detail looks harmless on paper and decides the outcome of the next three slides.</deck-notes>
+  </deck-feature>
+
+  <deck-split id="empty" cols="2-1" gap="6" class="shout">
+    <h1 slot="title">Beat one: nothing takes the bait.</h1>
+    <div slot="left" class="still still-mark" role="img" aria-label="The marked ground in front of the machine, empty"></div>
+    <div slot="right">
+      <p>The seed is on the plate. The bird looks at it from the road, then keeps running.</p>
+      <p class="beat">The mark stays empty.</p>
+    </div>
+    <deck-notes>The first beat of the rehearsal reconstruction is an absence. Pause on it. An empty mark is evidence: it is the first place the plan could have been tested cheaply, before any load was ever lifted.</deck-notes>
+  </deck-split>
+
+  <deck-feature id="investigate" spread="center">
+    <h1 slot="title">Beat two: the designer walks into the scene.</h1>
+    <deck-annotate src="./art/acme.png" alt="The capture machine with its operator position, trigger plate and suspended load" marks="17,80,Operator leaves the control table|60,84,Crosses the machine base|83,86,Stops on the marked plate|80,34,Load hangs over the plate" leader offsets="above|above|right|left"></deck-annotate>
+    <deck-notes>Nothing happened, so the operator went to look. Follow the markers: from the control table on the left, across the scene, onto the one plate that responds to weight. The drawing never placed the operator inside the scene because the plan assumed nothing would go wrong.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="timing" spread="center" class="shout">
+    <h1 slot="title">Wait. Now! Oh.</h1>
+    <deck-flow cols="3" reveal>
+      <deck-flow-step label="Bait ignored" note="The bird stays outside.">
+        <deck-icon name="search" size="lg"></deck-icon>
+        <p>The target inspects the machine from a safe distance.</p>
+      </deck-flow-step>
+      <deck-flow-step label="Wrong cue" note="The coyote investigates.">
+        <deck-icon name="alert" size="lg"></deck-icon>
+        <p>The designer steps onto his own trigger plate.</p>
+      </deck-flow-step>
+      <deck-flow-step label="Wrong subject" note="The mechanism works.">
+        <deck-icon name="cross" size="lg"></deck-icon>
+        <p>Perfectly, two seconds later, on its own operator.</p>
+      </deck-flow-step>
+    </deck-flow>
+    <deck-notes>Put the three beats together and click through them. Each one is individually reasonable, and together they catch the wrong subject. Keep the tone dry: the comedy is in the cause and effect, and the room will laugh without being asked to.</deck-notes>
+  </deck-feature>
+
+  <deck-versus id="cause" slide pivot="vs" winner="right">
+    <h1 slot="title">The trigger detects position. The mission needs identity.</h1>
+    <div slot="left">
+      <deck-icon name="document" size="xl"></deck-icon>
+      <h2>Component specification</h2>
+      <p>Release when weight is on the plate for two seconds.</p>
+    </div>
+    <div slot="right">
+      <deck-icon name="question" size="xl"></deck-icon>
+      <h2>Mission requirement</h2>
+      <p>Release only when the target is on the plate.</p>
+    </div>
+    <p slot="footer">No refinement of the left column meets the right one. It is the wrong requirement, not a weak part.</p>
+    <deck-notes>This is the causal flaw, stated without the gag. The trigger met its specification every time. The specification itself encoded "something is here" when the mission required "the bird is here". A bigger load, a faster timer or a stronger rope would all improve the left column and leave the failure exactly where it is.</deck-notes>
+  </deck-versus>
+
+  <deck-bento id="failure" cols="11fr 9fr" rows="2">
+    <h1 slot="title">A retry is unacceptable while the operator can be the payload.</h1>
+    <deck-cell class="bleed" span="1x2"><div class="still still-load" role="img" aria-label="The suspended weight hanging over the machine"></div></deck-cell>
+    <deck-cell class="mass" justify="center">
+      <h3>Operator in the drop zone</h3>
+      <p>Investigating puts the coyote under the load.</p>
+    </deck-cell>
+    <deck-cell justify="center">
+      <deck-icon name="refresh" size="lg"></deck-icon>
+      <h3>Remove the falling finale</h3>
+      <p>Rehearse with nothing above anyone.</p>
+    </deck-cell>
+    <deck-notes>Before discussing alternatives, one condition is non-negotiable. As long as the design has a suspended load and a trigger any visitor can press, the person most likely to be under it is the one who built it. The rehearsal we propose has no falling part at all.</deck-notes>
+  </deck-bento>
+
+  <deck-feature id="redesign" spread="center">
+    <h1 slot="title">Escalation answers the wrong question.</h1>
+    <deck-table highlight-cols="2">
+      <table>
+        <thead><tr><th>Catalogue order</th><th>Rehearse with</th><th>The uncertainty it resolves</th></tr></thead>
+        <tbody>
+          <tr><td>Oversized anvil</td><td>An inert prop</td><td>Does the cue fire on the right subject?</td></tr>
+          <tr><td>Rocket assistance</td><td>A marked route</td><td>Does the bird follow the route at all?</td></tr>
+          <tr><td>Emergency spare cliff</td><td>An observer outside</td><td>What actually happened, and when?</td></tr>
+        </tbody>
+      </table>
+    </deck-table>
+    <deck-notes>The pending catalogue order is shown struck through on purpose. Each item makes the left column of the previous slide stronger. Each replacement costs less and answers one of the three assumptions we listed at the start. That is the whole argument for Revision B.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="revision" spread="center">
+    <h1 slot="title">Revision B tests one thing: does the bird follow the route?</h1>
+    <deck-graph layout="row" style="--deck-graph-ratio: 16 / 3.6">
+      <deck-node id="route" label="Marked route" note="Chalk on the road" icon="flag" width="12rem" boxed></deck-node>
+      <deck-node id="prop" label="Inert prop" note="Nothing falls" icon="target" width="12rem" boxed></deck-node>
+      <deck-node id="observer" label="Observer" note="Outside the scene" icon="search" width="12rem" boxed></deck-node>
+      <deck-edge from="route" to="prop" label="bird follows?" label-offset="0,-32"></deck-edge>
+      <deck-edge from="prop" to="observer" label="logged" label-offset="0,-32"></deck-edge>
+    </deck-graph>
+    <deck-notes>Compare this with the dependency chain earlier. Three nodes instead of four, one label instead of two assumptions, and nothing in it can hurt anyone. The prop is a painted box on the route: if the bird walks up to it, we have learned more than the last six machines taught us.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="test" spread="center" class="shout">
+    <h1 slot="title">No bird. No second act.</h1>
+    <p slot="lead">Rehearsal gate, revision B. Conditions agreed before the day, not results.</p>
+    <deck-kpi-grid cols="3" ruled>
+      <deck-kpi value="INERT" label="Prop only" note="Test the cue, not the payload."></deck-kpi>
+      <deck-kpi value="CLEAR" label="Scene empty" note="Observer stays outside the route."></deck-kpi>
+      <deck-kpi value="STOP" label="Abort condition" note="The bird misses the mark." tone="danger"></deck-kpi>
+    </deck-kpi-grid>
+    <deck-notes>These three conditions are agreed now so they cannot be negotiated on the day. The stop condition is the important one: if the bird does not reach the mark, the rehearsal ends and nobody improvises a second act. No results are claimed here; the rehearsal has not happened.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="evidence" spread="center">
+    <h1 slot="title">The next review receives an observation log, not a new drawing.</h1>
+    <deck-table>
+      <table>
+        <thead><tr><th>Time</th><th>Expected</th><th>Observed</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td class="example">example</td><td>Bird reaches the prop</td><td class="example">Bird stops on the road, 30 paces short</td><td>Stop. Log it.</td></tr>
+          <tr><td>·</td><td>Bird reaches the prop</td><td></td><td></td></tr>
+          <tr><td>·</td><td>Bird passes the observer</td><td></td><td></td></tr>
+        </tbody>
+      </table>
+    </deck-table>
+    <deck-source>The first row is an illustrative example of how to fill the log. No rehearsal has been run.</deck-source>
+    <deck-notes>This is the only deliverable we ask for: a log with the time, what the plan expected, what the observer actually saw and what was done about it. The italic row shows how an entry should read; it is invented for illustration. The empty rows are what the rehearsal fills in.</deck-notes>
+  </deck-feature>
+
+  <deck-feature-cards id="approval">
+    <h1 slot="title">Approve revision B.</h1>
+    <deck-punch weight="800">Less machinery.<br>More observation.</deck-punch>
+    <deck-point slot="left">
+      <h3>Fund the rehearsal</h3>
+      <p>A marked route, an inert prop, an observer and&nbsp;a&nbsp;log.</p>
+    </deck-point>
+    <deck-point slot="right" plain>
+      <h3>Cancel the anvil</h3>
+      <p>Reopen it only if the log shows the bird on&nbsp;the&nbsp;mark.</p>
+    </deck-point>
+    <deck-notes>The review closes on a spending decision in two halves. Fund the rehearsal, which is cheap and safe. Cancel the escalation, with an explicit condition for reopening it: the log must show the bird actually reaching the mark. Until then, a larger anvil is a larger answer to the wrong question.</deck-notes>
+  </deck-feature-cards>
+
+</deck-root>
+</body>
+</html>

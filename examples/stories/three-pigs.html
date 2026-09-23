@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Built for the big bad · Rikiki stories</title>
+  <link rel="stylesheet" href="../../rikiki/themes/rikiki.css">
+  <link rel="stylesheet" href="./art/three-pigs.css">
+  <script type="module" src="../../rikiki/dist/index.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-icon.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-versus.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-annotate.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-timeline.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-checklist.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-flow.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-table.js"></script>
+</head>
+<body>
+<deck-root no-hint swipe>
+
+  <deck-photo id="refuge" src="./art/three-pigs.png" darken="0" align="top">
+    <h1>Built for the big bad.</h1>
+    <p>Three siblings, three houses, and one place they can all reach before the wolf does.</p>
+    <deck-notes>Open on the model and the shadow on the wall. The clients are three siblings who each already have a house and a strong opinion about it. Tonight's question is not whose house is best; it is where all three can go, together, when the shadow arrives. This is a fictional design exercise for the Rikiki example gallery: recommendations are scenario proposals, not structural engineering advice or measured results.</deck-notes>
+  </deck-photo>
+
+  <deck-bento id="siblings" cols="3">
+    <h1 slot="title">Each sibling protects something different.</h1>
+    <deck-cell>
+      <p class="material-name">Straw</p>
+      <h3>The first sibling wants shelter now.</h3>
+      <p>Quick to build, warm inside, ready tonight.</p>
+      <p class="blind">Never asked what holds when pushed.</p>
+    </deck-cell>
+    <deck-cell>
+      <p class="material-name">Timber</p>
+      <h3>The second wants to keep a familiar home.</h3>
+      <p>A frame they built and know how to repair.</p>
+      <p class="blind">Never asked how the joints resist a gust.</p>
+    </deck-cell>
+    <deck-cell>
+      <p class="material-name">Brick</p>
+      <h3>The third trusts a solid wall.</h3>
+      <p>Heavy, slow to build, hard to push over.</p>
+      <p class="blind">Never asked about the door and the chimney.</p>
+    </deck-cell>
+    <deck-notes>Give each sibling their due before challenging them. Every choice was sensible for the thing that sibling cared about: speed, familiarity, strength. The bottom line of each card is the question that sibling never asked. We are not quoting them; we are describing the gap each point of view leaves.</deck-notes>
+  </deck-bento>
+
+  <deck-feature id="threat" spread="center" class="night">
+    <h1 slot="title">The wolf does not choose a material. He finds a gap.</h1>
+    <deck-annotate src="./art/three-pigs.png" alt="Architectural model with roof frame, straw infill and brick walls, the wolf's shadow on the wall" marks="50,30,Open roof frame|72,55,Straw where a wall should close|40,82,Open entry at ground level" leader offsets="above|right|left" caption="The model is a cutaway. Its open face is for this review, not a doorway."></deck-annotate>
+    <deck-notes>Now take the wolf's point of view, on the dark side of the lamp. He does not care which material each sibling prefers. He walks around the building looking for the one place where the boundary is not continuous: an open roof, a soft infill, a way in at ground level. Three good materials can still make one weak house.</deck-notes>
+  </deck-feature>
+
+  <deck-versus id="brief" slide pivot="or" winner="right">
+    <h1 slot="title">They agree to protect one shared refuge first.</h1>
+    <div slot="left">
+      <deck-icon name="team" size="xl"></deck-icon>
+      <h2>Three renovations</h2>
+      <p>Everyone improves their own house and none of them is finished when it matters.</p>
+    </div>
+    <div slot="right">
+      <deck-icon name="lock" size="xl"></deck-icon>
+      <h2>One usable refuge</h2>
+      <p>One complete boundary all three can reach, enter and close.</p>
+    </div>
+    <p slot="footer">The trade-off is real: each sibling waits for their own house so that all three are safe sooner.</p>
+    <deck-notes>This is the turning point of the story, so say the cost out loud. Choosing one refuge means each sibling postpones the house they care about. The benefit is that one finished boundary protects all three, instead of three unfinished ones protecting nobody.</deck-notes>
+  </deck-versus>
+
+  <deck-feature id="usable" spread="center" class="sheet">
+    <h1 slot="title">"Usable" means all three can reach, enter, close and stay.</h1>
+    <deck-flow cols="4">
+      <deck-flow-step label="Reach" note="From each house."><p>A route every sibling can walk in the dark.</p></deck-flow-step>
+      <deck-flow-step label="Enter" note="Without help."><p>A door the smallest sibling can open.</p></deck-flow-step>
+      <deck-flow-step label="Close" note="From inside."><p>One closure that any of them can operate.</p></deck-flow-step>
+      <deck-flow-step label="Stay" note="Together."><p>Room for three through a long night.</p></deck-flow-step>
+    </deck-flow>
+    <deck-notes>The brief needs a definition everyone can check. Four verbs, each owned by the whole family rather than by one sibling. These are requirements for the fictional brief, written so that the acceptance walk at the end can test them one by one.</deck-notes>
+  </deck-feature>
+
+  <deck-split id="straw" cols="1-1" gap="6" class="material-slide">
+    <div slot="left" class="crop crop-straw" role="img" aria-label="Straw infill packed behind the timber frame of the model"></div>
+    <div slot="right">
+      <p class="kind">Straw</p>
+      <h1>Straw keeps the inside warm, once something else keeps the wind out.</h1>
+      <deck-checklist>
+        <deck-check>Infill inside a closed envelope.</deck-check>
+        <deck-check no>Not the outer boundary.</deck-check>
+      </deck-checklist>
+    </div>
+    <deck-notes>The first sibling's material gets a real job, and it is not the one in the fairytale. Straw is good at comfort and quick to place, so in the refuge it becomes insulation behind the wall. Whether that detail works is for the designer to confirm; this is a proposal, not a rating.</deck-notes>
+  </deck-split>
+
+  <deck-split id="timber" cols="1-1" gap="6" class="material-slide sheet">
+    <div slot="left" class="crop crop-timber" role="img" aria-label="Timber roof trusses and brass fixings of the model"></div>
+    <div slot="right">
+      <p class="kind">Timber</p>
+      <h1>Timber frames the roof, if every joint is designed, not improvised.</h1>
+      <deck-checklist>
+        <deck-check>Roof frame the family can maintain.</deck-check>
+        <deck-check no>Connections left to be worked out on site.</deck-check>
+      </deck-checklist>
+    </div>
+    <deck-notes>The second sibling's timber is the right material for a roof they can repair themselves. The weak point is never the timber, it is the joint. Those connections have to be drawn and checked before anyone cuts wood, which is why they appear again on the priority slide.</deck-notes>
+  </deck-split>
+
+  <deck-split id="brick" cols="1-1" gap="6" class="material-slide night">
+    <div slot="left" class="crop crop-brick" role="img" aria-label="Brick wall and small window of the model"></div>
+    <div slot="right">
+      <p class="kind">Brick</p>
+      <h1>Brick makes the shell. A wall with holes is still a wall with holes.</h1>
+      <deck-checklist>
+        <deck-check>Outer shell around the shared room.</deck-check>
+        <deck-check no>Windows, door and flue still open.</deck-check>
+      </deck-checklist>
+    </div>
+    <deck-notes>The third sibling was closest to right, and that is exactly why the gap is easy to miss. Brick is a good shell. But a shell is only as good as its openings, and every window, the door and the flue are holes the wolf can use. No material here is claimed to be wolf-proof.</deck-notes>
+  </deck-split>
+
+  <deck-feature id="boundary" spread="center" class="sheet">
+    <h1 slot="title">The boundary closes only where roof and wall meet.</h1>
+    <deck-annotate src="./art/three-pigs.png" alt="The model with its roof edge, wall head and flue position marked" marks="36,52,Roof sits on the brick wall|62,36,Ridge and frame joints|80,50,Wall head under the eaves" leader offsets="left|above|right" caption="Three junctions to detail. Materials alone do not close them."></deck-annotate>
+    <deck-notes>The three materials meet at three junctions, and each junction belongs to two siblings at once. That is where the design work goes: where the roof bears on the wall, the ridge and frame joints, and the wall head under the eaves. We mark them; the designer details them.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="route" spread="center">
+    <h1 slot="title">The way in is part of the defence plan.</h1>
+    <deck-step-list direction="row">
+      <deck-step n="1" note="Short, visible, walkable in the dark." note-position="below">Approach</deck-step>
+      <deck-step n="2" note="Wide enough for three arriving together." note-position="below">Entrance</deck-step>
+      <deck-step n="3" note="One action, from inside." note-position="below">Closure</deck-step>
+      <deck-step n="4" note="Away from the door and the flue." note-position="below">Shared room</deck-step>
+    </deck-step-list>
+    <deck-callout>A conceptual route for the brief, not a construction drawing.</deck-callout>
+    <deck-notes>Each sibling built a house and assumed arrival was obvious. The refuge treats the route as part of the protection: a short approach, an entrance wide enough for three at once, a closure one person can work from inside, and a room set away from the openings.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="priorities" spread="center" class="sheet">
+    <h1 slot="title">Survey and design come before any finishing touch.</h1>
+    <deck-tier-list>
+      <deck-tier name="Survey and brief" speed="First" hot>Confirm the site, the route and what all three need.</deck-tier>
+      <deck-tier name="Design the junctions" speed="Next" severity="warn">Roof on wall, frame joints, openings and closure.</deck-tier>
+      <deck-tier name="Enclose the refuge" speed="Then" severity="warn">A continuous boundary with a working door.</deck-tier>
+      <deck-tier name="Finishes" speed="Later" severity="muted">Decoration waits until everyone can get inside.</deck-tier>
+    </deck-tier-list>
+    <deck-notes>No costs and no dates here, because none exist before the survey. What we can fix tonight is the order: understand the site, design the junctions, enclose, and only then finish. Anything decorative that appears earlier is a sign the order has slipped.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="programme" spread="center">
+    <h1 slot="title">Each stage ends with something the siblings can check.</h1>
+    <deck-timeline direction="row" alternate reveal>
+      <deck-milestone date="Survey" label="Site plan" note="The route and the ground, drawn."></deck-milestone>
+      <deck-milestone date="Detail" label="Junction drawings" note="Roof, joints, openings."></deck-milestone>
+      <deck-milestone date="Enclose" label="Closed boundary" note="Door works from inside."></deck-milestone>
+      <deck-milestone date="Accept" label="Walk-through" note="All three, together."></deck-milestone>
+    </deck-timeline>
+    <deck-source>A sequence of dependencies, not a schedule.</deck-source>
+    <deck-notes>Each stage produces a thing the siblings can hold or walk through, so nobody has to trust a progress report. Step through the timeline one stage at a time. Dates will come from the designer after the survey.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="roles" spread="center" class="sheet">
+    <h1 slot="title">Shared decisions need named people.</h1>
+    <deck-table>
+      <table>
+        <thead><tr><th>Who</th><th>Looks after</th><th>Still open</th></tr></thead>
+        <tbody>
+          <tr><td>The three siblings</td><td>The brief, the route, the sign-off</td><td class="open">Who holds the spare key?</td></tr>
+          <tr><td>Designer</td><td>Survey, junctions, openings</td><td class="open">To be appointed</td></tr>
+          <tr><td>Builder</td><td>The enclosure, as drawn</td><td class="open">After the design</td></tr>
+        </tbody>
+      </table>
+    </deck-table>
+    <deck-notes>The siblings are the client together, not three clients. The designer and the builder are roles, not names, because neither has been chosen yet. The right column is deliberately unresolved; these are the questions to settle, not contracts that exist.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="acceptance" spread="center">
+    <h1 slot="title">They accept it by walking it, together.</h1>
+    <deck-checklist cols="2">
+      <deck-check>All three reach it from their own house.</deck-check>
+      <deck-check no>A photo of the facade is not acceptance.</deck-check>
+      <deck-check>The door closes from inside, by anyone.</deck-check>
+      <deck-check no>"Nearly sealed" is still an open item.</deck-check>
+      <deck-check>Roof and openings match the drawings.</deck-check>
+      <deck-check no>An item without an owner blocks the handover.</deck-check>
+    </deck-checklist>
+    <deck-notes>These are proposed acceptance criteria, not results; nothing has been built. The left column is what the siblings check on the walk; the right column is what does not count, so nobody can declare victory early. Structural suitability remains a question for the designer.</deck-notes>
+  </deck-feature>
+
+  <deck-split id="approval" cols="1-1" gap="6" class="night">
+    <div slot="left" class="crop crop-model" role="img" aria-label="The refuge model with the wolf's shadow on the wall behind it"></div>
+    <div slot="right">
+      <p class="promise">One brief. One refuge. Three siblings inside.</p>
+      <deck-step-list>
+        <deck-step n="1" note="Reach, enter, close, stay." note-position="below">Agree the shared brief</deck-step>
+        <deck-step n="2" note="Site plan first, junctions next." note-position="below">Commission survey and design</deck-step>
+        <deck-step n="3" note="With drawings, not before." note-position="below">Ask for a works quote</deck-step>
+      </deck-step-list>
+    </div>
+    <deck-notes>Return to the opening picture: the model, the lamp and the shadow. The decision tonight is small and shared: agree the brief and commission the survey and design. The works quote comes after, when there are drawings to price. This is a fictional architectural scenario.</deck-notes>
+  </deck-split>
+
+</deck-root>
+</body>
+</html>

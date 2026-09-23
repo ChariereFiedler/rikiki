@@ -1,0 +1,11 @@
+import {test} from 'vitest';
+import assert from 'node:assert/strict';
+import {applyQualityReview, QUALITY_CRITERIA, reviewQuality} from './quality.mjs';
+const request={digest:'current',shots:[{slide:1,step:0},{slide:1,step:1}]};
+const good=()=>({schemaVersion:1,digest:'current',reviewer:'test reviewer',summary:'Inspected both states',assessments:request.shots.flatMap(s=>QUALITY_CRITERIA.map(criterion=>({...s,criterion,verdict:'pass',evidence:'Visible title and content share an aligned left edge.'})))});
+test('requires every criterion for every state',()=>{const r=good();r.assessments.pop();assert.throws(()=>applyQualityReview(request,r),/every criterion/)});
+test('rejects duplicated assessments',()=>{const r=good();r.assessments[1]=r.assessments[0];assert.throws(()=>applyQualityReview(request,r),/duplicate/)});
+test('rejects stale evidence',()=>{const r=good();r.digest='old';assert.throws(()=>applyQualityReview(request,r),/stale/)});
+test('failed judgments become blocking diagnostics',()=>{const r=good();Object.assign(r.assessments[0],{verdict:'fail',evidence:'The title competes with three equally large numbers.',suggestion:'Reduce the secondary figures.'});const result=applyQualityReview(request,r);assert.equal(result.quality.verdict,'fail');assert.equal(result.diagnostics[0].severity,'error')});
+test('complete review can pass',()=>assert.equal(applyQualityReview(request,good()).quality.verdict,'pass'));
+test('strict mode never approves missing review',async()=>{const r=await reviewQuality({required:true});assert.equal(r.quality.status,'not-run');assert.equal(r.diagnostics[0].code,'QUALITY_REQUIRED')});

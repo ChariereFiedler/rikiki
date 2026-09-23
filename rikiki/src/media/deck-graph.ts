@@ -57,6 +57,19 @@ function meetRect(rect: PixelRect, toward: PixelPoint): PixelPoint {
   return { x: origin.x + dx * t, y: origin.y + dy * t };
 }
 
+/** Where an edge caption sits · halfway along the line that is actually
+ * painted, boundary to boundary. The centre-to-centre midpoint it replaced is
+ * only the middle of the visible gap when both nodes have the same size; next
+ * to a wide node it pushed the caption onto that node. An orthogonal route is
+ * captioned on its middle segment, the one that crosses between the nodes. */
+function labelAnchor(points: PixelPoint[] | undefined): PixelPoint | null {
+  if (!points || points.length < 2) return null;
+  const middle = Math.floor((points.length - 1) / 2);
+  const a = points[middle]!;
+  const b = points[middle + 1]!;
+  return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+}
+
 function parseOffset(raw: string | null): PixelPoint {
   const [x = 0, y = 0] = (raw ?? '').split(',').map((value) => Number(value.trim()));
   return { x: Number.isFinite(x) ? x : 0, y: Number.isFinite(y) ? y : 0 };
@@ -126,8 +139,14 @@ export class DeckGraph extends LitElement {
       font-size: var(--deck-graph-tag-size, 0.95em);
       line-height: 1.2;
     }
+    /* Painted after the slotted nodes and lifted above them · each node is a
+       positioned, transformed box, so a label rendered before the slot sat
+       UNDER any node it touched. When the gap between two nodes was narrower
+       than the caption (a wide viewport in Firefox made it so), the caption
+       vanished behind the boxes. A label is information; it stays on top. */
     .edge-label {
       position: absolute;
+      z-index: 1;
       transform: translate(-50%, -50%);
       background: var(--rik-surface-page);
       padding-inline: var(--rik-space-1);
@@ -399,28 +418,26 @@ export class DeckGraph extends LitElement {
               />`;
         })}
       </svg>
-      ${edges.map(({ edge, fromId, toId, geom }) => {
-        const fromBox = this._nodeBoxes.get(fromId);
-        const toBox = this._nodeBoxes.get(toId);
+      <slot @slotchange=${() => this._place()}></slot>
+      ${edges.map(({ edge, geom }) => {
         const offset = parseOffset(edge.getAttribute('label-offset'));
         const midpoint =
-          fromBox && toBox
-            ? {
-                x: (centre(fromBox).x + centre(toBox).x) / 2,
-                y: (centre(fromBox).y + centre(toBox).y) / 2,
-              }
-            : geom
-              ? { x: (geom.mx / 100) * w, y: (geom.my / 100) * h }
-              : null;
-        return midpoint && edge.getAttribute('label')
+          labelAnchor(paths.get(edge)) ??
+          (geom ? { x: (geom.mx / 100) * w, y: (geom.my / 100) * h } : null);
+        // Percent of the measured box, not pixels · the boxes come from
+        // getBoundingClientRect, which includes the deck's fit-to-screen
+        // scale, while `left` is laid out in the graph's own unscaled space.
+        // In pixels the caption drifted towards the origin by the scale
+        // factor, onto the node on its left, on any screen that is not
+        // exactly the canvas size. The author's offset stays in CSS pixels.
+        return midpoint && edge.getAttribute('label') && w && h
           ? html`<span
               class="tag edge-label"
-              style="left:${midpoint.x + offset.x}px;top:${midpoint.y + offset.y}px"
+              style="left:calc(${(midpoint.x / w) * 100}% + ${offset.x}px);top:calc(${(midpoint.y / h) * 100}% + ${offset.y}px)"
               >${edge.getAttribute('label')}</span
             >`
           : '';
       })}
-      <slot @slotchange=${() => this._place()}></slot>
     `;
   }
 }

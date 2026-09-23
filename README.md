@@ -122,7 +122,7 @@ renders wrong. It assumes nothing beyond a shell and a browser.
 
 **The package ships its own documentation.** `npm install rikiki-deck` puts
 `llms.txt` inside `node_modules`, next to an element reference of
-1736 lines and a working guide of 536, where
+1736 lines and a working guide of 540, where
 an agent finds them with no network call. The site serves them as well, at
 [`/llms.txt`](https://rikiki.tordu-jardin.fr/llms.txt), for the ones that fetch rather than read
 from disk.

@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>The right broom · Rikiki stories</title>
+  <link rel="stylesheet" href="../../rikiki/themes/rikiki.css">
+  <link rel="stylesheet" href="./art/quidditch.css">
+  <script type="module" src="../../rikiki/dist/index.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-icon.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-graph.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-versus.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-bar.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-flow.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-table.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-checklist.js"></script>
+  <script type="module" src="../../rikiki/dist/deck-persona.js"></script>
+</head>
+<body>
+<deck-root no-hint swipe>
+
+  <deck-photo id="selection" src="./art/quidditch.png" darken="0" align="top">
+    <h1>The right broom.<br>For your game.</h1>
+    <p>An equipment hearing: three candidates, seven positions, one fair trial before any order.</p>
+    <deck-notes>Today the committee decides how we choose, not what we buy. The captain, the coaches and the equipment keeper are all in the room because each of them owns part of the answer. We will look at what the squad needs, at three candidate brooms, at a trial that treats them equally, and at what must be true before money moves. This is a fictional design exercise for the Rikiki example gallery: recommendations are scenario proposals, not measured results or canonical specifications.</deck-notes>
+  </deck-photo>
+
+  <deck-bento id="roles" cols="5fr 4fr 4fr" rows="2">
+    <h1 slot="title">Seven positions, four kinds of work.</h1>
+    <deck-cell class="mass" span="1x2" justify="end">
+      <deck-stat num="7"><h3 slot="claim">positions to equip</h3>One fleet has to serve all of them, match after match.</deck-stat>
+    </deck-cell>
+    <deck-cell justify="start">
+      <deck-icon name="refresh" size="lg"></deck-icon>
+      <h3>Three chasers</h3>
+      <p>Turn, pass and recover at speed.</p>
+    </deck-cell>
+    <deck-cell justify="start">
+      <deck-icon name="target" size="lg"></deck-icon>
+      <h3>Two beaters</h3>
+      <p>Stay stable through the strike.</p>
+    </deck-cell>
+    <deck-cell justify="start">
+      <deck-icon name="lock" size="lg"></deck-icon>
+      <h3>One keeper</h3>
+      <p>Hold the hoops and stop on cue.</p>
+    </deck-cell>
+    <deck-cell justify="start">
+      <deck-icon name="search" size="lg"></deck-icon>
+      <h3>One seeker</h3>
+      <p>Pursue in open space, then stop.</p>
+    </deck-cell>
+    <deck-notes>The first objection to a single celebrated model is the team sheet. Chasers turn and pass in traffic, beaters need a platform that stays level when they swing, the keeper lives on precise stops, and the seeker needs long pursuit that still ends under control. Four different jobs across seven riders is why "which broom is best" is the wrong question; the right one is which broom does which job.</deck-notes>
+  </deck-bento>
+
+  <deck-split id="outcomes" cols="3" gap="6">
+    <h1 slot="title">A good purchase changes three things on the pitch.</h1>
+    <div slot="a">
+      <h2>Control</h2>
+      <p>Riders stop and turn where the play needs them, not where the broom drifts.</p>
+    </div>
+    <div slot="b">
+      <h2>Availability</h2>
+      <p>Every match starts with a full, inspected fleet and a spare the substitutes know.</p>
+    </div>
+    <div slot="c">
+      <h2>Fit</h2>
+      <p>Each rider trusts the broom in their own job, and says so after the trial.</p>
+    </div>
+    <deck-notes>Before comparing brooms, agree what success looks like. None of these three outcomes is a top speed. Control is visible on the course, availability is visible on match day, and fit is something we ask the riders directly. If a candidate cannot move one of these three, its reputation does not matter to this committee.</deck-notes>
+  </deck-split>
+
+  <deck-bento id="shortlist" cols="3">
+    <h1 slot="title">Three candidates, each auditioning for a job.</h1>
+    <deck-point>
+      <h3>Nimbus 2000</h3>
+      <p class="role">Proposed for the chasers</p>
+      <p class="ask">Can the rider hold a clean passing line?</p>
+    </deck-point>
+    <deck-point>
+      <h3>Firebolt</h3>
+      <p class="role">Proposed for the seeker</p>
+      <p class="ask">Does pursuit end in a controlled stop?</p>
+    </deck-point>
+    <deck-point>
+      <h3>Cleansweep</h3>
+      <p class="role">Proposed for cover and training</p>
+      <p class="ask">Can a substitute hold position with confidence?</p>
+    </deck-point>
+    <deck-notes>These are hypotheses, not rankings. Each candidate is paired with the job where it is most likely to help and a single question the trial must answer. A broom that fails its audition may still suit another job, but it has to earn that on the same course. Nothing here is a measured product rating.</deck-notes>
+  </deck-bento>
+
+  <deck-split id="nimbus" cols="1-2" gap="6">
+    <div slot="left" class="crop crop-bristles case-portrait" role="img" aria-label="The broom head and bristles under studio light"></div>
+    <div slot="right">
+      <h1>Nimbus must prove repeatable passing lines.</h1>
+      <deck-checklist>
+        <deck-check>Recovers its line after a tight turn.</deck-check>
+        <deck-check>Holds steady while the rider releases a pass.</deck-check>
+        <deck-check>Three chasers each report they could fly it all match.</deck-check>
+        <deck-check no>Top speed on the straight does not count here.</deck-check>
+      </deck-checklist>
+    </div>
+    <deck-notes>Chasers make most of the decisions in a match, so this is the audition with the most riders. We are not asking whether the Nimbus is quick; we are asking whether three different chasers can turn, recover and pass on it without fighting the broom. The last line is deliberate: straight-line speed is where a sales demonstration looks best and where our game is least decided.</deck-notes>
+  </deck-split>
+
+  <deck-feature id="firebolt" spread="center">
+    <h1 slot="title">Firebolt must prove that pursuit ends under control.</h1>
+    <deck-flow cols="4" reveal>
+      <deck-flow-step label="Chase" note="Open space, full pursuit."><p>Observer notes when the rider commits.</p></deck-flow-step>
+      <deck-flow-step label="Brake" note="At the marked post."><p>Distance past the marker is recorded.</p></deck-flow-step>
+      <deck-flow-step label="Hold" note="Hover beside the post."><p>Drift during the hold is noted.</p></deck-flow-step>
+      <deck-flow-step label="Return" note="Back to the start line."><p>The rider says how it felt.</p></deck-flow-step>
+    </deck-flow>
+    <deck-notes>The seeker's job is a chase that ends in a catch, and a catch needs a stop. So the Firebolt audition is four phases, and only one of them is fast. We record what happens after the chase: how far past the braking marker, how much drift in the hold, and what the rider says. No figure is written in advance; the sheet stays blank until the trial.</deck-notes>
+  </deck-feature>
+
+  <deck-feature-cards id="cleansweep">
+    <h1 slot="title">Cleansweep must prove it can cover any position.</h1>
+    <div class="crop crop-band" role="img" aria-label="The full broom resting under studio light"></div>
+    <deck-point slot="left">
+      <h3>Substitute test</h3>
+      <p>A reserve takes an unfamiliar position; we note how quickly they hold it.</p>
+    </deck-point>
+    <deck-point slot="right">
+      <h3>Training fleet</h3>
+      <p>Juniors fly the same drills on it for a week; coaches report what they saw.</p>
+    </deck-point>
+    <deck-notes>Squads usually buy the spare last and pay for it on match day. Our cover broom will be flown by whoever comes on, in whatever position is empty, so its audition is about adaptation rather than peak performance. It also carries the junior programme, which is why the coaches own the second test.</deck-notes>
+  </deck-feature-cards>
+
+  <deck-feature id="course" spread="center">
+    <h1 slot="title">Same rider, same course. Only the broom changes.</h1>
+    <deck-graph layout="free" style="--deck-graph-ratio: 16 / 6.2">
+      <deck-group at="31,4,38,92" label="One course, three drills"></deck-group>
+      <deck-node id="rider" at="13,50" label="One rider" note="Flies every broom" icon="user" width="15rem"></deck-node>
+      <deck-node id="turn" at="50,21" label="Turn" note="Where the line drifts" icon="refresh" width="15rem"></deck-node>
+      <deck-node id="stop" at="50,50" label="Stop" note="Distance to rest" icon="ban" width="15rem"></deck-node>
+      <deck-node id="play" at="50,79" label="Pass" note="Under pressure" icon="team" width="15rem"></deck-node>
+      <deck-node id="compare" at="87,50" label="Compare" note="Notes and rider feedback" icon="document" width="15rem" boxed></deck-node>
+      <deck-edge from="rider" to="turn" route="ortho"></deck-edge>
+      <deck-edge from="rider" to="stop"></deck-edge>
+      <deck-edge from="rider" to="play" route="ortho"></deck-edge>
+      <deck-edge from="turn" to="compare" route="ortho"></deck-edge>
+      <deck-edge from="stop" to="compare"></deck-edge>
+      <deck-edge from="play" to="compare" route="ortho"></deck-edge>
+    </deck-graph>
+    <deck-notes>The three auditions only mean something if they are comparable. Each rider flies every candidate through the same three drills, in a rotated order so the last broom is not always the one flown by a tired rider. Everything feeds one comparison sheet. If we change the course between brooms, we learn about the course, not the brooms.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="stations" spread="center">
+    <h1 slot="title">On the course, each station records one thing.</h1>
+    <deck-step-list direction="row">
+      <deck-step n="1" note="Where the line is lost after the hoop turn." note-position="below">Turn station</deck-step>
+      <deck-step n="2" note="Distance past the post, drift in the hover." note-position="below">Stop station</deck-step>
+      <deck-step n="3" note="Pass released on the call, caught or dropped." note-position="below">Play station</deck-step>
+      <deck-step n="4" note="Rider's own words, before any results are read." note-position="below">Debrief</deck-step>
+    </deck-step-list>
+    <deck-callout>Rotate the order, so no broom is always flown by a tired rider.</deck-callout>
+    <deck-notes>Observers each own one station, so the same person watches the same thing for every broom. The debrief comes last and is taken before the rider sees anyone else's sheet, so their comment is not anchored by the numbers. Four stations, four observers, one sheet per run.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="rubric" spread="center">
+    <h1 slot="title">The evidence is observations, filled in on the day.</h1>
+    <deck-table>
+      <table>
+        <thead><tr><th>Observation</th><th>How it is recorded</th><th>Nimbus</th><th>Firebolt</th><th>Cleansweep</th></tr></thead>
+        <tbody>
+          <tr><td>Missed line</td><td>Turn observer, per lap</td><td class="pending">pending</td><td class="pending">pending</td><td class="pending">pending</td></tr>
+          <tr><td>Drift</td><td>Stop observer, marked posts</td><td class="pending">pending</td><td class="pending">pending</td><td class="pending">pending</td></tr>
+          <tr><td>Recovery</td><td>Play observer, after the pass</td><td class="pending">pending</td><td class="pending">pending</td><td class="pending">pending</td></tr>
+          <tr><td>Confidence</td><td>Rider debrief, own words</td><td class="pending">pending</td><td class="pending">pending</td><td class="pending">pending</td></tr>
+        </tbody>
+      </table>
+    </deck-table>
+    <deck-source>Blank sheet by design. No result exists until the trial is flown.</deck-source>
+    <deck-notes>This is the sheet we will take onto the pitch, shown empty on purpose. Four observations, each owned by one person, each written the same way for every broom. We do not total them into a score: a broom with a clean stop and poor confidence is a different conversation from one with the reverse, and a single number would hide that.</deck-notes>
+  </deck-feature>
+
+  <deck-versus id="decision" slide pivot="or" winner="right">
+    <h1 slot="title">A failed control gate outweighs any showroom promise.</h1>
+    <div slot="left">
+      <h2>Sales impression</h2>
+      <p>A celebrated model, a beautiful finish and a persuasive demonstration.</p>
+    </div>
+    <div slot="right">
+      <h2>Trial evidence</h2>
+      <p>Controlled stops, repeatable turns and riders who trust it under pressure.</p>
+    </div>
+    <p slot="footer">A broom that cannot stop at the marker leaves the shortlist, whatever else it does well.</p>
+    <deck-notes>We agree the rejection rule before we see any results, so nobody can argue for a favourite afterwards. The control gate is the stop station: if a broom repeatedly overshoots the marker or drifts in the hold, it is out. Speed, finish and reputation can break a tie between two brooms that pass; they cannot rescue one that fails.</deck-notes>
+  </deck-versus>
+
+  <deck-feature id="allocation" spread="center">
+    <h1 slot="title">Specialise one position in seven. Keep one fleet for the rest.</h1>
+    <deck-bar total="7" label="Proposed trial allocation, by position" segments="Seeker on the Firebolt trial:1:accent|Six positions, Nimbus against Cleansweep:6:muted"></deck-bar>
+    <deck-callout>Keep one familiar spare in the stand for substitutions.</deck-callout>
+    <deck-source>Proposed allocation for the trial. The order follows rider evidence and supplier quotes.</deck-source>
+    <deck-notes>If the trial goes as we expect, the fleet splits along the team sheet: one specialist broom for the seeker, one shared model for the other six positions, and a familiar spare. A single model for six riders keeps training, repairs and substitutions simple. This bar is the allocation we will test, not a purchase decision.</deck-notes>
+  </deck-feature>
+
+  <deck-bento id="maintenance" cols="1fr 1fr" rows="3">
+    <h1 slot="title">Keep the fleet match-ready.</h1>
+    <deck-cell class="detail" span="1x3"><div class="crop crop-ferrule" role="img" aria-label="The brass ferrule where the bristles meet the shaft"></div></deck-cell>
+    <deck-cell justify="center">
+      <h3>Inspect before flight</h3>
+      <p>Shaft, binding and fittings, every flight.</p>
+    </deck-cell>
+    <deck-cell justify="center">
+      <h3>Log every fault</h3>
+      <p>Ground the broom before someone else flies it.</p>
+    </deck-cell>
+    <deck-cell justify="center">
+      <h3>Ready the spare</h3>
+      <p>Fitted, familiar and waiting in the stand.</p>
+    </deck-cell>
+    <deck-notes>Upkeep is part of selection, not something we think about after the order. A broom that needs a specialist repair shop is less available than one the equipment keeper can fix on the day. During the trial the keeper inspects every broom before each run and logs every fault, which tells us as much about ownership as the flying does.</deck-notes>
+  </deck-bento>
+
+  <deck-feature id="procurement" spread="center">
+    <h1 slot="title">Before any order, four people bring four answers.</h1>
+    <deck-grid cols="2" gap="6">
+      <deck-persona name="Captain" person-role="Rider fit" context="Signs off that each rider flew and trusted their broom."></deck-persona>
+      <deck-persona name="Observers" person-role="Course evidence" context="Hand in the completed sheets, unedited."></deck-persona>
+      <deck-persona name="Keeper" person-role="Repair and lead time" context="Asks each supplier how faults are fixed and how long an order takes."></deck-persona>
+      <deck-persona name="Treasurer" person-role="Quotation" context="Collects written quotes for the allocation the trial supports."></deck-persona>
+    </deck-grid>
+    <deck-notes>The procurement gate is not a single signature. Each of these four answers is owned by the person best placed to give it, and the order waits until all four are on the table. The supplier questions are ours to ask; we do not have their answers yet and will not guess them.</deck-notes>
+  </deck-feature>
+
+  <deck-split id="next" cols="1-1" gap="6">
+    <div slot="left" class="crop crop-head" role="img" aria-label="The broom head and brass fitting under studio light"></div>
+    <div slot="right">
+      <h1>Approve the trial. Order after it.</h1>
+      <deck-step-list>
+        <deck-step n="1" note="Course, shortlist and four observers." note-position="below">Approve one trial session</deck-step>
+        <deck-step n="2" note="Completed sheets and rider debriefs." note-position="below">Fly all three candidates</deck-step>
+        <deck-step n="3" note="Evidence, supplier answers and quotes." note-position="below">Return for the order</deck-step>
+      </deck-step-list>
+    </div>
+    <deck-notes>The ask today is small and reversible: one trial session with the course, the shortlist and four observers. Nobody is approving a winner. We come back with filled sheets, rider debriefs and supplier answers, and the committee decides the order then. This is a fictional equipment proposal.</deck-notes>
+  </deck-split>
+
+</deck-root>
+</body>
+</html>

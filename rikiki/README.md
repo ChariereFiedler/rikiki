@@ -297,3 +297,9 @@ Move via View Transitions). Slide transitions are driven by `transition="…"` o
 
 - **Step reveal on code blocks** uses `step-groups` on `<deck-code>` but is not exposed elsewhere yet.
 - **Syntax highlighting** is ~10 keywords of JS/TS, no AST. Hook a real highlighter (Prism, Shiki) if you need more, via `installShiki()`.
+
+### Review slide design quality
+
+`rikiki check talk.html --quality-out review --require-quality` captures every slide and reveal state for visual review. Inspect the PNGs and fill in the `reviewTemplate` in `review/request.json`, then save it as `review/verdict.json`. Import it with `rikiki check talk.html --quality-review review/verdict.json --require-quality`.
+
+The review covers hierarchy, typography, readability, composition, visual evidence and theme coherence. Every state needs concrete observations; failed criteria require a correction. Strict mode fails on missing, incomplete, stale or rejected reviews. Ordinary checks explicitly display **Design quality: not verified** until reviewed. No AI service is called automatically; mechanical checks alone never certify design quality.

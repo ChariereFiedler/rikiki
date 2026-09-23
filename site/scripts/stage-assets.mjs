@@ -63,6 +63,13 @@ function stage() {
     cpSync(join(EXAMPLES_DIR, name, 'index.html'), join(dest, 'index.html'));
     assertAssetsResolve(join(dest, 'index.html'));
   }
+  cpSync(join(EXAMPLES_DIR, 'stories', 'art'), join(SITE_DIR, 'public', 'stories', 'art'), { recursive: true });
+  for (const name of ['incident', 'quidditch', 'acme', 'three-pigs', 'rikiki']) {
+    const dest = join(SITE_DIR, 'public', 'stories', name + '.html');
+    mkdirSync(dirname(dest), { recursive: true });
+    cpSync(join(EXAMPLES_DIR, 'stories', name + '.html'), dest);
+    assertAssetsResolve(dest);
+  }
   // The web entry has a different base URL from the installed package.
   const entry = join(SITE_DIR, 'public', 'llms.txt');
   if (lstatSafe(entry)?.isSymbolicLink()) rmSync(entry);

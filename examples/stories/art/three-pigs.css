@@ -1,0 +1,440 @@
+/* ════════════════════════════════════════════════════════════════
+   Three little pigs · a story told around the model
+   The page is the lamplit wall behind the model; the wolf's shadow is the
+   one dark mass; brick marks every weak point, straw gold marks what the
+   siblings agree. Fraunces tells the story, Archivo carries the details.
+   Two registers alternate: story beats sit on the warm wall, technical
+   beats on a pinned drawing sheet (.sheet).
+   Loaded after rikiki/themes/rikiki.css · palette → semantic → component.
+   ════════════════════════════════════════════════════════════════ */
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('./fonts/fraunces-normal.woff2') format('woff2');
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Fraunces';
+  src: url('./fonts/fraunces-italic.woff2') format('woff2');
+  font-weight: 300 900;
+  font-style: italic;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Archivo';
+  src: url('./fonts/archivo-normal-100-900.woff2') format('woff2');
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  /* ── Palette · private ── */
+  --p-wall: #ecd6ad;
+  --p-wall-deep: #dfc394;
+  --p-sheet: #f7efe0;
+  --p-shadow: #2e2016;
+  --p-shadow-soft: #4a3526;
+  --p-ink: #25180f;
+  --p-ink-soft: #4d3827;
+  --p-brick: #a63d22;
+  --p-brick-deep: #8a2f18;
+  --p-straw: #e2b45c;
+  --p-straw-text: #7a5410;
+  --p-balsa: #f2dcb0;
+
+  /* ── Semantic · surfaces ── */
+  --rik-surface-page: var(--p-wall);
+  --rik-surface-raised: var(--p-sheet);
+  --rik-surface-raised--strong: var(--p-sheet);
+  --rik-surface-sunken: var(--p-wall-deep);
+  --rik-surface-tint: rgba(37, 24, 15, 0.05);
+  --rik-surface-tint--strong: rgba(37, 24, 15, 0.09);
+  --rik-surface-inverse: var(--p-shadow);
+  --rik-surface-inverse--soft: var(--p-shadow);
+  --rik-surface-inverse--soft-2: var(--p-shadow-soft);
+  --rik-surface-inverse--soft-3: var(--p-shadow-soft);
+  --rik-surface-inverse--soft-4: var(--p-shadow-soft);
+  --rik-surface-inverse--soft-5: var(--p-shadow-soft);
+  --rik-surface-inverse__overlay: rgba(242, 220, 176, 0.06);
+
+  /* ── Semantic · text ── */
+  --rik-text-default: var(--p-ink);
+  --rik-text-default--muted: var(--p-ink-soft);
+  --rik-text-default--faint: var(--p-ink-soft);
+  --rik-text-default--ghost: var(--p-wall-deep);
+  --rik-text-inverse: var(--p-balsa);
+  --rik-text-inverse--muted: var(--p-balsa);
+  --rik-text-inverse--faint: var(--p-wall-deep);
+  --rik-text-inverse--ghost: var(--p-shadow-soft);
+
+  /* ── Semantic · lines, accent, status ── */
+  --rik-border-default: var(--p-ink-soft);
+  --rik-border-default--subtle: var(--p-wall-deep);
+  --rik-border-inverse: rgba(242, 220, 176, 0.2);
+  --rik-accent: var(--p-brick);
+  --rik-accent--soft: rgba(166, 61, 34, 0.16);
+  --rik-accent--faint: rgba(166, 61, 34, 0.06);
+  --rik-accent--strong: var(--p-brick-deep);
+  --rik-accent__text: var(--p-brick-deep);
+  --rik-accent__on: var(--p-balsa);
+  --rik-status-info: var(--p-straw-text);
+  --rik-status-info__text: var(--p-straw-text);
+  --rik-status-info__bg: var(--p-sheet);
+  --rik-status-info__bg--mid: var(--p-sheet);
+  --rik-status-info__bg--strong: var(--p-wall-deep);
+  --rik-status-info__border: var(--p-ink-soft);
+  --rik-status-success: var(--p-ink);
+  --rik-status-success__text: var(--p-ink);
+  --rik-status-success__bg: var(--p-sheet);
+  --rik-status-success__border: var(--p-ink-soft);
+  --rik-status-warn: var(--p-brick);
+  --rik-status-warn__text: var(--p-brick-deep);
+  --rik-status-warn__bg: var(--p-sheet);
+  --rik-status-warn__border: var(--p-ink-soft);
+  --rik-status-danger: var(--p-brick);
+  --rik-status-danger__text: var(--p-brick-deep);
+  --rik-status-danger__bg: var(--p-sheet);
+  --rik-status-danger__border: var(--p-ink-soft);
+  --rik-selection__bg: var(--p-brick);
+  --rik-selection__text: var(--p-balsa);
+  --rik-focus-ring: var(--p-brick);
+  --rik-link: var(--p-brick-deep);
+  --rik-link--hover: var(--p-ink);
+  --rik-elevation-1: none;
+  --rik-elevation-2: none;
+  --rik-elevation-3: none;
+
+  /* ── Semantic · type ── */
+  --rik-font-display: 'Fraunces', Georgia, serif;
+  --rik-font-sans: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --rik-font-mono: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --rik-font-size-body: 1.22rem;
+  --rik-font-size-sm: 1.1rem;
+  --rik-font-size-lead: 1.5rem;
+  --rik-font-size-h2: 1.9rem;
+  --rik-font-size-h1: 3.5rem;
+  --rik-font-size-strong: 1.5rem;
+  --rik-font-size-big: 2.6rem;
+  --rik-font-size-mega: 5rem;
+  --rik-title-weight: 650;
+  --rik-title-tracking: -0.015em;
+  --rik-title-leading: 1.04;
+  --rik-rule-weight: 0px;
+
+  /* ── Semantic · space and shape ── */
+  --rik-slide-padding-x: 6rem;
+  --rik-slide-padding-y: 4rem;
+  --rik-radius-xs: 2px;
+  --rik-radius-sm: 2px;
+  --rik-radius-md: 2px;
+  --rik-radius-lg: 2px;
+  --rik-extras-mass: var(--p-shadow);
+  --rik-extras-mass-text: var(--p-balsa);
+  --rik-extras-edge: var(--p-ink);
+
+  /* ── Component · the review's parts ── */
+  --deck-root-counter-color: var(--p-ink);
+  --deck-root-progress-color: var(--p-brick);
+  --deck-root-nav-color: var(--p-ink);
+  --deck-root-nav-bg: transparent;
+  --deck-root-nav-opacity: 0.85;
+  --deck-cell-bg: var(--p-sheet);
+  --deck-cell-border: transparent;
+  --deck-cell-padding-x: 2rem;
+  --deck-cell-padding-y: 1.7rem;
+  --deck-cell-gap: 0.7rem;
+  --deck-bento-gap: 1.6rem;
+  --deck-icon-color: var(--p-brick);
+  --deck-icon-stroke: 2;
+  --deck-versus-rule: var(--p-ink-soft);
+  --deck-versus-rule-width: 3px;
+  --deck-versus-winner-rule: var(--p-brick);
+  --deck-versus-loser-color: var(--p-ink-soft);
+  --deck-versus-pivot-color: var(--p-brick);
+  --deck-versus-pivot-size: 1.5rem;
+  --deck-versus-side-align: flex-start;
+  --deck-annotate-mark-bg: var(--p-brick);
+  --deck-annotate-mark-color: var(--p-balsa);
+  --deck-annotate-mark-size: 3rem;
+  --deck-annotate-mark-ring: var(--p-balsa);
+  --deck-annotate-leader: var(--p-balsa);
+  --deck-annotate-leader-width: 3px;
+  --deck-annotate-legend-color: var(--p-ink);
+  --deck-annotate-legend-size: var(--rik-font-size-lead);
+  --deck-annotate-border: transparent;
+  --deck-figure-max-height: 36rem;
+  --deck-flow-gap: 2.4rem;
+  --deck-flow-step-outline: var(--p-ink-soft);
+  --deck-flow-step-outline-width: 3px;
+  --deck-flow-step-bg: var(--p-shadow);
+  --deck-flow-step-color: var(--p-balsa);
+  --deck-flow-step-accent: var(--p-straw);
+  --deck-flow-step-pending-outline: var(--p-ink-soft);
+  --deck-flow-step-pending-opacity: 1;
+  --deck-flow-link: var(--p-brick);
+  --deck-tier-bg: var(--p-sheet);
+  --deck-tier-border: var(--p-sheet);
+  --deck-tier-padding-x: 1.8rem;
+  --deck-tier-padding-y: 1.1rem;
+  --deck-tier-shadow: none;
+  --deck-tier-name-color: var(--p-ink);
+  --deck-tier-desc-color: var(--p-ink-soft);
+  --deck-tier-speed-muted: var(--p-ink-soft);
+  --deck-tier-speed-warn: var(--p-brick-deep);
+  --deck-tier-hot-bg: var(--p-shadow);
+  --deck-tier-hot-border: var(--p-shadow);
+  --deck-tier-hot-color: var(--p-straw);
+  --deck-timeline-axis: var(--p-ink);
+  --deck-timeline-axis-width: 3px;
+  --deck-milestone-dot: var(--p-brick);
+  --deck-milestone-dot-size: 1.1em;
+  --deck-milestone-pending-opacity: 0.6;
+  --deck-milestone-date-color: var(--p-brick-deep);
+  --deck-check-yes: var(--p-ink);
+  --deck-check-no: var(--p-brick);
+  --deck-check-no-color: var(--p-ink-soft);
+  --deck-checklist-rule: var(--p-ink-soft);
+  --deck-check-padding: 1.2rem;
+  --deck-table-mark-bg: var(--p-shadow);
+  --deck-table-mark-color: var(--p-balsa);
+  --deck-table-col-color: var(--p-brick-deep);
+  --deck-callout-bg: transparent;
+  --deck-callout-border: transparent;
+  --deck-callout-color: var(--p-ink);
+  --deck-callout-stroke: var(--p-brick);
+  --deck-callout-padding-x: 0px;
+  --deck-callout-padding-y: 0px;
+  --deck-source-color: var(--p-ink-soft);
+}
+
+/* ── Slide titles · the storyteller's voice ── */
+deck-root [slot='title'] {
+  font-family: var(--rik-font-display);
+  font-size: var(--rik-font-size-h1);
+  font-weight: var(--rik-title-weight);
+  font-variation-settings: 'opsz' 72, 'SOFT' 50, 'WONK' 0;
+  letter-spacing: var(--rik-title-tracking);
+  line-height: var(--rik-title-leading);
+  color: var(--rik-text-default);
+  border: 0;
+  padding: 0;
+  margin: 0 0 var(--rik-space-5);
+  max-width: 26ch;
+  text-wrap: balance;
+}
+deck-root [slot='lead'] {
+  font-size: var(--rik-font-size-lead);
+  color: var(--p-ink-soft);
+}
+deck-root h2,
+deck-root h3 {
+  font-family: var(--rik-font-display);
+  font-weight: 650;
+  font-variation-settings: 'opsz' 48, 'SOFT' 50;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+}
+deck-root p {
+  text-wrap: pretty;
+}
+
+/* ── The drawing sheet · technical beats are pinned on paper ── */
+deck-root .sheet {
+  --rik-surface-page: var(--p-sheet);
+  --deck-cell-bg: var(--p-wall);
+  --deck-tier-bg: var(--p-wall);
+  --deck-tier-border: var(--p-wall);
+}
+/* ── The night · the wolf's side of the story ── */
+deck-root .night {
+  --rik-surface-page: var(--p-shadow);
+  --rik-text-default: var(--p-balsa);
+  --rik-text-default--muted: var(--p-balsa);
+  --rik-text-default--faint: var(--p-wall-deep);
+  --deck-root-counter-color: var(--p-balsa);
+  --rik-accent__text: var(--p-straw);
+  --deck-step-num-color: var(--p-straw);
+  --deck-icon-color: var(--p-straw);
+  --deck-cell-bg: var(--p-shadow-soft);
+  --deck-annotate-legend-color: var(--p-balsa);
+  --deck-annotate-caption-color: var(--p-wall-deep);
+  --deck-check-yes: var(--p-straw);
+  --deck-check-no: var(--p-straw);
+  --deck-check-no-color: var(--p-wall-deep);
+  --deck-checklist-rule: var(--p-shadow-soft);
+  color: var(--p-balsa);
+}
+deck-root:has(> .night[active]),
+deck-root:has(> #refuge[active]) {
+  --deck-root-counter-color: var(--p-balsa);
+  --deck-root-nav-color: var(--p-balsa);
+}
+
+/* ── Crops of the one supplied photograph ──
+   Background crops render the same in every engine. */
+deck-root .crop {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 12rem;
+  background-image: url('./three-pigs.png');
+  background-repeat: no-repeat;
+  background-size: var(--crop-size, cover);
+  background-position: var(--crop-pos, center);
+}
+deck-root .crop-straw { --crop-size: 330% auto; --crop-pos: 74% 62%; }
+deck-root .crop-timber { --crop-size: 280% auto; --crop-pos: 52% 34%; }
+deck-root .crop-brick { --crop-size: 330% auto; --crop-pos: 30% 70%; }
+deck-root .crop-wolf { --crop-size: 220% auto; --crop-pos: 100% 50%; }
+/* The closing crop keeps the model AND the wolf's shadow, the opening image. */
+deck-root .crop-model { --crop-size: cover; --crop-pos: 72% 50%; }
+deck-root .bleed {
+  --deck-cell-padding-x: 0px;
+  --deck-cell-padding-y: 0px;
+}
+
+/* ── Cover · the model under raking light ── */
+deck-photo#refuge {
+  --deck-photo-overlay-color: linear-gradient(180deg, rgba(30, 20, 12, 0.55) 0%, rgba(30, 20, 12, 0) 45%);
+  --deck-photo-content-max-width: 30ch;
+  --deck-photo-padding-x: 6rem;
+  --deck-photo-padding-y: 4.4rem;
+}
+deck-photo#refuge > h1 {
+  max-width: none;
+  font-family: var(--rik-font-display);
+  font-size: 5.6rem;
+  font-weight: 700;
+  font-variation-settings: 'opsz' 144, 'SOFT' 80, 'WONK' 1;
+  letter-spacing: -0.02em;
+  line-height: 0.98;
+  color: var(--p-balsa);
+  text-shadow: none;
+}
+deck-photo#refuge > p {
+  /* Two lines, so the subline stays on the wall above the roof ridge. */
+  max-width: 44ch;
+  font-size: var(--rik-font-size-lead);
+  line-height: 1.35;
+  color: var(--p-balsa);
+  text-shadow: none;
+}
+
+/* ── Siblings · three points of view ── */
+#siblings deck-cell {
+  --deck-cell-gap: 0.6rem;
+}
+#siblings .material-name {
+  font-family: var(--rik-font-sans);
+  font-size: var(--rik-font-size-body);
+  font-weight: 700;
+  color: var(--p-brick-deep);
+}
+#siblings .blind {
+  margin-top: auto;
+  padding-top: var(--rik-space-3);
+  border-top: 2px solid var(--p-ink-soft);
+  font-style: italic;
+  font-family: var(--rik-font-display);
+  font-size: 1.45rem;
+}
+
+/* ── Weak points · the wolf's reading of the model ── */
+#threat deck-annotate {
+  --deck-figure-max-height: 34rem;
+}
+
+/* ── Brief · the two plans ── */
+#brief h2 {
+  font-size: 3rem;
+  margin: var(--rik-space-3) 0;
+}
+#brief [slot='left'] p,
+#brief [slot='right'] p {
+  font-size: var(--rik-font-size-lead);
+  line-height: 1.35;
+  max-width: 28ch;
+}
+
+/* ── Usable · four verbs ── */
+#usable deck-flow-step p {
+  font-size: var(--rik-font-size-body);
+}
+
+/* ── Materials · one crop, one claim ── */
+deck-root .material-slide [slot='left'] {
+  min-height: 34rem;
+}
+deck-root .material-slide h1 {
+  font-family: var(--rik-font-display);
+  font-size: 3rem;
+  font-weight: 650;
+  line-height: 1.04;
+  margin-bottom: var(--rik-space-4);
+}
+deck-root .material-slide .kind {
+  font-size: var(--rik-font-size-lead);
+  font-weight: 700;
+  color: var(--p-straw-text);
+  margin-bottom: var(--rik-space-3);
+}
+deck-root .material-slide deck-checklist {
+  margin-top: var(--rik-space-3);
+}
+deck-root .material-slide.night .kind {
+  color: var(--p-straw);
+}
+
+/* ── Boundary · roof and wall ── */
+#boundary deck-annotate {
+  --deck-figure-max-height: 36rem;
+}
+
+/* ── Priorities ── */
+#priorities deck-tier-list {
+  gap: var(--rik-space-3);
+}
+#priorities deck-tier {
+  font-size: var(--rik-font-size-lead);
+}
+#priorities deck-tier[hot] {
+  --deck-tier-desc-color: var(--p-balsa);
+}
+
+/* ── Roles · who looks after what ── */
+#roles table {
+  font-size: var(--rik-font-size-body);
+}
+#roles thead th {
+  font-family: var(--rik-font-display);
+  font-size: 1.6rem;
+  font-weight: 650;
+  color: var(--p-ink);
+  border-bottom: 3px solid var(--p-ink);
+}
+#roles tbody td {
+  border-bottom: 1px solid var(--p-ink-soft);
+  padding-block: var(--rik-space-3);
+}
+#roles td.open {
+  color: var(--p-brick-deep);
+  font-style: italic;
+}
+
+/* ── Approval · back to the model ── */
+#approval .promise {
+  font-family: var(--rik-font-display);
+  font-size: 3.4rem;
+  font-weight: 650;
+  font-variation-settings: 'opsz' 144, 'SOFT' 80, 'WONK' 1;
+  line-height: 1.05;
+  color: var(--p-straw);
+  margin-bottom: var(--rik-space-5);
+}
+#approval deck-step-list {
+  --deck-step-gap: 1.6rem;
+}
