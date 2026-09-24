@@ -9,6 +9,11 @@ for (const name of names) {
   await withDeck(source, async ({ page, settled, missing, errors }) => {
     if (!settled || missing.length || errors.length) throw new Error(name + ': deck did not load cleanly');
     await goToSlide(page, 1);
+    // A thumbnail shows the slide, not the deck's navigation chrome.
+    await page.evaluate(() => {
+      const deck = document.querySelector('deck-root');
+      for (const attribute of ['no-arrows', 'no-counter', 'no-hint']) deck?.setAttribute(attribute, '');
+    });
     await page.screenshot({ path: fileURLToPath(new URL(name + '.png', output)) });
     console.log('thumbnail · ' + name);
   }, { viewport: { width: 960, height: 540 } });

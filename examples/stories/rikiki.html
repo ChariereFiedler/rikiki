@@ -98,4 +98,12 @@ deck-root{--rik-font-size-h1:3.5rem;--rik-font-size-h2:2.8rem;--rik-font-size-bo
 <div slot="right" class="delivery"><p>Start a deck</p><deck-code lang="sh">npx rikiki init talk.html</deck-code><p>Bundle a standalone file</p><deck-code lang="sh">npx rikiki bundle talk.html</deck-code><p>Export a PDF</p><deck-code lang="sh">npx rikiki export talk.html</deck-code></div>
 <deck-notes>The setup guide covers Node versions and optional dependencies: Playwright for browser-driven commands, and the bundler for standalone output. PDF is a static output; keep the HTML when you want interactivity and presenter features. This completes the tour.</deck-notes>
 </deck-split>
-</deck-root></body></html>
+</deck-root>
+<script>
+  // Embedded in the landing, the host page draws the arrows and the counter.
+  if (window.self !== window.top) {
+    const deck = document.querySelector('deck-root');
+    deck.setAttribute('no-arrows', '');
+    deck.setAttribute('no-counter', '');
+  }
+</script></body></html>

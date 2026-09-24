@@ -14,7 +14,7 @@ const stages = [
   <div class="feedback-caption">Revise the source, then check again</div>
   <div id="loop-explanation" class="explanation" aria-live="polite"><strong>{stages[0].title}</strong><p>{stages[0].detail}</p></div>
   <div class="stage-data" hidden>{stages.map(stage=><p data-title={stage.title}>{stage.detail}</p>)}</div>
-  <a href="/rikiki/docs/llms/rikiki-workflow.md">Read the full authoring workflow ↗</a>
+  <a href="/rikiki/docs/llms/rikiki-workflow.md">Read the full authoring workflow</a>
 </section>
 <script>
 const root=document.querySelector<HTMLElement>('.agent-loop');
