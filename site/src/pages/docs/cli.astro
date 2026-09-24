@@ -28,7 +28,14 @@ const checkOutput = `! TEXT_TOO_SMALL · slide 4 (#pricing)
     at  deck-split#pricing > deck-md
     try raise the size, or move the detail into deck-notes
 
-index.html · 12 slide(s) · 0 error(s), 1 warning(s)`;
+index.html · 12 slide(s) · 0 error(s), 1 warning(s)
+Design quality · not-run · NOT VERIFIED`;
+
+const qualityCmd = `# capture every slide and reveal state, and write review/request.json
+npx rikiki check index.html --quality-out review
+
+# import the filled-in review; fail unless it passes
+npx rikiki check index.html --quality-review review.json --require-quality`;
 
 const renderCmd = `npx rikiki render index.html
 
@@ -200,6 +207,34 @@ const skillsCmd = `npx rikiki skills`;
   <code>notChecked</code> list naming what nobody looked at.
 </p>
 
+<h3 id="check-review">Review the design and the story</h3>
+<p>
+  Measurements do not approve a slide. The last line of the report says so: the
+  design stays <code>NOT VERIFIED</code> until someone has looked at every
+  screenshot. <code>--quality-out</code> captures each slide and each reveal
+  state, then writes a <code>request.json</code> with a review template: six
+  criteria per state (hierarchy, typography, readability, composition, visual
+  evidence, theme coherence), each needing a verdict and the visible evidence
+  behind it.
+</p>
+<CodeBlock label="terminal" lang="js" code={qualityCmd} />
+<p>
+  A review is tied to the deck it describes: edit the deck and the old review
+  is refused as stale. Every failed criterion becomes an error diagnostic
+  (<code>QUALITY_HIERARCHY</code>, <code>QUALITY_TYPOGRAPHY</code>, and so on)
+  and must carry a concrete correction.
+</p>
+<table class="opts">
+  <thead><tr><th>Flag</th><th>Effect</th></tr></thead>
+  <tbody>
+    <tr><td><code>--quality-out &lt;dir&gt;</code></td><td>capture every state and prepare the design review</td></tr>
+    <tr><td><code>--quality-review &lt;file&gt;</code></td><td>import a completed screenshot-based review</td></tr>
+    <tr><td><code>--require-quality</code></td><td>add a <code>QUALITY_REQUIRED</code> error until an imported review is complete</td></tr>
+    <tr><td><code>--narrative-out &lt;file&gt;</code></td><td>prepare the material for a review of the story, slide by slide</td></tr>
+    <tr><td><code>--narrative-review &lt;file&gt;</code></td><td>import that structured review</td></tr>
+  </tbody>
+</table>
+
 <h3 id="check-categories">What it looks at</h3>
 <table class="opts">
   <thead><tr><th>Category</th><th>Codes</th></tr></thead>
@@ -243,6 +278,7 @@ const skillsCmd = `npx rikiki skills`;
   <li>accessibility · no contrast, focus order or screen-reader check is run.</li>
   <li>revealed steps · only the opening state of each slide is measured.</li>
   <li>wording, facts and figures · nothing here reads the content.</li>
+  <li>design quality · judged only by a <a href="#check-review">screenshot review</a> you import.</li>
   <li>other viewports · the deck is measured at its own canvas size.</li>
   <li>text inside a diagram · an SVG scales by its viewBox, which is not measured.</li>
 </ul>

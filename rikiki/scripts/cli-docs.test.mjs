@@ -16,6 +16,7 @@ const REPO_ROOT = resolve(PKG_DIR, '..');
 
 const CLI_SOURCE = readFileSync(resolve(PKG_DIR, 'bin', 'rikiki.mjs'), 'utf8');
 const CHECK_SOURCE = readFileSync(resolve(PKG_DIR, 'bin', 'lib', 'check.mjs'), 'utf8');
+const QUALITY_SOURCE = readFileSync(resolve(PKG_DIR, 'bin', 'lib', 'quality.mjs'), 'utf8');
 
 const PAGES = ['cli.astro', 'getting-started.astro'].map((name) => {
   const abs = resolve(REPO_ROOT, 'site/src/pages/docs', name);
@@ -39,8 +40,18 @@ const FLAGS = new Set([
   ...[...CLI_SOURCE.matchAll(/cmd === '--([a-z-]+)'/g)].map((m) => m[1]),
 ]);
 
-/** Every diagnostic code the checker can emit. */
-const CODES = new Set([...CHECK_SOURCE.matchAll(/diagnostic\(\s*'([A-Z_]+)'/g)].map((m) => m[1]));
+/** The design review turns each failed criterion into `QUALITY_<CRITERION>`. */
+const QUALITY_CRITERIA = /QUALITY_CRITERIA = \[([^\]]+)\]/
+  .exec(QUALITY_SOURCE)[1]
+  .match(/'([a-z-]+)'/g)
+  .map((c) => `QUALITY_${c.slice(1, -1).replaceAll('-', '_').toUpperCase()}`);
+
+/** Every diagnostic code the checker can emit, the design review included. */
+const CODES = new Set([
+  ...[...CHECK_SOURCE.matchAll(/diagnostic\(\s*'([A-Z_]+)'/g)].map((m) => m[1]),
+  ...[...QUALITY_SOURCE.matchAll(/problem\(\s*'([A-Z_]+)'/g)].map((m) => m[1]),
+  ...QUALITY_CRITERIA,
+]);
 
 describe('what the site says about the CLI is what the CLI does', () => {
   it('found the CLI surface to compare against', () => {
@@ -72,7 +83,7 @@ describe('what the site says about the CLI is what the CLI does', () => {
     const quoted = [...CLI_PAGE.matchAll(/\b([A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+)\b/g)].map((m) => m[1]);
     expect(quoted.length).toBeGreaterThan(10);
     const unknown = [...new Set(quoted)].filter((c) => !CODES.has(c));
-    expect(unknown, `quotes codes check.mjs never emits: ${unknown.join(', ')}`).toEqual([]);
+    expect(unknown, `quotes codes the checker never emits: ${unknown.join(', ')}`).toEqual([]);
   });
 
   it('names the skills the CLI installs, and no others', () => {
