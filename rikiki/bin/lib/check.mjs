@@ -84,6 +84,10 @@ const LIMITS = {
   // Under this many words there is no paragraph to break badly: a two-word
   // label wrapping is the layout, not a typographic accident.
   orphanMinWords: 8,
+  // A component's own icon (a callout's chip, a checklist mark) is drawn at
+  // icon size · anything larger in its shadow tree is a diagram or a canvas,
+  // not a second icon competing with an emoji. Canvas pixels.
+  iconMaxPx: 96,
 };
 
 const diagnostic = (code, severity, message, extra = {}) => ({
@@ -456,6 +460,45 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, only = n
     };
     walk(slide);
 
+    // Two icons in one box: a component that already paints its own icon
+    // (deck-callout's chip, deck-check's mark) whose text then opens with an
+    // emoji. The pair reads as a stutter, and the theme only styles one of
+    // them. "Its own icon" is a small SVG in its shadow tree, measured in
+    // canvas pixels so the zoom-to-fit scale does not move the threshold.
+    const PICTOGRAPH = /^\p{Extended_Pictographic}/u;
+    const scale = slide.offsetWidth ? slide.getBoundingClientRect().width / slide.offsetWidth : 1;
+    const leadingText = (host) => {
+      const texts = document.createTreeWalker(host, NodeFilter.SHOW_TEXT, {
+        acceptNode: (n) => (n.parentElement?.closest('deck-notes, script, style')
+          ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT),
+      });
+      for (let n = texts.nextNode(); n; n = texts.nextNode()) {
+        const t = n.textContent.trim();
+        if (t) return t;
+      }
+      return '';
+    };
+    const doubledIcons = [];
+    for (const host of slide.querySelectorAll('*')) {
+      if (!host.shadowRoot || !host.tagName.toLowerCase().startsWith('deck-')) continue;
+      const text = leadingText(host);
+      if (!PICTOGRAPH.test(text)) continue;
+      const icon = Array.from(host.shadowRoot.querySelectorAll('svg')).find((svg) => {
+        const r = svg.getBoundingClientRect();
+        return r.width > 0 && r.height > 0
+          && r.width / scale <= limits.iconMaxPx && r.height / scale <= limits.iconMaxPx;
+      });
+      if (icon) {
+        doubledIcons.push({
+          path: pathOf(host),
+          tag: host.tagName.toLowerCase(),
+          emoji: Array.from(text)[0],
+          iconPx: Math.round(icon.getBoundingClientRect().width / scale),
+          text: text.slice(0, 40),
+        });
+      }
+    }
+
     // Nothing clips, yet the paint still runs outside its box or over a
     // sibling: most layouts do not set overflow hidden anywhere, so a box
     // that is simply too small for its content just paints past its own
@@ -471,6 +514,7 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, only = n
       escapesBox: worstEscape(boxes),
       overlapsSibling: worstOverlap(boxes),
       lastLineOrphan: worstOrphan(slide),
+      doubledIcons,
     };
   });
 
@@ -1039,6 +1083,17 @@ function diagnose(page, source, limits) {
           measurement: { lastLineRatio: Math.round(o.ratio * 100) / 100, lines: o.lines, floorRatio: limits.orphanLineRatio },
           excerpt: o.tail,
           suggestion: 'set `text-wrap: pretty`, shorten the wording, or bind the last words with a non-breaking space · on a wall this reads as a typographic accident',
+        }),
+      );
+    }
+    for (const d of slide.doubledIcons ?? []) {
+      found.push(
+        diagnostic('ICON_DOUBLED', SEVERITY.warning, `<${d.tag}> paints its own icon and its text opens with ${d.emoji} · two icons in one box`, {
+          ...where,
+          element: d.path,
+          measurement: { emoji: d.emoji, iconPx: d.iconPx, iconMaxPx: limits.iconMaxPx },
+          excerpt: d.text,
+          suggestion: 'drop the emoji: the component already carries an icon · pick the type whose icon says it, or move the emoji out of the box',
         }),
       );
     }

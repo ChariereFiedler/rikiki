@@ -812,6 +812,33 @@ const x = 1;</deck-code>
   });
 });
 
+test.describe('two icons in one box', () => {
+  test('reports a callout whose text opens with an emoji', () => {
+    deck('icon-doubled', `<deck-feature id="icon-doubled"><h1 slot="title">Lab</h1>
+        <deck-callout type="ok">🚩 Target: <code>flag{x}</code></deck-callout>
+      </deck-feature>`);
+    const r = reportFast('icon-doubled');
+    const found = r.json.diagnostics.find((d: any) => d.code === 'ICON_DOUBLED');
+    expect(found, r.stdout).toBeTruthy();
+    expect(found.severity).toBe('warning');
+    expect(found.slideId).toBe('icon-doubled');
+    expect(found.measurement.emoji).toBe('🚩');
+    expect(found.element).toContain('deck-callout');
+  });
+
+  test('leaves an emoji alone where no component icon competes with it', () => {
+    // A plain paragraph, an emoji later in a callout's sentence, and a
+    // deck-graph (whose shadow SVG is a canvas, not an icon) are all fine.
+    deck('icon-quiet', `<deck-feature id="icon-quiet"><h1 slot="title">🚩 Flags</h1>
+        <p>🚩 Each module ends with a flag.</p>
+        <deck-callout type="info">Capture all ten 🚩</deck-callout>
+        <deck-graph><deck-node id="a" at="30,50" label="🚩 start"></deck-node><deck-node id="b" at="70,50" label="end"></deck-node><deck-edge from="a" to="b"></deck-edge></deck-graph>
+      </deck-feature>`, ['deck-graph']);
+    const r = reportFast('icon-quiet');
+    expect(codes(r), r.stdout).not.toContain('ICON_DOUBLED');
+  });
+});
+
 test.describe('check --steps', () => {
   test('measures every revealed state, and reports a defect that only shows once stepped through', () => {
     // deck-graph's own `reveal` only dims and highlights nodes as the deck

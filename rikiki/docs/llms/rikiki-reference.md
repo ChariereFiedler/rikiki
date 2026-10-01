@@ -813,6 +813,7 @@ an `element` path that reaches into the Shadow DOM (`deck-feature#detail
 | `TALK_SHORTER_THAN_ANNOUNCED` | warning | the notes carry far less speech than the cover announces |
 | `TEXT_TOO_SMALL` | warning | below the readable floor once the canvas is scaled |
 | `TEXT_LAST_LINE_ORPHAN` | warning | a block of prose ends on a stub under a quarter of the width above it · measured on the painted lines, headings and short blocks excepted · worst one per slide |
+| `ICON_DOUBLED` | warning | a component that paints its own icon (a callout's chip, a checklist mark) holds text opening with an emoji · two icons in one box, drop the emoji |
 | `UNKNOWN_ATTRIBUTE` | warning | an attribute the element neither reads nor styles on · the value is dropped |
 | `DUPLICATE_SLIDE_ID` | warning | two slides answer to the same name |
 | `EXTERNAL_DEPENDENCY` | warning | the deck fetches from the network at runtime |
