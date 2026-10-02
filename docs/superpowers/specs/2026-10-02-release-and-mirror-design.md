@@ -42,12 +42,15 @@ project), moving issues or contributions to GitHub, changing the site deploy.
   way) and `.github/workflows/publish.yml` (second publisher). `ci.yml` stays:
   it replays the checks on every mirrored `main` and is the contributor-facing
   signal on GitHub. Its header comment is corrected.
-- **`mirror-check`** · a job at the end of every `main` pipeline. It reads
-  `refs/heads/main` on GitHub anonymously (`git ls-remote`, no secret) and
-  polls until it equals `$CI_COMMIT_SHA` or a newer descendant, for at most
-  ten minutes, then fails with both SHAs and the mirror's `last_error` when
-  the token allows reading it. A red `mirror-check` is the alarm; it never
-  blocks the deploy (it runs after it).
+- **`mirror-check`** · a job in every `main` pipeline, started at once
+  (`needs: []`) since the mirror pushes on the push, not after the pipeline.
+  It reads `refs/heads/main` on GitHub anonymously (`git ls-remote`, no
+  secret) and polls until it equals `$CI_COMMIT_SHA`, for at most ten
+  minutes. If GitLab's own `main` has moved past `$CI_COMMIT_SHA` meanwhile,
+  the newer pipeline owns the check and this one exits 0. Otherwise it fails
+  with both SHAs and the mirror's `last_error` when the token allows reading
+  it. A red `mirror-check` is the alarm; it never blocks the deploy
+  (`allow_failure: true`).
 
 ## 2 · The release flow
 
@@ -55,7 +58,7 @@ project), moving issues or contributions to GitHub, changing the site deploy.
 merge to main ──► main pipeline green ──► release:propose
                                              │ commits since last tag?
                                              ├─ none ─► exit 0 "nothing to release"
-                                             └─ some ─► branch release/next, MR "release: vX.Y.Z"
+                                             └─ some ─► branch release/next, MR "chore(release): vX.Y.Z"
 human merges the MR  (validation 1)
                   ──► main pipeline ──► release:tag ──► tag vX.Y.Z
 tag pipeline: every gate ──► publish-npm  (manual · validation 2)
@@ -87,8 +90,10 @@ push mirror ──► tag on GitHub (nothing publishes there)
 5. Otherwise rebuild `release/next` from `main`: `npm run bump <version>`; if
    `[Unreleased]` is empty, fill it from the commit subjects (`feat` → Added,
    `fix`/`perf` → Fixed, scope kept, ticket reference kept); commit
-   `release: vX.Y.Z` as the bot; force-push; create or update the MR (title
-   `release: vX.Y.Z`, description: the CHANGELOG section and the commit list).
+   `chore(release): vX.Y.Z` as the bot (`release` is not an allowed commit
+   type here, and `chore` never triggers a release of its own); force-push;
+   create or update the MR (same title, description: the CHANGELOG section
+   and the commit list).
 
 ### `release:tag` (main pipelines)
 
