@@ -120,12 +120,10 @@ measured, not assumed.
 - **Five dev-only advisories** need major bumps of vitest, vite and esbuild.
   They reach no consumer. A major toolchain bump is its own piece of work with
   its own regression surface, not a line in a release checklist.
-- **The history still holds** the absolute paths and the client name, in the
-  init commit among others. Purging means `git filter-repo`, which is worth
-  its blast radius only if the repository is actually made public · today's
-  decision (Lot 4) is that the OSS surface is the **npm package** and the repo
-  stays on `gitlab.com/tordu-jardin`. **If that decision changes, this becomes
-  a P0 and must happen before the repo is flipped.**
+- **The history was purged on 2026-10-02**, once the repository was public:
+  absolute paths, client references and the author addresses are gone from
+  every branch and tag, and the tags were recreated on the rewritten commits.
+  Every clone made before that date must be re-cloned.
 - **`dist/index.js` carries ~7.7 KB gzip of components a typical deck never
   uses** · 34 registered in the barrel against 5 to 14 written on a real
   deck. Removing any of them is a breaking change for existing decks. The
