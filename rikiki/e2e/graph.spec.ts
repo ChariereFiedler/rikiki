@@ -64,9 +64,14 @@ test('an edge connects the two nodes it names', async ({ page }) => {
   const geometry = await page.evaluate(() => {
     const graph = document.getElementById('gr')!;
     const box = graph.getBoundingClientRect();
+    // The SVG draws in the graph's own CSS pixels; the rects are screen pixels.
+    const scale = box.width / graph.offsetWidth;
     const centre = (id: string) => {
       const r = document.getElementById(id)!.getBoundingClientRect();
-      return { x: r.left + r.width / 2 - box.left, y: r.top + r.height / 2 - box.top };
+      return {
+        x: (r.left + r.width / 2 - box.left) / scale,
+        y: (r.top + r.height / 2 - box.top) / scale,
+      };
     };
     const line = graph.shadowRoot!.querySelector('line')!;
     return {
@@ -74,7 +79,7 @@ test('an edge connects the two nodes it names', async ({ page }) => {
       to: centre('n-edge'),
       target: (() => {
         const r = document.getElementById('n-edge')!.getBoundingClientRect();
-        return { left: r.left - box.left, right: r.right - box.left };
+        return { left: (r.left - box.left) / scale, right: (r.right - box.left) / scale };
       })(),
       line: {
         x1: Number(line.getAttribute('x1')),
@@ -156,6 +161,36 @@ test('an edge caption wider than the gap stays on top of the nodes', async ({ pa
   expect(probe.centredOnGap, 'the caption is centred on the visible gap at any scale').toBeLessThan(2);
 });
 
+// Regression (#26): the graph measured itself in screen pixels, after the
+// deck's fit-to-screen scale, and drew in a viewBox of that size · stretched
+// back to the canvas, every stroke and arrowhead thickened by 1/scale.
+test('an edge keeps its stroke width and canvas coordinates at any scale', async ({ page }) => {
+  await gotoSlideWith(page, 'gr');
+  const probe = await page.evaluate(() => {
+    const graph = document.getElementById('gr')!;
+    const svg = graph.shadowRoot!.querySelector('svg')!;
+    const edge = graph.shadowRoot!.querySelector<SVGElement>('.edge')!;
+    const userUnit = svg.clientWidth / svg.viewBox.baseVal.width;
+    const paths = [...graph.querySelectorAll('deck-edge')].map((e) => e.getAttribute('data-path'));
+    return {
+      scale: graph.getBoundingClientRect().width / graph.offsetWidth,
+      strokePx: Number.parseFloat(getComputedStyle(edge).strokeWidth) * userUnit,
+      authoredPx: Number.parseFloat(getComputedStyle(edge).strokeWidth),
+      maxX: Math.max(...paths.join(' ').split(' ').map((pair) => Number(pair.split(',')[0]))),
+      width: graph.offsetWidth,
+    };
+  });
+  // The test viewport is smaller than the canvas · the condition under test.
+  expect(probe.scale, 'the deck must actually be scaled').toBeLessThan(0.95);
+  expect(probe.strokePx, 'the stroke is the width the theme asks for').toBeCloseTo(
+    probe.authoredPx,
+    1,
+  );
+  // Canvas pixels: the edge into the far-right node lands past the scaled width.
+  expect(probe.maxX).toBeGreaterThan(probe.width * probe.scale);
+  expect(probe.maxX).toBeLessThanOrEqual(probe.width);
+});
+
 // `rikiki check` tests the line that was painted rather than re-deriving one of
 // its own, so the published path is a contract and not an internal detail.
 test('every edge publishes the polyline it paints as data-path', async ({ page }) => {
@@ -165,9 +200,8 @@ test('every edge publishes the polyline it paints as data-path', async ({ page }
     const edges = [...graph.querySelectorAll('deck-edge')];
     edges[0]!.setAttribute('route', 'ortho');
     await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-    const box = graph.getBoundingClientRect();
     return {
-      box: { width: box.width, height: box.height },
+      box: { width: graph.offsetWidth, height: graph.offsetHeight },
       paths: edges.map((e) => e.getAttribute('data-path')),
       painted: graph.shadowRoot!.querySelector('path.edge')!.getAttribute('d'),
     };
@@ -177,7 +211,8 @@ test('every edge publishes the polyline it paints as data-path', async ({ page }
   // The orthogonal route publishes its bends; a straight edge publishes two ends.
   expect(points(published.paths[0]!)).toHaveLength(4);
   for (const path of published.paths.slice(1)) expect(points(path!)).toHaveLength(2);
-  // Graph-relative CSS pixels · inside the drawing area, not viewport coordinates.
+  // Graph-relative CSS pixels, before the deck's scale · inside the drawing
+  // area, not viewport coordinates.
   for (const [x, y] of points(published.paths.join(' '))) {
     expect(x!).toBeGreaterThanOrEqual(0);
     expect(x!).toBeLessThanOrEqual(published.box.width);

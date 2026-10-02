@@ -735,9 +735,12 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, only = n
       // publishes nothing: fall back to the straight centre-to-centre segment,
       // which is right for `route="straight"` and only approximates an ortho
       // route.
+      // The path is in the graph's own CSS pixels; the node boxes are screen
+      // pixels, after the deck's fit-to-screen scale.
       const published = geometry.parseGraphPath(edge.getAttribute('data-path'));
+      const graphScale = graph.offsetWidth ? graphBox.width / graph.offsetWidth : 1;
       const points = published.length
-        ? published.map((p) => ({ x: p.x + graphBox.left, y: p.y + graphBox.top }))
+        ? published.map((p) => ({ x: p.x * graphScale + graphBox.left, y: p.y * graphScale + graphBox.top }))
         : [centreOf(from), centreOf(to)];
       for (const candidate of nodes) {
         if (candidate === from || candidate === to) continue;

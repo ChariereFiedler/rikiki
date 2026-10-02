@@ -205,21 +205,25 @@ export class DeckGraph extends LitElement {
     this._mo = undefined;
   }
 
+  /** Measure in the graph's own CSS pixels. getBoundingClientRect answers in
+   *  screen pixels, after the deck's fit-to-screen scale · drawn as is, the
+   *  viewBox shrank with the screen and every stroke thickened by 1/scale. */
   private _measure(): void {
     const r = this.getBoundingClientRect();
     if (!r.width || !r.height) return;
+    const screenPerCss = this.offsetWidth ? r.width / this.offsetWidth : 1;
     const boxes = new Map<string, PixelRect>();
     for (const node of this._nodes) {
       if (!node.id) continue;
       const nr = node.getBoundingClientRect();
       boxes.set(node.id, {
-        x: nr.left - r.left,
-        y: nr.top - r.top,
-        width: nr.width,
-        height: nr.height,
+        x: (nr.left - r.left) / screenPerCss,
+        y: (nr.top - r.top) / screenPerCss,
+        width: nr.width / screenPerCss,
+        height: nr.height / screenPerCss,
       });
     }
-    this._box = { w: r.width, h: r.height };
+    this._box = { w: r.width / screenPerCss, h: r.height / screenPerCss };
     this._nodeBoxes = boxes;
   }
 
@@ -424,12 +428,10 @@ export class DeckGraph extends LitElement {
         const midpoint =
           labelAnchor(paths.get(edge)) ??
           (geom ? { x: (geom.mx / 100) * w, y: (geom.my / 100) * h } : null);
-        // Percent of the measured box, not pixels · the boxes come from
-        // getBoundingClientRect, which includes the deck's fit-to-screen
-        // scale, while `left` is laid out in the graph's own unscaled space.
-        // In pixels the caption drifted towards the origin by the scale
-        // factor, onto the node on its left, on any screen that is not
-        // exactly the canvas size. The author's offset stays in CSS pixels.
+        // Percent of the measured box · it holds even if a measurement ever
+        // leaks screen pixels again, which once drifted every caption by the
+        // deck's scale factor onto the node on its left (#26). The author's
+        // offset stays in CSS pixels.
         return midpoint && edge.getAttribute('label') && w && h
           ? html`<span
               class="tag edge-label"

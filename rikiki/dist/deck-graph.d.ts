@@ -16,6 +16,9 @@ export declare class DeckGraph extends LitElement {
     private get _edges();
     firstUpdated(): void;
     disconnectedCallback(): void;
+    /** Measure in the graph's own CSS pixels. getBoundingClientRect answers in
+     *  screen pixels, after the deck's fit-to-screen scale · drawn as is, the
+     *  viewBox shrank with the screen and every stroke thickened by 1/scale. */
     private _measure;
     connectedCallback(): void;
     /** Give every node a position · either the one the author wrote, or the one

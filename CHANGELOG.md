@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- `deck-graph` measures in its own canvas pixels, so edge labels, strokes and arrowheads keep their place and weight on any screen that is not exactly the canvas size (#26).
+
 ## [0.7.2] - 2026-09-23
 
 ### Fixed
