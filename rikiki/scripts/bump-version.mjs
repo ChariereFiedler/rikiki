@@ -3,16 +3,16 @@
 //
 //   npm run bump <version> [--date=YYYY-MM-DD]
 //
-// Edits package.json + package-lock.json, opens a dated CHANGELOG section,
-// stubs a site changelog section, and restamps the demo deck + doc stamps.
-// It never writes the release prose itself — the bump-version skill does that.
+// Edits package.json + package-lock.json, opens a dated CHANGELOG section
+// (the site page renders CHANGELOG.md itself), and restamps the demo deck +
+// doc stamps. It never writes the release prose itself · CI fills an empty
+// Unreleased section from the commits, or a human writes it.
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import {
   CHANGELOG,
   EXACT,
   PACKAGE_JSON,
-  SITE_CHANGELOG,
   compareSemver,
   parseSemver,
   readCurrentVersion,
@@ -36,7 +36,6 @@ if (compareSemver(next, current) <= 0) {
 }
 
 const today = dateArg ?? new Date().toISOString().slice(0, 10);
-const slug = `v${next.replace(/\./g, '')}`;
 
 const edit = (file, fn) => {
   const before = readFileSync(file, 'utf8');
@@ -68,13 +67,5 @@ edit(CHANGELOG, (t) =>
   t.replace(/^## \[Unreleased\]\s*$/m, `## [Unreleased]\n\n## [${next}] - ${today}`),
 );
 
-// 4. site changelog — insert a stub section above the latest one.
-edit(SITE_CHANGELOG, (t) => {
-  const stub =
-    `<h2 id="${slug}">${next} · ${today}</h2>\n\n` +
-    `<h3>Added</h3>\n<ul>\n  <li>TODO: write release notes</li>\n</ul>\n\n`;
-  return t.replace(/(<h2\b)/, `${stub}$1`);
-});
-
 console.log(`bumped ${current} → ${next} (${today})`);
-console.log('next: fill the CHANGELOG + site release notes, then run `npm test`.');
+console.log('next: fill the CHANGELOG release notes, then run `npm test`.');
