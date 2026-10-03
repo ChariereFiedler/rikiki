@@ -87,10 +87,14 @@ If you write one by hand instead:
    page — both are checked by tests.
 6. Rebuild: `npm run build`. The `dist/` change ships with the MR.
 
-## Pull requests
+## Merge requests
 
-- One self-contained change per PR.
-- Include a short rationale in the PR body · what changed, why, what was rejected.
+Open them on [GitLab](https://gitlab.com/tordu-jardin/rikiki), from a fork.
+The GitHub repository is a read-only mirror: a pull request there cannot be
+merged, since the next mirror push would overwrite it.
+
+- One self-contained change per MR.
+- Include a short rationale in the MR body · what changed, why, what was rejected.
 - If the change is visual, attach a before/after screenshot.
 - The build must succeed (`npm run build`) and tests must pass.
 

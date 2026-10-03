@@ -5,6 +5,12 @@ description: Use when cutting a new rikiki release — bumping the version acros
 
 # Bumping a rikiki release
 
+**CI proposes releases on its own** (`release:propose`, see `docs/RUNBOOK.md` →
+Release): it runs this same bump on a `release/next` branch and opens the MR
+`chore(release): vX.Y.Z`. Use this skill to improve that MR's notes and docs
+(push to its branch · CI then leaves it alone), or to cut a release by hand
+when CI is down.
+
 A release version lives in many scattered places. The CLI `npm run bump` handles
 the deterministic edits; you handle the prose; the Vitest suite proves nothing
 drifted. Work from `rikiki/` (the npm package dir).
@@ -19,7 +25,8 @@ listed in `scripts/version-surfaces.mjs` — the same manifest the tests read:
   in `llms.txt`, `docs/llms/rikiki-reference.md`, `README.md`.
 - **`historical`** — prose like "on by default since 0.3.0". Never bump these;
   the tests only forbid mentioning a version *newer* than the current release.
-- `CHANGELOG.md` (repo root) and `site/src/pages/docs/changelog.astro`.
+- `CHANGELOG.md` (repo root). The site page `changelog.astro` renders it, so it
+  needs no edit.
 
 ## Checklist
 
@@ -29,11 +36,10 @@ Create a todo per step and do them in order.
    feature → minor, fix → patch). Confirm with the user.
 2. **Run the CLI:** `npm run bump <version>` (add `--date=YYYY-MM-DD` only to
    override today). It rewrites the exact surfaces, opens a dated `CHANGELOG.md`
-   section, reopens an empty `[Unreleased]`, and stubs a site changelog section.
+   section and reopens an empty `[Unreleased]`.
 3. **Write the release notes.** Read `git log $(git describe --tags --abbrev=0)..HEAD`
-   (note: tags can lag — cross-check against the previous `CHANGELOG.md` entry).
-   Fill the new `CHANGELOG.md` section (Added / Changed / Fixed) and mirror it
-   into the `<ul>` stub the CLI left in `changelog.astro`, replacing the TODO.
+   and fill the new `CHANGELOG.md` section (Added / Changed / Fixed). The site
+   changelog page renders this file, nothing to mirror.
 4. **Evolve the docs for the new features.** A release is not just a version
    bump — bring the user-facing docs up to date with what shipped: the package
    `README.md` and the **root `README.md`** (TL;DR, component lists, navigation),
@@ -49,8 +55,9 @@ the working conversation is in French. Do not let French slip into these files.
 6. **Verify:** `npm test`. It must be green. Fix any red surface and re-run.
    Then `npm run typecheck` if any TypeScript changed.
 7. **Commit.** Stage the bump + notes. Ask the user before committing (global
-   pref). Suggested message: `release(rikiki): X.Y.Z`. Consider tagging
-   `vX.Y.Z` — note v0.3.1 shipped untagged, so tags currently lag reality.
+   pref). Message: `chore(release): vX.Y.Z` (`release` is not an allowed commit
+   type). Do not tag by hand · merging to `main` runs `release:tag`, and
+   publishing is the manual `publish-npm` job on the tag pipeline.
 
 ## Per-release reminders
 

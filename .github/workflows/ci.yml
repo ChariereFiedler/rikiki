@@ -1,12 +1,10 @@
-# The verification a contributor sees.
+# The verification a contributor sees on GitHub.
 #
-# Mirrors the `check` stage of .gitlab-ci.yml, which needs no secret and no
-# self-hosted runner · it already ran on public images. Everything that needs
-# a credential (the container registry, the Portainer redeploy) stays on
-# GitLab, where the deployment lives; nothing here can be blocked by a
-# credential a fork does not have.
-#
-# The one job that is NOT a copy is publish · see publish.yml.
+# GitHub is a mirror: GitLab (tordu-jardin/rikiki) is where merges, issues and
+# releases happen, and its push mirror sends main and the tags here. This
+# workflow replays the `check` stage of .gitlab-ci.yml on what arrives, as a
+# second signal; it needs no secret and no self-hosted runner. Nothing on
+# GitHub publishes · npm publishing is a manual job on GitLab's tag pipeline.
 
 name: CI
 

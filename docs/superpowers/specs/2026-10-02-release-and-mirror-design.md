@@ -25,8 +25,13 @@
    the content (a merge request), once on the publication (a manual job).
 3. Exactly one place publishes to npm.
 
-Out of scope: npm provenance (needs GitLab-hosted runners, disabled on this
-project), moving issues or contributions to GitHub, changing the site deploy.
+Out of scope: moving issues or contributions to GitHub, changing the site
+deploy.
+
+**Revised 2026-10-03** during implementation, see §2 Credentials: no bot
+identity (project access tokens need Premium; the owner declined a technical
+account), and npm trusted publishing instead of an npm token, which brings
+provenance back in scope.
 
 ## 1 · GitLab pushes, GitHub mirrors
 
@@ -84,9 +89,9 @@ push mirror ──► tag on GitHub (nothing publishes there)
    computation; it must be greater than the tag.
 3. If there is nothing to release, exit 0 and say so.
 4. If an open MR from `release/next` exists and its head commit was **not**
-   authored by the release bot, a human edited it: leave it untouched, post a
-   note "main moved ahead of this release MR (N commits)" once per new `main`
-   SHA, and exit 0.
+   authored by the release bot, a human edited it: leave it untouched, say in
+   the job log that `main` moved ahead of it (N commits), and exit 0. (A note
+   on the MR was the first design; fine-grained tokens cannot write MR notes.)
 5. Otherwise rebuild `release/next` from `main`: `npm run bump <version>`; if
    `[Unreleased]` is empty, fill it from the commit subjects (`feat` → Added,
    `fix`/`perf` → Fixed, scope kept, ticket reference kept); commit
@@ -112,14 +117,22 @@ Runs when `package.json`'s version has no tag. Creates `vX.Y.Z` on
 
 ### Credentials and protections
 
-- **`RELEASE_TOKEN`**: a project access token on `tordu-jardin/rikiki`, role
-  Maintainer, scopes `api` + `write_repository`, one-year expiry, stored as a
-  masked, protected CI variable. Created through the API with the owner's
-  personal token, which itself never enters CI. Release commits and MRs
-  appear under the token's bot user.
-- **Protected tags `v*`**: creation allowed to Maintainers, which includes
-  the bot. Tag pipelines then see protected variables (`NPM_TOKEN`).
-- `NPM_TOKEN` stays where it is today (group-level variable).
+- **`RELEASE_TOKEN`**: a personal access token of the owner, dedicated to
+  this use (`api` + `write_repository`, one-year expiry), distinct from any
+  token used on a workstation, stored as a masked, protected CI variable:
+  only `main` and `v*` pipelines read it. Project access tokens would scope it
+  to this project, but they need Premium on gitlab.com. MRs appear opened by
+  the owner; CI commits under the fixed git author `rikiki release (CI)`
+  (`RELEASE_AUTHOR`), which is what "authored by the release bot" means in
+  `release:propose` step 4.
+- **npm trusted publishing**, no npm token: `rikiki-deck` on npmjs.com trusts
+  the project `tordu-jardin/rikiki`, the CI file `.gitlab-ci.yml` and the
+  environment `npm`. `publish-npm` carries `id_tokens: NPM_ID_TOKEN` (aud
+  `npm:registry.npmjs.org`) and npm signs provenance. npm accepts the OIDC
+  proof from GitLab.com shared runners only: they are enabled on the project,
+  `publish-npm` alone is tagged `saas-linux-small-amd64`, and
+  `default: tags: [self-hosted]` keeps every other job where it runs today.
+- **Protected tags `v*`**: creation allowed to Maintainers.
 
 ## 3 · Code layout
 

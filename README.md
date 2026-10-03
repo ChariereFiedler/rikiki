@@ -245,8 +245,12 @@ Sources are organised by **family** · what a component serves, not how big it
 is: `engine/`, `layout/`, `structure/`, `text/`, `data/`, `media/`, plus
 `core/` for the navigation domain. One axis, held by tests.
 
+Merge requests and issues live on
+[GitLab](https://gitlab.com/tordu-jardin/rikiki); the GitHub repository is a
+read-only mirror of it.
+
 ```bash
-git clone https://github.com/ChariereFiedler/rikiki.git
+git clone https://gitlab.com/tordu-jardin/rikiki.git
 cd rikiki/rikiki && npm ci
 npm test                                   # the consistency suite
 npm run new:component -- text deck-thing   # scaffolds a conforming component
