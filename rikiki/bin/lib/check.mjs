@@ -88,6 +88,10 @@ const LIMITS = {
   // icon size · anything larger in its shadow tree is a diagram or a canvas,
   // not a second icon competing with an emoji. Canvas pixels.
   iconMaxPx: 96,
+  // A box that scrolls by less than one of its own lines was never meant to
+  // scroll · the slide is a hair too full and the room sees a scrollbar for a
+  // sliver. A line or more may be a deliberate scroll, and is left alone.
+  scrollSliverLines: 1,
 };
 
 const diagnostic = (code, severity, message, extra = {}) => ({
@@ -167,6 +171,27 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, only = n
     };
     found.push(slide);
     if (slide.shadowRoot) collect(slide.shadowRoot);
+    collect(slide);
+    return found;
+  };
+
+  /** Boxes that scroll (overflow auto/scroll) and do overflow, shadow trees
+   *  included · the scrolling twin of `clippersIn`. Layout pixels, so the
+   *  zoom-to-fit scale moves neither the overflow nor the line it is compared
+   *  against. */
+  const scrollersIn = (slide) => {
+    const found = [];
+    const collect = (node) => {
+      for (const el of node.querySelectorAll('*')) {
+        if (el.shadowRoot) collect(el.shadowRoot);
+        const style = getComputedStyle(el);
+        const y = /auto|scroll/.test(style.overflowY) ? el.scrollHeight - el.clientHeight : 0;
+        const x = /auto|scroll/.test(style.overflowX) ? el.scrollWidth - el.clientWidth : 0;
+        if (y <= 1 && x <= 1) continue;
+        const line = Number.parseFloat(style.lineHeight) || Number.parseFloat(style.fontSize) * 1.2;
+        found.push({ el, y: Math.max(0, y), x: Math.max(0, x), line });
+      }
+    };
     collect(slide);
     return found;
   };
@@ -415,6 +440,17 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, only = n
       }
     }
 
+    // A scrollbar for a sliver: nothing is cut, so the clip pass is silent,
+    // but the slide shows a scrollbar and a last line sliced in half.
+    const scrollSlivers = [];
+    for (const s of scrollersIn(slide)) {
+      const axis = s.y > 1 ? 'y' : 'x';
+      const px = axis === 'y' ? s.y : s.x;
+      if (!(s.line > 0) || px >= s.line * limits.scrollSliverLines) continue;
+      const host = s.el.getRootNode()?.host ?? s.el;
+      scrollSlivers.push({ path: pathOf(host), tag: host.tagName.toLowerCase(), axis, px: Math.round(px), line: Math.round(s.line) });
+    }
+
     const written = Array.from(slide.children)
       .filter((el) => el.tagName.toLowerCase() !== 'deck-notes')
       .map((el) => el.getBoundingClientRect())
@@ -515,6 +551,7 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, only = n
       overlapsSibling: worstOverlap(boxes),
       lastLineOrphan: worstOrphan(slide),
       doubledIcons,
+      scrollSlivers,
     };
   });
 
@@ -1040,6 +1077,16 @@ function diagnose(page, source, limits) {
         }),
       );
     }
+    for (const sl of slide.scrollSlivers ?? []) {
+      found.push(
+        diagnostic('SCROLL_SLIVER', SEVERITY.warning, `<${sl.tag}> scrolls ${sl.axis === 'y' ? 'vertically' : 'horizontally'} by ${sl.px}px · ${Math.round((sl.px / sl.line) * 100)}% of a line, a scrollbar for a sliver`, {
+          ...where,
+          element: sl.path,
+          measurement: { axis: sl.axis, overflowPx: sl.px, linePx: sl.line },
+          suggestion: 'the slide is a hair too full · cut or merge one line, shorten what sits above the box, or shrink the type',
+        }),
+      );
+    }
     // Density is what you say about a slide that still fits. Once it is
     // clipped, saying "nothing is cut yet" underneath contradicts the line
     // above it.
@@ -1152,6 +1199,7 @@ const MEASURED_IN_MESSAGE = new Set([
   'SLIDE_TOP_HEAVY',
   'TEXT_TOO_SMALL',
   'TEXT_LAST_LINE_ORPHAN',
+  'SCROLL_SLIVER',
   'GRAPH_NODE_OUT_OF_BOUNDS',
   'GRAPH_NODE_OVERLAPS_NODE',
   'GRAPH_NODE_COVERS_LABEL',

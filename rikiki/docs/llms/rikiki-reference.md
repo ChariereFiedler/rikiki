@@ -808,6 +808,7 @@ an `element` path that reaches into the Shadow DOM (`deck-feature#detail
 | `CONTENT_CLIPPED` | error | the slide clips rather than scrolls · that content is lost |
 | `CONTENT_ESCAPES_BOX` | error | a painted box runs past its nearest painted ancestor by more than 4px, and nothing clips · the box is too small for what is inside it |
 | `CONTENT_OVERLAPS_SIBLING` | error | two unrelated painted boxes intersect by more than 8px on both axes · one paints over the other |
+| `SCROLL_SLIVER` | warning | a box scrolls (a `deck-code` shrunk by a full slide) by less than one of its own lines · nothing is cut, yet the room sees a scrollbar and a sliced last line · cut or merge a line |
 | `SLIDE_DENSE` | warning | nothing is cut yet, but there is no room left |
 | `SLIDE_TOP_HEAVY` | warning | measured on the pixels · the ink sits in the top with a dead band under it |
 | `TALK_SHORTER_THAN_ANNOUNCED` | warning | the notes carry far less speech than the cover announces |

@@ -839,6 +839,31 @@ test.describe('two icons in one box', () => {
   });
 });
 
+test.describe('a scrollbar for a sliver', () => {
+  // The box height is pinned so the overflow does not depend on font metrics:
+  // what is under test is the comparison with the box's own line height.
+  test('reports a box that scrolls by less than one line', () => {
+    deck('sliver', `<deck-feature id="sliver"><h1 slot="title">Code</h1>
+        <div style="overflow:auto; height:100px; line-height:40px; font-size:20px">a<br>b<br>c</div>
+      </deck-feature>`);
+    const r = reportFast('sliver');
+    const found = r.json.diagnostics.find((d: any) => d.code === 'SCROLL_SLIVER');
+    expect(found, r.stdout).toBeTruthy();
+    expect(found.severity).toBe('warning');
+    expect(found.slideId).toBe('sliver');
+    expect(found.measurement.overflowPx).toBe(20);
+    expect(found.measurement.linePx).toBe(40);
+  });
+
+  test('leaves a deliberate scroll of a line or more alone', () => {
+    deck('sliver-quiet', `<deck-feature id="sliver-quiet"><h1 slot="title">Code</h1>
+        <div style="overflow:auto; height:80px; line-height:40px; font-size:20px">a<br>b<br>c<br>d</div>
+      </deck-feature>`);
+    const r = reportFast('sliver-quiet');
+    expect(codes(r), r.stdout).not.toContain('SCROLL_SLIVER');
+  });
+});
+
 test.describe('check --steps', () => {
   test('measures every revealed state, and reports a defect that only shows once stepped through', () => {
     // deck-graph's own `reveal` only dims and highlights nodes as the deck
