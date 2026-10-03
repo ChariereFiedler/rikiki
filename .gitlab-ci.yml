@@ -118,6 +118,10 @@ lockfile-sync:
 e2e:
   stage: check
   image: mcr.microsoft.com/playwright:v1.60.0-noble
+  # The group's runner meant for browser suites, not the small shared VPS ·
+  # there one Firefox process opening ~179 contexts died late in the run, a
+  # different test every time and never on an assertion (#25).
+  tags: [e2e]
   cache:
     key: rikiki-node-modules-${CI_COMMIT_REF_SLUG}
     paths:
