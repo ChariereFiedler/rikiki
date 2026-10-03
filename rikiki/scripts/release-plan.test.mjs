@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  RELEASE_AUTHOR,
   RELEASE_SUBJECT,
   bumpFor,
   decide,
@@ -102,6 +103,21 @@ describe('decide', () => {
       version: '0.8.0',
     });
   });
+});
+
+it('signs release commits with a name no human commits under', () => {
+  // The token is a person's, so the GitLab account cannot tell CI from its
+  // owner · the git author name is what separates them.
+  expect(RELEASE_AUTHOR.name).toBe('rikiki release (CI)');
+  expect(
+    decide({
+      tagVersion: '0.7.2',
+      manifestVersion: '0.7.2',
+      commits: [c('feat: a')],
+      openMr: { iid: 3, headAuthorName: 'Cédric Chariere Fiedler' },
+      botName: RELEASE_AUTHOR.name,
+    }),
+  ).toEqual({ action: 'leave-mr', mrIid: 3 });
 });
 
 it('names the release commit with an allowed type', () => {

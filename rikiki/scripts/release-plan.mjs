@@ -15,6 +15,15 @@ const BUMP_OF_TYPE = { feat: 'minor', fix: 'patch', perf: 'patch' };
 // release of its own, so the release commit cannot propose itself again.
 export const RELEASE_SUBJECT = (version) => `chore(release): v${version}`;
 
+// The git author of every commit CI writes. RELEASE_TOKEN is the owner's own
+// token, so the GitLab account cannot tell CI from its owner · this name,
+// which no human commits under, is what tells a release MR CI may rebuild
+// from one a human has edited.
+export const RELEASE_AUTHOR = {
+  name: 'rikiki release (CI)',
+  email: 'rikiki-release-ci@noreply.gitlab.com',
+};
+
 export function parseSubject(subject, body = '') {
   const match = CONVENTIONAL.exec(subject.trim());
   if (!match) return null;

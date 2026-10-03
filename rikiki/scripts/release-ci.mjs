@@ -9,7 +9,13 @@
 
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
-import { RELEASE_SUBJECT, decide, fillUnreleased, releaseNotes } from './release-plan.mjs';
+import {
+  RELEASE_AUTHOR,
+  RELEASE_SUBJECT,
+  decide,
+  fillUnreleased,
+  releaseNotes,
+} from './release-plan.mjs';
 
 const RELEASE_BRANCH = 'release/next';
 const MIRROR_POLL_MS = 30_000;
@@ -48,15 +54,6 @@ async function gitlab(method, path, body) {
   return response.status === 204 ? null : response.json();
 }
 
-async function bot() {
-  const response = await fetch(`${env.CI_API_V4_URL}/user`, {
-    headers: { 'PRIVATE-TOKEN': env.RELEASE_TOKEN },
-  });
-  if (!response.ok) throw new Error(`GET /user · HTTP ${response.status}`);
-  const user = await response.json();
-  return { name: user.name, email: `${user.username}@noreply.${env.CI_SERVER_HOST}` };
-}
-
 async function openReleaseMr() {
   const branch = encodeURIComponent(RELEASE_BRANCH);
   const [mr] = await gitlab('GET', `/merge_requests?state=opened&source_branch=${branch}`);
@@ -65,16 +62,7 @@ async function openReleaseMr() {
   return { iid: mr.iid, headAuthorName: head.author_name };
 }
 
-/** One note per main SHA · a pipeline re-run must not repeat it. */
-async function noteOnce(mrIid, mainSha, behind) {
-  const notes = await gitlab('GET', `/merge_requests/${mrIid}/notes?per_page=100`);
-  if (notes.some((note) => note.body.includes(mainSha))) return;
-  await gitlab('POST', `/merge_requests/${mrIid}/notes`, {
-    body: `main moved ahead of this release MR (${behind} commits, now at ${mainSha}). It was edited by hand, so CI leaves it as is: rebase it, or close it and let the next pipeline propose again.`,
-  });
-}
-
-function rebuildReleaseBranch(version, commits, identity) {
+function rebuildReleaseBranch(version, commits) {
   git('checkout', '-B', RELEASE_BRANCH);
   execFileSync('npm', ['run', '--silent', 'bump', '--', version], {
     cwd: 'rikiki',
@@ -83,9 +71,9 @@ function rebuildReleaseBranch(version, commits, identity) {
   writeFileSync('CHANGELOG.md', fillUnreleased(readFileSync('CHANGELOG.md', 'utf8'), commits));
   git(
     '-c',
-    `user.name=${identity.name}`,
+    `user.name=${RELEASE_AUTHOR.name}`,
     '-c',
-    `user.email=${identity.email}`,
+    `user.email=${RELEASE_AUTHOR.email}`,
     'commit',
     '--quiet',
     '-am',
@@ -124,28 +112,28 @@ async function propose() {
   const tag = lastTag();
   const commits = commitsSince(tag);
   const openMr = dryRun ? null : await openReleaseMr();
-  const identity = dryRun ? { name: 'release-bot' } : await bot();
   const decision = decide({
     tagVersion: tag.slice(1),
     manifestVersion: manifestVersion(),
     commits,
     override: env.RELEASE_VERSION || undefined,
     openMr,
-    botName: identity.name,
+    botName: RELEASE_AUTHOR.name,
   });
   if (decision.action === 'tag-pending') {
     return say(`v${manifestVersion()} is merged and waits for release:tag`);
   }
   if (decision.action === 'nothing') return say(`nothing to release · ${decision.reason}`);
+  // Said in the job log only · a fine-grained token cannot write MR notes.
   if (decision.action === 'leave-mr') {
-    say(`!${decision.mrIid} was edited by hand · left as is`);
-    if (!dryRun) await noteOnce(decision.mrIid, env.CI_COMMIT_SHA, commits.length);
-    return;
+    return say(
+      `!${decision.mrIid} was edited by hand · left as is, main is ${commits.length} commits past ${tag}: rebase it, or close it and the next pipeline proposes again`,
+    );
   }
   if (dryRun) {
     return say(`would propose v${decision.version} from ${commits.length} commits since ${tag}`);
   }
-  rebuildReleaseBranch(decision.version, commits, identity);
+  rebuildReleaseBranch(decision.version, commits);
   const mr = await upsertReleaseMr(decision.version, tag, commits, openMr);
   say(`proposed v${decision.version} · ${mr.web_url}`);
 }
