@@ -117,11 +117,12 @@ Runs when `package.json`'s version has no tag. Creates `vX.Y.Z` on
 
 ### Credentials and protections
 
-- **`RELEASE_TOKEN`**: a personal access token of the owner, dedicated to
-  this use (`api` + `write_repository`, one-year expiry), distinct from any
-  token used on a workstation, stored as a masked, protected CI variable:
-  only `main` and `v*` pipelines read it. Project access tokens would scope it
-  to this project, but they need Premium on gitlab.com. MRs appear opened by
+- **`RELEASE_TOKEN`**: a fine-grained personal access token of the owner,
+  limited to this project and to the resources the jobs call (permission
+  table in `docs/RUNBOOK.md`), one-year expiry, stored as a masked, protected
+  CI variable scoped to the environment `release` · only the release jobs
+  receive it, and `release:propose` runs no `npm ci`. Project access tokens
+  need Premium on gitlab.com. MRs appear opened by
   the owner; CI commits under the fixed git author `rikiki release (CI)`
   (`RELEASE_AUTHOR`), which is what "authored by the release bot" means in
   `release:propose` step 4.

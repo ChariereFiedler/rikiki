@@ -25,7 +25,18 @@ To force a version, run a pipeline on `main` by hand (Build → Pipelines → Ru
 
 Credentials:
 
-- `RELEASE_TOKEN` · a personal access token of the owner, dedicated to this use (`rikiki-release`, `api` + `write_repository`, one-year expiry), masked and protected · protected variables reach only `main` and `v*` tag pipelines, never a fork's MR. CI commits under the git author `rikiki release (CI)`, which is how it tells its own release MR from one a human has edited.
+- `RELEASE_TOKEN` · a **fine-grained** personal access token of the owner (`rikiki-release`, one-year expiry, limited to `tordu-jardin/rikiki`). Its permissions, which is what to recreate when it expires:
+
+  | Category | Resource | Actions |
+  |---|---|---|
+  | Repository | Merge Request | Read, Create, Update |
+  | Repository | Commit | Read |
+  | Repository | Repository Tag | Create |
+  | Project Features | Release | Create |
+  | Project Features | Remote Mirror | Read |
+  | Git operations | Code | Download, Push |
+
+  The variable is masked, protected and **scoped to the environment `release`**: only the `.release-job` jobs (`release:propose`, `release:tag`, `release:gitlab`, `mirror-check`) receive it, not lint, e2e or anything that runs dependencies' install scripts. CI commits under the git author `rikiki release (CI)`, which is how it tells its own release MR from one a human has edited. Fine-grained tokens cannot write MR notes, so an edited release MR is reported in the `release:propose` log only.
 - **No npm token.** npm trusted publishing: on npmjs.com, `rikiki-deck` trusts the GitLab project `tordu-jardin/rikiki`, the CI file `.gitlab-ci.yml` and the environment `npm`. `publish-npm` proves its identity with an OIDC token (`NPM_ID_TOKEN`) and npm signs provenance. npm accepts that proof only from GitLab.com shared runners: they are enabled on the project, `publish-npm` is the only job tagged for them (`saas-linux-small-amd64`), and `default: tags: [self-hosted]` keeps every other job on the self-hosted runner.
 - `v*` tags are protected.
 
@@ -35,7 +46,7 @@ GitLab is the source of truth; a push mirror (Settings → Repository → Mirror
 
 The mirror pushes, it does not delete: a tag removed on GitLab stays on GitHub until it is removed there by hand (`git push github --delete <tag>`). Release tags are never removed, so this only matters for a mistake.
 
-A red `mirror-check` means GitHub is behind: read the mirror's last error in the mirroring settings. The usual causes are a revoked deploy key and a host key GitLab no longer trusts (edit the mirror, **Detect host keys**).
+A red `mirror-check` means GitHub is behind: read the mirror's last error in the mirroring settings. The usual causes are a revoked deploy key and a host key GitLab no longer trusts. A push mirror cannot be edited, in the UI or through the API (which ignores `ssh_known_hosts`): delete it, **Add new** with the same URL, **Detect host keys**, SSH public key, **Mirror only protected branches**, then replace the deploy key on GitHub with the new mirror's key (Copy SSH public key).
 
 ## Rollback
 
