@@ -24,6 +24,13 @@ export const RELEASE_AUTHOR = {
   email: 'rikiki-release-ci@noreply.gitlab.com',
 };
 
+/** The release MR among the open MRs from `release/next` · the project is
+ *  public, and a fork's branch may carry the same name. */
+export function pickReleaseMr(mrs, projectId) {
+  const id = Number(projectId);
+  return mrs.find((mr) => mr.source_project_id === id && mr.target_project_id === id) ?? null;
+}
+
 export function parseSubject(subject, body = '') {
   const match = CONVENTIONAL.exec(subject.trim());
   if (!match) return null;

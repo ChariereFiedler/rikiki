@@ -8,16 +8,16 @@
 // and the HTTP status, never the token.
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
+import { RELEASE_BRANCH, pushReleaseBranch, writeReleaseFiles } from './release-branch.mjs';
 import {
   RELEASE_AUTHOR,
   RELEASE_SUBJECT,
   decide,
-  fillUnreleased,
+  pickReleaseMr,
   releaseNotes,
 } from './release-plan.mjs';
 
-const RELEASE_BRANCH = 'release/next';
 const MIRROR_POLL_MS = 30_000;
 const MIRROR_DEADLINE_MS = 10 * 60_000;
 const DEFAULT_MIRROR_URL = 'https://github.com/ChariereFiedler/rikiki.git';
@@ -56,19 +56,23 @@ async function gitlab(method, path, body) {
 
 async function openReleaseMr() {
   const branch = encodeURIComponent(RELEASE_BRANCH);
-  const [mr] = await gitlab('GET', `/merge_requests?state=opened&source_branch=${branch}`);
+  const mrs = await gitlab('GET', `/merge_requests?state=opened&source_branch=${branch}`);
+  const mr = pickReleaseMr(mrs, env.CI_PROJECT_ID);
   if (!mr) return null;
   const head = await gitlab('GET', `/repository/commits/${mr.sha}`);
-  return { iid: mr.iid, headAuthorName: head.author_name };
+  return { iid: mr.iid, sha: mr.sha, headAuthorName: head.author_name };
 }
 
-function rebuildReleaseBranch(version, commits) {
+/** The commit the push may replace · the MR head that was read, or whatever
+ *  sits on the branch without an MR, or '' when the branch does not exist. */
+function leasedSha(openMr) {
+  if (openMr) return openMr.sha;
+  return git('ls-remote', 'origin', `refs/heads/${RELEASE_BRANCH}`).split(/\s/)[0] ?? '';
+}
+
+function rebuildReleaseBranch(version, commits, expectedSha) {
   git('checkout', '-B', RELEASE_BRANCH);
-  execFileSync('npm', ['run', '--silent', 'bump', '--', version], {
-    cwd: 'rikiki',
-    stdio: 'inherit',
-  });
-  writeFileSync('CHANGELOG.md', fillUnreleased(readFileSync('CHANGELOG.md', 'utf8'), commits));
+  writeReleaseFiles('.', version, commits);
   git(
     '-c',
     `user.name=${RELEASE_AUTHOR.name}`,
@@ -80,18 +84,7 @@ function rebuildReleaseBranch(version, commits) {
     RELEASE_SUBJECT(version),
   );
   const remote = `https://oauth2:${env.RELEASE_TOKEN}@${env.CI_SERVER_HOST}/${env.CI_PROJECT_PATH}.git`;
-  // stdio ignored · git echoes the remote URL, token included, on some errors.
-  try {
-    execFileSync(
-      'git',
-      ['push', '--quiet', '--force', remote, `HEAD:refs/heads/${RELEASE_BRANCH}`],
-      {
-        stdio: 'ignore',
-      },
-    );
-  } catch {
-    throw new Error(`git push ${RELEASE_BRANCH} failed`);
-  }
+  pushReleaseBranch('.', remote, expectedSha);
 }
 
 async function upsertReleaseMr(version, tag, commits, existing) {
@@ -133,7 +126,7 @@ async function propose() {
   if (dryRun) {
     return say(`would propose v${decision.version} from ${commits.length} commits since ${tag}`);
   }
-  rebuildReleaseBranch(decision.version, commits);
+  rebuildReleaseBranch(decision.version, commits, leasedSha(openMr));
   const mr = await upsertReleaseMr(decision.version, tag, commits, openMr);
   say(`proposed v${decision.version} · ${mr.web_url}`);
 }

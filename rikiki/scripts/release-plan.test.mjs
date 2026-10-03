@@ -7,11 +7,25 @@ import {
   fillUnreleased,
   nextVersion,
   parseSubject,
+  pickReleaseMr,
   releaseNotes,
   unreleasedBody,
 } from './release-plan.mjs';
 
 const c = (subject, body = '') => ({ subject, body });
+
+describe('pickReleaseMr', () => {
+  const ours = { iid: 7, sha: 'a', source_project_id: 42, target_project_id: 42 };
+  const fork = { iid: 8, sha: 'b', source_project_id: 99, target_project_id: 42 };
+
+  it("ignores a fork's MR from a branch that happens to be called release/next", () => {
+    expect(pickReleaseMr([fork, ours], 42)).toBe(ours);
+    expect(pickReleaseMr([fork], 42)).toBeNull();
+  });
+  it('accepts the project id as the string CI provides', () => {
+    expect(pickReleaseMr([ours], '42')).toBe(ours);
+  });
+});
 
 describe('parseSubject', () => {
   it('reads type, scope and description', () => {
