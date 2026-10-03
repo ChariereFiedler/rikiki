@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - `check` warns with `ICON_DOUBLED` when a component that paints its own icon holds text opening with an emoji (contributed by Clément Grégoire).
+- `check` warns with `SCROLL_SLIVER` when a box that scrolls, a `deck-code` shrunk by a full slide for instance, overflows by less than one of its own lines: a scrollbar and a sliced last line for content that almost fits (contributed by Clément Grégoire).
 
 ### Fixed
 - `deck-graph` measures in its own canvas pixels, so edge labels, strokes and arrowheads keep their place and weight on any screen that is not exactly the canvas size (#26).
