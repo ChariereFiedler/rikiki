@@ -32,6 +32,13 @@ variables:
 
 stages: [check, build, deploy, release]
 
+# Every job runs on the self-hosted runner, as it always has · said out loud
+# now, because GitLab.com shared runners are enabled for the one job npm
+# trusted publishing requires them for (publish-npm). Without this, any
+# untagged job could land on a shared runner and spend the namespace's minutes.
+default:
+  tags: [self-hosted]
+
 # Quality gate · em-dash linter + `astro check`. Runs before the (more
 # expensive) Docker build so a TS error or a forbidden em-dash short-
 # circuits the pipeline in ~25s instead of waiting for the Astro+Docker
@@ -261,13 +268,25 @@ smoke-test:
 # Publish the npm package · triggered only by a vX.Y.Z tag. `prepublishOnly`
 # rebuilds dist/ and runs the test suite, so a tag whose committed dist is
 # stale (or whose version surfaces drifted) fails before anything is pushed to
-# npm. Requires the masked CI variable NPM_TOKEN (an npm automation token).
+# npm.
 #
-# Tag a release with `git push --follow-tags`; the v-tag pipeline runs this job
-# with the package, browser, installed-tarball and site gates.
+# The tag is created by release:tag once the release MR is merged; the v-tag
+# pipeline runs this job, by hand, after the package, browser,
+# installed-tarball and site gates.
+#
+# No npm token anywhere · npm trusted publishing: npmjs.com trusts this
+# project, this CI file and the `npm` environment, and the job proves who it
+# is with an OIDC token. Provenance is signed on the way, for free. npm only
+# accepts that proof from GitLab.com shared runners, hence the one job here
+# that leaves the self-hosted runner. Needs npm >= 11.5.1 · NODE_IMAGE ships 11.12.
 publish-npm:
   stage: release
   image: ${NODE_IMAGE}
+  tags: [saas-linux-small-amd64]
+  environment: npm
+  id_tokens:
+    NPM_ID_TOKEN:
+      aud: npm:registry.npmjs.org
   # A tag pipeline used to run this job alone · typecheck, lint, unit tests,
   # the dist/ drift guard and the browser suite were all skipped, so a tag on a
   # red commit published anyway. Every gate main runs, a tag now runs too.
@@ -277,8 +296,6 @@ publish-npm:
     - npm ci --prefer-offline --no-audit
   script:
     - |
-      [ -z "$NPM_TOKEN" ] && echo "ERROR: NPM_TOKEN is not set (CI/CD Variables, masked)." && exit 1
-    - |
       # npm publishes package.json's version, not the tag · a mismatch would
       # ship something nobody asked for under a tag that says otherwise.
       manifest=$(node -p "require('./package.json').version")
@@ -287,10 +304,69 @@ publish-npm:
         exit 1
       fi
       echo "OK · tag matches package.json version $manifest"
-    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+    - |
+      # npm answers a republish with a bare 403 · say what happened instead.
+      # Each script item is its own shell, so the version is read again here.
+      manifest=$(node -p "require('./package.json').version")
+      if npm view "rikiki-deck@${manifest}" version >/dev/null 2>&1; then
+        echo "ERROR: rikiki-deck@${manifest} is already on npm · nothing to publish"
+        exit 1
+      fi
     - npm publish --access public
+  # Second validation · the tag pipeline runs every gate, then waits here for
+  # a human. The first validation was merging the release MR.
   rules:
     - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+      when: manual
+  allow_failure: false
+
+# Release · proposed by CI, validated twice. See
+# docs/superpowers/specs/2026-10-02-release-and-mirror-design.md.
+.release-job:
+  stage: release
+  image: ${NODE_IMAGE}
+  variables:
+    # The decision reads every commit since the last tag.
+    GIT_DEPTH: 0
+    GIT_FETCH_EXTRA_FLAGS: --tags
+  before_script:
+    - apk add --no-cache git >/dev/null
+
+release:propose:
+  extends: .release-job
+  needs: [smoke-test]
+  script:
+    - cd rikiki && npm ci --prefer-offline --no-audit && cd ..
+    - node rikiki/scripts/release-ci.mjs propose
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+release:tag:
+  extends: .release-job
+  needs: [smoke-test]
+  script:
+    - node rikiki/scripts/release-ci.mjs tag
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+release:gitlab:
+  extends: .release-job
+  needs: [publish-npm]
+  script:
+    - node rikiki/scripts/release-ci.mjs gitlab-release
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+
+# The push mirror runs on the push, not after this pipeline · start at once,
+# and never hold the deploy: a red job here is the alarm, not a gate.
+mirror-check:
+  extends: .release-job
+  needs: []
+  allow_failure: true
+  script:
+    - node rikiki/scripts/release-ci.mjs mirror-check
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # Build the complete site on release tags as well as branches, before npm publish.
 site-release-check:
