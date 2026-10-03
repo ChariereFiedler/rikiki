@@ -71,6 +71,8 @@ package-check:
     paths:
       - rikiki/node_modules/
   before_script:
+    # The release and bump tests drive real git repositories; NODE_IMAGE has no git.
+    - apk add --no-cache git >/dev/null
     - cd rikiki
     - npm ci --prefer-offline --no-audit
   script:
@@ -292,6 +294,8 @@ publish-npm:
   # red commit published anyway. Every gate main runs, a tag now runs too.
   needs: [lint, package-check, e2e, nginx-release-check]
   before_script:
+    # prepublishOnly replays the unit suite, whose release tests need git.
+    - apk add --no-cache git >/dev/null
     - cd rikiki
     - npm ci --prefer-offline --no-audit
   script:
@@ -325,6 +329,11 @@ publish-npm:
 .release-job:
   stage: release
   image: ${NODE_IMAGE}
+  # RELEASE_TOKEN is scoped to this environment, so only these jobs receive
+  # it · not lint, e2e or any job that runs dependencies' install scripts.
+  environment:
+    name: release
+    action: prepare
   variables:
     # The decision reads every commit since the last tag.
     GIT_DEPTH: 0
@@ -335,8 +344,9 @@ publish-npm:
 release:propose:
   extends: .release-job
   needs: [smoke-test]
+  # No npm ci · the bump and the decision import node: modules only, and
+  # skipping it keeps third-party install scripts away from RELEASE_TOKEN.
   script:
-    - cd rikiki && npm ci --prefer-offline --no-audit && cd ..
     - node rikiki/scripts/release-ci.mjs propose
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
