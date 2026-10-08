@@ -2,11 +2,16 @@
   "source": {
     "package": "ronce-racine",
     "version": "0.8.0",
-    "contentHash": "sha256-36f2529985435a4333452cc28eac759a629033dead0ef607558491192bd8d9ac"
+    "contentHash": "sha256-bba47fa25b2e12b6e4841b425c6953c5d89b2feb01b40626cdce0d38cd6c6eab"
   },
   "installed": [
-    "skill:design-system-component-lifecycle",
-    "skill:visual-regression-check"
+    "rule:commits.md",
+    "rule:doc-code-parity.md",
+    "rule:error-handling-discipline.md",
+    "rule:minimal-code.md",
+    "rule:pre-commit-secret-detection.md",
+    "rule:secure-logging.md",
+    "rule:test-discipline.md"
   ],
   "detached": []
 }
