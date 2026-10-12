@@ -1180,7 +1180,9 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, pathRead
     // emoji. The pair reads as a stutter, and the theme only styles one of
     // them. "Its own icon" is a small SVG in its shadow tree, measured in
     // canvas pixels so the zoom-to-fit scale does not move the threshold.
-    const PICTOGRAPH = /^\p{Extended_Pictographic}/u;
+    // An emoji is a pictograph shown as one: emoji by default, or forced by
+    // VS16. Text symbols such as ©, ®, ™ and arrows stay text.
+    const PICTOGRAPH = /^(?:\p{Emoji_Presentation}|\p{Extended_Pictographic}\uFE0F)/u;
     const scale = slide.offsetWidth ? slide.getBoundingClientRect().width / slide.offsetWidth : 1;
     const leadingText = (host) => {
       const texts = document.createTreeWalker(host, NodeFilter.SHOW_TEXT, {
@@ -1197,7 +1199,8 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, pathRead
     for (const host of slide.querySelectorAll('*')) {
       if (!host.shadowRoot || !host.tagName.toLowerCase().startsWith('deck-')) continue;
       const text = leadingText(host);
-      if (!PICTOGRAPH.test(text)) continue;
+      const emoji = text.match(PICTOGRAPH)?.[0];
+      if (!emoji) continue;
       const icon = Array.from(host.shadowRoot.querySelectorAll('svg')).find((svg) => {
         const r = svg.getBoundingClientRect();
         return r.width > 0 && r.height > 0
@@ -1207,7 +1210,7 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, pathRead
         doubledIcons.push({
           path: pathOf(host),
           tag: host.tagName.toLowerCase(),
-          emoji: Array.from(text)[0],
+          emoji,
           iconPx: Math.round(icon.getBoundingClientRect().width / scale),
           text: text.slice(0, 40),
         });

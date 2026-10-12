@@ -826,12 +826,25 @@ test.describe('two icons in one box', () => {
     expect(found.element).toContain('deck-callout');
   });
 
+  test('reports a text symbol made an emoji by VS16', () => {
+    deck('icon-vs16', `<deck-feature id="icon-vs16"><h1 slot="title">Careful</h1>
+        <deck-callout type="warn">⚠️ Wipes the build tree</deck-callout>
+      </deck-feature>`);
+    const r = reportFast('icon-vs16');
+    const found = r.json.diagnostics.find((d: any) => d.code === 'ICON_DOUBLED');
+    expect(found, r.stdout).toBeTruthy();
+    expect(found.measurement.emoji).toBe('⚠️');
+  });
+
   test('leaves an emoji alone where no component icon competes with it', () => {
-    // A plain paragraph, an emoji later in a callout's sentence, and a
+    // A plain paragraph, an emoji later in a callout's sentence, text
+    // symbols that are pictographs but not emoji (©, ↔), and a
     // deck-graph (whose shadow SVG is a canvas, not an icon) are all fine.
     deck('icon-quiet', `<deck-feature id="icon-quiet"><h1 slot="title">🚩 Flags</h1>
         <p>🚩 Each module ends with a flag.</p>
         <deck-callout type="info">Capture all ten 🚩</deck-callout>
+        <deck-callout type="info">© 2026 Tordu Jardin</deck-callout>
+        <deck-callout type="ok">↔ swaps the panes</deck-callout>
         <deck-graph><deck-node id="a" at="30,50" label="🚩 start"></deck-node><deck-node id="b" at="70,50" label="end"></deck-node><deck-edge from="a" to="b"></deck-edge></deck-graph>
       </deck-feature>`, ['deck-graph']);
     const r = reportFast('icon-quiet');
