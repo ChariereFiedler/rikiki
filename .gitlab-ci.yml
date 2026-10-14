@@ -29,6 +29,9 @@ variables:
   NGINX_IMAGE: 'nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10'
   DOCKER_CLI_IMAGE: 'docker:27-cli@sha256:851f91d241214e7c6db86513b270d58776379aacc5eb9c4a87e5b47115e3065c'
   ALPINE_IMAGE: 'alpine:3.21@sha256:48b0309ca019d89d40f670aa1bc06e426dc0931948452e8491e3d65087abc07d'
+  # Image build on the farm's rootless Podman runner, off the production host
+  # (tordu-jardin/cloud#72). `self-hosted` brings it back to the VPS runner.
+  BUILD_RUNNER_TAG: podman
 
 stages: [check, build, deploy, release]
 
@@ -163,8 +166,12 @@ e2e:
 # build --push` so buildx pushes directly to the registry in one shot.
 # The rest (image tags, build args, cache-from) is kept identical to the
 # template so behaviour is otherwise unchanged.
+# On the farm's Podman runner (BUILD_RUNNER_TAG=podman, shell executor, no
+# `image:`) the engine is podman: `--format docker` keeps the HEALTHCHECK an
+# OCI image would drop, then a plain push.
 build-image:
   stage: build
+  tags: [$BUILD_RUNNER_TAG]
   image: ${DOCKER_CLI_IMAGE}
   variables:
     IMAGE: "${TJ_REGISTRY}/${IMAGE_NAME}"
@@ -175,7 +182,8 @@ build-image:
         eval val=\$$var
         [ -z "$val" ] && echo "ERROR: $var is not set. Check runner config." && exit 1
       done
-    - docker login "$TJ_REGISTRY" -u "$TJ_REGISTRY_USER" -p "$TJ_REGISTRY_PASSWORD"
+    - if command -v podman >/dev/null 2>&1; then ENGINE=podman; else ENGINE=docker; fi
+    - echo "$TJ_REGISTRY_PASSWORD" | $ENGINE login "$TJ_REGISTRY" -u "$TJ_REGISTRY_USER" --password-stdin
   script:
     - |
       DOCKERFILE=".generated.Dockerfile"
@@ -200,19 +208,28 @@ build-image:
           CMD wget -qO- http://127.0.0.1/ || exit 1
       SPA_EOF
     - |
-      CACHE_FLAG=""
-      if [ "$DOCKER_NO_CACHE" != "true" ]; then
-        CACHE_FLAG="--cache-from $IMAGE:latest"
+      if [ "$ENGINE" = podman ]; then
+        podman build --format docker \
+          --build-arg "COMMIT_SHA=$CI_COMMIT_SHORT_SHA" \
+          -f .generated.Dockerfile \
+          -t "$IMAGE:$CI_COMMIT_SHORT_SHA" -t "$IMAGE:latest" .
+        podman push "$IMAGE:$CI_COMMIT_SHORT_SHA"
+        podman push "$IMAGE:latest"
+      else
+        CACHE_FLAG=""
+        if [ "$DOCKER_NO_CACHE" != "true" ]; then
+          CACHE_FLAG="--cache-from $IMAGE:latest"
+        fi
+        docker buildx build \
+          $CACHE_FLAG \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          --build-arg "COMMIT_SHA=$CI_COMMIT_SHORT_SHA" \
+          -f .generated.Dockerfile \
+          -t "$IMAGE:$CI_COMMIT_SHORT_SHA" \
+          -t "$IMAGE:latest" \
+          --push \
+          .
       fi
-    - docker buildx build
-        $CACHE_FLAG
-        --build-arg BUILDKIT_INLINE_CACHE=1
-        --build-arg "COMMIT_SHA=$CI_COMMIT_SHORT_SHA"
-        -f .generated.Dockerfile
-        -t "$IMAGE:$CI_COMMIT_SHORT_SHA"
-        -t "$IMAGE:latest"
-        --push
-        .
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
