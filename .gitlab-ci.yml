@@ -35,12 +35,14 @@ variables:
 
 stages: [check, build, deploy, release]
 
-# Every job runs on the self-hosted runner, as it always has · said out loud
-# now, because GitLab.com shared runners are enabled for the one job npm
-# trusted publishing requires them for (publish-npm). Without this, any
-# untagged job could land on a shared runner and spend the namespace's minutes.
+# Every job runs on the group's own runners · said out loud, because GitLab.com
+# shared runners are enabled for the one job npm trusted publishing requires
+# them for (publish-npm). Without this, any untagged job could land on a shared
+# runner and spend the namespace's minutes. `std` is the farm's general runner ·
+# the production VPS runner only deploys now (tordu-jardin/cloud#72), heavy CI
+# there caused 12 host-wide OOMs from Oct 1 to 8.
 default:
-  tags: [self-hosted]
+  tags: [std]
 
 # Quality gate · em-dash linter + `astro check`. Runs before the (more
 # expensive) Docker build so a TS error or a forbidden em-dash short-
@@ -301,7 +303,7 @@ smoke-test:
 # project, this CI file and the `npm` environment, and the job proves who it
 # is with an OIDC token. Provenance is signed on the way, for free. npm only
 # accepts that proof from GitLab.com shared runners, hence the one job here
-# that leaves the self-hosted runner. Needs npm >= 11.5.1 · NODE_IMAGE ships 11.12.
+# that leaves the group's runners. Needs npm >= 11.5.1 · NODE_IMAGE ships 11.12.
 publish-npm:
   stage: release
   image: ${NODE_IMAGE}
@@ -415,14 +417,18 @@ site-release-check:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
 
+# Needs an image builder · it follows build-image to the farm's Podman runner
+# (shell executor, `image:` ignored there), or to a Docker daemon on `self-hosted`.
 nginx-release-check:
   stage: build
   image: ${DOCKER_CLI_IMAGE}
+  tags: [$BUILD_RUNNER_TAG]
   needs:
     - job: site-release-check
       artifacts: true
   script:
-    - docker build -f .cloud/site-check.Dockerfile .
+    - if command -v podman >/dev/null 2>&1; then ENGINE=podman; else ENGINE=docker; fi
+    - $ENGINE build -f .cloud/site-check.Dockerfile .
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
