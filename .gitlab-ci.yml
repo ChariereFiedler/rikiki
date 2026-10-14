@@ -9,7 +9,6 @@ include:
 # (no deps · the root install is a no-op) and BUILD_CMD jumps into site/
 # for the real build. BUILD_OUTPUT points at the nested dist/.
 variables:
-  BUILD_RUNNER_TAG: podman  # build sur la ferme, hors de l'hôte de prod (cloud#72)
   STACK_NAME: 'rikiki'
   IMAGE_NAME: 'rikiki'
   NODE_VERSION: '24'
