@@ -244,9 +244,25 @@ smoke-test:
   needs: [deploy]
   variables:
     SITE_URL: "https://rikiki.tordu-jardin.fr"
+    # 2 s apart · one minute for the new container to be routed.
+    SMOKE_READY_ATTEMPTS: "30"
   before_script:
     - apk add --no-cache curl
   script:
+    - |
+      # Portainer answers the deploy once the container is recreated, not once
+      # Traefik routes to it · that takes its first healthcheck plus Traefik's
+      # reload, a few seconds during which every route reads 502. Starting the
+      # checks right away failed four main pipelines in October. Wait for the
+      # site to answer first · the old container is gone by now, so any 200
+      # comes from the new one.
+      ready=0
+      for attempt in $(seq 1 "$SMOKE_READY_ATTEMPTS"); do
+        code=$(curl -sk -o /dev/null -w '%{http_code}' --max-time 5 "${SITE_URL}/") || code=000
+        if [ "$code" = "200" ]; then ready=1; break; fi
+        sleep 2
+      done
+      [ "$ready" = 1 ] || echo "WARN · / still not 200 after ${SMOKE_READY_ATTEMPTS} attempts · the checks below say how"
     - |
       fail=0
       check() {
