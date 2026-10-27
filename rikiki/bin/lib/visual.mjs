@@ -100,12 +100,13 @@ const SHOW_CHROME = `() => {
 
 /**
  * Photograph each slide and measure where its ink sits.
+ * `indexes` are the 1-based slides to photograph, in deck order.
  * `goTo(index)` must leave the page on that slide, settled.
  */
-export async function measureSlides(page, count, goTo) {
+export async function measureSlides(page, indexes, goTo) {
   await page.evaluate((fn) => new Function('return ' + fn)()(), HIDE_CHROME);
   const out = [];
-  for (let index = 1; index <= count; index++) {
+  for (const index of indexes) {
     await goTo(index);
     const shot = await page.screenshot({ type: 'png' });
     const dataUrl = 'data:image/png;base64,' + shot.toString('base64');

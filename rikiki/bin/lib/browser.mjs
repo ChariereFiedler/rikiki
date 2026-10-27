@@ -155,17 +155,37 @@ export const SLIDE_TITLE_READER = `(el) => {
   return copy.textContent.trim().replace(/\\s+/g, ' ') || null;
 }`;
 
+/** How long a drawing may move before `rikiki check` says the room is waiting on
+ *  it (ILL_MOTION_LONG, ill-rules.ts) · the longest a still frame is waited for. */
+const MOTION_WARN_MS = 3_000;
+
 /** Wait until nothing is moving any more.
  *
  *  A reveal is a CSS transition, and a screenshot taken while it runs catches
  *  the text mid-fade. The Web Animations API knows when each one is done, so
  *  the wait is on the animations themselves; the deadline is only there for an
- *  animation that never ends (a looping accent, a spinner). */
-export async function waitForStillFrame(page, deadlineMs = 2_000) {
+ *  animation that never ends (a looping accent, a spinner). `document.getAnimations()`
+ *  does not list what runs inside a shadow root, where every scene and diagram
+ *  draws, so each shadow root is asked too. A story (a diagram that plays a scene
+ *  of several seconds on entry, `svg[data-story]`) is brought to its end at once:
+ *  its resting picture is the end, and that is the picture a capture takes. */
+export async function waitForStillFrame(page, deadlineMs = MOTION_WARN_MS) {
   await page
     .evaluate(async (ms) => {
-      const ending = document
-        .getAnimations()
+      // A scene starts playing on the frame after its slide is shown · its
+      // animations exist only from then.
+      await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+      const roots = [document];
+      for (let i = 0; i < roots.length; i += 1) {
+        for (const el of roots[i].querySelectorAll('*')) if (el.shadowRoot) roots.push(el.shadowRoot);
+      }
+      for (const root of roots.filter((r) => r !== document && r.querySelector('svg[data-story]'))) {
+        for (const a of root.getAnimations()) {
+          if (a.effect?.getComputedTiming?.().iterations !== Number.POSITIVE_INFINITY) a.finish();
+        }
+      }
+      const ending = roots
+        .flatMap((root) => root.getAnimations())
         .filter((a) => a.effect?.getComputedTiming?.().iterations !== Number.POSITIVE_INFINITY)
         .map((a) => a.finished.catch(() => {}));
       await Promise.race([

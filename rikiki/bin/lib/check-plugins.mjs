@@ -2,6 +2,8 @@ import { existsSync, readFileSync, realpathSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
+import { RESERVED_NAMESPACES } from './check-registry.mjs';
+import { ELEMENT_PATH_READER } from './element-path.mjs';
 
 export const CHECK_API_VERSION = 1;
 const failure = (plugin, code, message) => ({ plugin, code, severity: 'error', message });
@@ -50,6 +52,9 @@ export function resolveCheckPlugins(deckPath, { config, plugins = [], noPlugins 
       if (manifest.schemaVersion !== 1 || typeof id !== 'string' || !/^[a-zA-Z0-9@/._-]+$/.test(id)
         || typeof manifest.version !== 'string' || !/^[A-Z][A-Z0-9_]*$/.test(manifest.namespace ?? '')
         || manifest.checks?.apiVersion !== CHECK_API_VERSION) throw new Error('unsupported module schema or check API');
+      // A built-in family taken as a namespace would let a plugin name a rule like a
+      // built-in one, and be silenced or kept with it.
+      if (RESERVED_NAMESPACES.includes(manifest.namespace)) throw new Error(`namespace ${manifest.namespace} is a family of built-in rules`);
       const profile = spec.profile ?? 'recommended';
       if (!manifest.checks.profiles?.includes(profile)) throw new Error(`unknown profile: ${profile}`);
       const entryPath = manifest.checks.entry;
@@ -84,8 +89,10 @@ export function resolveCheckPlugins(deckPath, { config, plugins = [], noPlugins 
   return result;
 }
 
-/** Serialized into the browser. This registry has no imports or component side effects. */
-export function installCheckBridge() {
+/** Serialized into the browser. This registry has no imports or component side effects ·
+ *  `pathReader` is the one element path of the check (bin/lib/element-path.mjs), so a
+ *  plugin's finding is found under an element the same way a built-in one is. */
+export function installCheckBridge(pathReader) {
   const registered = new Map();
   const key = Symbol.for('rikiki.checks.v1');
   const query = (root, selector, shadow = false) => {
@@ -96,19 +103,7 @@ export function installCheckBridge() {
     }
     return [...new Set(found)];
   };
-  const pathOf = (element) => {
-    const parts = [];
-    for (let el = element; el && el !== document.body;) {
-      const tag = el.localName;
-      if (!tag) break;
-      const siblings = el.parentElement ? [...el.parentElement.children].filter(n => n.localName === tag) : [];
-      parts.unshift(el.id ? `${tag}#${CSS.escape(el.id)}` : `${tag}:nth-of-type(${Math.max(1, siblings.indexOf(el) + 1)})`);
-      const host = el.getRootNode().host;
-      if (!el.parentElement && host) { parts.unshift('::shadow'); el = host; }
-      else el = el.parentElement;
-    }
-    return parts.join(' > ');
-  };
+  const pathOf = new Function('return ' + pathReader)();
   const api = {
     define(plugin) {
       if (plugin.apiVersion !== 1 || !plugin.id || !plugin.version || !Array.isArray(plugin.rules)) throw new Error('Invalid CheckPlugin');
@@ -126,7 +121,7 @@ export function installCheckBridge() {
       return p ? { id: p.id, version: p.version, apiVersion: p.apiVersion,
         rules: p.rules.map(({ code, scope, severity, profiles }) => ({ code, scope, severity, profiles })) } : null;
     },
-    async run({ id, profile, slide, state, documentPass }) {
+    async run({ id, profile, slide, state, documentPass, disabled = [], options = {} }) {
       const plugin = registered.get(id);
       const root = document.querySelector('deck-root');
       const slides = root ? [...root.children].filter(e => e.localName.startsWith('deck-') && e.localName !== 'deck-root') : [];
@@ -134,11 +129,13 @@ export function installCheckBridge() {
       const out = [], executed = [], failures = [];
       for (const rule of plugin.rules) {
         if (rule.profiles && !rule.profiles.includes(profile)) continue;
+        // Silenced by the deck's policy where it would run · it does not run.
+        if (disabled.includes(rule.code)) continue;
         if (rule.scope === 'document' ? !documentPass : rule.scope === 'slide' ? state !== 0 || !active : !active) continue;
         const scope = rule.scope === 'document' ? root ?? document : active;
         try {
           for (const el of query(scope, '*', true)) if (el.updateComplete) await el.updateComplete;
-          await rule.run({ slide, state, profile,
+          await rule.run({ slide, state, profile, options: Object.freeze({ ...(options[rule.code] ?? {}) }),
             query: (selector, options = {}) => query(scope, selector, options.shadow ?? false),
             report: (finding) => {
               if (!finding || typeof finding.message !== 'string' || !finding.message.trim()
@@ -178,7 +175,7 @@ async function bounded(page, operation, timeoutMs) {
 
 export async function startCheckPlugins(page, resolution, timeoutMs = 5000) {
   if (!resolution.plugins.length) return;
-  await page.evaluate(installCheckBridge);
+  await page.evaluate(installCheckBridge, ELEMENT_PATH_READER);
   for (const plugin of resolution.plugins) {
     try {
       await bounded(page, () => page.addScriptTag({ content: readFileSync(plugin.script, 'utf8') }), timeoutMs);
@@ -195,12 +192,15 @@ export async function startCheckPlugins(page, resolution, timeoutMs = 5000) {
   }
 }
 
-export async function runCheckPlugins(page, resolution, { slide, state, documentPass }, timeoutMs = 5000) {
+/** Run the loaded plugins on one state of one slide · `policyFor(rules, slide)` says
+ *  which rules the deck's policy silences there and the options it gives each. */
+export async function runCheckPlugins(page, resolution, { slide, state, documentPass }, timeoutMs = 5000, policyFor) {
   const diagnostics = [];
   for (const plugin of resolution.plugins.filter(p => p.status === 'loaded')) {
+    const { disabled = [], options = {} } = policyFor ? policyFor(plugin.rules, slide) : {};
     try {
       const result = await bounded(page, () => page.evaluate(args => globalThis[Symbol.for('rikiki.checks.v1')].run(args),
-        { id: plugin.id, profile: plugin.profile, slide, state, documentPass }), timeoutMs);
+        { id: plugin.id, profile: plugin.profile, slide, state, documentPass, disabled, options }), timeoutMs);
       if (!result || !Array.isArray(result.diagnostics) || !Array.isArray(result.failures) || !Array.isArray(result.executed)) throw new Error('Invalid plugin result');
       for (const d of result.diagnostics) {
         const rule = plugin.rules.find(r => r.code === d.code);

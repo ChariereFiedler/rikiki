@@ -14,6 +14,11 @@
 // `<deck-icon name>` in the deck ever names them.
 const COMPONENT_GLYPHS = {
   'deck-check': ['check', 'cross'],
+  // A diagram's status says its state with a glyph, people are a glyph each, a timer
+  // has a clock · none is written as an `icon` in the deck.
+  'dg-status': ['check', 'cross', 'clock'],
+  'dg-person': ['user'],
+  'dg-timer': ['clock'],
 };
 
 /** Glyphs the deck needs because it uses a component that draws them. */
