@@ -77,7 +77,9 @@ Every command below works from an install, with no clone and no build step.
   overlapping each other. `--json` writes a versioned report to stdout and
   nothing else; `--steps` measures every revealed state of a slide instead of
   its opening one; it also says how alike the illustrations are to each other
-  (`diversity`, `ILL_REPEATED_LOOK`), and `--diversity` adds every distance.
+  (`diversity`, `ILL_REPEATED_LOOK`, a motif that moves on excepted), checks
+  the motifs a deck declares (`pair`, `zoom-from`, `acts`: `ILL_PAIR_*`,
+  `ILL_ZOOM_FROM_TARGET`, `ILL_ACT_DRIFT`), and `--diversity` adds every distance.
   Exit 0 clean, 1 defects found, 2 could not look. A `check` section in
   `rikiki.config.json`, or `--checks`, `--severity`, `--warnings-as-errors`,
   `--limit`, drops or takes back rules, sets severities and moves thresholds

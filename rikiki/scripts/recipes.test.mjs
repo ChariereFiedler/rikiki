@@ -155,6 +155,18 @@ describe('a brief', () => {
     expect(html).toContain('&quot;é&quot;');
     expect(html).toMatch(/rows="\n\s+Ольга Петрова · CFO\n\s+José Ñúñez · Ventas/);
   });
+
+  it('writes a value between tags as text, never as markup', () => {
+    const recipe = recipeNamed('incident-band');
+    const html = fillRecipe(recipe, {
+      ...exampleBrief(recipe),
+      source: 'Journal du 12/03 <img src=x onerror=alert(1)>',
+    });
+    expect(html).not.toContain('<img');
+    expect(html).toContain(
+      '<deck-source>Journal du 12/03 &lt;img src=x onerror=alert(1)&gt;</deck-source>',
+    );
+  });
 });
 
 describe('a sentence', () => {

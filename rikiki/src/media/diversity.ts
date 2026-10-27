@@ -14,7 +14,10 @@
 // D = 0.5 structure + 0.3 visual + 0.2 time, each from 0 (the same) to 1 (nothing
 // shared). Two drawings closer than `repeated` are the same look twice
 // (`ILL_REPEATED_LOOK`), a warning about the deck, never an error of a slide: one
-// drawing alone is not wrong for resembling another.
+// drawing alone is not wrong for resembling another. A motif of the deck is no
+// repeat when the later drawing moves on (deck-motifs.ts): the same named marks at
+// another step of the act, over a wider scope, with other figures or in another
+// state · such a pair is reported apart (`progressing`), never warned.
 //
 // Pure: signatures in, numbers out. A diagram writes its signature on its svg
 // (`diagram/signature.ts`), `rikiki check` adds the thumbnail from the ink it
@@ -22,6 +25,7 @@
 // and its thumbnail.
 // ════════════════════════════════════════════════════════════════
 
+import { type Motif, type Progress, progressOf } from './deck-motifs.js';
 import type { Box, InkModel } from './ill-rules.js';
 
 export type Topology = 'none' | 'chain' | 'fan-out' | 'fan-in' | 'graph' | 'cycle';
@@ -279,12 +283,16 @@ export interface GalleryEntry {
   slideId?: string | null;
   element?: string;
   signature: DiagramSignature;
+  /** Its named marks and their words, its act · whether it moves on from a look-alike. */
+  motif?: Motif | null;
 }
 
 export interface ClosePair {
   a: { slide: number; slideId?: string | null };
   b: { slide: number; slideId?: string | null };
   distance: Distance;
+  /** How the later moves on from the earlier · a motif that progresses, no repeat. */
+  progress?: Progress[];
 }
 
 export interface DiversityReport {
@@ -298,6 +306,9 @@ export interface DiversityReport {
   largestFamily: { name: string; count: number; share: number } | null;
   /** Pairs closer than `repeated`, the closest first. */
   repeated: ClosePair[];
+  /** Pairs as close, whose later drawing moves on from the earlier (a step, a scope,
+   *  figures, a state) · a motif of the deck, not the same picture twice. */
+  progressing: ClosePair[];
   /** The mean distance of each drawing to its nearest neighbour. */
   meanNearest: number;
   /** Where each target stands. */
@@ -313,16 +324,25 @@ export function measureDiversity(entries: readonly GalleryEntry[]): DiversityRep
   const n = entries.length;
   const matrix = entries.map(() => entries.map(() => 0));
   const repeated: ClosePair[] = [];
+  const progressing: ClosePair[] = [];
   for (let i = 0; i < n; i += 1) {
     for (let j = i + 1; j < n; j += 1) {
       const dist = distance(entries[i]!.signature, entries[j]!.signature);
       matrix[i]![j] = dist.d;
       matrix[j]![i] = dist.d;
-      if (dist.d < DIVERSITY_LIMITS.repeated)
-        repeated.push({ a: whereOf(entries[i]!), b: whereOf(entries[j]!), distance: dist });
+      if (dist.d >= DIVERSITY_LIMITS.repeated) continue;
+      const [first, later] =
+        entries[i]!.slide <= entries[j]!.slide
+          ? [entries[i]!, entries[j]!]
+          : [entries[j]!, entries[i]!];
+      const pair = { a: whereOf(first), b: whereOf(later), distance: dist };
+      const progress = progressOf(first.motif, later.motif);
+      if (progress.length) progressing.push({ ...pair, progress });
+      else repeated.push(pair);
     }
   }
   repeated.sort((x, y) => x.distance.d - y.distance.d);
+  progressing.sort((x, y) => x.distance.d - y.distance.d);
   const structures = new Set(entries.map((e) => structuralKey(e.signature.structure))).size;
   const intents = [
     ...new Set(entries.flatMap((e) => e.signature.structure.intent?.split('+').slice(0, 1) ?? [])),
@@ -347,6 +367,7 @@ export function measureDiversity(entries: readonly GalleryEntry[]): DiversityRep
     families,
     largestFamily,
     repeated,
+    progressing,
     meanNearest,
     targets: {
       structuresPer100: structuresPer100 >= targets.structuresPer100,

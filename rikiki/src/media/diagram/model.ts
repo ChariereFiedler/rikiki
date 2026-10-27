@@ -23,6 +23,7 @@ import {
   chartRow,
   figureValue,
 } from './chart-words.js';
+import { ACT_STEPS, actIndex, readActs } from './act.js';
 import { composeTree } from './compose.js';
 import { CURVE_MAX_POINTS, CURVE_MIN_POINTS } from './curve.js';
 import type { IntCode, IntentPlan } from './intent.js';
@@ -37,7 +38,14 @@ import {
 } from './marks-words.js';
 import { ENTERS, MAX_STEP } from './motion.js';
 import { MAX_QUEUE } from './queue.js';
-import { BEATS, PLAYS, STORY_ATTRIBUTES, STORY_MAX_BUDGET, readSeconds } from './story-words.js';
+import {
+  BEATS,
+  PLAYS,
+  STORY_ATTRIBUTES,
+  STORY_MAX_BUDGET,
+  isStoryDuration,
+  readSeconds,
+} from './story-words.js';
 
 /** What the parser needs of an element · a DOM `Element` satisfies it as it is. */
 export interface ElementLike {
@@ -128,6 +136,13 @@ export type Compose = (typeof COMPOSES)[number];
 
 /** What a camera names for the whole picture, every panel in the frame. */
 export const CAMERA_ALL = 'all';
+
+/** `slide-id/panel.mark` → the slide a camera opens from and the mark it takes over ·
+ *  null for anything else. */
+export function readZoomFrom(text: string | undefined): { slide: string; mark: string } | null {
+  const match = /^\s*([^/\s]+)\/([^/\s]+)\s*$/.exec(text ?? '');
+  return match ? { slide: match[1]!, mark: match[2]! } : null;
+}
 
 /** A group or a panel · both hold marks and place them with their `layout`. */
 export const isGroupLike = (node: { kind: MarkKind }): boolean =>
@@ -302,7 +317,8 @@ export const MARK_ATTRIBUTES: Readonly<Record<MarkKind, readonly string[]>> = Ob
   ],
   // A camera draws nothing · it frames a mark or a panel (`focus`), then moves to
   // another (`to`, `all` the whole picture) on its beat. camera.ts computes how.
-  camera: ['name', 'focus', 'to', 'beat', 'after', 'with', 'duration'],
+  // `zoom-from="slide-id/mark"` opens on the frame of the slide before (camera.ts).
+  camera: ['name', 'focus', 'zoom-from', 'to', 'beat', 'after', 'with', 'duration'],
 });
 
 /** Attributes read as one word per click (`value="45 72 96"`), the last holding. */
@@ -347,6 +363,11 @@ export const ROOT_ATTRIBUTES: readonly string[] = Object.freeze([
   'balance',
   'play',
   'budget',
+  // The motifs of the deck (act.ts, deck-motifs.ts) · the strip of the act and the
+  // step it is at, the slide of the remedy an incident pairs with.
+  'acts',
+  'act',
+  'pair',
   'frame-width',
   'playing',
   'data-testid',
@@ -1118,7 +1139,7 @@ function checkSeconds(
 ) {
   if (value === undefined) return;
   const seconds = readSeconds(value);
-  if (seconds > 0 && seconds <= STORY_MAX_BUDGET) return;
+  if (isStoryDuration(seconds)) return;
   state.issues.push({
     code: 'DG_VALUE_INVALID',
     severity: 'error',
@@ -1296,7 +1317,11 @@ function checkReferences(nodes: DgNode[], names: Set<string>, state: ParseState)
       ...(node.kind === 'gate' && node.attrs.by ? [node.attrs.by] : []),
       ...(node.kind === 'table' && node.attrs.from ? [node.attrs.from] : []),
       ...(node.kind === 'camera'
-        ? [...words(node.attrs.focus), ...words(node.attrs.to)].filter((n) => n !== CAMERA_ALL)
+        ? [
+            ...words(node.attrs.focus),
+            ...words(node.attrs.to),
+            ...words(readZoomFrom(node.attrs['zoom-from'])?.mark),
+          ].filter((n) => n !== CAMERA_ALL)
         : []),
       ...words(node.attrs.after),
       ...words(node.attrs.with),
@@ -1332,6 +1357,42 @@ function checkEmphasis(nodes: DgNode[], state: ParseState): void {
   }
 }
 
+/** The cells a `dg-dot` stands for · its `count` read as the parser checks it, one
+ *  when it is unsaid or no number (`DG_VALUE_INVALID`: drawn without it). */
+export function dotCount(node: DgNode): number {
+  const count = Math.floor(readNumber(node.attrs.count ?? '1'));
+  return Number.isFinite(count) ? Math.max(1, count) : 1;
+}
+
+/** The `max-marks` an author wrote, when it is a whole number of marks · null otherwise. */
+function askedCeiling(rootAttrs: Readonly<Record<string, string>>): number | null {
+  const asked = Number(rootAttrs['max-marks']);
+  return Number.isInteger(asked) && asked >= 1 ? asked : null;
+}
+
+/** The most marks a diagram may hold · `max-marks` tightens the ceiling, never lifts
+ *  it, and one that is no whole number is said (`DG_VALUE_INVALID`) and left out. */
+export function marksCeiling(rootAttrs: Readonly<Record<string, string>>): number {
+  return Math.min(askedCeiling(rootAttrs) ?? MAX_MARKS, MAX_MARKS);
+}
+
+function checkCeiling(rootAttrs: Readonly<Record<string, string>>, state: ParseState): void {
+  const written = rootAttrs['max-marks'];
+  if (written === undefined || askedCeiling(rootAttrs) !== null) return;
+  state.issues.push({
+    code: 'DG_VALUE_INVALID',
+    severity: 'error',
+    items: [`deck-diagram · max-marks="${written}"`],
+    message: `max-marks is a whole number of marks, 1 or more · "${written}" is not · the diagram's own ceiling of ${MAX_MARKS} is used`,
+    fix: { action: 'set-attribute', attribute: 'max-marks' },
+  });
+}
+
+/** The cells one grid of dots draws at most · past it, the first ones are drawn and
+ *  `DG_BUDGET` says the rest are not. */
+export const dotCeiling = (rootAttrs: Readonly<Record<string, string>>): number =>
+  Math.min(MAX_DOTS, marksCeiling(rootAttrs));
+
 function checkBudget(
   nodes: DgNode[],
   rootAttrs: Record<string, string>,
@@ -1341,22 +1402,22 @@ function checkBudget(
   let dots = 0;
   walk(nodes, (node) => {
     if (node.kind === 'link' || node.kind === 'camera') return;
-    const repeat =
-      node.kind === 'dot' ? Math.max(1, Math.floor(Number(node.attrs.count ?? 1)) || 1) : 1;
+    const repeat = node.kind === 'dot' ? dotCount(node) : 1;
     if (node.kind === 'dot') dots += repeat;
     marks += repeat;
   });
-  const asked = Number(rootAttrs['max-marks']);
-  const ceiling = Number.isFinite(asked) && asked > 0 ? Math.min(asked, MAX_MARKS) : MAX_MARKS;
+  const ceiling = marksCeiling(rootAttrs);
+  const drawn = dotCeiling(rootAttrs);
   if (marks > ceiling || dots > MAX_DOTS) {
     state.issues.push({
       code: 'DG_BUDGET',
       severity: 'error',
       items: [dots > MAX_DOTS ? `${dots} dots` : `${marks} marks`],
       message:
-        dots > MAX_DOTS
+        (dots > MAX_DOTS
           ? `${dots} dots, over ${MAX_DOTS} · the cells are too small to count`
-          : `${marks} marks, over the ${ceiling} the diagram allows`,
+          : `${marks} marks, over the ${ceiling} the diagram allows`) +
+        (dots > drawn ? ` · a grid draws its first ${drawn} dots, not the others` : ''),
       fix: { action: 'remove-marks', keep: dots > MAX_DOTS ? MAX_DOTS : ceiling },
     });
   }
@@ -1432,6 +1493,7 @@ export function parseDiagram(root: ElementLike, compile?: CompileTree): ParsedDi
   const states = children.some(holdsState);
   const story = attrs.play === 'enter' && !intent && !states;
   checkStory(children, attrs, story, state);
+  checkMotifs(children, attrs, state);
   // Dropped, as said · a diagram that plays on clicks lays out no swap nor proof.
   if (!story)
     walk(children, (node) => {
@@ -1450,6 +1512,7 @@ export function parseDiagram(root: ElementLike, compile?: CompileTree): ParsedDi
     checkEmphasis(picture, state);
     marks = Math.max(marks, checkBudget(picture, attrs, state));
   }
+  checkCeiling(attrs, state);
   return {
     attrs,
     children,
@@ -1460,6 +1523,52 @@ export function parseDiagram(root: ElementLike, compile?: CompileTree): ParsedDi
     story,
     ...(intent ? { intent } : {}),
   };
+}
+
+/** The motifs a diagram declares for its deck · a strip whose step is one of its
+ *  steps, a camera that opens from `slide-id/mark`. What they name on other slides
+ *  is for `rikiki check` (deck-motifs.ts), which sees the whole deck. */
+function checkMotifs(nodes: DgNode[], root: Readonly<Record<string, string>>, state: ParseState) {
+  const steps = readActs(root.acts);
+  const invalid = (items: string[], message: string, fix: DgIssue['fix']) =>
+    state.issues.push({ code: 'DG_VALUE_INVALID', severity: 'error', items, message, fix });
+  if (root.acts !== undefined && (steps.length < ACT_STEPS.min || steps.length > ACT_STEPS.max))
+    invalid(
+      [`deck-diagram · acts="${root.acts}"`],
+      `acts names the steps of the act, ${ACT_STEPS.min} to ${ACT_STEPS.max}, separated by "·" · ${steps.length} ${steps.length === 1 ? 'is' : 'are'} written, and the strip is not drawn`,
+      { action: 'set-attribute', attribute: 'acts', use: 'terminal · code · environnement' },
+    );
+  else if (root.acts !== undefined && actIndex(steps, root.act) < 0)
+    invalid(
+      [`deck-diagram · act="${root.act ?? ''}"`],
+      `act says which step of acts the slide stands at · ${root.act === undefined ? 'it is not written' : `"${root.act}" is none of them`}, and the strip is not drawn`,
+      { action: 'set-attribute', attribute: 'act', known: steps },
+    );
+  else if (root.act !== undefined && root.acts === undefined)
+    invalid(
+      ['deck-diagram · act'],
+      'act is a step of the strip that acts writes · with no acts, there is no strip to stand on',
+      { action: 'set-attribute', attribute: 'acts', use: 'the steps of the act, separated by "·"' },
+    );
+  walk(nodes, (node) => {
+    const written = node.kind === 'camera' ? node.attrs['zoom-from'] : undefined;
+    if (written === undefined) return;
+    const where = `${node.kind} ${nameOf(node)}`;
+    if (!readZoomFrom(written))
+      invalid(
+        [`${where} · zoom-from="${written}"`],
+        `zoom-from is the slide the camera opens from and the mark both draw, "slide-id/mark" (a mark in a panel: "slide-id/panel.mark") · "${written}" is not, and the camera opens on the whole picture`,
+        { action: 'set-attribute', attribute: 'zoom-from', use: 'slide-id/mark' },
+      );
+    else if (node.attrs.focus !== undefined)
+      state.issues.push({
+        code: 'DG_CAMERA_TARGET',
+        severity: 'warning',
+        items: [`${where} · focus`],
+        message: `zoom-from opens on the frame of the slide before, and on its own mark when the slide is reached another way · focus says the same twice, and is read first`,
+        fix: { action: 'remove-attributes', attributes: ['focus'], on: [nameOf(node)] },
+      });
+  });
 }
 
 /** Each finding once · the pictures of several clicks find the same ones. */

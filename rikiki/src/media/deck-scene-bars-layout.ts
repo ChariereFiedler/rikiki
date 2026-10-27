@@ -32,6 +32,10 @@ export const LABEL_CLEAR = 16;
 /** A label is centred on its bar and may run this far past either side of it. */
 export const LABEL_OVERHANG = (BAR_GAP - LABEL_CLEAR) / 2;
 
+/** A bar keeps at least this width · the radius of its rounded top. In a region
+ *  too narrow for the gaps as written, the gaps give way first. */
+export const MIN_BAR_WIDTH = 8;
+
 /** Between a figure and its unit · narrow and unbreakable, so "1,7 %" never
  *  leaves its sign alone on a line and reads the same in French and SI. */
 export const UNIT_SPACE = ' ';
@@ -152,9 +156,15 @@ export function barColumns(groups: BarGroup[], width = SCENE_WIDTH): BarColumns 
   const bars = groups.reduce((sum, group) => sum + group.count, 0);
   if (!bars) return { barWidth: 0, labelWidth: 0, xs: [], groups: [], dividers: [] };
 
-  const gaps = (bars - groups.length) * BAR_GAP + (groups.length - 1) * GROUP_GAP;
-  const room = width - 2 * LABEL_OVERHANG - gaps;
-  const barWidth = Math.min(MAX_BAR_WIDTH, room / bars);
+  const written = (bars - groups.length) * BAR_GAP + (groups.length - 1) * GROUP_GAP;
+  const available = width - 2 * LABEL_OVERHANG;
+  // Every gap gives way alike, so a group still reads apart from the next, and only
+  // as much as a bar needs to keep its minimum · never past zero.
+  const fit = written ? Math.min(1, Math.max(0, (available - bars * MIN_BAR_WIDTH) / written)) : 1;
+  const barGap = BAR_GAP * fit;
+  const groupGap = GROUP_GAP * fit;
+  const gaps = written * fit;
+  const barWidth = Math.max(0, Math.min(MAX_BAR_WIDTH, (available - gaps) / bars));
   const total = bars * barWidth + gaps;
 
   const xs: number[] = [];
@@ -163,17 +173,19 @@ export function barColumns(groups: BarGroup[], width = SCENE_WIDTH): BarColumns 
   let cursor = (width - total) / 2;
   groups.forEach((group, index) => {
     if (index > 0) {
-      dividers.push(cursor + GROUP_GAP / 2);
-      cursor += GROUP_GAP;
+      dividers.push(cursor + groupGap / 2);
+      cursor += groupGap;
     }
     const start = cursor;
     for (let bar = 0; bar < group.count; bar += 1) {
-      if (bar > 0) cursor += BAR_GAP;
+      if (bar > 0) cursor += barGap;
       xs.push(cursor);
       cursor += barWidth;
     }
     spans.push({ ...group, x: start, width: cursor - start });
   });
 
-  return { barWidth, labelWidth: barWidth + 2 * LABEL_OVERHANG, xs, groups: spans, dividers };
+  // A label may take its bar and the gap beside it, less the room kept clear.
+  const labelWidth = Math.max(0, barWidth + barGap - LABEL_CLEAR);
+  return { barWidth, labelWidth, xs, groups: spans, dividers };
 }

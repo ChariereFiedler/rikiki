@@ -1537,6 +1537,61 @@ test.describe('text inside a drawing', () => {
     expect(json.diversity.matrix).toHaveLength(4);
   });
 
+  /** One picture of an act, at a step, its API in a version · the motif of a deck. */
+  const act = (step: string, api: string, extra = '') =>
+    `acts="code · environnement · exploitation" act="${step}" ${extra} ${graph(['Web', api, 'Auth', 'Postgres'])}`;
+
+  test('a motif that moves on is no repeat · the step of the act, a figure, and nothing else, is said apart', () => {
+    deck('motif-progress', gallery([act('code', 'API v1'), act('environnement', 'API v1'), act('environnement', 'API v2'), act('environnement', 'API v2')]), ['deck-diagram']);
+    const run = cli(['check', 'motif-progress.html', '--json', '--no-visual', '--diversity']);
+    const json = JSON.parse(run.stdout);
+    const repeated = json.diagnostics.filter((d: any) => d.code === 'ILL_REPEATED_LOOK');
+    // Slides 3 and 4 are the same picture at the same step with the same words · the
+    // only pair that does not move on.
+    expect(repeated.map((d: any) => d.measurement.slides), run.stdout).toEqual([[3, 4]]);
+    const progress = (a: number, b: number) =>
+      json.diversity.progressing.find((p: any) => p.a.slide === a && p.b.slide === b)?.progress;
+    expect(progress(1, 2)).toEqual(['step']);
+    expect(progress(2, 3)).toEqual(['data']);
+    const human = cli(['check', 'motif-progress.html', '--no-visual', '--diversity']);
+    expect(human.stderr).toContain('motif  slide 1 · slide 2');
+  });
+
+  test('a pair names its remedy, and a camera opens from the slide before · what a deck declares wrong is said, with its fix', () => {
+    deck('motif-declared', gallery([
+      act('code', 'API v1', 'pair="nowhere"'),
+      `play="enter" layout="row"><dg-box name="x" label="cache · 2 Go"></dg-box><dg-box name="y" label="queue · 40 jobs"></dg-box><dg-camera zoom-from="d1/nope" to="all"></dg-camera>`,
+    ]), ['deck-diagram']);
+    const r = reportFast('motif-declared');
+    const pair = r.json.diagnostics.find((d: any) => d.code === 'ILL_PAIR_TARGET');
+    expect(pair, r.stdout).toMatchObject({ severity: 'error', slide: 1, fix: { attribute: 'pair' } });
+    // The mark the camera takes over is neither here (DG_REF_UNKNOWN) nor on slide 1.
+    expect(codes(r)).toContain('DG_REF_UNKNOWN');
+    const zoom = r.json.diagnostics.find((d: any) => d.code === 'ILL_ZOOM_FROM_TARGET');
+    expect(zoom).toMatchObject({ severity: 'error', slide: 2, fix: { attribute: 'zoom-from' } });
+  });
+
+  test('reads what a deck declares on every diagram, however small · a small remedy counts, a small pair is checked', () => {
+    const small = (extra: string, words: string[]) => `style="display:block;width:200px" ${extra} ${graph(words)}`;
+    deck('motif-small', gallery([
+      act('code', 'API v1', 'pair="d2"'),
+      small('', ['Web', 'API v2', 'Auth', 'Postgres']),
+      small('pair="nowhere"', ['Shop', 'Cart', 'Stock', 'Billing']),
+    ]), ['deck-diagram']);
+    const r = reportFast('motif-small');
+    const pairs = r.json.diagnostics.filter((d: any) => d.code === 'ILL_PAIR_TARGET');
+    expect(pairs.map((d: any) => [d.slide, d.severity]), r.stdout).toEqual([[3, 'error']]);
+  });
+
+  test('the deck of motifs checks clean through every state · three pairs, one act, a chapter opened from the slide before', () => {
+    const run = cli(['check', join(PKG_DIR, 'decks/tests/deck-diagram-deck-motifs.html'), '--json', '--no-visual', '--steps', '--diversity', '--richness']);
+    const json = JSON.parse(run.stdout);
+    expect(json.diagnostics, run.stdout).toEqual([]);
+    expect(json.diversity.repeated).toEqual([]);
+    // The incident and its remedy look alike by design · each pair is a motif that moves on.
+    expect(json.diversity.progressing.map((p: any) => [p.a.slide, p.b.slide]).sort()).toEqual([[1, 2], [3, 4], [5, 6]]);
+  });
+
   /** Pictures poor on purpose · generic words, no figure, one paint, one model. */
   const POOR = [
     `layout="row" link="arrow"><dg-box label="Service A"></dg-box><dg-box label="Service B"></dg-box><dg-box label="Service C"></dg-box>`,
@@ -2071,9 +2126,9 @@ test.describe('a check policy', () => {
     expect(listed.json.checks.length).toBeGreaterThan(150);
   });
 
-  test('gives a plugin rule its options, does not run it where it is silenced, and refuses a built-in namespace', () => {
-    const plugin = (namespace: string) => {
-      const dir = join(workDir, 'policy-plugins', `plugin-${namespace.toLowerCase()}`);
+  /** A plugin whose one rule counts the words of each slide's title, and says so on the title. */
+  const plugin = (namespace: string, folder = 'policy-plugins') => {
+      const dir = join(workDir, folder, `plugin-${namespace.toLowerCase()}`);
       mkdirSync(dir, { recursive: true });
       writeFileSync(
         join(dir, 'rikiki.module.json'),
@@ -2085,13 +2140,16 @@ test.describe('a check policy', () => {
           code: '${namespace}_TITLE_WORDS', scope: 'slide', severity: 'warning',
           run(ctx) {
             const max = (ctx.options ?? {}).max ?? 100;
-            const words = (ctx.query('h1')[0]?.textContent ?? '').trim().split(/\\s+/).length;
-            ctx.report({ message: words + ' words, over ' + max, measurement: { words, max } });
+            const title = ctx.query('h1')[0];
+            const words = (title?.textContent ?? '').trim().split(/\\s+/).length;
+            ctx.report({ message: words + ' words, over ' + max, measurement: { words, max }, element: title });
           },
         }] });`,
       );
       return `./plugin-${namespace.toLowerCase()}/rikiki.module.json`;
-    };
+  };
+
+  test('gives a plugin rule its options, does not run it where it is silenced, and refuses a built-in namespace', () => {
     const deck = policyDeck(
       {
         plugins: [{ manifest: plugin('DEMO') }, { manifest: plugin('TEXT') }],
@@ -2107,5 +2165,36 @@ test.describe('a check policy', () => {
     expect(r.json.suppressed.filter((d: any) => d.code === 'DEMO_TITLE_WORDS')).toEqual([]);
     const refused = r.json.diagnostics.find((d: any) => d.code === 'CHECK_PLUGIN_LOAD_FAILED');
     expect(refused?.message).toMatch(/namespace TEXT is a family of built-in rules/);
+  });
+
+  test('runs a plugin rule an element override takes back, and keeps it under that element only', () => {
+    const name = 'element-takes-back';
+    const deck = policyDeck(
+      {
+        plugins: [{ manifest: plugin('DEMO', `policy-${name}`) }],
+        check: { root: true, checks: '-demo-*', overrides: [{ elements: '#annexe h1', checks: 'demo-title-words', reason: 'titre relu' }] },
+      },
+      name,
+    );
+    const r = run(['check', deck, '--json', '--no-visual']);
+    const demo = r.json.diagnostics.filter((d: any) => d.code === 'DEMO_TITLE_WORDS');
+    expect(demo.map((d: any) => d.slide), r.stdout).toEqual([2]);
+    expect(r.json.suppressed.filter((d: any) => d.code === 'DEMO_TITLE_WORDS').map((d: any) => d.slide)).toEqual([1, 3, 4]);
+  });
+
+  test('says an option no rule reads · a typo in the rule it names', () => {
+    const name = 'option-typo';
+    const deck = policyDeck({ plugins: [{ manifest: plugin('DEMO', `policy-${name}`) }], check: { root: true } }, name);
+    const r = run(['check', deck, '--list-checks', '--json', '--check-option', 'DEMO_TITEL_WORDS.max=0', '--check-option', 'demo-title-words.max=3']);
+    const unknown = r.json.diagnostics.filter((d: any) => d.code === 'CHECK_OPTION_UNKNOWN');
+    expect(unknown.map((d: any) => d.measurement.option), r.stdout).toEqual(['DEMO_TITEL_WORDS.max']);
+    expect(unknown[0].severity).toBe('warning');
+  });
+
+  test('says an elements selector the browser cannot read, even when it only lists the rules', () => {
+    const r = cli(['check', policyDeck({ check: { root: true, overrides: [{ elements: '[', checks: '-text-too-small' }] } }), '--list-checks', '--json']);
+    const json = JSON.parse(r.stdout);
+    expect(json.diagnostics.map((d: any) => d.code), r.stdout).toContain('CHECK_CONFIG_INVALID');
+    expect(r.status).toBe(2);
   });
 });

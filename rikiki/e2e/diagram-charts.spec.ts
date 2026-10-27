@@ -95,8 +95,37 @@ for (const id of SLIDES) {
         const svg = el.shadowRoot!.querySelector('svg')!;
         const frame = svg.getBoundingClientRect();
         const slack = 1.5;
-        return [...svg.querySelectorAll('rect, path, text, line, circle')]
-          .map((shape) => shape.getBoundingClientRect())
+        // Gecko does not measure a stroke, it widens the path's box by a share of its
+        // width (half the miter limit, so twice the width, for the default miter join)
+        // · a ring part 52 units thick came out 90 px past a frame its ink stays inside.
+        // The geometry and half the stroke bound the ink exactly for a butt-capped arc:
+        // each side is the tighter of the two, so a browser that measures is unchanged.
+        const inkOf = (shape: SVGGraphicsElement) => {
+          const box = shape.getBoundingClientRect();
+          const style = getComputedStyle(shape);
+          const half = style.stroke === 'none' ? 0 : Number.parseFloat(style.strokeWidth) / 2;
+          const matrix = shape.getScreenCTM();
+          if (!half || !matrix || shape.localName === 'text') return box;
+          const g = shape.getBBox();
+          const corners = [
+            [g.x - half, g.y - half],
+            [g.x + g.width + half, g.y - half],
+            [g.x - half, g.y + g.height + half],
+            [g.x + g.width + half, g.y + g.height + half],
+          ].map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
+          const xs = corners.map((p) => p.x);
+          const ys = corners.map((p) => p.y);
+          return {
+            width: box.width,
+            height: box.height,
+            left: Math.max(box.left, Math.min(...xs)),
+            right: Math.min(box.right, Math.max(...xs)),
+            top: Math.max(box.top, Math.min(...ys)),
+            bottom: Math.min(box.bottom, Math.max(...ys)),
+          };
+        };
+        return [...svg.querySelectorAll<SVGGraphicsElement>('rect, path, text, line, circle')]
+          .map(inkOf)
           .filter((b) => b.width > 0 && b.height > 0)
           .filter((b) => b.left < frame.left - slack || b.right > frame.right + slack || b.top < frame.top - slack || b.bottom > frame.bottom + slack).length;
       });

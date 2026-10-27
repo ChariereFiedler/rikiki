@@ -25,6 +25,13 @@ export function parseValue(attribute: string | null): number | null {
   return Number.isFinite(value) ? value : null;
 }
 
+/** The maximum of the scale, as the header says it · the very number the bars are
+ *  drawn against. It is read from what the author wrote (`scale`, or the largest
+ *  value of the rows), so its shortest form is the figure written, never rounded. */
+export function formatScale(scale: number): string {
+  return String(scale);
+}
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }

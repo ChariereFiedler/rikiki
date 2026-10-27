@@ -12,30 +12,29 @@
 // ════════════════════════════════════════════════════════════════
 
 /** A selector a human can paste · ids where there are some, positions among
- *  siblings of the same tag otherwise, `::shadow` where a component's tree starts. */
+ *  siblings of the same tag otherwise, every parent on the way, in a shadow tree
+ *  too, and `::shadow` exactly where a component's tree starts. */
 function pathOf(el) {
   const parts = [];
   let node = el;
   while (node && node !== document.body) {
     const tag = node.tagName?.toLowerCase();
     if (!tag) break;
-    const host = node.getRootNode()?.host;
+    const parent = node.parentNode;
     if (node.id) {
       parts.unshift(`${tag}#${node.id}`);
-    } else if (host) {
-      // Inside a component's shadow tree · say so rather than pretend the
-      // element is reachable from the document.
-      parts.unshift(tag);
-      parts.unshift('::shadow');
-      node = host;
-      continue;
     } else {
-      const siblings = Array.from(node.parentElement?.children ?? []).filter(
-        (s) => s.tagName === node.tagName,
-      );
+      const siblings = Array.from(parent?.children ?? []).filter((s) => s.tagName === node.tagName);
       parts.unshift(siblings.length > 1 ? `${tag}:nth-of-type(${siblings.indexOf(node) + 1})` : tag);
     }
-    node = node.parentElement ?? node.getRootNode()?.host ?? null;
+    if (parent instanceof ShadowRoot) {
+      // The top of a component's shadow tree · say so rather than pretend the
+      // element is reachable from the document, then go on from its host.
+      parts.unshift('::shadow');
+      node = parent.host;
+    } else {
+      node = node.parentElement;
+    }
   }
   return parts.join(' > ').replace(/ > ::shadow > /g, ' ::shadow ');
 }

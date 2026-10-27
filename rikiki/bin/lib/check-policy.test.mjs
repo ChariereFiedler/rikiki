@@ -9,6 +9,7 @@ import {
   decide,
   exceptionFindings,
   globPattern,
+  optionFindings,
   readExceptions,
   resolveOverrides,
   selectionFindings,
@@ -94,6 +95,17 @@ describe('a rule list', () => {
     expect(decide(policy, 'ILL_WORDY', 'warning').kept).toBe(false);
   });
 
+  it('lets the command line take back a rule a file turned off by its severity · layer by layer', () => {
+    const parent = layer({ severity: { 'text-too-small': 'off' } }, '/repo/rikiki.config.json');
+    const policy = buildPolicy({ layers: [parent], cli: { checks: 'text-too-small' } });
+    expect(decide(policy, 'TEXT_TOO_SMALL', 'warning').kept).toBe(true);
+    // And a nearer file's checks over an outer file's severity, the same way.
+    const nearer = buildPolicy({ layers: [parent, layer({ checks: 'text-too-small' }, '/repo/q3/rikiki.config.json')] });
+    expect(decide(nearer, 'TEXT_TOO_SMALL', 'warning').kept).toBe(true);
+    // Within one layer, severity still speaks after checks.
+    expect(decide(policyOf({ checks: 'text-too-small', severity: { 'text-too-small': 'off' } }), 'TEXT_TOO_SMALL', 'warning').kept).toBe(false);
+  });
+
   it('refuses a malformed name, from the command line before any browser', () => {
     expect(() => policyOf(undefined, { checks: 'text too small' })).toThrow(/not a rule name/);
     expect(() => policyOf(undefined, { severity: { 'a b': 'error' } })).toThrow(/not a rule name/);
@@ -112,6 +124,18 @@ describe('severity', () => {
     const policy = policyOf({ warningsAsErrors: 'svg-text-*' });
     expect(decide(policy, 'SVG_TEXT_OVERLAP', 'warning')).toMatchObject({ kept: true, severity: 'error', promoted: true });
     expect(decide(policy, 'TEXT_TOO_SMALL', 'warning').severity).toBe('warning');
+  });
+
+  it('reads warningsAsErrors in order, the last match deciding · an exclusion holds', () => {
+    const cli = policyOf(undefined, { warningsAsErrors: '*,-text-too-small' });
+    expect(decide(cli, 'TEXT_TOO_SMALL', 'warning')).toEqual({ kept: true, severity: 'warning' });
+    expect(decide(cli, 'SLIDE_DENSE', 'warning').promoted).toBe(true);
+    // A nearer file takes back what an outer one promoted.
+    const inherited = buildPolicy({
+      layers: [layer({ warningsAsErrors: '*' }), layer({ warningsAsErrors: '-slide-dense' }, '/repo/q3/rikiki.config.json')],
+    });
+    expect(decide(inherited, 'SLIDE_DENSE', 'warning').severity).toBe('warning');
+    expect(decide(inherited, 'TEXT_TOO_SMALL', 'warning').severity).toBe('error');
   });
 
   it('never hides a finding about the run, whatever is written', () => {
@@ -243,6 +267,15 @@ describe('what the policy itself gets wrong', () => {
     const policy = policyOf({ checks: '-speak-*' });
     expect(selectionFindings(policy, { known, pending: ['SPEAK'] })).toEqual([]);
   });
+
+  it('says an option no plugin rule reads, and not one whose plugin did not load', () => {
+    const policy = policyOf({ options: { 'speak-too-many-words.max': 40, 'SPEAK_TOO_MANY_WORD.max': 40, 'text-too-small.max': 1 } });
+    expect(optionFindings(policy, { readers: ['SPEAK_TOO_MANY_WORDS'] }).map((f) => f.measurement.option)).toEqual([
+      'SPEAK_TOO_MANY_WORD.max',
+      'text-too-small.max',
+    ]);
+    expect(optionFindings(policy, { readers: [], pending: ['SPEAK'] }).map((f) => f.measurement.rule)).toEqual(['TEXT_TOO_SMALL']);
+  });
 });
 
 describe('the config files', () => {
@@ -275,6 +308,23 @@ describe('the config files', () => {
     const other = join(base, 'outside/repo/other/deck.html');
     mkdirSync(join(base, 'outside/repo/other'));
     expect(configFiles(other).map((f) => f.slice(base.length))).toEqual(['/outside/repo/rikiki.config.json']);
+  });
+
+  it('never reads the home folder on the way up · only by --config', () => {
+    const base = tree({
+      'home/rikiki.config.json': { check: { checks: '-*' } },
+      'home/presentations/rikiki.config.json': { check: { checks: '-slide-dense' } },
+      'home/presentations/deck.html': '',
+    });
+    const previous = process.env.HOME;
+    process.env.HOME = join(base, 'home');
+    try {
+      const deck = join(base, 'home/presentations/deck.html');
+      expect(configFiles(deck).map((f) => f.slice(base.length))).toEqual(['/home/presentations/rikiki.config.json']);
+      expect(configFiles(deck, join(base, 'home/rikiki.config.json'))).toEqual([join(base, 'home/rikiki.config.json')]);
+    } finally {
+      process.env.HOME = previous;
+    }
   });
 
   it('says a section it cannot read, with its file and its key, and keeps the others', () => {

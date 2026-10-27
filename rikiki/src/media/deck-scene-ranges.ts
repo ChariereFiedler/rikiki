@@ -51,6 +51,7 @@ import {
   type ScaleArea,
   type Span,
   barSpan,
+  formatScale,
   parseValue,
   tagStart,
 } from './deck-scene-ranges-layout.js';
@@ -153,7 +154,7 @@ export class DeckSceneRanges extends SceneElement {
       return this.row(row, rowTop, area, noteX, index);
     });
     const height = top - ROW_GAP;
-    const maximum = [this.formatScale(scale), this.unit].filter(Boolean).join(' ');
+    const maximum = [formatScale(scale), this.unit].filter(Boolean).join(' ');
 
     return html`<svg
       viewBox=${sceneViewBox(height, this.width)}
@@ -205,10 +206,6 @@ export class DeckSceneRanges extends SceneElement {
       parseValue(item.getAttribute('to')),
     ]);
     return Math.max(1, ...values.filter((value): value is number => value !== null));
-  }
-
-  private formatScale(scale: number): string {
-    return String(Number.isInteger(scale) ? scale : Number(scale.toFixed(1)));
   }
 
   private header(caption: Fitted, maximum: string, area: ScaleArea) {

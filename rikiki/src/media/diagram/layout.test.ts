@@ -161,6 +161,57 @@ describe('a grid of dots', () => {
     expect(dots.filter((d) => d.emphasis)).toHaveLength(36);
   });
 
+  it('draws no more cells than the budget allows, and says so', () => {
+    const parsed = parseDiagram(
+      el('deck-diagram', { layout: 'grid', 'max-marks': '10' }, [el('dg-dot', { count: '401' })]),
+    );
+    expect(parsed.issues.map((i) => i.code)).toContain('DG_BUDGET');
+    const layout = layoutDiagram(parsed, { meter, bounds: { w: 1600, h: 600 } });
+    expect(layout.items.filter((i) => i.kind === 'dot')).toHaveLength(10);
+    // Past the ceiling of 400 with no max-marks, the ceiling holds.
+    expect(
+      lay([el('dg-dot', { count: '250' }), el('dg-dot', { count: '250' })], {
+        layout: 'grid',
+      }).items.filter((i) => i.kind === 'dot'),
+    ).toHaveLength(400);
+  });
+
+  it('refuses a ceiling that is no whole number, says so, and keeps its own', () => {
+    const drawn = (ceiling: string) => {
+      const parsed = parseDiagram(
+        el('deck-diagram', { layout: 'grid', 'max-marks': ceiling }, [
+          el('dg-dot', { count: '20' }),
+        ]),
+      );
+      const layout = layoutDiagram(parsed, { meter, bounds: { w: 1600, h: 600 } });
+      return {
+        dots: layout.items.filter((i) => i.kind === 'dot').length,
+        codes: parsed.issues.map((i) => i.code),
+      };
+    };
+    expect(drawn('10.5')).toEqual({ dots: 20, codes: ['DG_VALUE_INVALID'] });
+    expect(drawn('0.5')).toEqual({ dots: 20, codes: ['DG_VALUE_INVALID'] });
+    expect(drawn('10')).toEqual({ dots: 10, codes: ['DG_BUDGET'] });
+  });
+
+  it('draws a count that is no number as it says: without it, one cell', () => {
+    const parsed = parseDiagram(
+      el('deck-diagram', { layout: 'grid' }, [el('dg-dot', { count: 'Infinity' })]),
+    );
+    const layout = layoutDiagram(parsed, { meter, bounds: { w: 1600, h: 600 } });
+    expect(parsed.issues.map((i) => i.code)).toEqual(['DG_VALUE_INVALID']);
+    const dots = layout.items.filter((i) => i.kind === 'dot') as {
+      x: number;
+      y: number;
+      size: number;
+    }[];
+    expect(dots).toHaveLength(1);
+    // The written attribute stays "Infinity" in the tree · the geometry is what must be finite.
+    expect(
+      [layout.size.w, layout.size.h, dots[0]!.x, dots[0]!.y, dots[0]!.size].every(Number.isFinite),
+    ).toBe(true);
+  });
+
   it('does not overlap any two cells', () => {
     const dots = lay([el('dg-dot', { count: '120' })], { layout: 'grid' }).items.filter(
       (i) => i.kind === 'dot',

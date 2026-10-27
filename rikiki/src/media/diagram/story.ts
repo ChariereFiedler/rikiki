@@ -28,7 +28,7 @@ import { CAMERA_SECONDS } from './camera.js';
 import { type LPiece, actSeconds, isPiece } from './marks.js';
 import type { DgIssue, DgNode } from './model.js';
 import { type Cue, type Timing, schedule } from './motion.js';
-import { BEATS, type Beat, STORY_BUDGET, STORY_MAX_BUDGET, readSeconds } from './story-words.js';
+import { BEATS, type Beat, STORY_BUDGET, STORY_MAX_BUDGET, storySeconds } from './story-words.js';
 
 export {
   BEATS,
@@ -262,9 +262,14 @@ const linkNameOf = (link: LLink) => link.node?.attrs.name || `${link.from} → $
 
 /** The duration an author gave, else the one the kind takes. */
 function durationFor(node: DgNode, fallback: number): number {
-  const said = readSeconds(node.attrs.duration);
-  return Number.isFinite(said) && said > 0 ? said : fallback;
+  const said = storySeconds(node.attrs.duration, fallback);
+  return Number.isFinite(said) ? said : fallback;
 }
+
+/** How long an established flow runs, written · the diagram's own when the `steady`
+ *  written is no duration of a story, NaN when the mark says none. */
+const steadyOf = (node: DgNode | undefined): number =>
+  storySeconds(node?.attrs.steady, DEFAULT_STEADY);
 
 /** What each item does on its beat. */
 function itemActors(
@@ -376,7 +381,7 @@ function linkAndNoteActors(
     let kind: ActionKind = 'enter';
     let duration = cues.get(cueIds.link(j))?.duration ?? 0.5;
     const dims = says(node, 'dim');
-    const steady = Number.isFinite(readSeconds(node.attrs.steady));
+    const steady = Number.isFinite(steadyOf(node));
     if (dims) {
       ids.push(storyIds.linkDim(j));
       kind = 'dim';
@@ -388,9 +393,7 @@ function linkAndNoteActors(
       // A flow that starts on the beat runs for its `steady` before the story goes
       // on · the traffic is seen following the switch.
       duration =
-        link.flow > 0
-          ? rideSeconds(link) + (link.flow - 1) * RIDE_SPACING
-          : readSeconds(node.attrs.steady);
+        link.flow > 0 ? rideSeconds(link) + (link.flow - 1) * RIDE_SPACING : steadyOf(node);
     } else ids.push(cueIds.link(j));
     if (says(node, 'lever')) {
       ids.push(storyIds.lever(j));
@@ -557,8 +560,8 @@ const everyInterval = (from: number, until: number, offset = 0): number[] => {
  *  its marks need. */
 function steadyLength(drawn: DiagramLayout, steadyActors: Actor[]): number {
   const said = [
-    ...drawn.items.map((item) => readSeconds(item.node.attrs.steady)),
-    ...drawn.links.map((link) => readSeconds(link.node?.attrs.steady)),
+    ...drawn.items.map((item) => steadyOf(item.node)),
+    ...drawn.links.map((link) => steadyOf(link.node)),
   ].filter((s) => Number.isFinite(s) && s > 0);
   const room = steadyActors.length * STEADY_STEP;
   if (said.length) return Math.max(...said, room);
@@ -655,7 +658,7 @@ export function planStory(
   const follow = followersOfLate(drawn, entering);
   // A lane that carries an established flow lets it pass before its tokens rest.
   const flowing = drawn.items.flatMap((item, i) =>
-    item.kind === 'lane' && readSeconds(item.node.attrs.steady) > 0 ? [cueIds.run(i, 0)] : [],
+    item.kind === 'lane' && steadyOf(item.node) > 0 ? [cueIds.run(i, 0)] : [],
   );
   const skipped = new Set([...actors.flatMap((a) => a.ids), ...follow.keys(), ...flowing]);
   const setup = schedule(setupCues(choreography, skipped), SETUP_SECONDS);
@@ -725,7 +728,7 @@ export function planStory(
   );
   // A band runs its normal time for as long as the established flow.
   const bands = drawn.items.flatMap((item, i) =>
-    item.kind === 'band' && readSeconds(item.node.attrs.steady) > 0 ? [i] : [],
+    item.kind === 'band' && steadyOf(item.node) > 0 ? [i] : [],
   );
   for (const i of bands) set(storyIds.steady(i), steadyStart, steadyEnd - steadyStart);
   let cursor = steadyFor > 0 ? steadyEnd + PHASE_GAP : steadyStart;
@@ -908,7 +911,6 @@ function planFlows(
   const trips = new Map<string, number>();
   const ends: number[] = [];
   const beats: StoryBeat[] = [];
-  const steadyOf = (node: DgNode | undefined) => readSeconds(node?.attrs.steady);
   let laneRank = 0;
   drawn.items.forEach((item, i) => {
     if (item.kind !== 'lane' || !(steadyOf(item.node) > 0)) return;

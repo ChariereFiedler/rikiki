@@ -61,6 +61,10 @@
 //   dg-panel    · name label layout … paint · a sub-picture, its names local (panel.mark)
 //   entity      · on any mark: the same object in several panels, which joins them
 //   dg-camera   · focus to beat after with duration · frames a mark, then pulls back (diagram/camera.ts)
+//                 zoom-from="slide-id/mark" · opens on the frame the slide before showed
+// The motifs of a deck (diagram/act.ts, deck-motifs.ts), on the root:
+//   acts act    · the strip of the act above the picture, and the step it stands at
+//   pair        · the slide of the remedy an incident answers
 //
 // Tokens: the scenes' own (--deck-scene-card-bg, --deck-scene-emphasis-bg …).
 // ════════════════════════════════════════════════════════════════
@@ -116,6 +120,7 @@ import {
   type ParsedDiagram,
   nameOf,
   parseDiagram,
+  readZoomFrom,
   roleOf,
 } from './diagram/model.js';
 import {
@@ -156,7 +161,23 @@ import {
   sceneStyles,
   sceneViewBox,
 } from './scene-kit.js';
-import { type CameraPlan, planCamera } from './diagram/camera.js';
+import {
+  type CameraPlan,
+  type Rect,
+  type View as CameraView,
+  planCamera,
+  viewFrom,
+} from './diagram/camera.js';
+import {
+  ACT_HEIGHT,
+  ACT_STEPS,
+  ACT_STRIP,
+  ACT_TYPE,
+  actIndex,
+  layoutAct,
+  readActs,
+} from './diagram/act.js';
+import type { Motif } from './deck-motifs.js';
 import { measurerFor } from './scene-kit.js';
 import type { Overflow, SceneIssue } from './scene-lint.js';
 
@@ -287,11 +308,62 @@ const tail = (t: Timing | undefined, share: number) =>
     ? `--t0:${(t.start + t.duration * share).toFixed(3)}s;--du:${(t.duration * (1 - share)).toFixed(3)}s`
     : '';
 
+/** The strip of the act · a rail, the steps behind in the ink of text, the step it
+ *  is at in that ink circled by the accent (the accent is a mark, never a surface: on
+ *  a pale page a disc of it would not be seen), the steps ahead as rings. */
+const actStyles = css`
+  svg.act {
+    overflow: visible;
+  }
+  .act-rail {
+    stroke: var(--deck-scene-card-stroke, var(--rik-border-default));
+    stroke-width: ${unsafeCSS(ACT_STRIP.rail)};
+    stroke-linecap: round;
+  }
+  .act-rail.act-reached {
+    stroke: var(--deck-scene-line, var(--rik-text-default));
+  }
+  .act-station {
+    fill: var(--deck-scene-line, var(--rik-text-default));
+  }
+  .act-station.act-todo {
+    fill: var(--rik-surface-page, var(--rik-surface-raised));
+    stroke: var(--deck-scene-muted, var(--rik-text-default--muted));
+    stroke-width: 2.5;
+  }
+  .act-station.act-current {
+    stroke: var(--deck-scene-emphasis-bg, var(--rik-accent));
+    stroke-width: 5;
+    paint-order: stroke;
+  }
+  .act-label {
+    fill: var(--rik-text-default);
+  }
+  .act-label.act-todo {
+    fill: var(--deck-scene-muted, var(--rik-text-default--muted));
+  }
+`;
+
+/** The marks a diagram names · what a motif of the deck keeps from slide to slide. */
+function namedMarks(tree: readonly DgNode[]): string[] {
+  const found: string[] = [];
+  const visit = (nodes: readonly DgNode[]) => {
+    for (const node of nodes) {
+      const drawn = node.kind !== 'link' && node.kind !== 'camera' && node.kind !== 'state';
+      if (drawn && node.attrs.name) found.push(node.attrs.name);
+      visit(node.children);
+    }
+  };
+  visit(tree);
+  return found;
+}
+
 @customElement('deck-diagram')
 export class DeckDiagram extends SceneElement {
   static override styles = [
     sceneStyles,
     piecesStyles,
+    actStyles,
     css`
       .frame-outline {
         fill: none;
@@ -574,12 +646,19 @@ export class DeckDiagram extends SceneElement {
         100% { offset-distance: 100%; opacity: 0; }
       }
 
-      /* Surfaces that say the part a mark plays, and the disc its icon sits in. */
+      /* Surfaces that say the part a mark plays, and the disc its icon sits in. Each is
+         seen on the page and told from the others on every theme, dark ones included
+         (scripts/diagram-paint.test.mjs measures them). The context is the text's ink
+         laid thin over the page · a theme's raised surface is a shade off it (1.05:1 in
+         siliceum) and a pale part was not there. The control and the incident stay tints
+         (under the 0.3 of opacity where \`check\` weighs a fill in the balance, as the
+         theme's tints were), the control at 28 % and the incident at 16 %: at the
+         theme's 18 % both, the mango and the ember of rikiki were one colour (delta E 5). */
       .p-pale {
-        fill: var(--deck-scene-card-bg, var(--rik-surface-raised));
+        fill: var(--deck-scene-pale-bg, color-mix(in srgb, var(--rik-text-default) 15%, var(--rik-surface-page)));
       }
       .p-gold {
-        fill: var(--deck-scene-gold-bg, var(--rik-accent--soft, var(--rik-surface-raised)));
+        fill: var(--deck-scene-gold-bg, color-mix(in srgb, var(--rik-accent) 28%, transparent));
       }
       .p-ink {
         fill: var(--deck-scene-band-bg, var(--rik-surface-inverse));
@@ -588,7 +667,7 @@ export class DeckDiagram extends SceneElement {
         fill: var(--deck-scene-ok-bg, var(--rik-status-success__bg, var(--rik-surface-raised)));
       }
       .p-bad {
-        fill: var(--deck-scene-bad-bg, var(--rik-status-danger__bg, var(--rik-surface-raised)));
+        fill: var(--deck-scene-bad-bg, color-mix(in srgb, var(--rik-status-danger) 16%, transparent));
       }
       .state-disc.d-pale {
         fill: var(--deck-scene-band-bg, var(--rik-surface-inverse));
@@ -609,6 +688,12 @@ export class DeckDiagram extends SceneElement {
       .icon.on-disc.d-gold,
       .icon.on-disc.d-ink {
         stroke: var(--deck-scene-emphasis-text, var(--rik-accent__on, var(--rik-text-default)));
+      }
+      /* A status disc is a saturated mid-tone · its icon is cut in the ink of the band,
+         which every theme keeps darkest (a light check on the green of rikiki: 1.7:1). */
+      .icon.on-disc.d-ok,
+      .icon.on-disc.d-bad {
+        stroke: var(--deck-scene-band-bg, var(--rik-surface-inverse));
       }
       .lever {
         fill: none;
@@ -770,13 +855,15 @@ export class DeckDiagram extends SceneElement {
       /* A surface on a dark panel · the tints of the parts are translucent, made for a
          light page, and would darken there: they are mixed over white instead. */
       .on-ink-surface {
-        --deck-scene-gold-bg: color-mix(in srgb, var(--rik-accent) 18%, var(--rik-surface-raised--strong, var(--rik-surface-page)));
+        --deck-scene-gold-bg: color-mix(in srgb, var(--rik-accent) 30%, var(--rik-surface-raised--strong, var(--rik-surface-page)));
         --deck-scene-ok-bg: color-mix(in srgb, var(--rik-status-success) 18%, var(--rik-surface-raised--strong, var(--rik-surface-page)));
         --deck-scene-bad-bg: color-mix(in srgb, var(--rik-status-danger) 18%, var(--rik-surface-raised--strong, var(--rik-surface-page)));
       }
-      /* On a pale panel the pale surfaces are the white of a card, so they stand out. */
+      /* On a pale panel the pale surfaces take the page again, so they stand out of it by
+         what the panel stands out of the page · the white of a card was the panel itself
+         in siliceum, whose raised surface is white. */
       .on-pale :is(.p-pale, .card, .frame-soft, .meter-track, .cell, .disc) {
-        fill: var(--deck-scene-card-raised, var(--rik-surface-raised--strong, var(--rik-surface-page)));
+        fill: var(--deck-scene-card-raised, var(--rik-surface-page));
       }
 
       /* The camera · each move eases from where it frames to the whole picture, its
@@ -840,6 +927,15 @@ export class DeckDiagram extends SceneElement {
   @property({ type: String }) balance?: string;
   @property({ type: String }) play?: string;
   @property({ type: String }) budget?: string;
+  @property({ type: String }) acts?: string;
+  @property({ type: String }) act?: string;
+  @property({ type: String }) pair?: string;
+
+  /** The id of the slide the deck came from to this one · a camera that opens from it
+   *  (`zoom-from`) takes over its frame, any other way in it frames its own mark. */
+  @state() private arrivedFrom: string | null = null;
+  /** Where the picture shown is drawn in the viewBox · what `placeInView` maps by. */
+  private placed?: { drawn: DiagramLayout; left: number; top: number; grow: number; shift: Point };
 
   /** The click the slide is on · what a playing diagram shows. */
   @state() private stage = 0;
@@ -891,6 +987,177 @@ export class DeckDiagram extends SceneElement {
       this.paused = false;
       void this.loopAfter(this.run);
     }
+  }
+
+  private deck: Element | null = null;
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this.deck = this.closest('deck-root');
+    this.deck?.addEventListener('slide-change', this.onSlideChange);
+    this.deck?.addEventListener('slide-leave', this.onSlideLeave);
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.deck?.removeEventListener('slide-change', this.onSlideChange);
+    this.deck?.removeEventListener('slide-leave', this.onSlideLeave);
+    this.deck = null;
+  }
+
+  /** The slide of this drawing is about to be hidden · how its picture stands on the
+   *  screen at this instant is kept, a camera half way through its move included. */
+  private readonly onSlideLeave = (event: Event): void => {
+    const { previous } = (event as CustomEvent<{ previous: Element | null }>).detail;
+    if (!previous?.contains(this)) return;
+    const view = this.screenView();
+    if (view) this.leftView = view;
+  };
+
+  /** Which slide the deck came from, when it arrives on this one · told before the
+   *  slide plays (deck-root changes the slide, then its step). */
+  private readonly onSlideChange = (event: Event): void => {
+    const { current, previous } = (
+      event as CustomEvent<{ current: Element | null; previous: Element | null }>
+    ).detail;
+    if (current?.contains(this)) this.arrivedFrom = previous?.id || null;
+  };
+
+  /** How the picture stood on the screen when its slide was left · from the units of
+   *  the picture to the screen, through every move of its camera as it then stood. A
+   *  slide left is hidden, and the next one's camera still needs to know where it was. */
+  private leftView?: DOMMatrix;
+
+  private drawingSvg(): SVGSVGElement | null {
+    return this.renderRoot.querySelector<SVGSVGElement>('svg:not([data-act])');
+  }
+
+  /** From the units of the picture to the screen, now · through the innermost move of
+   *  the camera, which holds the picture, so its animated transform counts. */
+  private screenView(): DOMMatrix | undefined {
+    const svg = this.drawingSvg();
+    if (!svg?.getBoundingClientRect().width) return undefined;
+    const moves = svg.querySelectorAll<SVGGElement>('g.cam');
+    return (moves[moves.length - 1] ?? svg).getScreenCTM() ?? undefined;
+  }
+
+  /** Where a mark of the picture stood on the screen when its slide was last left ·
+   *  what the next slide's camera takes over (`zoom-from`), where and as large as the
+   *  room saw it, a camera stopped half way included. */
+  placeOnScreen(name: string): Rect | undefined {
+    const place = this.placeInView(name);
+    const view = this.leftView;
+    if (!place || !view) return undefined;
+    const from = new DOMPoint(place.x, place.y).matrixTransform(view);
+    const to = new DOMPoint(place.x + place.w, place.y + place.h).matrixTransform(view);
+    return { x: from.x, y: from.y, w: to.x - from.x, h: to.y - from.y };
+  }
+
+  /** Where a mark of the picture shown stands, in the units of its viewBox. */
+  placeInView(name: string): Rect | undefined {
+    const at = this.placed;
+    const r = at?.drawn.places.get(name);
+    if (!at || !r) return undefined;
+    return {
+      x: at.left + (r.x + at.shift.x) * at.grow,
+      y: at.top + (r.y + at.shift.y) * at.grow,
+      w: r.w * at.grow,
+      h: r.h * at.grow,
+    };
+  }
+
+  /** The frame the slide before showed `zoom-from`'s mark in, seen here · only when
+   *  the deck came from that slide, else the camera frames its own mark. */
+  private openingFrom(text: string | undefined, here: Rect | undefined): CameraView | undefined {
+    const from = readZoomFrom(text);
+    const box = this.drawingSvg()?.getBoundingClientRect();
+    if (!from || !here || !box?.width || from.slide !== this.arrivedFrom) return undefined;
+    const slide = this.deck?.querySelector(`:scope > #${CSS.escape(from.slide)}`);
+    const seen = [...(slide?.querySelectorAll('deck-diagram') ?? [])]
+      .map((d) => (d as DeckDiagram).placeOnScreen(from.mark))
+      .find(Boolean);
+    if (!seen) return undefined;
+    // From the screen to this drawing's viewBox, where the camera frames.
+    const k = box.width / (this.width + 2 * EDGE);
+    const before = {
+      x: (seen.x - box.x) / k - EDGE,
+      y: (seen.y - box.y) / k - EDGE,
+      w: seen.w / k,
+      h: seen.h / k,
+    };
+    return viewFrom(before, here);
+  }
+
+  /** A mark a camera takes over from the slide before (`zoom-from`) is already there
+   *  when the slide opens · the room has just seen it, so it does not enter again:
+   *  it stands from the first frame, and the rest of the picture comes around it. */
+  private holdTakenOver(drawn: DiagramLayout, story: StoryPlan): void {
+    const mark = camerasOf(drawn.tree)
+      .map((camera) => readZoomFrom(camera.attrs['zoom-from'])?.mark)
+      .find(Boolean);
+    const i = mark ? drawn.items.findIndex((item) => item.node?.attrs.name === mark) : -1;
+    const id = cueIds.item(i);
+    const entrance = story.timing.get(id);
+    if (i >= 0 && entrance) story.timing.set(id, { ...entrance, start: 0, duration: 0.001 });
+  }
+
+  /** The step of the act the slide stands at · null when the diagram draws no strip. */
+  private actOf(): { steps: string[]; at: number } | null {
+    const steps = readActs(this.getAttribute('acts') ?? undefined);
+    const at = actIndex(steps, this.getAttribute('act') ?? undefined);
+    const counted = steps.length >= ACT_STEPS.min && steps.length <= ACT_STEPS.max;
+    return counted && at >= 0 ? { steps, at } : null;
+  }
+
+  /** The strip of the act, above the picture and out of the camera's frame. */
+  private actStrip(meter: Meter) {
+    const act = this.actOf();
+    if (!act) return { strip: nothing, misfit: [] as Overflow[] };
+    const layout = layoutAct(act.steps, act.at, this.width, {
+      regular: meter(ACT_TYPE.size, ACT_TYPE.weight),
+      bold: meter(ACT_TYPE.size, ACT_TYPE.current),
+    });
+    const french = (this.closest('[lang]')?.getAttribute('lang') ?? '').startsWith('fr');
+    const said = french
+      ? `Étape ${act.at + 1} sur ${act.steps.length} · ${act.steps[act.at]} (${act.steps.join(', ')})`
+      : `Step ${act.at + 1} of ${act.steps.length} · ${act.steps[act.at]} (${act.steps.join(', ')})`;
+    const { rail } = layout;
+    const strip = html`<svg class="act" data-act viewBox=${sceneViewBox(ACT_HEIGHT, this.width)} role="img" aria-label=${said} part="act">
+      <line class="act-rail" x1=${rail.x0} y1=${rail.y} x2=${rail.x1} y2=${rail.y}></line>
+      <line class="act-rail act-reached" x1=${rail.x0} y1=${rail.y} x2=${rail.reached} y2=${rail.y}></line>
+      ${layout.stations.map(
+        (
+          station,
+        ) => svg`<circle class="act-station act-${station.state}" cx=${station.x} cy=${rail.y} r=${station.state === 'current' ? ACT_STRIP.current : ACT_STRIP.station}></circle>
+          <text class="act-label act-${station.state}" x=${station.x} y=${layout.labelY + ACT_TYPE.size * BASELINE} text-anchor="middle" font-size=${ACT_TYPE.size} font-weight=${station.state === 'current' ? ACT_TYPE.current : ACT_TYPE.weight}>${station.label}</text>`,
+      )}
+    </svg>`;
+    const misfit: Overflow[] = layout.fits
+      ? []
+      : [
+          {
+            item: 'deck-diagram',
+            field: 'acts',
+            text: act.steps.join(' · '),
+            budget: this.width / act.steps.length,
+            size: ACT_TYPE.size,
+          },
+        ];
+    return { strip, misfit };
+  }
+
+  /** What the drawing says of its place in the deck · `rikiki check` reads it
+   *  (deck-motifs.ts) beside the words it measures. */
+  private motifOf(parsed: ParsedDiagram): Omit<Motif, 'words'> {
+    const zoom = camerasOf(parsed.children)
+      .map((camera) => readZoomFrom(camera.attrs['zoom-from']))
+      .find(Boolean);
+    return {
+      names: namedMarks(parsed.children),
+      act: this.actOf(),
+      pair: this.getAttribute('pair') || null,
+      zoomFrom: zoom ?? null,
+    };
   }
 
   /** The animations of the drawing · what the story's buttons and `seek` drive. */
@@ -986,10 +1253,12 @@ export class DeckDiagram extends SceneElement {
           budget: readSeconds(parsed.attrs.budget) || undefined,
         })
       : undefined;
+    if (this.story) this.holdTakenOver(current.drawn, this.story);
     this.drawn = current.drawn;
     this.drawnStages = frames.map((f) => f.drawn);
     this.noFitKeep = this.keepThatFits(parsed, options, frames);
-    this.reportOverflow(this.misfits(frames));
+    const act = this.actStrip(meter);
+    this.reportOverflow([...this.misfits(frames), ...act.misfit]);
     this.intentIssues = parsed.intent
       ? proveIntent(
           parsed.intent,
@@ -1038,6 +1307,7 @@ export class DeckDiagram extends SceneElement {
           }
         : { choreography: current.choreography, timing: current.timing, shown };
     const shift = shifts[parsed.states ? shown : 0]!;
+    this.placed = { drawn: current.drawn, left, top, grow, shift };
     this.grounds = groundsOf(parsed.children);
     const camera = this.story
       ? this.cameraOf(current.drawn, { left, top, grow, shift, height, meter })
@@ -1072,7 +1342,7 @@ export class DeckDiagram extends SceneElement {
           content,
         )
       : content;
-    return html`<svg viewBox=${sceneViewBox(height, this.width)} role="img" aria-label=${this.description(current.drawn)} part="drawing" data-layout=${parsed.attrs.compose ? 'compose' : (parsed.attrs.layout ?? 'row')} data-compose=${parsed.attrs.compose ?? nothing} data-camera=${camera ? '' : nothing} data-intent=${parsed.intent ? [parsed.intent.main, ...parsed.intent.also].join(' ') : nothing} data-balance=${parsed.attrs.balance === 'free' ? 'free' : nothing} data-lean=${leansAcross(parsed.attrs, current.drawn.tree) ? 'x' : nothing} data-signature=${JSON.stringify(signatureOf(parsed))} data-story=${this.story ? JSON.stringify(this.story.script) : nothing}>
+    return html`${act.strip}<svg viewBox=${sceneViewBox(height, this.width)} data-motif=${JSON.stringify(this.motifOf(parsed))} role="img" aria-label=${this.description(current.drawn)} part="drawing" data-layout=${parsed.attrs.compose ? 'compose' : (parsed.attrs.layout ?? 'row')} data-compose=${parsed.attrs.compose ?? nothing} data-camera=${camera ? '' : nothing} data-intent=${parsed.intent ? [parsed.intent.main, ...parsed.intent.also].join(' ') : nothing} data-balance=${parsed.attrs.balance === 'free' ? 'free' : nothing} data-lean=${leansAcross(parsed.attrs, current.drawn.tree) ? 'x' : nothing} data-signature=${JSON.stringify(signatureOf(parsed))} data-story=${this.story ? JSON.stringify(this.story.script) : nothing}>
       ${framed}
     </svg>${this.story && this.playing ? this.controls() : nothing}`;
   }
@@ -1137,13 +1407,17 @@ export class DeckDiagram extends SceneElement {
         ? { keep: captionOf(own).map(toView), avoid: captionOf(holder).map(toView) }
         : { keep: captionOf(holder).map(toView), avoid: [] };
     };
+    const place = (name: string) => {
+      const r = drawn.places.get(name);
+      return r ? toView(r) : undefined;
+    };
+    const zoomFrom = shots[0]?.node.attrs['zoom-from'];
+    const opening = this.openingFrom(zoomFrom, place(readZoomFrom(zoomFrom)?.mark ?? ''));
     return planCamera({
       shots,
       backId: storyIds.cameraBack,
-      place: (name) => {
-        const r = drawn.places.get(name);
-        return r ? toView(r) : undefined;
-      },
+      place,
+      ...(opening ? { opening } : {}),
       frame: { x: -EDGE, y: -EDGE, w: this.width + 2 * EDGE, h: at.height + 2 * EDGE },
       smallestText: (sizes.length ? Math.min(...sizes) : Number.POSITIVE_INFINITY) * at.grow,
       captions,
@@ -1345,7 +1619,12 @@ export class DeckDiagram extends SceneElement {
    *  height a slide holds, never wider than the canvas it sits on. */
   private room(): { w: number; h: number } {
     const asked = readBounds(this.getAttribute('bounds'));
-    return { w: Math.min(asked?.w ?? this.width, this.width), h: asked?.h ?? DIAGRAM_ROOM_HEIGHT };
+    // The strip of the act stands above the picture, in the height a slide holds.
+    const strip = this.actOf() ? ACT_HEIGHT : 0;
+    return {
+      w: Math.min(asked?.w ?? this.width, this.width),
+      h: (asked?.h ?? DIAGRAM_ROOM_HEIGHT) - strip,
+    };
   }
 
   /** The texts that did not fit, in every picture, each once. */

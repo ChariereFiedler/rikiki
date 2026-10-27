@@ -402,6 +402,9 @@ function switchParts(env: TextEnv, node: DgNode): SwitchParts & { h: number } {
 
 /** A figure rolls through this many values at most · the eye reads them as counting. */
 const MAX_FRAMES = 12;
+/** The most decimals a figure on its way is written with · what `toFixed` can write.
+ *  The last figure is the value as written, whatever its decimals. */
+const MAX_ROLLING_DECIMALS = 100;
 
 /** The figures a rolling value shows, from `from` to the value written, each with the
  *  share of the roll it shows from · whole steps when there are few, else eased so it
@@ -419,7 +422,7 @@ export function rollingFigures(
   const group = /\d([\s  ])\d{3}(?!\d)/.exec(written)?.[1];
   const comma = /\d,\d+\s*$/.test(written);
   const format = (n: number) => {
-    const [whole, part] = Math.abs(n).toFixed(decimals).split('.');
+    const [whole, part] = Math.abs(n).toFixed(Math.min(decimals, MAX_ROLLING_DECIMALS)).split('.');
     const grouped = group ? whole!.replace(/\B(?=(\d{3})+(?!\d))/g, group) : whole!;
     const sign = n < 0 ? '−' : '';
     const figure = part ? `${grouped}${comma ? ',' : '.'}${part}` : grouped;
@@ -578,7 +581,10 @@ function bandParts(env: TextEnv, node: DgNode, width: number): BandParts & { h: 
     return Number.isFinite(n) ? n : fallback;
   };
   const from = num('from', 0);
-  const to = Math.max(from + 1, num('to', from + 1));
+  // Any end past the start is kept as written, however short · one unit only stands
+  // in for an end that is missing or not past the start (DG_BAND_NO_CUT says so).
+  const written = num('to', from + 1);
+  const to = written > from ? written : from + 1;
   const clampTo = (n: number) => Math.min(to, Math.max(from, n));
   const cut = clampTo(num('cut', (from + to) / 2));
   const until = clampTo(Math.max(cut, num('until', to)));

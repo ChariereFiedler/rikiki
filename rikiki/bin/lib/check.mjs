@@ -14,6 +14,7 @@
 import { basename } from 'node:path';
 import { capacityOf } from '../../dist/scene-capacity.js';
 import { ILL_LIMITS, lintIllustration, scoreIssues } from '../../dist/ill-rules.js';
+import { deckMotifIssues } from '../../dist/deck-motifs.js';
 import { measureDiversity, repeatedLookIssues, signatureFromInk } from '../../dist/diversity.js';
 import { RICHNESS_CRITERIA, measureRichness, modelRepeatIssues, richnessIssues, wordsByMark } from '../../dist/richness.js';
 import { reviewQuality } from './quality.mjs';
@@ -31,6 +32,7 @@ import {
   buildPolicy,
   decide,
   exceptionFindings,
+  optionFindings,
   readExceptions,
   resolveOverrides,
   scopeOf,
@@ -923,7 +925,13 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, pathRead
     const frameBox = svg.getBoundingClientRect();
     if (frameBox.width < 240 || frameBox.height < 120) return null;
     const host = svg.getRootNode()?.host ?? svg;
-    const room = host.getBoundingClientRect();
+    const hostBox = host.getBoundingClientRect();
+    // The strip of an act stands above a diagram's drawing · the room the drawing was
+    // given starts under it, or every drawing with a strip would weigh low.
+    const strip = svg.parentNode?.querySelector?.(':scope > svg[data-act]');
+    const room = strip && strip !== svg
+      ? { left: hostBox.left, right: hostBox.right, top: strip.getBoundingClientRect().bottom, bottom: hostBox.bottom }
+      : hostBox;
     const painted = inkShapesOf(svg, accent);
     const shapes = painted.filter(isInked);
     const tints = painted.filter((shape) => !isInked(shape) && shape.paint);
@@ -1046,6 +1054,7 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, pathRead
     const small = [];
     const contrast = [];
     const illustrations = [];
+    const motifs = [];
     const accent = accentColour();
     // The slide names where its figures come from · what the richness asks of a fact.
     const sourced = elements.some((el) => el.localName === 'deck-source');
@@ -1056,7 +1065,17 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, pathRead
       const model = inkModelOf(svg, labels, motion, accent);
       // A diagram says what it is made of (`data-signature`) · what `diversity`
       // compares, beside the ink measured here.
-      if (model) illustrations.push({ path: pathOf(svg.getRootNode()?.host ?? svg), tag: (svg.getRootNode()?.host ?? svg).localName, model, signature: svg.getAttribute('data-signature'), sourced });
+      // The strip of an act (`data-act`) says where the deck stands, it is no drawing ·
+      // its words are measured like any, and it is not judged as an illustration.
+      if (model && !svg.hasAttribute('data-act')) illustrations.push({ path: pathOf(svg.getRootNode()?.host ?? svg), tag: (svg.getRootNode()?.host ?? svg).localName, model, signature: svg.getAttribute('data-signature'), motif: svg.getAttribute('data-motif'), sourced });
+      // What a diagram declares of its place in the deck (`data-motif`) is read on every
+      // one, scored or too small to be · a pair or a zoom-from may name any of them.
+      if (svg.hasAttribute('data-motif') && !svg.hasAttribute('data-act'))
+        motifs.push({
+          path: pathOf(svg.getRootNode()?.host ?? svg),
+          motif: svg.getAttribute('data-motif'),
+          texts: labels.map((label) => ({ text: label.el.textContent.trim().replace(/\s+/g, ' '), ...ownerOf(label.el) })),
+        });
       escapes.push(...svgEscapesIn(svg, labels).filter((found) => !isReported(found.text)));
       overlaps.push(
         ...svgOverlapsIn(labels).filter((found) => !isReported(found.textA) && !isReported(found.textB)),
@@ -1070,6 +1089,7 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, pathRead
       svgTextSmall: small.sort((a, b) => a.px - b.px).slice(0, limits.svgFindingsPerSlide),
       svgTextContrast: contrast.sort((a, b) => a.ratio - b.ratio).slice(0, limits.svgFindingsPerSlide),
       illustrations: illustrations.slice(0, 6),
+      motifs,
       sceneIssues,
       sceneFonts,
     };
@@ -1591,8 +1611,9 @@ function diagnoseVisual(visual, outline, limits) {
   return found;
 }
 
-/** Turn the measurements into findings · this is where policy lives. */
-function diagnose(page, source, limits, illustrations = null) {
+/** Turn the measurements into findings · this is where policy lives. `illustrations`
+ *  gathers the drawings scored, `motifs` what every diagram declares of the deck. */
+function diagnose(page, source, limits, illustrations = null, motifs = null) {
   const found = [];
 
   if (!page.runtimeLoaded) {
@@ -1862,6 +1883,13 @@ function diagnose(page, source, limits, illustrations = null) {
         }),
       );
     }
+    for (const declared of slide.motifs ?? [])
+      motifs?.push({
+        slide: slide.index,
+        slideId: slide.id,
+        element: declared.path,
+        motif: { ...declaredSignature(declared.motif), words: wordsByMark({ texts: declared.texts }) },
+      });
     for (const illustration of slide.illustrations ?? []) {
       const verdict = lintIllustration(illustration.model, limits.ill);
       const meaning = meaningOf(illustration, slide.sceneIssues ?? []);
@@ -1879,9 +1907,11 @@ function diagnose(page, source, limits, illustrations = null) {
         signature: signatureFromInk(illustration.tag, illustration.model, declared),
         // Whether there is something to see · a measure, never part of the verdict.
         richness: measureRichness({ model: illustration.model, signature: declared, sourced: illustration.sourced, tag: illustration.tag }),
-        // The words of its named marks · whether a repeated model progresses, read
-        // by `richnessOf` and dropped from the report.
-        motif: wordsByMark(illustration.model),
+        // The words of its named marks and what it says of its place in the deck
+        // (`data-motif`: its marks, its act, its pair, its zoom-from) · whether a
+        // repeat progresses and what the deck declares, read by `diversityOf`,
+        // `richnessOf` and `motifsOf`, and dropped from the report.
+        motif: { ...declaredSignature(illustration.motif), words: wordsByMark(illustration.model) },
         // What the verdict is made of · judged again once the deck's policy has
         // dropped findings or changed their severity (`rescoreIllustrations`).
         findings: {
@@ -2052,6 +2082,7 @@ function dedupeStateDiagnostics(diagnostics) {
 async function diagnoseAllStates(page, indexes, slideCount, inspectOpts, source, limits, { steps, plugins, pluginTimeoutMs, pluginPolicy }) {
   const found = [];
   const illustrations = [];
+  const motifs = [];
   let statesInspected = 0;
   for (const index of indexes) {
     if (page.isClosed()) break;
@@ -2078,14 +2109,17 @@ async function diagnoseAllStates(page, indexes, slideCount, inspectOpts, source,
       const scanDocument = index === indexes[0] && state === 0;
       const snapshot = await page.evaluate(inspectPage, { ...inspectOpts, only: index, scanDocument });
       statesInspected += 1;
-      for (const d of diagnose(snapshot, source, limits, illustrations)) found.push(steps ? { ...d, state } : d);
+      for (const d of diagnose(snapshot, source, limits, illustrations, motifs)) found.push(steps ? { ...d, state } : d);
       found.push(...await runCheckPlugins(page, plugins, { slide: index, state, documentPass: scanDocument }, pluginTimeoutMs, pluginPolicy));
       if (page.isClosed()) break;
       if (!steps || !(await advanceStep(page))) break;
       state += 1;
     }
   }
-  return { diagnostics: dedupeStateDiagnostics(found), statesInspected, illustrations: worstPerDrawing(illustrations) };
+  // Every state of every drawing · the policy judges each before the worst is kept.
+  // What each diagram declares, as the last state walked shows it · the picture the room is left with.
+  const declared = new Map(motifs.map((row) => [`${row.slide}|${row.element}`, row]));
+  return { diagnostics: dedupeStateDiagnostics(found), statesInspected, illustrationStates: illustrations, motifs: [...declared.values()] };
 }
 
 /** One row per drawing · a slide walked through several states measures the same
@@ -2109,7 +2143,7 @@ function worstPerDrawing(rows) {
  *  severity it gave them · a silenced rule no longer weighs on a verdict, a raised
  *  one may fail it. The row says which of its findings were left out. */
 function rescoreIllustrations(rows, judge) {
-  return rows.map(({ findings, motif: _motif, ...row }) => {
+  return rows.map(({ findings, ...row }) => {
     if (!findings) return row;
     const where = { slide: row.slide, element: row.element };
     const left = [];
@@ -2134,6 +2168,13 @@ function rescoreIllustrations(rows, judge) {
       ...(left.length ? { suppressed: [...new Set(left)] } : {}),
     };
   });
+}
+
+/** One verdict per drawing, on the findings the deck's policy kept · every state
+ *  walked is judged again first, then the worst of them stands: a state that was
+ *  the worst before the policy may be the best after it. */
+export function illustrationVerdicts(rows, judge) {
+  return worstPerDrawing(rescoreIllustrations(rows, judge)).map(({ motif: _motif, ...row }) => row);
 }
 
 /** How alike the illustrations of the deck are · the gallery's numbers, and one
@@ -2176,10 +2217,23 @@ function richnessOf(illustrations, { findings }) {
   const suggestion = 'a measure of what there is to see, never a defect · the fix says what the drawing lacks, and a reviewer decides';
   const own = illustrations.flatMap((row) => richnessIssues(row.richness).map(({ code, severity, message, ...extra }) =>
     diagnostic(code, severity, message, { slide: row.slide, slideId: row.slideId, element: row.element, ...extra, suggestion })));
-  const uses = illustrations.map((row) => ({ slide: row.slide, slideId: row.slideId, model: row.richness.model, words: row.motif }));
+  const uses = illustrations.map((row) => ({ ...row.motif, slide: row.slide, slideId: row.slideId, model: row.richness.model }));
   const repeats = modelRepeatIssues(uses).map(({ code, severity, message, ...extra }) =>
     diagnostic(code, severity, message, { slide: extra.measurement.slide, slideId: extra.measurement.slideId, ...extra, suggestion }));
   return { report, issues: [...own, ...repeats] };
+}
+
+/** What the motifs of the deck declare wrong · a pair whose remedy is missing or drops
+ *  the incident's marks, a camera that opens from a slide that is not the one before,
+ *  one act written two ways. Always said: the author declared them. `partial` when
+ *  only some slides were walked, so a slide that was not is not called missing.
+ *  `declared` is every diagram's declaration, scored as an illustration or not. */
+function motifsOf(declared, { partial }) {
+  return deckMotifIssues(declared, { partial }).map(({ code, severity, message, ...extra }) =>
+    diagnostic(code, severity, message, {
+      ...extra,
+      suggestion: 'a motif of the deck ties two slides · the fix names the attribute and the slide to change',
+    }));
 }
 
 /** Every code this run can meet · the built-in rules and the rules of the plugins that loaded. */
@@ -2187,6 +2241,18 @@ const knownCodes = (resolution) => [
   ...BUILTIN_RULES.map((r) => r.code),
   ...resolution.plugins.flatMap((p) => p.rules.map((r) => r.code)),
 ];
+
+/** What the policy itself gets wrong against this deck and its plugins · said by a
+ *  check and by `--list-checks` alike, which exits 2 on such an error. */
+function policyMistakes(policy, resolution, overrides, scopeErrors) {
+  const pending = resolution.plugins.filter((p) => p.status !== 'loaded').map((p) => p.namespace);
+  const readers = resolution.plugins.filter((p) => p.status === 'loaded').flatMap((p) => p.rules.map((r) => r.code));
+  return [
+    ...selectionFindings(policy, { known: knownCodes(resolution), pending }),
+    ...optionFindings(policy, { readers, pending }),
+    ...overrideFindings(overrides, scopeErrors),
+  ];
+}
 
 /** What a plugin's rules may do on a slide · which are silenced there (they then do
  *  not run at all) and the options the policy gives each (`check.options`,
@@ -2205,8 +2271,17 @@ function pluginPolicyOf(policy, placed) {
   return (rules, slideIndex) => {
     const slide = placed.outline.find((s) => s.index === slideIndex) ?? null;
     const slideOverrides = placed.overrides.filter((o) => o.elements === null && slide && o.covers({ slide: slideIndex }, slide));
-    const silenced = (rule) =>
-      !decide(policy, rule.code, rule.severity, { overrides: rule.scope === 'document' ? [] : slideOverrides }).kept;
+    // An override that names elements may take a rule back under one of them · the
+    // rule then runs, and its findings are judged where they stand, after.
+    const elementOverrides = (rule) =>
+      placed.overrides.filter((o) => o.elements?.length && (rule.scope === 'document' || o.slides === null || o.slides.includes(slideIndex)));
+    const keptWith = (rule, overrides) => decide(policy, rule.code, rule.severity, { overrides }).kept;
+    const silenced = (rule) => {
+      const around = rule.scope === 'document' ? [] : slideOverrides;
+      if (keptWith(rule, around)) return false;
+      // One element override at a time, in the order written, is enough to tell.
+      return !elementOverrides(rule).some((one) => keptWith(rule, placed.overrides.filter((o) => o === one || around.includes(o))));
+    };
     return {
       disabled: rules.filter(silenced).map((r) => r.code),
       options: Object.fromEntries(rules.map((r) => [r.code, optionsOf(r.code)])),
@@ -2289,14 +2364,12 @@ function listChecksReport({ deckPath, policy, placed, resolution, chosen, findin
       ...(enabled === 'mixed' ? { slides: { on, off } } : {}),
     };
   });
-  const known = rules.map((r) => r.code);
-  const pending = resolution.plugins.filter((p) => p.status !== 'loaded').map((p) => p.namespace);
   return {
     schema: REPORT_SCHEMA,
     deck: basename(deckPath),
     checks,
     selection: selectionReport(policy, placed.overrides, placed.exceptions),
-    diagnostics: [...findings, ...selectionFindings(policy, { known, pending })],
+    diagnostics: findings,
     notChecked: [
       'the deck · --list-checks measures nothing, it says what a check would look for',
       ...resolution.notChecked,
@@ -2353,6 +2426,8 @@ export async function checkDeck(
       let diagnostics;
       let statesInspected;
       let illustrations = [];
+      let illustrationStates = [];
+      let declaredMotifs = [];
       if (settled) await startCheckPlugins(page, resolution, pluginTimeoutMs);
       else for (const plugin of resolution.plugins) {
         plugin.status = 'skipped';
@@ -2386,13 +2461,18 @@ export async function checkDeck(
       const judge = (finding) => decide(policy, finding.code, finding.severity, scopeOf(finding, placed));
       const pluginPolicy = pluginPolicyOf(policy, placed);
 
-      if (listChecks) return listChecksReport({ deckPath, policy, placed, resolution, chosen, findings: [...policyFindings, ...resolution.diagnostics] });
+      if (listChecks) {
+        const mistakes = policyMistakes(policy, resolution, overrides, observed.scopeErrors ?? {});
+        return listChecksReport({ deckPath, policy, placed, resolution, chosen, findings: [...policyFindings, ...resolution.diagnostics, ...mistakes] });
+      }
 
       if (settled && observed.slides.length && !page.isClosed()) {
         const walked = await diagnoseAllStates(page, chosen, observed.slides.length, inspectOpts, source, limits, { steps, plugins: resolution, pluginTimeoutMs, pluginPolicy });
         diagnostics = walked.diagnostics;
         statesInspected = walked.statesInspected;
-        illustrations = walked.illustrations;
+        illustrationStates = walked.illustrationStates;
+        declaredMotifs = walked.motifs;
+        illustrations = worstPerDrawing(illustrationStates);
       } else {
         // Nothing to walk: the deck never settled, or it holds no slide at
         // all. One whole-document pass is all there is to report · on a deck
@@ -2409,6 +2489,7 @@ export async function checkDeck(
       diagnostics.push(...repeatedLooks);
       const { report: richnessReport, issues: richnessFindings } = richnessOf(illustrations, { findings: richness });
       diagnostics.push(...richnessFindings);
+      diagnostics.push(...motifsOf(declaredMotifs, { partial: subset }));
 
       let narrative = { status: 'not-run' };
       if ((narrativeOut || narrativeReview) && !page.isClosed() && settled) {
@@ -2495,12 +2576,12 @@ export async function checkDeck(
       diagnostics = [
         ...applied.kept,
         ...policyFindings,
-        ...selectionFindings(policy, { known, pending: coverage.unloaded }),
-        ...overrideFindings(overrides, observed.scopeErrors ?? {}),
+        // Read again after the walk · a plugin may have stopped loading on the way.
+        ...policyMistakes(policy, resolution, overrides, observed.scopeErrors ?? {}),
         ...exceptionFindings(exceptions, policy, { known, coverage }),
       ];
       const suppressed = applied.suppressed;
-      illustrations = rescoreIllustrations(illustrations, judge);
+      illustrations = illustrationVerdicts(illustrationStates, judge);
       // `suppressed` only when there is some · a report of a deck with no policy keeps
       // the shape a consumer already reads.
       const summary = { error: 0, warning: 0, ...(suppressed.length ? { suppressed: suppressed.length } : {}) };
@@ -2567,10 +2648,12 @@ function formatDiversity(diversity, illustrations) {
   const lines = [
     `Diversity · ${diversity.illustrations} illustrations · ${diversity.structures} structures (${diversity.structuresPer100}/100)`
       + ` · ${diversity.intents.length} intents · largest family ${family ? `${family.name} ${Math.round(family.share * 100)} %` : 'none'}`
-      + ` · ${diversity.repeated.length} pair(s) alike · mean nearest ${diversity.meanNearest}`,
+      + ` · ${diversity.repeated.length} pair(s) alike · ${diversity.progressing?.length ?? 0} motif(s) that progress · mean nearest ${diversity.meanNearest}`,
   ];
   for (const pair of diversity.repeated)
     lines.push(`    alike  slide ${pair.a.slide} · slide ${pair.b.slide} · distance ${pair.distance.d}`);
+  for (const pair of diversity.progressing ?? [])
+    lines.push(`    motif  slide ${pair.a.slide} · slide ${pair.b.slide} · distance ${pair.distance.d} · ${pair.progress.join(', ')}`);
   if (!diversity.matrix) return lines;
   diversity.matrix.forEach((row, i) => {
     const others = row.map((d, j) => ({ d, j })).filter(({ j }) => j !== i);

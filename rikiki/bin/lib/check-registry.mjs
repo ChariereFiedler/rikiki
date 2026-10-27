@@ -14,6 +14,7 @@
 // They are ALWAYS ON: no selection hides "I could not look".
 // ════════════════════════════════════════════════════════════════
 
+import { DECK_MOTIF_CODES } from '../../dist/deck-motifs.js';
 import { ILL_CODES } from '../../dist/ill-rules.js';
 import { INT_CODES } from '../../dist/intent-specs.js';
 import { RICHNESS_CODES } from '../../dist/richness.js';
@@ -49,8 +50,9 @@ const CORE = Object.freeze({
   svg: ['SVG_TEXT_ESCAPES', 'SVG_TEXT_OVERLAP', 'SVG_TEXT_TOO_SMALL', 'SVG_TEXT_CONTRAST_LOW', 'SCENE_FONT_FALLBACK'],
   /** Read off the pixels · only when the visual pass runs. */
   visual: ['SLIDE_TOP_HEAVY'],
-  /** About the deck as a whole · two drawings alike. */
-  deck: ['ILL_REPEATED_LOOK'],
+  /** About the deck as a whole · two drawings alike, and the motifs that tie slides
+   *  (a pair, a camera opened from the slide before, the strip of an act). */
+  deck: ['ILL_REPEATED_LOOK', ...DECK_MOTIF_CODES],
 });
 
 /** The run itself · the walk, the page, the reviews. */

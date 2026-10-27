@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════════════════════════
-   RIKIKI · Siliceum theme
+   RIKIKI · siliceum theme
    Warm paper with a yellow accent. Source Sans Pro + JetBrains Mono.
    Three layers: palette (private) → semantic (public) → component.
    The semantic-layer names match rikiki.css 1:1 · only the underlying
@@ -218,7 +218,7 @@
   --rik-space-5:                      2.25rem;
   --rik-space-6:                      3.5rem;
 
-  /* Siliceum stays austere · radius capped at 8px to feel "industrial paper" */
+  /* siliceum stays austere · radius capped at 8px to feel "industrial paper" */
   --rik-radius-xs:                    2px;
   --rik-radius-sm:                    4px;
   --rik-radius-md:                    6px;

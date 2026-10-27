@@ -112,6 +112,16 @@ describe('a story, the kill switch', () => {
     expect(drawn.status).toBe('fit');
   });
 
+  it("plays a steady it refused as the diagram's own · never the length written", () => {
+    const refused = story(killSwitch('120s'), { layout: 'column', align: 'start' });
+    expect(refused.parsed.issues.map((i) => i.code)).toContain('DG_VALUE_INVALID');
+    const own = story(killSwitch('3s'), { layout: 'column', align: 'start' });
+    expect(refused.plan.script.writtenMs).toBe(own.plan.script.writtenMs);
+    expect([...refused.plan.departures.values()].flat()).toEqual(
+      [...own.plan.departures.values()].flat(),
+    );
+  });
+
   it('lets the system run before it breaks · the flow passes, then the event', () => {
     const { plan } = story(killSwitch(), { layout: 'column', align: 'start' });
     expect(plan.script.steadyMs).toBeGreaterThanOrEqual(1500);

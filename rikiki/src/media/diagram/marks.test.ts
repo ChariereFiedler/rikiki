@@ -287,6 +287,16 @@ describe('a figure that rolls', () => {
     expect(actSeconds(timer)).toBeGreaterThan(0);
     expect(actSeconds(counter)).toBeGreaterThan(0);
   });
+
+  it('lays out a figure written with more decimals than a figure can show, and keeps it as written', () => {
+    const long = `0.${'1'.repeat(101)}`;
+    const { drawn } = lay([el('dg-counter', { name: 'c', label: 'taux', value: long })]);
+    const counter = piece(drawn.items, 'counter');
+    expect(counter.texts.at(-1)!.lines.join('')).toContain('1111');
+    const figures = rollingFigures(env, long, 0, undefined, true);
+    expect(figures.at(-1)!.text).toBe(env.figure(long));
+    expect(figures.length).toBeGreaterThan(2);
+  });
 });
 
 describe('a band of time, cut once', () => {
@@ -322,6 +332,23 @@ describe('a band of time, cut once', () => {
     expect(band.brace!.y).toBeGreaterThan(band.gap.y + band.gap.h);
     expect(band.braceLabel!.lines).toEqual(['19 h sans lead']);
     expect(band.tag!.y + band.tag!.line).toBeLessThanOrEqual(band.track.y);
+  });
+
+  it('keeps a span shorter than one unit as written · no time after it invented', () => {
+    const short = lay([
+      el('dg-band', { name: 'b', from: '0', to: '0.5', cut: '0.25', until: '0.5' }),
+    ]);
+    expect(short.parsed.issues).toEqual([]);
+    const half = piece(short.drawn.items, 'band');
+    expect(half.normal.w).toBeCloseTo(half.track.w / 2, 0);
+    expect(half.gap.w).toBeCloseTo(half.track.w / 2, 0);
+    expect(half.after).toBeUndefined();
+    // A span with no length still draws one unit, as before.
+    const flat = piece(
+      lay([el('dg-band', { name: 'f', from: '3', to: '3', cut: '3' })]).drawn.items,
+      'band',
+    );
+    expect(flat.track.w).toBeGreaterThan(0);
   });
 });
 

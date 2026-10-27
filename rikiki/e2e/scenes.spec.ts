@@ -108,9 +108,21 @@ test.describe('the layout keeps every word readable', () => {
 test('two scene modules in one deck both draw', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto('/rikiki/decks/tests/deck-scene-together.html#2');
-  const steps = sceneById(page, 'together-steps');
-  await expect.poll(() => steps.evaluate((el) => el.shadowRoot?.querySelectorAll('text').length ?? 0)).toBeGreaterThan(0);
+  // Each scene is drawn when its slide is shown · both slides are visited, and each
+  // module must have drawn its own words, not merely loaded without an error.
+  const drawn = [
+    { slide: 1, id: 'together-cards', words: ['Cards', 'Steps'] },
+    { slide: 2, id: 'together-steps', words: ['load', 'load again'] },
+  ];
+  for (const { slide, id, words } of drawn) {
+    await page.goto(`/rikiki/decks/tests/deck-scene-together.html#${slide}`);
+    const scene = sceneById(page, id);
+    await expect
+      .poll(() => scene.evaluate((el) => [...(el.shadowRoot?.querySelectorAll('text') ?? [])].map((t) => t.textContent?.trim())), {
+        message: `${id} draws its items`,
+      })
+      .toEqual(expect.arrayContaining(words));
+  }
   expect(errors, 'no module failed to load').toEqual([]);
 });
 
@@ -474,6 +486,20 @@ test.describe('composition', () => {
       .poll(async () => (await scene.getAttribute('data-scene-issues')) ?? '')
       .toContain('SCENE_LAYOUT_INVALID');
     await expect(scene.locator('p')).toBeHidden();
+  });
+
+  test('a second closing band is named, and hidden rather than drawn over the first', async ({ page }) => {
+    const scene = await openComposition(page, 1);
+    await scene.evaluate((host) => {
+      const second = document.createElement('deck-scene-band');
+      second.setAttribute('label', 'A second conclusion');
+      host.append(second);
+    });
+    await expect
+      .poll(async () => (await scene.getAttribute('data-scene-issues')) ?? '')
+      .toContain('"deck-scene-band"');
+    await expect(scene.locator('deck-scene-band').first()).toBeVisible();
+    await expect(scene.locator('deck-scene-band').nth(1)).toBeHidden();
   });
 
   test('a stack of scenes taller than a slide is named once, on the composition', async ({ page }) => {

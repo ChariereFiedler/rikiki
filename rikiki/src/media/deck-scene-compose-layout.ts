@@ -103,8 +103,12 @@ export interface RowFrame {
 export function rowFrame(shares: number[], total = SCENE_WIDTH, gutter = REGION_GAP): RowFrame {
   const count = shares.length;
   const room = total - (count - 1) * gutter;
-  const sum = shares.reduce((a, b) => a + b, 0);
-  const widths = shares.map((share) => (room * share) / sum);
+  // Shares are proportions · each is read against the largest first, so shares as
+  // large as a number gets ("1e308:1e308") never add up past what a number holds.
+  const largest = Math.max(...shares);
+  const proportions = shares.map((share) => share / largest);
+  const sum = proportions.reduce((a, b) => a + b, 0);
+  const widths = proportions.map((share) => (room * share) / sum);
   const tracks = widths.map((w) => w + 2 * EDGE);
   const gap = gutter - 2 * EDGE;
   const gutterCentres: number[] = [];

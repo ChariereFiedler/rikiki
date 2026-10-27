@@ -6,14 +6,16 @@ import {
   MAX_ZOOM,
   type Rect,
   type View,
+  ZOOM_FROM_MAX,
   planCamera,
   viewAround,
+  viewFrom,
   viewOn,
 } from './camera.js';
 import { choreograph } from './choreography.js';
 import { compileIntent } from './intent.js';
 import { type Meter, layoutDiagram } from './layout.js';
-import { type DgNode, type ElementLike, parseDiagram } from './model.js';
+import { type DgNode, type ElementLike, parseDiagram, readZoomFrom } from './model.js';
 import { planStory, storyIds } from './story.js';
 
 // ════════════════════════════════════════════════════════════════
@@ -202,5 +204,79 @@ describe('a camera in a story', () => {
       ]),
     );
     expect(parsed.issues.map((i) => i.code)).toContain('DG_CAMERA_STORY');
+  });
+});
+
+describe('a chapter opened from the slide before (zoom-from)', () => {
+  const place = (name: string): Rect | undefined =>
+    ({ code: { x: 700, y: 260, w: 200, h: 80 } })[name];
+  const plan = (camera: Record<string, string>, opening?: View) =>
+    planCamera({
+      shots: [{ node: node(camera), id: 'c0' }],
+      backId: 'back',
+      place,
+      frame: FRAME,
+      smallestText: 23,
+      ...(opening ? { opening } : {}),
+    });
+
+  it('reads slide-id/mark, a panel qualified, and nothing else', () => {
+    expect(readZoomFrom('remede-tests/ci')).toEqual({ slide: 'remede-tests', mark: 'ci' });
+    expect(readZoomFrom(' s3/modele.flag ')).toEqual({ slide: 's3', mark: 'modele.flag' });
+    expect(readZoomFrom('ci')).toBeNull();
+    expect(readZoomFrom('a/b/c')).toBeNull();
+  });
+
+  it('shows the mark where and as large as the slide before showed it', () => {
+    const before = { x: 1000, y: 100, w: 400, h: 160 };
+    const here = { x: 700, y: 260, w: 200, h: 80 };
+    const v = viewFrom(before, here);
+    expect(v.s).toBeCloseTo(2, 5);
+    const corner = apply(v, { x: here.x, y: here.y });
+    expect(corner.x).toBeCloseTo(before.x, 5);
+    expect(corner.y).toBeCloseTo(before.y, 5);
+    // Drawn larger here, it is shown at its own size, centred where it stood.
+    expect(viewFrom({ x: 0, y: 0, w: 100, h: 40 }, here).s).toBe(1);
+    expect(viewFrom({ x: 0, y: 0, w: 4000, h: 1600 }, here).s).toBe(ZOOM_FROM_MAX);
+  });
+
+  it('opens on that frame when the slide is reached from there, on its own mark otherwise, and ends whole', () => {
+    const taken = viewFrom({ x: 1000, y: 100, w: 400, h: 160 }, place('code')!);
+    const from = plan({ 'zoom-from': 'avant/code', to: 'all' }, taken);
+    expect(from.views[0]).toEqual(taken);
+    expect(from.views.at(-1)).toEqual(IDENTITY);
+    expect(from.issues).toEqual([]);
+    const direct = plan({ 'zoom-from': 'avant/code', to: 'all' });
+    expect(direct.views[0]).toEqual(plan({ focus: 'code', to: 'all' }).views[0]);
+    expect(direct.views[0]!.s).toBeGreaterThan(1);
+  });
+
+  it('is read on the first camera only, and says what focus beside it repeats', () => {
+    const late = planCamera({
+      shots: [
+        { node: node({ to: 'all' }), id: 'c0' },
+        { node: node({ name: 'tard', 'zoom-from': 'avant/code', to: 'all' }), id: 'c1' },
+      ],
+      backId: 'back',
+      place,
+      frame: FRAME,
+      smallestText: 23,
+    });
+    expect(late.issues.find((i) => i.code === 'DG_CAMERA_TARGET')).toMatchObject({
+      severity: 'warning',
+      items: ['tard'],
+    });
+    const parsed = parseDiagram(
+      el('deck-diagram', { play: 'enter', layout: 'row' }, [
+        el('dg-box', { name: 'ci', label: 'job CI' }),
+        el('dg-camera', { name: 'recul', 'zoom-from': 'avant/ci', focus: 'ci', to: 'all' }),
+        el('dg-camera', { name: 'faux', 'zoom-from': 'avant', to: 'all' }),
+        el('dg-camera', { name: 'ailleurs', 'zoom-from': 'avant/nulle', to: 'all' }),
+      ]),
+    );
+    const said = parsed.issues.map((i) => `${i.code} ${i.severity} ${i.items.join(',')}`);
+    expect(said).toContain('DG_CAMERA_TARGET warning camera recul · focus');
+    expect(said).toContain('DG_VALUE_INVALID error camera faux · zoom-from="avant"');
+    expect(said).toContain('DG_REF_UNKNOWN error nulle');
   });
 });

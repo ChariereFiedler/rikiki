@@ -469,7 +469,9 @@ preview follows forward and backward reveal changes without reloading its frame.
 
 Listen on `deck-root` for `slide-change` (`detail.current`, `detail.previous`)
 or `step-change` (`detail.step`, `detail.steps`). The latter reports the current
-zero-based reveal state and the number of reveal steps.
+zero-based reveal state and the number of reveal steps. `slide-leave` (same
+`detail`) comes just before, while the slide left is still on screen: what it
+shows at that instant can still be measured.
 
 On a Chromium browser with a second screen, pressing **`P`** sends the **deck
 fullscreen to the external screen** (the projector) and opens the **speaker
@@ -781,12 +783,17 @@ signatures) and `structuresPer100`, the `intents` covered, the `families` (an
 intent, else the layouts) and the `largestFamily`, `meanNearest` and `targets`
 (a gallery aims at 40 structures per 100 illustrations, 12 intents, no family
 over 10 %). Two drawings closer than 0.15 are `ILL_REPEATED_LOOK`, a warning
-about the deck, never an error of a slide. A diagram writes its signature on its
+about the deck, never an error of a slide · unless the later one MOVES ON: it
+keeps at least half of the earlier one's named marks and stands at a later step of
+the same act (`step`), adds marks around them (`scope`), changes their figures
+(`data`) or their words (`state`) while keeping some as they were (a clone with
+every word changed stays a repeat). Such pairs are listed apart in `progressing`
+(with their `progress`) and warned about by nobody. A diagram writes its signature on its
 svg (`data-signature`); a scene or a hand-drawn svg is known by its tag and its
 thumbnail. `--diversity` adds the `matrix` of every distance to the JSON, and
 each drawing's nearest neighbour to the human report, whose line reads
 `Diversity · 30 illustrations · 30 structures (100/100) · 16 intents · largest
-family barrier 7 % · 0 pair(s) alike · mean nearest 0.32`.
+family barrier 7 % · 0 pair(s) alike · 0 motif(s) that progress · mean nearest 0.32`.
 
 **Richness.** A clean, varied drawing can still say nothing: three pale boxes
 named "Service A", "Service B", "Service C". Every illustration row carries a
@@ -817,8 +824,7 @@ findings are said only with `--richness`, which also prints the table of each
 drawing's points: `ILL_GENERIC` (no precise fact), `ILL_FLAT_PAINT` (roles
 painted alike) and `ILL_MODEL_REPEAT` (the same graphic model a third time in
 five illustrated slides · its distinctive layouts and marks, every picture of
-boxes and arrows being one; a motif that keeps its named marks and changes their
-words progresses and is left alone), all warnings, selectable by the deck's
+boxes and arrows being one; a motif that moves on, as above, is left alone), all warnings, selectable by the deck's
 policy like any rule. Calibrated on the story decks (37 drawings, mean 95, 70 to
 100) against the galleries written before them (47 drawings, mean 61, 38 to 88)
 and pictures poor on purpose (6, mean 20, 0 to 40). Whether a fact is true is
@@ -903,7 +909,11 @@ an `element` path that reaches into the Shadow DOM (`deck-feature#detail
 | `ILL_FOCAL_WEAK` | warning | the accent region, counted double, is under 1.2× the next shape · not judged when the accent is gates, put forward by their reach across lanes · on a diagram, `fix.focal` and `fix.rival` name the marks, `fix.need` how many times larger the accent must be, `fix.try` the rival as an outline when that leaves the accent leading |
 | `ILL_TYPE_SCALE` | warning | more than four font sizes, or two sizes of the same weight within 15% of each other |
 | `ILL_WORDY` | warning | more than 90 words on the drawing |
-| `ILL_REPEATED_LOOK` | warning | two illustrations of the deck are closer than 0.15 (`D = 0.5 structure + 0.3 visual + 0.2 time`) · the room sees the same picture twice · reported on the later slide, both in `measurement.slides`, with the three parts · `fix.action: vary-the-look` (another intent, another layout or other marks, or merge the slides) · about the deck, never an error |
+| `ILL_REPEATED_LOOK` | warning | two illustrations of the deck are closer than 0.15 (`D = 0.5 structure + 0.3 visual + 0.2 time`) · the room sees the same picture twice · reported on the later slide, both in `measurement.slides`, with the three parts · `fix.action: vary-the-look` (another intent, another layout or other marks, or merge the slides) · about the deck, never an error · a pair whose later drawing moves on (a step, a scope, figures, a state) is no repeat: it is listed in `diversity.progressing` |
+| `ILL_PAIR_TARGET` | error · warning | `pair` on an incident's diagram names no illustrated slide (error; not said with `--slides` when that slide was not walked), or a slide that comes before it (warning) · `fix.known` lists the slides after it |
+| `ILL_PAIR_MARKS` | warning | the remedy keeps under half of the incident's named marks · reported on the remedy, `measurement.missing` and `fix.names` list the marks to keep |
+| `ILL_ZOOM_FROM_TARGET` | error · warning | a camera's `zoom-from="slide-id/mark"` names no illustrated slide, or a slide that draws no such mark (error) · a slide that is not the one just before (warning: walking the deck, the room never arrives from there) |
+| `ILL_ACT_DRIFT` | warning | two diagrams of one act write its `acts` two ways (they share at least half their steps) · `fix.value` is the list of the slide before |
 | `SCENE_TEXT_TOO_LONG` | error | a `deck-scene-*` could not fit a field even one size smaller · reported per field (`label`, `note`, `figure`, `caption`) with the width it needed and the width it had, in `measurement.fields` · the suggestion is that field's fix (a bar's figure shrinks to 70% of its size before it is reported, then a shorter `tag`, no unit or fewer bars) |
 | `SCENE_ATTRIBUTE_INVALID` | error | bars: `max` or `height` is not a positive number · ranges: `scale` is not · the scene drew its default instead |
 | `SCENE_VALUE_CLIPPED` | error | bars: a `value` is past `max` or negative · ranges: a `from` or `to` is past `scale` or negative · the bar stops at the edge of the scale, so it is not the size it says |
@@ -1001,7 +1011,9 @@ spellings are accepted everywhere, and so are globs (`ill-*`, `SVG_TEXT_*`).
 `npx rikiki check deck.html --list-checks` prints every rule the deck can meet
 (the built-in ones and those of its plugins), whether its policy keeps it, at
 what severity, what decided, and, with `--slides`, the slides where it is kept
-(`~` mixed). It measures nothing.
+(`~` mixed). It measures nothing, and says what the policy gets wrong (the table
+below): an error there, an `elements` selector the browser rejects included,
+exits 2.
 
 A deck's folders write the policy in `rikiki.config.json`, under `check`, beside
 `plugins`. Every such file from the deck's folder up applies, outermost first,
@@ -1032,9 +1044,13 @@ filesystem root · never a home folder. `--config <file>` reads that file alone.
   default): `-x` drops, `x` takes back, `-*` drops everything. A nearer file and
   the command line (`--checks`) apply after an outer one.
 - `severity` · `error`, `warning` or `off`, by rule or glob. A rule whose
-  severity varies (`SVG_TEXT_CONTRAST_LOW`) is set to one.
+  severity varies (`SVG_TEXT_CONTRAST_LOW`) is set to one. Each file, then the
+  command line, says its `checks` then its `severity` before the next speaks:
+  `--checks text-too-small` takes back a rule an outer file set to `off`.
 - `warningsAsErrors` · applied last, on what is left a warning (`promoted: true`
-  on the finding).
+  on the finding). A comma list read in order across the files and the command
+  line, the last match deciding: `*,-text-too-small` raises every warning but one,
+  and a nearer file's `-slide-dense` takes back what an outer one raised.
 - `limits` · thresholds for the whole deck: a check one by its name (the keys of
   the report's `limits`: `minTextPx`, `clipPx`, `denseFillRatio`…), an
   illustration one as `ill.<name>` (`ill.words`, `ill.offCentreX`…). An unknown
@@ -1079,8 +1095,11 @@ with `suppressedBy: { kind: config | override | inline, source, reason }`;
 lists them in the human report. `selection` gives the files read, each override
 with the slides it covered and how many findings it decided, each exception with
 how many it silenced. An illustration is judged again on the findings kept, at
-their severity: its row says which were left out (`suppressed`). A plugin rule
-silenced on a slide by its slides, kinds or tags does not run there at all.
+their severity, in every state `--steps` walked, and the worst state left stands:
+its row says which were left out (`suppressed`). A plugin rule silenced on a slide
+by its slides, kinds or tags does not run there at all, unless an override that
+names elements takes it back on that slide: it then runs, and its findings are
+kept under those elements only.
 
 What the policy gets wrong is said, and never silenced:
 
@@ -1089,6 +1108,7 @@ What the policy gets wrong is said, and never silenced:
 | `CHECK_CONFIG_INVALID` | error | a `check` section that cannot be read, a threshold that is none, a selector the browser rejects · the file's section is left out, with the file and the key |
 | `CHECK_SELECTION_UNMATCHED` | warning | a rule name or glob that names no rule (a typo silences nothing), an override whose slides the deck lacks |
 | `CHECK_SELECTION_IGNORED` | warning | a name that only names findings about the run, which are always reported |
+| `CHECK_OPTION_UNKNOWN` | warning | an option (`check.options`, `--check-option`) whose rule no plugin of the deck has · a typo gives it to nothing (silent when that plugin did not load: its own failure says so) |
 | `CHECK_SUPPRESSION_UNJUSTIFIED` | error | `data-check-off` without `data-check-reason` · not applied |
 | `CHECK_SUPPRESSION_UNKNOWN` | warning | `data-check-off` names no rule, or a bare `*` |
 | `CHECK_SUPPRESSION_UNUSED` | warning | an exception that silenced nothing · said only when its slide was walked in every state, the pixels measured and its plugin run |
@@ -1941,8 +1961,8 @@ width and its text is the size of a scene drawn alone · a region is never a
 shrunken copy. A region under 440 units wide is too narrow to say its piece and
 is reported, not drawn small. The composition's height budget is the slide's:
 the tallest scene of a row, or the scenes of a stack and the gaps between them,
-plus the band. Only scenes and one `deck-scene-band` go inside; anything else
-is hidden and reported. Put forward in one region only.
+plus the band. Only scenes and one `deck-scene-band` go inside; anything else,
+a second band included, is hidden and reported. Put forward in one region only.
 
 `deck-scene-item` draws nothing (`display: none`) · it carries `label`, `note`,
 `icon` (a `deck-icon` name, closed set of 24), `tag`, `value`, `level`, `from`,
@@ -2038,7 +2058,7 @@ same marks arranged differently.
 | `dg-columns` | things compared side by side: columns on one baseline and one scale, rounded at the top · in one series every column says its figure above it when there is room (else a scale at the left says them); in two or three series a legend names them, each in a shade of the ink (the last series the darkest), a scale at the left, and only the column brought forward says its figures · the bar brought forward is the only one in the accent (in several series, the last series of its column), the others stepped back · a `threshold` is a dashed line across the plot, its figure at its right · on its beat (or its entrance) the columns grow one after the other from the baseline, each figure coming as its column reaches it | `name`, `label` (a title above), `columns` (2 to 12, one per line, its words then one figure per series: `T3 38 79`), `series` (1 to 3 names, one per line), `max` (the top of the scale; a round number over the figures without it), `unit`, `threshold`, `focus` (the words of the column brought forward), `emphasis` |
 | `dg-waterfall` | how one total became the next: a first total standing on the baseline, steps up (in the sound colour) and down (in the incident colour) floating from the level the walk had reached, a closing total in the ink · a dotted line carries the level from one bar to the next · a total says its figure, a step only when it is brought forward or when every step has room · the step brought forward is the one in the accent · on its beat (or its entrance) the steps are taken one after the other, a step down falling from where the walk was | `name`, `label` (a title above), `steps` (2 to 11, one per line, its words then its figure: the first a total written with no sign, `Marge 2025 120`, then `Remises −18`, `Nouveaux clients +45`), `total` (the words of the closing total, whose figure is computed from the walk; with none, no closing bar), `unit`, `focus` (the words of the step brought forward), `emphasis` |
 | `dg-panel` | in a composition (`compose` on the root): a sub-picture on a surface that says its part, its caption at its top, its marks laid out by its own layout and named in it (`panel.mark` from outside) | `name` (required), `label`, `layout`, `direction`, `columns`, `align`, `gap`, `paint` (`pale` by default), `tone`, `link`, `wrap` |
-| `dg-camera` | not a mark: in a story, the frame the picture opens on and where it moves on its beat · its scale and margin computed | `name`, `focus` (a mark or a panel), `to` (another, or `all`, the default), `beat`, `after`, `with`, `duration` |
+| `dg-camera` | not a mark: in a story, the frame the picture opens on and where it moves on its beat · its scale and margin computed | `name`, `focus` (a mark or a panel), `zoom-from` (`slide-id/mark`: opens on the frame the slide before showed that mark in, see *Motifs of a deck*), `to` (another, or `all`, the default), `beat`, `after`, `with`, `duration` |
 
 Every mark also reads the **motion** words: `enter` (`fade` `rise` `pop` `draw`),
 `after` (a `name`) and `step` (a click, 1 to 9) · see *Motion* below · and `role`,
@@ -2362,6 +2382,32 @@ composition. A camera on a diagram of clicks is dropped (`DG_CAMERA_STORY`).
 </deck-diagram>
 ```
 
+**Motifs of a deck.** A talk ties its illustrations together, and three attributes
+say how, without a coordinate:
+
+- `acts="terminal · code · environnement · exploitation · client"` and `act="code"`
+  on the root draw, above the picture, the strip of the act: the steps behind full,
+  the step the slide is at in bold and circled by the accent, the steps ahead as rings,
+  each named under its station. 2 to 7 steps separated by `·`, written the same on
+  every slide of the act. The strip takes its height off the drawing's room, is never
+  framed by a camera, and is not judged as an illustration (`svg[data-act]`, its words
+  measured like any). `DG_VALUE_INVALID` for an `act` that is none of the steps, an
+  `act` with no `acts`, a strip of one step or of eight.
+- `pair="remedy-slide-id"` on an incident's root names the slide of its remedy, which
+  comes after it and keeps at least half of the incident's named marks.
+- `zoom-from="slide-id/mark"` (in a panel `slide-id/panel.mark`) on the first
+  `dg-camera` of a story, instead of `focus`: when the deck arrives from that slide,
+  the picture opens with the mark both slides draw where and as large as the slide
+  before showed it (at most 4 times closer), the mark already there, then the camera
+  moves on its beat; arrived any other way, it opens framed on its own mark. Reduced
+  motion, print and PDF show the whole picture.
+
+A diagram says these on its svg (`data-motif`: its named marks, its act, its pair,
+its zoom-from), and `rikiki check` says what the deck declares wrong, always:
+`ILL_PAIR_TARGET`, `ILL_PAIR_MARKS`, `ILL_ZOOM_FROM_TARGET`, `ILL_ACT_DRIFT` (see
+*Illustration rules*). An incident and its remedy look alike by design: as a motif
+that moves on, the pair is no `ILL_REPEATED_LOOK`.
+
 **What is written, and what is not.** The author writes marks, names, labels,
 figures and which layout. Positions, sizes, colours, spacing, type sizes, line
 breaks, link routes and the order things appear in are computed. The
@@ -2378,8 +2424,10 @@ layouts differ in shape.
 
 **Bounds.** `bounds="800x500"` is the room the diagram is given, in drawing units
 (default: the width of the scene and 600 high); `max-marks="12"` tightens the
-ceiling of 500 marks (it cannot lift it). The diagram never removes a mark,
-shortens a text or sets type below its scale. When the marks do not fit, it tries
+ceiling of 500 marks (it cannot lift it; one that is no whole number of 1 or more
+is `DG_VALUE_INVALID`, and the 500 hold). The diagram never removes a mark,
+shortens a text or sets type below its scale · save the cells of a `dg-dot` past
+that budget: a grid draws its first 400 (or `max-marks`) and `DG_BUDGET` says so. When the marks do not fit, it tries
 tighter spacing, then another direction for a graph, and if nothing fits it
 **draws them anyway** and reports `DG_NO_FIT` with `fix: { action: "remove-marks",
 keep: N }`, the number of marks that would fit.
@@ -2400,7 +2448,7 @@ it.
 | `DG_VALUE_RANGE` | error | a meter's `value` or `threshold` outside 0 to `max`, a curve's value or `threshold` under 0 or past its `max`, a queue's `count` outside 1 to 12 or its `fill` outside 0 to `count`, people's `count` outside 1 to 12 or `absent` outside 0 to `count`, a screen's `count` outside 1 to 10, a column's figure above the `max` written or a `threshold` outside 0 to it · drawn at the nearest bound, which is not what was written |
 | `DG_CURVE_POINTS` | error | a curve with fewer than 2 or more than 12 values, or `ticks` that are neither one per value nor the first and the last |
 | `DG_STATE_STEP` | error | two `dg-state` of one place stand from the same click · only the first is ever shown |
-| `DG_BUDGET` | error | more than 500 marks (or `max-marks`), or more than 400 dots |
+| `DG_BUDGET` | error | more than 500 marks (or `max-marks`), or more than 400 dots · a grid draws its first 400 dots (or `max-marks`), not the others |
 | `DG_DEPTH` | error | groups nested more than three deep (a panel is a sub-picture: its groups count from it), or panels nested more than four deep |
 | `DG_EMPTY` | error | a diagram with no mark |
 | `DG_MARK_PLACE` | error | a `dg-lane` or a `dg-gate` outside a `layout="lanes"` group, a `dg-cursor` outside an `axis` · drawn as its label alone |
@@ -2597,7 +2645,10 @@ scene without scene CSS: `--deck-scene-card-bg`, `--deck-scene-card-stroke`,
 `--deck-scene-band-icon`; bars' figures `--deck-scene-value`,
 `--deck-scene-value-emphasis`; the matrix's emphasised row
 `--deck-scene-row-emphasis-bg` (the band of every second row reuses
-`--deck-scene-band-bg`).
+`--deck-scene-band-bg`); a diagram's surfaces that say a part
+`--deck-scene-pale-bg` (the ink of text at 15 % over the page, seen on both themes),
+`--deck-scene-gold-bg`, `--deck-scene-ok-bg`, `--deck-scene-bad-bg` (tints, so they
+weigh nothing in the balance `check` measures).
 
 ---
 

@@ -174,6 +174,10 @@ and two closer than 0.15 are `ILL_REPEATED_LOOK`, a warning about the deck. The
 report's `Diversity` line counts the distinct structures, the intents and the
 largest family; `--diversity` names each drawing's nearest neighbour. A gallery
 aims at 40 structures per 100 illustrations, 12 intents, no family over 10 %.
+A repetition that **moves on** is no repeat: the same named marks at the next step of
+the act, over a wider scope, with other figures or in another state (an incident and
+its remedy, a chapter that widens). Keep the names, change the words; the report
+counts such pairs apart ("motif(s) that progress") and warns about none of them (§4f).
 
 ## 2 · The grammar, on one screen
 
@@ -199,6 +203,7 @@ aims at 40 structures per 100 illustrations, 12 intents, no family over 10 %.
 </deck-diagram>                <!-- every mark also reads enter · after · step · role · entity -->
 <!-- or <deck-diagram intent="…" also="…">, each mark a role="…", and no layout (§0) -->
 <!-- or <deck-diagram compose="…"> of <dg-panel name label layout paint>, and a <dg-camera focus to> (§4d) -->
+<!-- on any diagram: acts="a · b · c" act="b" (the strip of the act), pair="remedy-slide-id", and <dg-camera zoom-from="slide-id/mark"> (§4f) -->
 <!-- in a story every mark also reads beat · with · duration · dim (§4b) -->
 ```
 
@@ -772,6 +777,51 @@ the root, a panel or an `entity` outside a composition), `DG_PANEL_APART`,
 on a later camera), `DG_CAMERA_ILLEGIBLE` (a frame that would show text under the
 scale), `DG_CAMERA_STORY` (a camera in a diagram of clicks: dropped).
 
+## 4f · Motifs of a deck · the strip of an act, a pair, a chapter opened from the slide before
+
+A talk ties its illustrations together. Three attributes say how, none takes a coordinate:
+
+- **The strip of an act.** `acts="terminal · code · environnement · exploitation · client"`
+  and `act="code"` on the diagram draw, above the picture, where the act stands: the
+  steps behind full, the one the slide is at in bold and circled by the accent, the
+  steps ahead as rings. 2 to 7 steps, separated by `·`, the same list on every slide
+  of the act (`ILL_ACT_DRIFT` when one is written two ways). The strip takes its height
+  off the drawing's room and is never framed by a camera.
+- **An incident and its remedy.** `pair="remede-id"` on the incident's diagram names the
+  slide of its remedy, which comes after it and **keeps at least half of the incident's
+  named marks** (the same `name` for the same thing, its words and state moved on). The
+  incident is short and hard (a status `fail` on the target), the remedy longer, with
+  its `proof`.
+- **A chapter opened from the slide before.** `<dg-camera zoom-from="slide-id/mark"
+  to="all">` (a mark in a panel: `slide-id/panel.mark`) on the first camera of a story:
+  reached from that slide, the picture opens with the mark both slides draw where and as
+  large as the room last saw it, already there, then pulls back; reached any other way
+  (a jump, the slide opened directly), it opens framed on its own mark. Reduced motion,
+  print and PDF show the whole picture. Use it instead of `focus`, not with it.
+
+```html
+<deck-diagram play="enter" layout="layers" direction="right"
+  acts="terminal · code · environnement · exploitation · client" act="environnement"
+  pair="migration-testee">
+  <dg-box name="ci" icon="refresh" label="job CI" note="build, puis tests" paint="gold"></dg-box>
+  <dg-box name="staging" icon="database" label="staging" note="Postgres 14 · base vide" paint="pale"></dg-box>
+  <dg-box name="prod" icon="database" label="prod" note="Postgres 16 · 41 000 devis" paint="ink"></dg-box>
+  <dg-status name="echec" for="prod" state="wait fail" label="0042_tva échoue · 18:40" side="bottom" beat="proof" after="vers-prod"></dg-status>
+  <dg-link name="vers-staging" from="ci" to="staging" flow="1" steady="1.5s"></dg-link>
+  <dg-link name="vers-prod" from="staging" to="prod" flow="1" turn="danger" beat="spread"></dg-link>
+  <dg-camera name="recul" zoom-from="tests-branches/ci" to="all" beat="steady"></dg-camera>
+</deck-diagram>
+```
+
+A deck of three such pairs on one act checks clean through every state.
+`rikiki check` says what a deck declares wrong, always, with the attribute to change:
+`ILL_PAIR_TARGET` (a remedy that is no illustrated slide: error; one before its
+incident: warning), `ILL_PAIR_MARKS` (a remedy that keeps under half of its incident's
+named marks: warning, the missing names listed), `ILL_ZOOM_FROM_TARGET` (a slide that
+does not exist or does not draw the mark: error; a slide that is not the one before:
+warning), `ILL_ACT_DRIFT`. With `--slides`, a slide that was not walked is not called
+missing.
+
 ## 4e · Recipes · twelve graphic models, filled with a brief
 
 A recipe is a skeleton told as a story (§4b, §4c, §4d) taken from one graphic model: its marks are named for the part they play, its `{{fields}}`
@@ -819,7 +869,8 @@ npx rikiki recipe incident-band --fill b.json     # your slide · or why the bri
 
 `bounds="800x500"` is the room (default: the scene's width, 600 high); `max-marks`
 tightens the ceiling of 500 marks. **The diagram never removes a mark, shortens a
-text or sets type below its scale.** If the marks do not fit, it tries tighter
+text or sets type below its scale** · save the cells of a `dg-dot` past that
+budget (400 dots at most): a grid draws its first ones and `DG_BUDGET` says so. If the marks do not fit, it tries tighter
 spacing and, for a graph, the other direction; if nothing fits it draws them anyway
 and reports `DG_NO_FIT` with `fix.keep`, how many marks would fit. Take that number
 seriously: cut to it, or split the slide. Labels are one to three words; a note is one
@@ -869,7 +920,9 @@ finding carries `measurement` and a `fix`:
 | `ILL_NO_STEADY_STATE` · `ILL_STORY_NO_PROOF` | a story breaks with under 1.5 s of flow before · or with no proof after | `steady="3s"` on a lane or a link · `proof="…"` on the target, `beat="proof"` |
 | `ILL_BEAT_OVERLAP` | two beats of a story start under half a second apart | `after` on the second, `with` if they are one beat, or fewer beats |
 | `ILL_FINAL_INCOMPLETE` | the end of a story lost a break, an effect or a proof (tokens alone) | a swap, a tone, a gate that stays closed, a proof or a note on that beat |
-| `ILL_REPEATED_LOOK` | two drawings of the deck are the same look (distance under 0.15) | another intent, layout or marks for one · or merge the slides |
+| `ILL_REPEATED_LOOK` | two drawings of the deck are the same look (distance under 0.15), and the later does not move on | another intent, layout or marks for one · or merge the slides · or make it a motif that progresses: the same names, a step, a scope, figures or a state moved on |
+| `ILL_PAIR_TARGET` · `ILL_PAIR_MARKS` | `pair` names no remedy after the incident · the remedy keeps under half of the incident's named marks | `fix.known` lists the slides that could be · keep `fix.names` on the remedy |
+| `ILL_ZOOM_FROM_TARGET` · `ILL_ACT_DRIFT` | `zoom-from` names no slide, no mark of it, or not the slide before · one act written two ways | `slide-id/mark` of the slide just before · the same `acts` on every slide of the act |
 | `ILL_GENERIC` (`--richness`) | no precise fact on the drawing, generic labels | the facts of the case: an hour or a date, an identifier, a count · `fix.kinds` says which kinds are missing |
 | `ILL_FLAT_PAINT` (`--richness`) | roles that differ painted alike | `paint="pale"` context, `gold` control, `ink` target, `bad` incident, `ok` sound |
 | `ILL_MODEL_REPEAT` (`--richness`) | the same graphic model a third time in five illustrated slides, not progressing | another model if the sentence says another relation · or a motif: the same named marks, their words moving on |

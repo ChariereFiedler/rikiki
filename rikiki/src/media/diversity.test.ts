@@ -245,4 +245,27 @@ describe('measureDiversity', () => {
     expect(report.matrix[0]![0]).toBe(0);
     expect(report.meanNearest).toBeGreaterThan(DIVERSITY_LIMITS.repeated);
   });
+
+  it('keeps a motif that progresses out of the repeats · a step, figures, a state, a wider scope', () => {
+    const steps = ['terminal', 'code', 'prod'];
+    const clones = gallery(
+      ['A B C D', 'A B C D', 'A B C D', 'A B C D'].map((w) => services(w.split(' '))),
+    );
+    const words = { web: 'Web', api: 'API · v1', db: 'Postgres' };
+    const motifs = [
+      { words, act: { steps, at: 0 } },
+      { words, act: { steps, at: 1 } },
+      { words: { ...words, api: 'API · v2' }, act: { steps, at: 1 } },
+      { words: { ...words, api: 'API · v2' }, act: { steps, at: 1 } },
+    ];
+    const report = measureDiversity(clones.map((e, i) => ({ ...e, motif: motifs[i]! })));
+    const kinds = (a: number, b: number) =>
+      report.progressing.find((p) => p.a.slide === a && p.b.slide === b)?.progress;
+    expect(kinds(1, 2)).toEqual(['step']);
+    expect(kinds(2, 3)).toEqual(['data']);
+    expect(kinds(1, 3)).toEqual(['data', 'step']);
+    // The same picture at the same step, with the same words, is the same look twice.
+    expect(report.repeated.map((p) => [p.a.slide, p.b.slide])).toEqual([[3, 4]]);
+    expect(repeatedLookIssues(report)).toHaveLength(1);
+  });
 });

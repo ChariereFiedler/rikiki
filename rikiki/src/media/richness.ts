@@ -27,6 +27,7 @@
 // (`--richness`). Pure: an ink model and a signature in, numbers out.
 // ════════════════════════════════════════════════════════════════
 
+import { type Motif, progressOf } from './deck-motifs.js';
 import type { DiagramSignature } from './diversity.js';
 import { ILL_LIMITS, type InkModel, type InkShape } from './ill-rules.js';
 
@@ -527,13 +528,12 @@ export function richnessIssues(richness: Richness): RichnessIssue[] {
 
 // ── a deck ────────────────────────────────────────────────────────────────
 
-export interface ModelUse {
+/** One use of a graphic model · and its motif: a motif that progresses keeps its
+ *  marks and moves on (deck-motifs.ts). */
+export interface ModelUse extends Motif {
   slide: number;
   slideId?: string | null;
   model: string;
-  /** The words of each named mark · a motif that progresses keeps its marks and
-   *  changes their words. */
-  words: Record<string, string>;
 }
 
 /** The words of a drawing, by the mark that wrote them. */
@@ -544,15 +544,6 @@ export function wordsByMark(model: InkModel): Record<string, string> {
     words[text.mark] = normal(`${words[text.mark] ?? ''} ${text.text}`);
   }
   return words;
-}
-
-/** A repeat that progresses · the same marks as the use before it, their words
- *  changed: a step, a scope, a figure or a state that moves on. */
-function progresses(use: ModelUse, before: ModelUse): boolean {
-  const shared = Object.keys(use.words).filter((mark) => mark in before.words);
-  const smaller = Math.min(Object.keys(use.words).length, Object.keys(before.words).length);
-  if (!smaller || shared.length * 2 < smaller) return false;
-  return shared.some((mark) => use.words[mark] !== before.words[mark]);
 }
 
 /** The third use (or more) of one graphic model within five illustrated slides,
@@ -568,7 +559,7 @@ export function modelRepeatIssues(uses: readonly ModelUse[]): RichnessIssue[] {
       .slice(0, i)
       .filter((u) => u.model === use.model && here - slides.indexOf(u.slide) < repeatWindow);
     if (window.length + 1 < repeatUses) return;
-    if (progresses(use, window.at(-1)!)) return;
+    if (progressOf(window.at(-1), use).length) return;
     const earlier = window.map((u) => u.slide);
     issues.push({
       code: 'ILL_MODEL_REPEAT',

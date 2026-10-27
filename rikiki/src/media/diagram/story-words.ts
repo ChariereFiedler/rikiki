@@ -39,3 +39,16 @@ export function readSeconds(text: string | undefined): number {
   const value = Number(match[1]!.replace(',', '.'));
   return match[2] === 'ms' ? value / 1000 : value;
 }
+
+/** Whether a story may last this long, written · the bound the parser checks. */
+export const isStoryDuration = (seconds: number): boolean =>
+  seconds > 0 && seconds <= STORY_MAX_BUDGET;
+
+/** A duration of a story as it is played · the one written when it is one,
+ *  `fallback` (the diagram's own) when it is written and is not (`DG_VALUE_INVALID`
+ *  says so), NaN when nothing is written. */
+export function storySeconds(text: string | undefined, fallback: number): number {
+  if (text === undefined) return Number.NaN;
+  const seconds = readSeconds(text);
+  return isStoryDuration(seconds) ? seconds : fallback;
+}

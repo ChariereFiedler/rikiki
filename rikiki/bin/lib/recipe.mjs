@@ -90,9 +90,11 @@ export function briefProblems(recipe, brief) {
 }
 
 /** A value written into the skeleton · a list of rows one per line, indented under
- *  the line it stands in (the diagram drops the indentation), quotes escaped. */
+ *  the line it stands in (the diagram drops the indentation), escaped as text: a
+ *  value stands in an attribute or between tags, and never becomes markup there. */
 function written(value, indent) {
-  const escape = (text) => String(text).replaceAll('&', '&amp;').replaceAll('"', '&quot;');
+  const escape = (text) =>
+    String(text).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
   if (!Array.isArray(value)) return escape(value);
   return value.map((row) => `\n${indent}  ${escape(row)}`).join('');
 }

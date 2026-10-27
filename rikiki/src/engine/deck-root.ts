@@ -1316,6 +1316,12 @@ export class DeckRoot extends LitElement {
   private _applyActive(): void {
     const previous = this.slides.find((s) => s.hasAttribute('active')) ?? null;
     const next = this.slides[this.current] ?? null;
+    // The slide left is still on screen here · what it shows at this instant (a camera
+    // half way through its move) can be read before it is hidden.
+    if (previous && previous !== next)
+      this.dispatchEvent(
+        new CustomEvent('slide-leave', { detail: { previous, current: next }, bubbles: false }),
+      );
     this.slides.forEach((s, i) => {
       const isCurrent = i === this.current;
       s.toggleAttribute('active', isCurrent);

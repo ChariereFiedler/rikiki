@@ -115,12 +115,19 @@ export class DeckScene extends SceneElement {
   @property({ type: String }) align?: string;
   @property({ type: Number }) stagger?: number;
 
-  /** The children, each with the part it plays · scenes are regions, a band
-   *  closes, anything else is a stray the lint names and the grid hides. */
+  /** The children, each with the part it plays · scenes are regions, the first
+   *  band closes, anything else (a second band included) is a stray the lint
+   *  names and the grid hides · two bands would share one row, one over the other. */
   private get parts(): Child[] {
+    const firstBand = [...this.children].find((element) => element.localName === BAND_TAG);
     return [...this.children].map((element) => ({
       element: element as HTMLElement,
-      role: element.localName === BAND_TAG ? 'band' : isScene(element) ? 'region' : 'stray',
+      role:
+        element === firstBand
+          ? 'band'
+          : element.localName !== BAND_TAG && isScene(element)
+            ? 'region'
+            : 'stray',
     }));
   }
 

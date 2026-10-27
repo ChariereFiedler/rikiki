@@ -48,6 +48,8 @@ import {
   type Paint,
   type ParsedDiagram,
   ROLE_PAINTS,
+  dotCeiling,
+  dotCount,
   isGroupLike,
   nameOf,
   readNumber,
@@ -449,6 +451,8 @@ interface Ctx {
    *  take their natural length, so the room left is the neighbours' and the lanes
    *  keep their length whatever stands beside them from one picture to the next. */
   besideLanes: Set<number>;
+  /** The cells a grid of dots draws at most · the budget, kept before any is placed. */
+  dotCeiling: number;
 }
 
 /** Wrap `text` for a role into a width. A figure never wraps. */
@@ -1443,7 +1447,7 @@ function placeBars(ctx: Ctx, kids: DgNode[], room: number, gap: number): Inner {
 
 function placeGrid(ctx: Ctx, node: DgNode, kids: DgNode[], room: number, gap: number): Inner {
   const dots = kids.length > 0 && kids.every((kid) => kid.kind === 'dot');
-  if (dots) return placeDots(node, kids, room);
+  if (dots) return placeDots(ctx, node, kids, room);
   // A grid of boxes · rows of `columns`, each row a stack, stacked.
   const blocks = kids.map((kid) => blockOf(ctx, kid, room));
   const cellW = Math.max(...blocks.map((b) => b.prefW), 1);
@@ -1502,8 +1506,15 @@ function placeGrid(ctx: Ctx, node: DgNode, kids: DgNode[], room: number, gap: nu
 
 /** `dg-dot count="N"` marks expand to N cells on one grid · the count is exact,
  *  and the cells light in reading order (the first `count` of a mark, then the next). */
-function placeDots(node: DgNode, kids: DgNode[], room: number): Inner {
-  const counts = kids.map((kid) => Math.max(1, Math.floor(Number(kid.attrs.count ?? 1)) || 1));
+function placeDots(ctx: Ctx, node: DgNode, kids: DgNode[], room: number): Inner {
+  // The count as the parser read it, and no more cells than the budget · past it,
+  // the first ones are drawn (`DG_BUDGET` says so), and nothing is allocated for the rest.
+  let left = ctx.dotCeiling;
+  const counts = kids.map((kid) => {
+    const drawn = Math.min(dotCount(kid), left);
+    left -= drawn;
+    return drawn;
+  });
   const total = counts.reduce((a, b) => a + b, 0);
   const columns = Number(node.attrs.columns);
   const result = grid({
@@ -3372,6 +3383,7 @@ function layoutAt(
     cache: new Map(),
     barTop: parsed.states ? largestBar(parsed.children) : 0,
     besideLanes: new Set(),
+    dotCeiling: dotCeiling(parsed.attrs),
   };
   const root: DgNode = {
     kind: 'group',

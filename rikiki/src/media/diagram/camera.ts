@@ -13,13 +13,18 @@
 // motion and the end of the story show it. A camera that ends on a detail goes back
 // to the whole picture once the story is told (the story plans that return).
 //
+// `zoom-from="slide-id/mark"` on the first camera opens a chapter from the slide
+// before: reached from that slide, the picture opens with the mark both draw where
+// and as large as the room last saw it (`viewFrom`), then pulls back; reached any
+// other way (a jump, a link, the first slide shown), it opens framed on its own mark.
+//
 // A view is `p ↦ s·p + (x, y)`, in the units of the drawing's viewBox. Each move is
 // drawn as a group of its own that eases from where it starts to no transform, the
 // groups nested in the order of the moves · so the view before the first move is
 // the opening frame, and the view after the last is the whole picture. Pure.
 // ════════════════════════════════════════════════════════════════
 
-import { CAMERA_ALL, type DgIssue, type DgNode } from './model.js';
+import { CAMERA_ALL, type DgIssue, type DgNode, readZoomFrom } from './model.js';
 
 export interface Rect {
   x: number;
@@ -66,6 +71,24 @@ export function viewOn(target: Rect, frame: Rect): View {
     s,
     x: clamp(x, (frame.x + frame.w) * (1 - s), frame.x * (1 - s)),
     y: clamp(y, (frame.y + frame.h) * (1 - s), frame.y * (1 - s)),
+  };
+}
+
+/** A chapter opened from the slide before keeps this close at most · past it the
+ *  mark taken over fills the slide, and its words are larger than any it holds. */
+export const ZOOM_FROM_MAX = 4;
+
+/** The view that shows `here` where `before` stood on the slide before · both in the
+ *  units of their viewBox, which are one width and stand under the same title, so a
+ *  mark taken over stays where the room last saw it, at the size it had, even where
+ *  that shows past the edge of this picture (nothing is drawn there). Never smaller
+ *  than the picture: a mark drawn larger here is centred on where it stood. */
+export function viewFrom(before: Rect, here: Rect): View {
+  const s = clamp(before.w / here.w, 1, ZOOM_FROM_MAX);
+  return {
+    s,
+    x: before.x + before.w / 2 - s * (here.x + here.w / 2),
+    y: before.y + before.h / 2 - s * (here.y + here.h / 2),
   };
 }
 
@@ -181,9 +204,17 @@ export interface CameraInput {
    *  of the panel it is in), `avoid` it slides off rather than cut (the caption of the
    *  panel around a framed panel). */
   captions?: (name: string) => { keep: readonly Rect[]; avoid: readonly Rect[] };
+  /** The frame the picture opens on when it takes over the slide before's (`zoom-from`
+   *  reached from that slide, `viewFrom`) · else the first camera frames its mark here. */
+  opening?: View;
 }
 
 const nameOf = (node: DgNode) => node.attrs.name ?? 'dg-camera';
+
+/** The mark the first camera opens on · its `focus`, else the mark it takes over
+ *  from the slide before, framed here when the slide is reached another way. */
+const openingName = (node: DgNode | undefined): string | undefined =>
+  node?.attrs.focus ?? readZoomFrom(node?.attrs['zoom-from'])?.mark;
 
 /** The views a story's cameras show, and the moves that go from one to the next. */
 export function planCamera(input: CameraInput): CameraPlan {
@@ -201,9 +232,12 @@ export function planCamera(input: CameraInput): CameraPlan {
   };
   const [first, ...rest] = input.shots;
   const late = rest
-    .filter((shot) => shot.node.attrs.focus !== undefined)
+    .filter(
+      (shot) => shot.node.attrs.focus !== undefined || shot.node.attrs['zoom-from'] !== undefined,
+    )
     .map((s) => nameOf(s.node));
-  const views: View[] = [viewOf(first?.node.attrs.focus)];
+  const local = viewOf(openingName(first?.node));
+  const views: View[] = [input.opening ?? local];
   const ids: string[] = [];
   for (const shot of input.shots) {
     views.push(viewOf(shot.node.attrs.to));
@@ -232,8 +266,8 @@ export function planCamera(input: CameraInput): CameraPlan {
       code: 'DG_CAMERA_TARGET',
       severity: 'warning',
       items: late,
-      message: `focus is the frame the picture opens on, read on the first camera only · ${late.join(', ')} starts where the camera before it ended`,
-      fix: { action: 'remove-attributes', attributes: ['focus'], on: late },
+      message: `focus and zoom-from are the frame the picture opens on, read on the first camera only · ${late.join(', ')} starts where the camera before it ended`,
+      fix: { action: 'remove-attributes', attributes: ['focus', 'zoom-from'], on: late },
     });
   const smallest = input.smallestText * Math.min(...views.map((v) => v.s));
   if (smallest < LEGIBLE_TEXT)

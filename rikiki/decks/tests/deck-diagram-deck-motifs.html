@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Diagramme · motifs de deck · fixture de test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-diagram.js"></script>
+</head>
+<body>
+<!-- Trois paires incident → remède sur la frise d'un acte (acts, act), chaque incident
+     nomme son remède (pair) et le remède reprend ses marques nommées ; l'incident du
+     chapitre « environnement » s'ouvre en reculant depuis le job CI de la diapo d'avant
+     (zoom-from). `rikiki check --steps` : 0 erreur, 0 avertissement, et la diversité
+     compte les paires comme des motifs qui progressent. e2e/deck-motifs.spec.ts la lit.
+     Cas inspirés du talk « Un sales qui code » ; noms, heures et versions inventés. -->
+<deck-root>
+
+  <deck-feature id="tests-oublies" eyebrow="Incident · les tests">
+    <h1 slot="title">312 tests, jamais lancés</h1>
+    <deck-diagram data-testid="tests-oublies" play="enter" layout="layers" direction="right" gap="airy"
+      acts="terminal · code · environnement · exploitation · client" act="code" pair="tests-branches">
+      <dg-box name="depot" icon="code" label="dépôt" note="push feat/devis · 14:02" paint="pale"></dg-box>
+      <dg-box name="tests" icon="document" label="312 tests" note="dernier passage il y a 90 j" paint="pale" tone="normal danger" beat="event"></dg-box>
+      <dg-box name="ci" icon="refresh" label="job CI" note="build seul, 2 min" paint="gold"></dg-box>
+      <dg-box name="prod" icon="cloud" label="prod · v1.9.0" note="en ligne à 14:06" paint="ink"></dg-box>
+      <dg-status name="faux" for="prod" state="wait fail" label="devis faux · 16:20" note="3 clients l'ont reçu" side="bottom" beat="proof" after="livre"></dg-status>
+      <dg-link name="push" from="depot" to="ci" flow="1" steady="3s"></dg-link>
+      <dg-link name="oubli" from="tests" to="ci" dashed></dg-link>
+      <dg-link name="livre" from="ci" to="prod" flow="1" steady="3s" turn="danger" beat="spread"></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration · d'après « Un sales qui code » · heures inventées</deck-source>
+  </deck-feature>
+
+  <deck-feature id="tests-branches" eyebrow="Remède · les tests">
+    <h1 slot="title">Les mêmes tests, branchés au job</h1>
+    <deck-diagram data-testid="tests-branches" play="enter" layout="layers" direction="right" gap="airy"
+      acts="terminal · code · environnement · exploitation · client" act="code">
+      <dg-box name="depot" icon="code" label="dépôt" note="push feat/devis · 14:02" paint="pale"></dg-box>
+      <dg-box name="tests" icon="document" label="312 tests" swap="312 tests · 4 min" note="à chaque push" paint="ok" beat="event"></dg-box>
+      <dg-box name="ci" icon="refresh" label="job CI" swap="job CI · rouge" note="build, puis tests" paint="gold" tone="normal danger" beat="spread"></dg-box>
+      <dg-box name="prod" icon="cloud" label="prod · v1.9.0" note="merge bloqué" paint="ink" proof="vu avant la prod" beat="proof"></dg-box>
+      <dg-link name="push" from="depot" to="ci" flow="1" steady="3s"></dg-link>
+      <dg-link name="branche" from="tests" to="ci" flow="1" turn="danger" beat="event"></dg-link>
+      <dg-link name="livre" from="ci" to="prod" dashed></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration · d'après « Un sales qui code » · durées inventées</deck-source>
+  </deck-feature>
+
+  <deck-feature id="migration-cassee" eyebrow="Incident · l'environnement">
+    <h1 slot="title">Verte en staging, cassée en prod</h1>
+    <deck-diagram data-testid="migration-cassee" play="enter" layout="layers" direction="right" gap="airy"
+      acts="terminal · code · environnement · exploitation · client" act="environnement" pair="migration-testee">
+      <dg-box name="ci" icon="refresh" label="job CI" note="build, puis tests" paint="gold"></dg-box>
+      <dg-box name="migration" icon="document" label="0042_tva" note="migration de la TVA" paint="pale"></dg-box>
+      <dg-box name="staging" icon="database" label="staging" note="Postgres 14 · base vide" paint="pale"></dg-box>
+      <dg-box name="prod" icon="database" label="prod" note="Postgres 16 · 41 000 devis" paint="ink"></dg-box>
+      <dg-status name="passe" for="staging" state="wait ok" label="passe en 3 s" side="bottom" beat="event"></dg-status>
+      <dg-status name="echec" for="prod" state="wait fail" label="0042_tva échoue · 18:40" note="table devis verrouillée" side="bottom" beat="proof" after="vers-prod"></dg-status>
+      <dg-link name="vers-staging" from="ci" to="staging" flow="1" steady="1.5s"></dg-link>
+      <dg-link name="jouee" from="migration" to="staging" dashed></dg-link>
+      <dg-link name="vers-prod" from="staging" to="prod" flow="1" turn="danger" beat="spread"></dg-link>
+      <dg-camera name="recul" zoom-from="tests-branches/ci" to="all" beat="steady"></dg-camera>
+    </deck-diagram>
+    <deck-source>Illustration · d'après « Un sales qui code » · versions inventées</deck-source>
+  </deck-feature>
+
+  <deck-feature id="migration-testee" eyebrow="Remède · l'environnement">
+    <h1 slot="title">La migration jouée sur une copie</h1>
+    <deck-diagram data-testid="migration-testee" play="enter" layout="layers" direction="right" gap="airy"
+      acts="terminal · code · environnement · exploitation · client" act="environnement">
+      <dg-box name="copie" icon="search" label="copie anonymisée" note="nuit de dimanche" paint="pale"></dg-box>
+      <dg-box name="migration" icon="document" label="0042_tva" note="migration de la TVA" paint="pale"></dg-box>
+      <dg-box name="staging" icon="database" label="staging" swap="staging · Postgres 16" note="41 000 devis copiés" paint="ok" beat="event"></dg-box>
+      <dg-box name="prod" icon="database" label="prod" note="Postgres 16 · 41 000 devis" paint="ink" proof="0042_tva corrigée avant" beat="proof"></dg-box>
+      <dg-status name="echec" for="staging" state="wait fail" label="échoue ici, en 3 s" side="bottom" beat="spread"></dg-status>
+      <dg-link name="copie-vers" from="copie" to="staging" flow="1" steady="2s" beat="event"></dg-link>
+      <dg-link name="jouee" from="migration" to="staging" dashed></dg-link>
+      <dg-link name="vers-prod" from="staging" to="prod" dashed></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration · d'après « Un sales qui code » · versions inventées</deck-source>
+  </deck-feature>
+
+  <deck-feature id="vert-casse" eyebrow="Incident · l'exploitation">
+    <h1 slot="title">Serveur vert, 19 h sans un lead</h1>
+    <deck-diagram data-testid="vert-casse" play="enter" layout="axis"
+      acts="terminal · code · environnement · exploitation · client" act="exploitation" pair="sonde-horaire">
+      <dg-bar name="normal" label="42 leads" tag="lun. 08:00" from="8" to="14" tone="ok" beat="steady" duration="2s"></dg-bar>
+      <dg-bar name="coupure" label="formulaire" tag="14:00" from="14" to="15" tone="danger" beat="event"></dg-bar>
+      <dg-bar name="vide" label="0 lead" tag="19 h · page 200" from="15" to="34" beat="spread" emphasis></dg-bar>
+      <dg-bar name="decouverte" label="un client appelle" tag="mar. 09:00" from="34" to="36" tone="warn" beat="proof"></dg-bar>
+    </deck-diagram>
+    <deck-source>Illustration · d'après « Un sales qui code » · heures inventées</deck-source>
+  </deck-feature>
+
+  <deck-feature id="sonde-horaire" eyebrow="Remède · l'exploitation">
+    <h1 slot="title">Une sonde qui dépose un lead chaque heure</h1>
+    <deck-diagram data-testid="sonde-horaire" play="enter" layout="axis"
+      acts="terminal · code · environnement · exploitation · client" act="exploitation">
+      <dg-bar name="normal" label="42 leads" tag="lun. 11:00" from="11" to="14" tone="ok" beat="steady" duration="2s"></dg-bar>
+      <dg-bar name="coupure" label="formulaire" tag="14:00" from="14" to="15" tone="danger" beat="event"></dg-bar>
+      <dg-bar name="vide" label="1 h sans lead" tag="sonde de 15:00" from="15" to="16" tone="muted" beat="spread"></dg-bar>
+      <dg-bar name="decouverte" label="alerte" tag="15:00 · astreinte" from="16" to="17" tone="warn" beat="effect"></dg-bar>
+      <dg-bar name="retour" label="formulaire réparé" tag="16:10" from="17" to="22" beat="proof" emphasis></dg-bar>
+    </deck-diagram>
+    <deck-source>Illustration · d'après « Un sales qui code » · heures inventées</deck-source>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

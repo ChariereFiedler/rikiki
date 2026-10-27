@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { barSpan, parseValue, scaleX, tagStart } from './deck-scene-ranges-layout.js';
+import { barSpan, formatScale, parseValue, scaleX, tagStart } from './deck-scene-ranges-layout.js';
 
 // A scale area 1200 units wide starting at 400, on a scale of 12 · one unit of
 // the scale is 100 units of drawing, so every expected x reads at a glance.
@@ -18,6 +18,14 @@ describe('parseValue', () => {
     expect(parseValue(null)).toBeNull();
     expect(parseValue('')).toBeNull();
     expect(parseValue('ten')).toBeNull();
+  });
+});
+
+describe('formatScale', () => {
+  it('says the maximum the bars are drawn against, never a rounded one', () => {
+    expect(formatScale(0.04)).toBe('0.04');
+    expect(formatScale(1.25)).toBe('1.25');
+    expect(formatScale(12)).toBe('12');
   });
 });
 

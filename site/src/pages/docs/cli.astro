@@ -322,7 +322,7 @@ const sceneBrief = `{
     </tr>
     <tr>
       <td>illustrations that look alike</td>
-      <td><code>ILL_REPEATED_LOOK</code> · a warning about the deck, never an error of a slide</td>
+      <td><code>ILL_REPEATED_LOOK</code> · a warning about the deck, never an error of a slide · <code>ILL_PAIR_*</code>, <code>ILL_ZOOM_FROM_TARGET</code>, <code>ILL_ACT_DRIFT</code> · what the deck declares between its slides</td>
     </tr>
     <tr>
       <td>the talk and what it pulls in</td>
@@ -352,6 +352,19 @@ const sceneBrief = `{
   <code>--diversity</code> adds every distance and each drawing's nearest
   neighbour.
 </p>
+<p>
+  A repetition that moves on is no repeat: when the later drawing keeps half of
+  the earlier one's named marks and stands at a later step of the act, adds marks
+  around them, or changes their figures or their state while keeping some as they
+  were, the pair is a motif of the deck. It is listed apart
+  (<code>progressing</code>, « motif(s) that progress ») and never warned
+  about · an incident and its remedy, a chapter that widens. What a deck
+  declares between its slides is checked too, always: <code>ILL_PAIR_TARGET</code>
+  and <code>ILL_PAIR_MARKS</code> (a <code>pair</code> whose remedy is missing,
+  comes first or drops the incident's marks), <code>ILL_ZOOM_FROM_TARGET</code>
+  (a camera that opens from a slide that is not the one before, or that does not
+  draw the mark) and <code>ILL_ACT_DRIFT</code> (one act written two ways).
+</p>
 
 <h3 id="check-richness">Illustrations with something to see</h3>
 <p>
@@ -374,8 +387,7 @@ const sceneBrief = `{
   drawing's points and says three warnings, <code>ILL_GENERIC</code> (no
   precise fact), <code>ILL_FLAT_PAINT</code> (roles painted alike) and
   <code>ILL_MODEL_REPEAT</code> (the same graphic model a third time in five
-  illustrated slides, unless its named marks keep their place and their words
-  move on). Measured on the story decks, they average 95; the galleries written
+  illustrated slides, unless it is a motif that moves on, as above). Measured on the story decks, they average 95; the galleries written
   before them, 61; pictures poor on purpose, 20.
 </p>
 

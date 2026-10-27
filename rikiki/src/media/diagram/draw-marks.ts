@@ -400,6 +400,11 @@ export function drawStatus(note: LNote, k: number, pen: Pen) {
  *  and the animations of their acts. */
 export const piecesStyles = css`
   ${chartsStyles}
+  /* A tag in a diagram may sit on a pale surface · the strong accent pulled toward
+     the ink of the text, as the words in a colour below (siliceum's gold: 2.6:1). */
+  .tag {
+    fill: var(--deck-scene-tag, color-mix(in srgb, var(--rik-accent--strong, var(--rik-accent)) 70%, var(--rik-text-default)));
+  }
   .term {
     fill: var(--deck-scene-band-bg, var(--rik-surface-inverse));
   }
@@ -458,10 +463,16 @@ export const piecesStyles = css`
   .band-cut {
     stroke-width: 4;
   }
+  /* Words in a colour wear its text grade, pulled 30 % toward the ink of the text ·
+     the plain tone is a fill (the green of rikiki is 2:1 on its page), and the text
+     grade clears 3:1 on the page with no room left for the pale surface it may sit on.
+     Toward the ink keeps the hue and holds on any ground: on a dark page, or a dark
+     panel (.on-ink), the ink is light and the colour is pulled up. Measured by
+     scripts/diagram-paint.test.mjs. */
   .band-tag,
   .band-brace-label,
   .status-fail {
-    fill: var(--rik-status-danger, var(--rik-accent));
+    fill: color-mix(in srgb, var(--rik-status-danger__text, var(--rik-status-danger)) 70%, var(--rik-text-default));
   }
   .sw-track.sw-on {
     fill: var(--rik-status-success, var(--rik-accent));
@@ -499,14 +510,14 @@ export const piecesStyles = css`
     stroke: var(--rik-status-danger, var(--rik-accent));
   }
   .fig-ok {
-    fill: var(--rik-status-success, var(--rik-text-default));
+    fill: color-mix(in srgb, var(--rik-status-success__text, var(--rik-status-success)) 70%, var(--rik-text-default));
   }
   .fig-danger {
-    fill: var(--rik-status-danger, var(--rik-text-default));
+    fill: color-mix(in srgb, var(--rik-status-danger__text, var(--rik-status-danger)) 70%, var(--rik-text-default));
   }
   .fig-accent,
   .fig-warn {
-    fill: var(--deck-scene-tag, var(--rik-accent--strong, var(--rik-text-default)));
+    fill: var(--deck-scene-tag, color-mix(in srgb, var(--rik-accent--strong, var(--rik-accent)) 70%, var(--rik-text-default)));
   }
   .band-track {
     fill: var(--deck-scene-card-bg, var(--rik-surface-raised));

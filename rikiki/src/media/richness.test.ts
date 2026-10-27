@@ -333,6 +333,20 @@ describe('the graphic model of a drawing', () => {
     ).toHaveLength(1);
   });
 
+  it('exempts a motif at the next step of its act, even in other words, and not a clone', () => {
+    const steps = ['code', 'environnement', 'exploitation'];
+    const chapter = (n: number) => ({
+      ...use(n + 1, { scope: steps[n]!, ring: `${n + 1} anneaux` }),
+      act: { steps, at: n },
+    });
+    expect(modelRepeatIssues([chapter(0), chapter(1), chapter(2)])).toEqual([]);
+    const clone = (slide: number, words: string) => use(slide, { a: words, b: `${words} bis` });
+    expect(
+      modelRepeatIssues([clone(1, 'Web'), clone(2, 'Shop'), clone(3, 'Mail')]),
+      'every word changed on the same marks is another case drawn the same way',
+    ).toHaveLength(1);
+  });
+
   it('reads the words of a drawing by the mark that wrote them', () => {
     const words = wordsByMark(
       model([text('DB 2', 'flag'), text('STOP', 'flag'), text('free')], []),

@@ -3,6 +3,7 @@ import {
   BAR_GAP,
   FIGURE_FLOOR,
   GROUP_GAP,
+  LABEL_CLEAR,
   LABEL_OVERHANG,
   MAX_BAR_WIDTH,
   UNIT_SPACE,
@@ -171,6 +172,19 @@ describe('barColumns', () => {
     expect(labelWidth).toBe(barWidth + 2 * LABEL_OVERHANG);
     expect((xs[0] ?? 0) - LABEL_OVERHANG).toBeCloseTo(0);
     expect((xs.at(-1) ?? 0) + barWidth + LABEL_OVERHANG).toBeCloseTo(SCENE_WIDTH);
+  });
+
+  it('narrows its gaps rather than its bars past zero, in the narrowest region a row makes', () => {
+    // Three equal regions · eight bars, eight notes, seven gaps between groups.
+    const width = (SCENE_WIDTH - 2 * 96) / 3;
+    const notes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    const { xs, barWidth, labelWidth } = barColumns(groupByNote(notes), width);
+    expect(barWidth).toBeGreaterThan(0);
+    expect((xs[0] ?? 0) - LABEL_OVERHANG).toBeGreaterThanOrEqual(-1e-9);
+    expect((xs.at(-1) ?? 0) + barWidth + LABEL_OVERHANG).toBeLessThanOrEqual(width + 1e-9);
+    for (let i = 1; i < xs.length; i += 1) expect(xs[i]!).toBeGreaterThan(xs[i - 1]! + barWidth);
+    // A label never reaches its neighbour's, whatever the gap left.
+    expect(labelWidth).toBeLessThanOrEqual((xs[1] ?? 0) - (xs[0] ?? 0) - LABEL_CLEAR + 1e-9);
   });
 
   it('lays out nothing for no bar', () => {

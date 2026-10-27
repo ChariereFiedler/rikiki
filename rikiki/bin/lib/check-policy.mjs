@@ -59,11 +59,12 @@ const severityRules = (map, source) =>
 const words = (value) =>
   (Array.isArray(value) ? value : String(value ?? '').split(/[\s,]+/)).map((w) => w.trim()).filter(Boolean);
 
-/** The policy written by the config files and the command line. */
+/** The policy written by the config files and the command line · `layers` keeps
+ *  each file, then the command line, in order: one says its `checks` then its
+ *  `severity` before the next one speaks. */
 export function buildPolicy({ layers = [], cli = {} } = {}) {
   const policy = {
-    rules: [],
-    severities: [],
+    layers: [],
     promote: [],
     limits: {},
     options: {},
@@ -73,8 +74,10 @@ export function buildPolicy({ layers = [], cli = {} } = {}) {
   };
   for (const { file, check } of layers) {
     policy.sources.push(file);
-    policy.rules.push(...parseRuleList(check.checks, `${file}#check.checks`));
-    policy.severities.push(...severityRules(check.severity, `${file}#check.severity`));
+    policy.layers.push({
+      rules: parseRuleList(check.checks, `${file}#check.checks`),
+      severities: severityRules(check.severity, `${file}#check.severity`),
+    });
     policy.promote.push(...parseRuleList(check.warningsAsErrors, `${file}#check.warningsAsErrors`));
     Object.assign(policy.limits, check.limits);
     Object.assign(policy.options, check.options);
@@ -97,8 +100,10 @@ export function buildPolicy({ layers = [], cli = {} } = {}) {
   }
   if (cli.checks !== undefined || cli.severity || cli.warningsAsErrors !== undefined || cli.limits || cli.options)
     policy.sources.push('command line');
-  policy.rules.push(...parseRuleList(cli.checks, 'command line · --checks'));
-  policy.severities.push(...severityRules(cli.severity, 'command line · --severity'));
+  policy.layers.push({
+    rules: parseRuleList(cli.checks, 'command line · --checks'),
+    severities: severityRules(cli.severity, 'command line · --severity'),
+  });
   policy.promote.push(...parseRuleList(cli.warningsAsErrors, 'command line · --warnings-as-errors'));
   Object.assign(policy.limits, cli.limits);
   Object.assign(policy.options, cli.options);
@@ -132,7 +137,8 @@ function applyRules(state, code, rules, severities, by) {
 export function decide(policy, code, severity, { overrides = [], inline = [] } = {}) {
   if (isAlwaysOn(code)) return { kept: true, severity };
   const state = { enabled: true, severity, by: undefined };
-  applyRules(state, code, policy.rules, policy.severities, (rule) => ({ kind: 'config', source: rule.source }));
+  for (const layer of policy.layers)
+    applyRules(state, code, layer.rules, layer.severities, (rule) => ({ kind: 'config', source: rule.source }));
   for (const override of overrides)
     applyRules(state, code, override.rules, override.severities, () => ({
       kind: 'override',
@@ -153,9 +159,11 @@ export function decide(policy, code, severity, { overrides = [], inline = [] } =
   return promoted(policy, code, state);
 }
 
+/** `warningsAsErrors`, read in order across the files and the command line · the
+ *  last rule that matches says whether a warning is raised (`*,-text-too-small`). */
 function promoted(policy, code, state) {
-  if (state.severity === 'warning' && policy.promote.some((rule) => rule.re.test(code) && !rule.negate))
-    return { kept: true, severity: 'error', promoted: true };
+  const last = policy.promote.findLast((rule) => rule.re.test(code));
+  if (state.severity === 'warning' && last && !last.negate) return { kept: true, severity: 'error', promoted: true };
   return { kept: true, severity: state.severity };
 }
 
@@ -247,8 +255,7 @@ export function selectionFindings(policy, { known, pending = [] }) {
   const found = [];
   const seen = new Set();
   const tokens = [
-    ...policy.rules,
-    ...policy.severities,
+    ...policy.layers.flatMap((layer) => [...layer.rules, ...layer.severities]),
     ...policy.promote,
     ...policy.overrides.flatMap((o) => [...o.rules, ...o.severities]),
   ];
@@ -275,6 +282,23 @@ export function selectionFindings(policy, { known, pending = [] }) {
       );
   }
   return found;
+}
+
+/** The options (`check.options`, `--check-option`) that no rule of this deck reads ·
+ *  a typo in the rule they name gives the option to nothing, and would say nothing.
+ *  @param {string[]} readers the codes of the plugin rules that loaded
+ *  @param {string[]} pending the namespaces of the plugins that did not · their own failure says so */
+export function optionFindings(policy, { readers, pending = [] }) {
+  return Object.keys(policy.options).flatMap((key) => {
+    const code = codeOf(key.slice(0, key.lastIndexOf('.')));
+    if (readers.includes(code) || pending.some((namespace) => code.startsWith(`${namespace}_`))) return [];
+    return [
+      finding('CHECK_OPTION_UNKNOWN', 'warning', `option "${key}" names ${code}, which no plugin rule of this deck reads · it is given to nothing`, {
+        measurement: { option: key, rule: code },
+        suggestion: '`rikiki check --list-checks` prints every rule this deck can meet · an option goes to a rule of a plugin',
+      }),
+    ];
+  });
 }
 
 /**

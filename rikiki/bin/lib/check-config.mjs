@@ -13,6 +13,7 @@
 // ════════════════════════════════════════════════════════════════
 
 import { existsSync, readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 
 export const CONFIG_FILE = 'rikiki.config.json';
@@ -42,7 +43,8 @@ const stringList = (value) => typeof value === 'string' || (Array.isArray(value)
 export function configFiles(deckPath, explicit) {
   if (explicit) return [resolve(explicit)];
   const found = [];
-  for (let dir = dirname(resolve(deckPath)); ; dir = dirname(dir)) {
+  const home = resolve(homedir());
+  for (let dir = dirname(resolve(deckPath)); dir !== home; dir = dirname(dir)) {
     const file = join(dir, CONFIG_FILE);
     if (existsSync(file)) {
       found.unshift(file);

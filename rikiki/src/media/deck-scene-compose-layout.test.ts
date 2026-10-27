@@ -79,6 +79,12 @@ describe('rowFrame', () => {
     expect(rowFrame([1, 1, 1]).widths[0]).toBeGreaterThanOrEqual(MIN_REGION_WIDTH);
   });
 
+  it('shares a split of huge numbers as their proportions, every width finite', () => {
+    const { widths, tracks, gutterCentres } = rowFrame(parseSplit('1e308:1e308', 2).shares);
+    expect([...widths, ...tracks, ...gutterCentres].every(Number.isFinite)).toBe(true);
+    expect(widths).toEqual(rowFrame([1, 1]).widths);
+  });
+
   it('puts a three-way split of one to four below the minimum, which the lint reports', () => {
     expect(rowFrame([1, 4, 1]).widths[0]).toBeLessThan(MIN_REGION_WIDTH);
   });
