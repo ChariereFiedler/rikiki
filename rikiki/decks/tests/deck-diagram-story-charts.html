@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Graphiques en mode histoire · troisième série</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-diagram.js"></script>
+</head>
+<body>
+<!-- Des graphiques plutôt que des graphes : une courbe, des barres, une part d'un tout, une jauge,
+     une foule. Joués à l'entrée (play="enter") sauf la foule. Pas lus par les tests. Chiffres
+     inventés pour l'exemple. -->
+<deck-root>
+
+  <deck-feature id="courbe" eyebrow="Revenu récurrent · 10 mois">
+    <h1 slot="title">De 0 à 15 k€ de MRR</h1>
+    <deck-diagram data-testid="courbe" play="enter" layout="column" align="stretch">
+      <dg-curve name="mrr" label="MRR mensuel" values="0 0,4 1,1 2 3,2 4,8 6,9 9,4 12 15" max="16" unit="k€" threshold="10" ticks="avr. jan." beat="steady" duration="3s" emphasis></dg-curve>
+      <dg-group layout="row" gap="airy">
+        <dg-box name="premier" icon="user" label="1er client payant" note="avril · 39 €" paint="outline" beat="event"></dg-box>
+        <dg-box name="seuil" icon="flag" label="10 k€ franchis" note="décembre" paint="outline" beat="spread"></dg-box>
+        <dg-box name="janvier" icon="chart" label="janvier" note="312 comptes" paint="outline" proof="15 k€ · rentable" beat="proof"></dg-box>
+      </dg-group>
+    </deck-diagram>
+    <deck-source>Illustration · série inventée pour l'exemple (montants et dates fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="barres" eyebrow="Facture cloud · 1 € décomposé">
+    <h1 slot="title">La base coûte 41 centimes</h1>
+    <deck-diagram data-testid="barres" play="enter" layout="column" align="start" gap="tight" balance="free">
+      <dg-bar name="calcul" label="calcul" value="27" tag="0,27 €" beat="steady"></dg-bar>
+      <dg-bar name="stockage" label="stockage" value="18" tag="0,18 €" beat="steady"></dg-bar>
+      <dg-bar name="reseau" label="réseau" value="9" tag="0,09 €" beat="steady"></dg-bar>
+      <dg-bar name="logs" label="logs" value="5" tag="0,05 €" beat="steady"></dg-bar>
+      <dg-bar name="base" label="base de données" value="41" tag="0,41 €" beat="event" emphasis></dg-bar>
+      <dg-text name="reserve" for="base" side="right" label="réservée sur 1 an" note="−38 % sur cette ligne" beat="proof"></dg-text>
+    </deck-diagram>
+    <deck-source>Illustration · facture inventée pour l'exemple (répartition fictive)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="parts" eyebrow="Budget annuel · 100 %">
+    <h1 slot="title">62 centimes pour les salaires</h1>
+    <deck-diagram data-testid="parts" play="enter" layout="axis">
+      <dg-bar name="salaires" label="salaires" tag="62 %" from="0" to="62" beat="event" duration="1.4s" emphasis></dg-bar>
+      <dg-bar name="cloud" label="cloud" tag="14 %" from="62" to="76" beat="steady"></dg-bar>
+      <dg-bar name="outils" label="outils" tag="9 %" from="76" to="85" beat="steady"></dg-bar>
+      <dg-bar name="marketing" label="marketing" tag="15 %" from="85" to="100" beat="steady"></dg-bar>
+      <dg-cursor name="plafond" label="plafond voté · 50 %" value="50" beat="proof"></dg-cursor>
+    </deck-diagram>
+    <deck-source>Illustration · budget inventé pour l'exemple (parts fictives)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="jauge" eyebrow="Remède · alerte avant la panne">
+    <h1 slot="title">Le disque, vu avant qu'il sature</h1>
+    <deck-diagram data-testid="jauge" play="enter" layout="column" align="stretch" gap="airy">
+      <dg-meter name="cpu" label="processeur" value="38" unit="%" tone="muted" beat="steady"></dg-meter>
+      <dg-meter name="disque" label="disque /var · alerte à 80 %" value="54 91" unit="%" threshold="80" tone="ok danger" beat="event" duration="1.6s" emphasis></dg-meter>
+      <dg-group layout="row" gap="airy">
+        <dg-box name="ecritures" icon="alert" label="écritures OK" swap="écritures refusées" tone="normal danger" paint="pale" beat="spread"></dg-box>
+        <dg-box name="rotation" icon="refresh" label="rotation des logs" note="déclenchée à 03:12" paint="ok" proof="retombé à 61 %" beat="proof"></dg-box>
+      </dg-group>
+    </deck-diagram>
+    <deck-source>Illustration · incident inventé pour l'exemple (taux et heure fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="foule" eyebrow="Rétention · cohorte de janvier">
+    <h1 slot="title">38 clients sur 100 partent en un an</h1>
+    <deck-diagram data-testid="foule" layout="grid">
+      <dg-dot count="62"></dg-dot>
+      <dg-dot name="partis" count="38" emphasis></dg-dot>
+      <dg-text for="partis" side="right" label="38 partis" note="dont 21 au 2e mois"></dg-text>
+    </deck-diagram>
+    <deck-source>Illustration · cohorte inventée pour l'exemple (effectifs fictifs)</deck-source>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

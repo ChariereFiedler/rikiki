@@ -1,0 +1,212 @@
+<!doctype html>
+<!--
+  Rikiki · diagrammes à partir d'un prompt · partie B
+  Cinq mécanismes d'ingénierie, un dessin chacun : rollout canari, loi d'Amdahl,
+  défense en profondeur, retry storm, loi de Conway. Chaque diapo part d'une phrase
+  d'intention (`rikiki intent "<phrase>"`) ; aucune des cinq ne tient dans une
+  intention (paliers + seuil + retour, plafond, trois portes, boucle qui se rouvre,
+  deux étages en miroir), elles sont toutes en grammaire libre. Aucune coordonnée.
+  `rikiki check --steps` : 0 erreur, 0 avertissement. Tous les chiffres sont inventés.
+-->
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rikiki · cinq mécanismes</title>
+<link rel="stylesheet" href="../../rikiki/themes/rikiki.css">
+<script type="module" src="../../rikiki/dist/index.js"></script>
+<script type="module" src="../../rikiki/dist/deck-diagram.js"></script>
+</head>
+<body>
+<deck-root transition="slide">
+
+  <deck-cover id="ouverture" brand="rikiki · diagrammes" speaker="Partie B" duration="2 min">
+    <h1>Cinq mécanismes,<br><span class="accent">cinq dessins</span></h1>
+    <deck-notes>Canari, Amdahl, défense en profondeur, retry storm, Conway : cinq idées qui se racontent dans le temps. Chaque dessin montre ce qui se passe, puis ce qui change au clic suivant.</deck-notes>
+  </deck-cover>
+
+  <!-- « Le canari monte à 1 %, puis 10 % ; ses erreurs franchissent le seuil, on revient à v1 » · grammaire libre : voies, porte, jauges -->
+  <deck-feature id="canari" eyebrow="livraison · le canari">
+    <h1 slot="title">Le canari s'arrête avant 100 %</h1>
+    <deck-diagram layout="column">
+      <dg-meter name="erreurs" label="Erreurs de v2 · seuil 5 %" value="1 2 8" max="20" unit="%" threshold="5" tone="ok ok danger"></dg-meter>
+      <dg-group layout="lanes" gap="tight">
+        <dg-lane name="pod1" icon="spark" label="v2 · pod 1" flow="1"></dg-lane>
+        <dg-lane name="pod2" icon="spark" label="v2 · pod 2" flow="1"></dg-lane>
+        <dg-lane name="stable" icon="check" label="v1 · stable" flow="6"></dg-lane>
+        <dg-gate name="retour" over="pod1 pod2" by="erreurs" label="retour à v1" state="closed" step="2"></dg-gate>
+        <dg-box name="clients" icon="team" label="Clients" paint="none"></dg-box>
+      </dg-group>
+      <dg-meter name="part" label="Trafic sur v2 · visé 100 %" value="1 10 0" unit="%" tone="normal normal muted"></dg-meter>
+    </deck-diagram>
+    <deck-source>Illustration · chiffres inventés</deck-source>
+    <deck-notes>Premier palier, 1 % du trafic sur v2 : les erreurs restent sous le seuil. Deuxième palier, 10 % : toujours sous le seuil. Puis les erreurs montent à 8 % ; personne n'appuie sur rien, la porte se ferme d'elle-même et le trafic revient sur v1. Les 100 % ne sont jamais atteints, et seuls 10 % des clients ont vu le problème.</deck-notes>
+  </deck-feature>
+
+  <!-- « Paralléliser 90 % du travail plafonne à ×10 » · grammaire libre : barres sur une échelle, réorganisées par clic -->
+  <deck-feature id="amdahl" eyebrow="performance · la loi d'Amdahl">
+    <h1 slot="title">Jamais plus de ×10, même à 1 000</h1>
+    <deck-diagram balance="free">
+      <dg-state>
+        <dg-group layout="column" gap="airy">
+          <dg-group name="duree" layout="axis">
+            <dg-bar name="seq" label="séquentiel" tag="10 s" from="0" to="10" tone="danger"></dg-bar>
+            <dg-bar name="par" label="parallèle" tag="90 s" from="10" to="100"></dg-bar>
+            <dg-cursor name="depart" label="100 s" value="100"></dg-cursor>
+          </dg-group>
+          <dg-box name="gain" label="1 cœur" value="×1" emphasis></dg-box>
+        </dg-group>
+      </dg-state>
+      <dg-state step="1">
+        <dg-group layout="column" gap="airy">
+          <dg-group name="duree" layout="axis">
+            <dg-bar name="seq" label="séquentiel" tag="10 s" from="0" to="10" tone="danger"></dg-bar>
+            <dg-bar name="par" label="parallèle" tag="9 s" from="10" to="19"></dg-bar>
+            <dg-cursor name="depart" label="100 s" value="100"></dg-cursor>
+          </dg-group>
+          <dg-box name="gain" label="10 cœurs" value="×5,3" emphasis></dg-box>
+        </dg-group>
+      </dg-state>
+      <dg-state step="2">
+        <dg-group layout="column" gap="airy">
+          <dg-group name="duree" layout="axis">
+            <dg-bar name="seq" label="séquentiel" tag="10 s · incompressible" from="0" to="10" tone="danger"></dg-bar>
+            <dg-bar name="par" label="parallèle" tag="0,09 s" from="10" to="10.09"></dg-bar>
+            <dg-cursor name="depart" label="100 s" value="100"></dg-cursor>
+          </dg-group>
+          <dg-box name="gain" label="1 000 cœurs" value="×9,9" note="le plafond est ×10" emphasis></dg-box>
+        </dg-group>
+      </dg-state>
+    </deck-diagram>
+    <deck-source>Illustration · chiffres inventés (tâche de 100 s, 10 % séquentiels)</deck-source>
+    <deck-notes>Une tâche de 100 secondes, dont 10 ne se découpent pas. Dix cœurs ramènent la part parallèle à 9 secondes : ×5,3. Mille cœurs la ramènent à 9 centièmes, mais les 10 secondes séquentielles restent : ×9,9, et jamais plus de ×10.</deck-notes>
+  </deck-feature>
+
+  <!-- « Chaque couche arrête une part de l'attaque, il ne reste presque rien » · grammaire libre : une voie, trois portes qui délestent -->
+  <deck-feature id="profondeur" eyebrow="sécurité · la défense en profondeur">
+    <h1 slot="title">Trois couches, presque rien au bout</h1>
+    <deck-diagram layout="lanes" gap="airy" balance="free">
+      <dg-lane name="scans" icon="search" label="Scans" flow="4"></dg-lane>
+      <dg-lane name="identifiants" icon="user" label="Faux logins" flow="4"></dg-lane>
+      <dg-lane name="copies" icon="document" label="Vol de copie" flow="4"></dg-lane>
+      <dg-gate name="parefeu" over="scans" at="start" label="pare-feu" state="open closed"></dg-gate>
+      <dg-gate name="auth" over="identifiants" at="middle" label="authentification" state="open open shed"></dg-gate>
+      <dg-gate name="chiffrement" over="copies" at="end" label="chiffrement" state="open open open closed"></dg-gate>
+      <dg-box name="donnees" icon="database" label="Données" paint="outline"></dg-box>
+      <dg-text name="bilan" label="2 sur 12 passent" step="3"></dg-text>
+    </deck-diagram>
+    <deck-source>Illustration · chiffres inventés</deck-source>
+    <deck-notes>Sans défense, tout arrive aux données. Le pare-feu coupe les scans, l'authentification arrête la moitié des faux logins, le chiffrement rend les copies volées illisibles. Aucune couche n'est parfaite ; à elles trois, il ne passe presque plus rien.</deck-notes>
+  </deck-feature>
+
+  <!-- « Tous réessaient en même temps, la panne s'entretient ; le jitter casse la boucle » · grammaire libre : une ligne qui se referme en boucle, puis se rouvre -->
+  <deck-feature id="tempete" eyebrow="fiabilité · la tempête de retries">
+    <h1 slot="title">Les retries entretiennent la panne</h1>
+    <deck-diagram layout="column" bounds="1200x560">
+      <dg-state>
+        <dg-group layout="row" gap="airy">
+          <dg-box name="panne" icon="alert" label="Panne" tag="30 s"></dg-box>
+          <dg-box name="echecs" icon="cross" label="Échecs"></dg-box>
+          <dg-box name="retries" icon="refresh" label="Retries"></dg-box>
+          <dg-link from="panne" to="echecs"></dg-link>
+          <dg-link from="echecs" to="retries"></dg-link>
+        </dg-group>
+      </dg-state>
+      <dg-state step="1">
+        <dg-group layout="ring">
+          <dg-box name="panne" label="Panne" tone="danger"></dg-box>
+          <dg-box name="echecs" label="Échecs"></dg-box>
+          <dg-box name="retries" label="Retries" emphasis></dg-box>
+          <dg-box name="surcharge" label="Charge"></dg-box>
+          <dg-link from="panne" to="echecs"></dg-link>
+          <dg-link from="echecs" to="retries"></dg-link>
+          <dg-link from="retries" to="surcharge"></dg-link>
+          <dg-link from="surcharge" to="panne"></dg-link>
+          <dg-text for="retries" side="right" note="tous à la même seconde"></dg-text>
+          <dg-text for="panne" side="left" note="30 s devenues 20 min"></dg-text>
+        </dg-group>
+      </dg-state>
+      <dg-state step="2">
+        <dg-group layout="row" gap="airy">
+          <dg-box name="panne" icon="alert" label="Panne" tag="30 s"></dg-box>
+          <dg-box name="echecs" icon="cross" label="Échecs"></dg-box>
+          <dg-box name="retries" icon="clock" label="Retries" tag="+ jitter" emphasis></dg-box>
+          <dg-box name="retabli" icon="check" label="Rétabli" tone="ok"></dg-box>
+          <dg-link from="panne" to="echecs"></dg-link>
+          <dg-link from="echecs" to="retries"></dg-link>
+          <dg-link from="retries" to="retabli"></dg-link>
+        </dg-group>
+      </dg-state>
+      <dg-queue name="file" label="requêtes en attente" count="8" fill="3 8 1" tone="warn danger ok"></dg-queue>
+    </deck-diagram>
+    <deck-source>Illustration · chiffres inventés</deck-source>
+    <deck-notes>Une panne de 30 secondes, des requêtes en échec, les clients réessaient. Comme ils réessaient tous à la même seconde, la charge triple et la panne se nourrit d'elle-même : 30 secondes deviennent 20 minutes. Avec un backoff et un délai tiré au hasard, les retries s'étalent, la file se vide et la boucle se rouvre en ligne droite.</deck-notes>
+  </deck-feature>
+
+  <!-- « Les interfaces suivent les frontières des équipes ; réorganiser redessine » · grammaire libre : deux étages en miroir, l'organisation bouge, l'architecture suit -->
+  <deck-feature id="conway" eyebrow="architecture · la loi de Conway">
+    <h1 slot="title">Les API suivent les équipes</h1>
+    <deck-diagram>
+      <dg-state>
+        <dg-group layout="column" gap="airy">
+          <dg-group name="orga" label="qui se parle" layout="row" gap="airy">
+            <dg-box name="t-panier" icon="team" label="Équipe Panier"></dg-box>
+            <dg-box name="t-paiement" icon="team" label="Équipe Paiement"></dg-box>
+            <dg-box name="t-livraison" icon="team" label="Équipe Livraison"></dg-box>
+            <dg-link from="t-panier" to="t-paiement" dashed></dg-link>
+            <dg-link from="t-paiement" to="t-livraison" dashed></dg-link>
+          </dg-group>
+          <dg-group name="archi" label="qui appelle qui" layout="row" gap="airy" paint="outline">
+            <dg-box name="s-panier" icon="document" label="Panier"></dg-box>
+            <dg-box name="s-paiement" icon="lock" label="Paiement"></dg-box>
+            <dg-box name="s-livraison" icon="arrow" label="Livraison"></dg-box>
+            <dg-link from="s-panier" to="s-paiement" label="API"></dg-link>
+            <dg-link from="s-paiement" to="s-livraison" label="API"></dg-link>
+          </dg-group>
+          <dg-link from="t-panier" to="s-panier"></dg-link>
+          <dg-link from="t-paiement" to="s-paiement"></dg-link>
+          <dg-link from="t-livraison" to="s-livraison"></dg-link>
+        </dg-group>
+      </dg-state>
+      <dg-state step="1">
+        <dg-group layout="column" gap="airy">
+          <dg-group name="orga" label="qui se parle" layout="row" gap="airy">
+            <dg-box name="t-commande" icon="team" label="Équipe Commande" emphasis></dg-box>
+            <dg-box name="t-livraison" icon="team" label="Équipe Livraison"></dg-box>
+            <dg-link from="t-commande" to="t-livraison" dashed></dg-link>
+          </dg-group>
+          <dg-group name="archi" label="qui appelle qui" layout="row" gap="airy" paint="outline">
+            <dg-box name="s-panier" icon="document" label="Panier"></dg-box>
+            <dg-box name="s-paiement" icon="lock" label="Paiement"></dg-box>
+            <dg-box name="s-livraison" icon="arrow" label="Livraison"></dg-box>
+            <dg-link from="s-panier" to="s-paiement" label="API"></dg-link>
+            <dg-link from="s-paiement" to="s-livraison" label="API"></dg-link>
+          </dg-group>
+          <dg-link from="t-commande" to="s-panier s-paiement"></dg-link>
+          <dg-link from="t-livraison" to="s-livraison"></dg-link>
+        </dg-group>
+      </dg-state>
+      <dg-state step="2">
+        <dg-group layout="column" gap="airy">
+          <dg-group name="orga" label="qui se parle" layout="row" gap="airy">
+            <dg-box name="t-commande" icon="team" label="Équipe Commande"></dg-box>
+            <dg-box name="t-livraison" icon="team" label="Équipe Livraison"></dg-box>
+            <dg-link from="t-commande" to="t-livraison" dashed></dg-link>
+          </dg-group>
+          <dg-group name="archi" label="qui appelle qui" layout="row" gap="airy" paint="outline">
+            <dg-box name="s-commande" icon="document" label="Commande" emphasis></dg-box>
+            <dg-box name="s-livraison" icon="arrow" label="Livraison"></dg-box>
+            <dg-link from="s-commande" to="s-livraison" label="API"></dg-link>
+          </dg-group>
+          <dg-link from="t-commande" to="s-commande"></dg-link>
+          <dg-link from="t-livraison" to="s-livraison"></dg-link>
+        </dg-group>
+      </dg-state>
+    </deck-diagram>
+    <deck-source>Illustration · chiffres inventés (organisation fictive)</deck-source>
+    <deck-notes>En haut, qui se parle ; en bas, qui appelle qui : le même dessin. On fusionne Panier et Paiement en une équipe Commande : pendant un temps, une équipe porte deux services et une API qui ne sert plus à rien. Puis l'architecture suit : les deux services n'en font plus qu'un, il ne reste qu'une interface, là où il reste une conversation.</deck-notes>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

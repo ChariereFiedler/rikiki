@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Diagramme · composition en panneaux et caméra · fixture de test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-diagram.js"></script>
+</head>
+<body>
+<!-- Cinq histoires jouées à l'entrée (play="enter"), sans clic ni coordonnée, chacune
+     composée de plusieurs sous-schémas articulés (compose + dg-panel) sur une
+     composition : mécanisme et incident côte à côte (56),
+     topologie qui bascule et axe RPO/RTO en pied (86), jeu de test dans la production
+     avec dézoom (46), tableau de bord 2 × 2 (15), zoom arrière en anneaux de portée
+     (51, 63, 74). Les panneaux partagent une entité ou un axe ; la caméra (dg-camera)
+     cadre une marque ou un panneau sans coordonnée. e2e/diagram-panels.spec.ts la lit.
+     Noms, heures et valeurs sont inventés, et chaque diapo le dit dans son deck-source. -->
+<deck-root>
+
+  <deck-feature id="filet" eyebrow="Ce que Claude ne voit pas · l'environnement">
+    <h1 slot="title">STOP écrit, STOP jamais lu</h1>
+    <deck-diagram data-testid="filet" play="enter" compose="model-incident">
+      <dg-panel name="modele" label="kill switch · le mécanisme" layout="column" gap="airy">
+        <dg-box name="drapeau" entity="stop" icon="flag" label="MARCHE" swap="STOP" swap-icon="ban" note="drapeau · DB 2" paint="gold" tone="normal warn" beat="event"></dg-box>
+        <dg-group layout="row" gap="airy" align="stretch">
+          <dg-box name="lecteur" icon="code" label="is_active()" note="lu avant d'agir" paint="ink"></dg-box>
+          <dg-box name="acme" icon="target" label="ACME" note="recherches" paint="pale" proof="0 recherche créée" beat="proof"></dg-box>
+          <dg-link name="cree" from="lecteur" to="acme" steady="3s" dim beat="spread"></dg-link>
+        </dg-group>
+        <dg-link name="lit" from="lecteur" to="drapeau" label="lit"></dg-link>
+      </dg-panel>
+      <dg-panel name="incident" label="26 avril, chez Rodz" layout="column" gap="airy" beat="effect">
+        <dg-group layout="row" gap="normal">
+          <dg-box name="db2" entity="stop" icon="database" label="DB 2 · STOP" note="où l'on a écrit" paint="gold"></dg-box>
+          <dg-box name="db3" icon="database" label="DB 3 · vide" note="ce que lit le code" paint="pale"></dg-box>
+        </dg-group>
+        <dg-group layout="row" gap="airy" align="stretch">
+          <dg-box name="code" icon="code" label="is_active()" paint="ink"></dg-box>
+          <dg-box name="client" icon="target" label="ACME" note="1 412 recherches" paint="bad"></dg-box>
+          <dg-link name="cree" from="code" to="client" flow="3" turn="danger" beat="proof" after="modele.acme"></dg-link>
+        </dg-group>
+        <dg-link name="lu" from="code" to="db3" label="lit"></dg-link>
+        <dg-status for="client" state="wait fail" label="26 → 29 avril" note="le STOP n'a rien arrêté" side="bottom" beat="proof" after="cree"></dg-status>
+      </dg-panel>
+    </deck-diagram>
+    <deck-source>Illustration · incident inventé pour l'exemple (dates, bases, client et volume fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="secours" eyebrow="Remède · serveur de secours">
+    <h1 slot="title">Le principal tombe à 03:12</h1>
+    <deck-diagram data-testid="secours" play="enter" compose="body-axis" gap="tight">
+      <dg-panel name="reseau" layout="layers" direction="right" gap="normal" paint="none">
+        <dg-box name="clients" icon="team" label="clients" note="1 240 req/min" paint="pale" proof="service repris" beat="proof"></dg-box>
+        <dg-box name="dns" entity="bascule" icon="refresh" label="DNS" swap="DNS · secours" paint="gold" beat="effect" with="vers-secours"></dg-box>
+        <dg-box name="principal" entity="principal" icon="database" label="pg-01 · principal" swap="pg-01 · en panne" paint="ink" tone="normal danger" beat="event"></dg-box>
+        <dg-box name="secours" entity="secours" icon="database" label="pg-02 · secours" note="copie toutes les 15 min" paint="pale" tone="normal ok" beat="effect" with="vers-secours"></dg-box>
+        <dg-link from="clients" to="dns" steady="3s"></dg-link>
+        <dg-link name="vers-principal" from="dns" to="principal" route="straight" steady="3s" dim beat="effect" with="vers-secours"></dg-link>
+        <dg-link name="vers-secours" from="dns" to="secours" route="straight" steady="2s" lever beat="effect"></dg-link>
+      </dg-panel>
+      <dg-panel name="temps" layout="axis" paint="none">
+        <dg-bar name="rpo" label="RPO · 12 min perdues" from="0" to="12" tone="danger" beat="spread"></dg-bar>
+        <dg-bar name="rto" label="RTO · 19 min coupées" from="12" to="31" tone="warn" beat="proof" with="reseau.clients"></dg-bar>
+        <dg-cursor name="copie" label="03:00 · dernière copie" value="0" beat="steady"></dg-cursor>
+        <dg-cursor name="panne" entity="principal" label="03:12 · panne" value="12" beat="event" with="reseau.principal"></dg-cursor>
+        <dg-cursor name="reprise" entity="secours" label="03:31 · reprise" value="31" beat="effect" with="reseau.vers-secours"></dg-cursor>
+      </dg-panel>
+    </deck-diagram>
+    <deck-source>Illustration · panne inventée pour l'exemple (heures, serveurs et débit fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="production" eyebrow="Ce que Claude ne voit pas · le code">
+    <h1 slot="title">Tous les tests passent. Et en vrai ?</h1>
+    <deck-diagram data-testid="production" play="enter" compose="inset">
+      <dg-panel name="prod" label="production · 25 000 contacts" paint="ink" layout="row" gap="airy">
+        <dg-panel name="jeu" label="jeu de test · 3 sur 3" paint="ok" layout="column">
+          <dg-table name="cas" entity="intitules" paint="ok" beat="steady" rows="
+            CEO
+            Directeur commercial
+            DRH" swap="
+            ✓ CEO
+            ✓ Directeur commercial
+            ✓ DRH"></dg-table>
+        </dg-panel>
+        <dg-table name="reels" entity="intitules" label="intitulés réels" icon="database" paint="pale" beat="spread" rows="
+          CEO | fournisseur de lemlist
+          Leiter Außendienst
+          销售总监
+          (vide)
+          Geschäftsführer
+          Head of Growth, ex-CEO"></dg-table>
+        <dg-group layout="column" gap="normal">
+          <dg-box name="verdict" icon="spark" label="« CEO de lemlist ? »" paint="bad" beat="effect"></dg-box>
+          <dg-text name="cas-rare" label="1 intitulé sur 25 000" note="jamais vu par les tests" beat="proof"></dg-text>
+        </dg-group>
+        <dg-link name="envoi" from="reels" to="verdict" flow="2" turn="danger" beat="effect" with="verdict"></dg-link>
+      </dg-panel>
+      <dg-camera name="recul" focus="jeu" to="all" beat="event"></dg-camera>
+    </deck-diagram>
+    <deck-source>Illustration · jeu de test et intitulés inventés pour l'exemple (volumes fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="tableau" eyebrow="Exploitation · le tableau de bord">
+    <h1 slot="title">Jeudi 11:05, la latence décroche</h1>
+    <deck-diagram data-testid="tableau" play="enter" compose="dashboard" gap="tight">
+      <dg-panel name="jauge" layout="column">
+        <dg-meter name="p95" entity="checkout" label="latence p95 · checkout" value="210 720" max="1000" unit="ms" threshold="500" tone="ok danger" beat="event"></dg-meter>
+      </dg-panel>
+      <dg-panel name="statut" layout="row" gap="normal">
+        <dg-counter name="commandes" value="312" unit="/ h" label="commandes" beat="steady"></dg-counter>
+        <dg-switch name="retour" entity="v250" label="retour" state="off on" off="non" on="v2.4.1" beat="effect"></dg-switch>
+      </dg-panel>
+      <dg-panel name="courbe" layout="column">
+        <dg-curve name="semaine" entity="checkout" label="p95 · lun. → dim." values="190 205 200 715 720 735 710" max="1000" unit="ms" threshold="500"></dg-curve>
+      </dg-panel>
+      <dg-panel name="deploiements" layout="column">
+        <dg-table name="journal" entity="v250 checkout" label="déploiements" icon="refresh" beat="proof" rows="
+          lun. 09:12 · v2.4.0
+          jeu. 11:05 · v2.5.0
+          ven. 08:40 · v2.4.1" swap="
+          ✓ lun. 09:12 · v2.4.0
+          ✗ jeu. 11:05 · v2.5.0
+          ✓ ven. 08:40 · retour v2.4.1"></dg-table>
+      </dg-panel>
+    </deck-diagram>
+    <deck-source>Illustration · semaine d'exploitation inventée pour l'exemple (latences, versions et volumes fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="anneaux" eyebrow="Ce que Claude ne voit pas · la portée">
+    <h1 slot="title">Mon code est bon. Et autour ?</h1>
+    <deck-diagram data-testid="anneaux" play="enter" compose="inset">
+      <dg-panel name="client" label="client" paint="outline" layout="row" gap="airy">
+        <dg-panel name="exploitation" label="exploitation" paint="pale" layout="row" gap="airy">
+          <dg-group name="garde" layout="column" gap="tight" align="start" beat="effect" after="cadre-exploit">
+            <dg-box icon="alert" label="les alertes" paint="none"></dg-box>
+            <dg-box icon="clock" label="l'astreinte" paint="none"></dg-box>
+            <dg-box icon="search" label="les sondes" paint="none"></dg-box>
+          </dg-group>
+          <dg-panel name="environnement" label="environnement" paint="pale" layout="row" gap="airy">
+            <dg-box name="code" icon="code" label="code" note="312 tests" paint="ink"></dg-box>
+            <dg-group name="autour" layout="column" gap="tight" align="start" beat="spread" after="cadre-env">
+              <dg-box icon="database" label="le serveur" paint="none"></dg-box>
+              <dg-box icon="refresh" label="la mise en ligne" paint="none"></dg-box>
+              <dg-box icon="document" label="les copies" paint="none"></dg-box>
+            </dg-group>
+          </dg-panel>
+        </dg-panel>
+        <dg-group name="usage" layout="column" gap="tight" align="start" beat="proof" after="cadre-tout">
+          <dg-box icon="user" label="ce qu'il dit" paint="none"></dg-box>
+          <dg-box icon="question" label="ce qu'il tait" paint="none"></dg-box>
+          <dg-box icon="team" label="ce qu'il fait" paint="none"></dg-box>
+        </dg-group>
+      </dg-panel>
+      <dg-camera name="cadre-env" focus="environnement.code" to="environnement" beat="spread"></dg-camera>
+      <dg-camera name="cadre-exploit" to="exploitation" beat="effect"></dg-camera>
+      <dg-camera name="cadre-tout" to="all" beat="proof"></dg-camera>
+    </deck-diagram>
+    <deck-source>Illustration · périmètre inventé pour l'exemple (serveur et heure fictifs)</deck-source>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

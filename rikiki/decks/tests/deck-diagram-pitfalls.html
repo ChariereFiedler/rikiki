@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Diagramme · pièges du moteur · fixture de test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-diagram.js"></script>
+</head>
+<body>
+<!-- Les pièges que quinze diapos en grammaire libre ont contournés (examples/diagrams-prompts),
+     écrits ici comme un auteur les écrit d'abord · chaque diapo doit sortir propre de
+     `rikiki check --steps`. e2e/diagram.spec.ts la lit. -->
+<deck-root>
+
+  <deck-feature id="loop-arrows" eyebrow="link=&quot;arrow&quot; sur un dg-group">
+    <h1 slot="title">La boucle se referme au clic</h1>
+    <deck-diagram data-testid="loop-arrows" layout="column" gap="airy">
+      <dg-state>
+        <dg-group layout="row" gap="airy" link="arrow">
+          <dg-box name="panne" icon="alert" label="Panne" note="trente secondes"></dg-box>
+          <dg-box name="echecs" icon="cross" label="Échecs" note="les requêtes tombent"></dg-box>
+          <dg-box name="retries" icon="refresh" label="Retries" note="tous à la même seconde"></dg-box>
+        </dg-group>
+      </dg-state>
+      <dg-state step="1">
+        <dg-group layout="ring" link="arrow">
+          <dg-box name="panne" label="Panne" tone="danger"></dg-box>
+          <dg-box name="echecs" label="Échecs"></dg-box>
+          <dg-box name="retries" label="Retries" emphasis></dg-box>
+        </dg-group>
+      </dg-state>
+    </deck-diagram>
+  </deck-feature>
+
+  <deck-feature id="row-skip" eyebrow="lien qui saute une boîte d'une rangée">
+    <h1 slot="title">Le producteur parle au bout</h1>
+    <deck-diagram data-testid="row-skip" layout="row" gap="airy">
+      <dg-box name="producteur" icon="spark" label="Producteur"></dg-box>
+      <dg-box name="relais" icon="refresh" label="Relais" paint="outline"></dg-box>
+      <dg-box name="consommateur" icon="clock" label="Consommateur" emphasis></dg-box>
+      <dg-link from="producteur" to="consommateur" label="direct"></dg-link>
+    </deck-diagram>
+  </deck-feature>
+
+  <deck-feature id="lanes-beside" eyebrow="voies à côté d'une boîte, dans des états">
+    <h1 slot="title">La source change, les voies restent</h1>
+    <deck-diagram data-testid="lanes-beside" layout="row" gap="airy">
+      <dg-state>
+        <dg-box name="source" icon="user" label="Clients" paint="outline"></dg-box>
+        <dg-group name="voies" layout="lanes" gap="tight">
+          <dg-lane name="lectures" icon="search" label="Lectures" flow="4"></dg-lane>
+          <dg-lane name="ecritures" icon="document" label="Écritures" flow="3"></dg-lane>
+          <dg-gate name="garde" label="quota" state="open"></dg-gate>
+          <dg-box name="api" icon="code" label="API" paint="outline"></dg-box>
+        </dg-group>
+      </dg-state>
+      <dg-state step="1">
+        <dg-box name="source" icon="team" label="Clients" note="dix fois plus nombreux" paint="outline"></dg-box>
+        <dg-group name="voies" layout="lanes" gap="tight">
+          <dg-lane name="lectures" icon="search" label="Lectures" flow="4"></dg-lane>
+          <dg-lane name="ecritures" icon="document" label="Écritures" flow="3"></dg-lane>
+          <dg-gate name="garde" label="quota" state="shed"></dg-gate>
+          <dg-box name="api" icon="code" label="API" paint="outline" emphasis></dg-box>
+        </dg-group>
+      </dg-state>
+    </deck-diagram>
+  </deck-feature>
+
+  <deck-feature id="funnel-tone" eyebrow="tone sur dg-bar">
+    <h1 slot="title">La fuite est à l'inscription</h1>
+    <deck-diagram data-testid="funnel-tone" layout="column" align="start" gap="tight">
+      <dg-bar name="visiteurs" label="Visiteurs" value="1000" tag="1 000"></dg-bar>
+      <dg-bar name="inscrits" label="Inscrits" value="120" tag="120 · 88 % perdus" tone="danger"></dg-bar>
+      <dg-bar name="payants" label="Payants" value="8" tag="8"></dg-bar>
+    </deck-diagram>
+  </deck-feature>
+
+  <deck-feature id="gate-open" eyebrow="porte ouverte, jauge qui la pilote">
+    <h1 slot="title">La jauge passe, la porte tombe</h1>
+    <deck-diagram data-testid="gate-open" layout="column" gap="airy">
+      <dg-meter name="jauge" label="Erreurs · seuil 5 %" value="1 2 8" max="20" unit="%" threshold="5" tone="ok ok danger"></dg-meter>
+      <dg-group layout="lanes" gap="tight">
+        <dg-lane name="v2" icon="spark" label="v2" flow="2"></dg-lane>
+        <dg-lane name="v1" icon="check" label="v1" flow="6"></dg-lane>
+        <dg-gate name="porte" over="v2" by="jauge" label="retour à v1" state="open open closed"></dg-gate>
+        <dg-box name="cible" icon="team" label="Clients" paint="outline"></dg-box>
+      </dg-group>
+    </deck-diagram>
+  </deck-feature>
+
+  <deck-feature id="sieve" eyebrow="portes en série, note sur le puits">
+    <h1 slot="title">Deux filtres, presque rien au bout</h1>
+    <deck-diagram data-testid="sieve" layout="lanes" gap="airy">
+      <dg-lane name="attaques" icon="search" label="Attaques" flow="8"></dg-lane>
+      <dg-lane name="legitime" icon="user" label="Légitime" flow="3"></dg-lane>
+      <dg-gate name="parefeu" over="attaques" at="start" label="pare-feu" state="shed"></dg-gate>
+      <dg-gate name="auth" over="attaques" at="end" label="auth" state="shed"></dg-gate>
+      <dg-box name="donnees" icon="database" label="Données" paint="outline"></dg-box>
+      <dg-text for="donnees" side="top" label="2 attaques sur 8 passent"></dg-text>
+    </deck-diagram>
+  </deck-feature>
+
+  <deck-feature id="labelled-row" eyebrow="étiquette de lien dans une rangée serrée">
+    <h1 slot="title">Le calcul repart du journal</h1>
+    <deck-diagram data-testid="labelled-row" layout="row" gap="tight">
+      <dg-box name="journal" icon="document" label="Journal" paint="outline"></dg-box>
+      <dg-box name="calcul" icon="code" label="Calcul v2" emphasis></dg-box>
+      <dg-box name="solde" icon="database" label="Solde" value="120 €" paint="outline"></dg-box>
+      <dg-link from="journal" to="calcul" label="rejoué"></dg-link>
+      <dg-link from="calcul" to="solde" label="recalculé"></dg-link>
+    </deck-diagram>
+  </deck-feature>
+
+  <deck-feature id="top-notes" eyebrow="dg-text side=&quot;top&quot;, figures en français">
+    <h1 slot="title">La file pleine remonte</h1>
+    <deck-diagram data-testid="top-notes" layout="column" gap="airy">
+      <dg-group layout="row" link="arrow">
+        <dg-box name="amont" icon="spark" label="Producteur"></dg-box>
+        <dg-queue name="file" label="file" count="6" fill="0 6" tone="normal danger"></dg-queue>
+        <dg-box name="aval" icon="clock" label="Consommateur" emphasis></dg-box>
+      </dg-group>
+      <dg-meter name="perte" label="Messages perdus" value="0.2 1.5" max="5" unit="%"></dg-meter>
+      <dg-text for="aval" side="top" label="lent"></dg-text>
+      <dg-text for="file" side="top" label="pleine" step="1"></dg-text>
+    </deck-diagram>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

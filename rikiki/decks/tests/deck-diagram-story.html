@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Diagramme en mode histoire · fixture de test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-diagram.js"></script>
+</head>
+<body>
+<!-- Quatre remèdes joués à l'entrée de la diapo (play="enter"), sans clic ni coordonnée ·
+     e2e/diagram-story.spec.ts la lit. Les noms, heures et valeurs sont inventés pour
+     l'exemple, et chaque diapo le dit dans son deck-source. -->
+<deck-root>
+
+  <deck-feature id="kill-switch" eyebrow="Remède · kill switch (feature flag)">
+    <h1 slot="title">Le bouton STOP, testé en vrai</h1>
+    <deck-diagram data-testid="kill-switch" play="enter" layout="column" align="start">
+      <dg-group layout="row" gap="airy">
+        <dg-box name="essai" icon="flag" label="essai réel" note="mardi 14:02" paint="ok"></dg-box>
+        <dg-box name="drapeau" icon="database" label="DB 2 · MARCHE" swap="DB 2 · STOP" swap-icon="ban" paint="pale" tone="normal warn" beat="event" after="ecrit"></dg-box>
+        <dg-box name="lit" icon="code" label="is_active()" note="le seul code qui lit le STOP" paint="ink"></dg-box>
+        <dg-link name="ecrit" from="essai" to="drapeau" label="écrit" flow="1" beat="event"></dg-link>
+        <dg-link name="lu" from="drapeau" to="lit" label="lu" flow="1" beat="spread"></dg-link>
+      </dg-group>
+      <dg-group layout="lanes" gap="tight">
+        <dg-lane name="api" icon="cloud" label="API" note="POST /devis" steady="3s"></dg-lane>
+        <dg-lane name="tache" icon="clock" label="tâche" note="relance 15 min" steady="3s"></dg-lane>
+        <dg-lane name="service" icon="database" label="service" note="sync CRM" steady="3s"></dg-lane>
+        <dg-gate name="stop" by="lit" state="open closed" beat="spread" after="lu"></dg-gate>
+        <dg-box name="acme" icon="target" label="ACME · prod" paint="pale" proof="0 devis créé" beat="proof"></dg-box>
+        <dg-text name="coupe" for="stop" side="bottom" label="14:02:03" note="plus rien ne passe" beat="effect"></dg-text>
+      </dg-group>
+    </deck-diagram>
+    <deck-source>Illustration · essai inventé pour l'exemple (heures, routes et client ACME fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="blue-green" eyebrow="Remède · déploiement blue/green">
+    <h1 slot="title">Mettre à jour sans rien couper</h1>
+    <deck-diagram data-testid="blue-green" play="enter" layout="layers" direction="right" gap="airy">
+      <dg-box name="clients" icon="team" value="1 240" label="clients" note="requêtes par minute" paint="pale" proof="0 requête perdue" beat="proof"></dg-box>
+      <dg-box name="traefik" icon="refresh" label="Traefik · blue" swap="Traefik · green" note="aiguillage" paint="gold" beat="effect" with="vers-green"></dg-box>
+      <dg-box name="blue" icon="database" label="blue · v1.8.2" note="en service" paint="pale"></dg-box>
+      <dg-box name="green" icon="database" label="green · v1.9.0" note="démarré à 16:20" paint="ok" beat="event"></dg-box>
+      <dg-link name="entree" from="clients" to="traefik" steady="3s"></dg-link>
+      <dg-link name="vers-blue" from="traefik" to="blue" route="straight" steady="3s" dim beat="effect" with="vers-green"></dg-link>
+      <dg-link name="vers-green" from="traefik" to="green" route="straight" steady="2s" lever beat="effect"></dg-link>
+      <dg-text name="sante" for="green" side="bottom" label="GET /health · 200" note="en 1,2 s, 3 fois de suite" beat="spread"></dg-text>
+    </deck-diagram>
+    <deck-source>Illustration · mise à jour inventée pour l'exemple (versions, débit et heure fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="frise" eyebrow="Ce que Claude ne voit pas · la mise en ligne">
+    <h1 slot="title">14 h sans une commande</h1>
+    <deck-diagram data-testid="frise" play="enter" layout="axis">
+      <dg-bar name="normal" label="38 commandes" tag="ven. 09:00" from="9" to="18.67" tone="ok" beat="steady" duration="2.4s"></dg-bar>
+      <dg-bar name="v2" label="v2 en ligne" tag="18:40" from="18.67" to="19.17" tone="danger" beat="event"></dg-bar>
+      <dg-bar name="vide" label="0 commande" tag="14 h · erreur 500" from="19.17" to="33.17" beat="spread" duration="2.2s" emphasis></dg-bar>
+      <dg-bar name="appel" label="un client appelle" tag="sam. 09:10" from="33.17" to="34" tone="warn" beat="effect"></dg-bar>
+      <dg-bar name="retour" label="retour v1" tag="09:25" from="34" to="37" tone="ok" beat="proof"></dg-bar>
+    </deck-diagram>
+    <deck-source>Illustration · incident inventé pour l'exemple (dates, heures et volumes fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="course" eyebrow="Remède · verrou distribué, clé d'idempotence">
+    <h1 slot="title">Deux versions, un seul rapport</h1>
+    <deck-diagram data-testid="course" play="enter" layout="layers" direction="right">
+      <dg-box name="v1" icon="code" label="v1 · ancienne" note="encore active" paint="pale" swap="v1 · ne fait rien" dim beat="effect" after="course-v1"></dg-box>
+      <dg-box name="v2" icon="cloud" label="v2 · nouvelle" note="déployée à 08:55" paint="pale" beat="event"></dg-box>
+      <dg-box name="verrou" icon="lock" label="libre" swap="pris par v2" note="verrou en base" paint="gold" beat="spread" after="course-v2"></dg-box>
+      <dg-box name="rapport" icon="document" label="rapport" note="org 42 · clé 07/09" paint="pale"></dg-box>
+      <dg-box name="daf" icon="user" label="C. Roussel" note="DAF · org 42" paint="ink" proof="1 rapport reçu" beat="proof"></dg-box>
+      <dg-link name="course-v2" from="v2" to="verrou" flow="1" speed="fast" beat="spread"></dg-link>
+      <dg-link name="course-v1" from="v1" to="verrou" steady="3s" flow="1" speed="slow" turn="danger" beat="spread" with="course-v2"></dg-link>
+      <dg-link name="envoi" from="verrou" to="rapport" steady="3s" flow="1" beat="effect" after="v1"></dg-link>
+      <dg-link name="livre" from="rapport" to="daf" steady="3s" flow="1" beat="effect" after="envoi"></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration · tâche planifiée inventée pour l'exemple (organisation, date et destinataire fictifs)</deck-source>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

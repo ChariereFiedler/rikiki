@@ -1,0 +1,212 @@
+[
+  {
+    "builder": "service-graph",
+    "pack": "product",
+    "seed": 1,
+    "structure": "layers",
+    "claim": "Billing is the single entry"
+  },
+  {
+    "builder": "funnel",
+    "pack": "ops",
+    "seed": 4014,
+    "structure": "chart-rows",
+    "claim": "Most requests stop early"
+  },
+  {
+    "builder": "loop",
+    "pack": "sales",
+    "seed": 4027,
+    "structure": "ring",
+    "claim": "3 steps, then again"
+  },
+  {
+    "builder": "crowd",
+    "pack": "people",
+    "seed": 1040,
+    "structure": "cells-note",
+    "claim": "9 of 100 reach an offer"
+  },
+  {
+    "builder": "before-after",
+    "pack": "data",
+    "seed": 4053,
+    "structure": "two-groups",
+    "claim": "Explore changed the outcome"
+  },
+  {
+    "builder": "options",
+    "pack": "product",
+    "seed": 1066,
+    "structure": "row-options",
+    "claim": "Back checkout first"
+  },
+  {
+    "builder": "sequence",
+    "pack": "ops",
+    "seed": 79,
+    "structure": "row-chain",
+    "claim": "Triage to stabilise"
+  },
+  {
+    "builder": "mechanism-proof",
+    "pack": "sales",
+    "seed": 4092,
+    "structure": "mechanism-chart",
+    "claim": "Events changes win rate"
+  },
+  {
+    "builder": "kpi-tiles",
+    "pack": "people",
+    "seed": 105,
+    "structure": "figures",
+    "claim": "Time to hire is what moved"
+  },
+  {
+    "builder": "two-columns",
+    "pack": "data",
+    "seed": 4118,
+    "structure": "two-groups",
+    "claim": "Keep the data part simple"
+  },
+  {
+    "builder": "stack",
+    "pack": "product",
+    "seed": 131,
+    "structure": "column-stack",
+    "claim": "Four layers, one owner each"
+  },
+  {
+    "builder": "hub-spokes",
+    "pack": "ops",
+    "seed": 144,
+    "structure": "layers",
+    "claim": "Everything runs through capacity"
+  },
+  {
+    "builder": "big-number",
+    "pack": "sales",
+    "seed": 4157,
+    "structure": "figure-and-facts",
+    "claim": "Deal size, one number"
+  },
+  {
+    "builder": "ranking",
+    "pack": "people",
+    "seed": 170,
+    "structure": "chart-rows",
+    "claim": "Returners leads"
+  },
+  {
+    "builder": "feature-grid",
+    "pack": "data",
+    "seed": 183,
+    "structure": "grid-boxes",
+    "claim": "Six parts, model first"
+  },
+  {
+    "builder": "pipeline",
+    "pack": "product",
+    "seed": 4196,
+    "structure": "column-chain",
+    "claim": "4 stages, top to bottom"
+  },
+  {
+    "builder": "split-by-gate",
+    "pack": "ops",
+    "seed": 4209,
+    "structure": "groups-gate",
+    "claim": "Kill switch stops late work"
+  },
+  {
+    "builder": "service-graph",
+    "pack": "people",
+    "seed": 2222,
+    "structure": "layers",
+    "claim": "Referral is the single entry"
+  },
+  {
+    "builder": "funnel",
+    "pack": "data",
+    "seed": 4235,
+    "structure": "chart-rows",
+    "claim": "Most records stop early"
+  },
+  {
+    "builder": "loop",
+    "pack": "product",
+    "seed": 4248,
+    "structure": "ring",
+    "claim": "5 steps, then again"
+  },
+  {
+    "builder": "crowd",
+    "pack": "ops",
+    "seed": 261,
+    "structure": "cells-note",
+    "claim": "70 of 300 fail"
+  },
+  {
+    "builder": "before-after",
+    "pack": "sales",
+    "seed": 4274,
+    "structure": "two-groups",
+    "claim": "Inbound changed the outcome"
+  },
+  {
+    "builder": "options",
+    "pack": "people",
+    "seed": 287,
+    "structure": "row-options",
+    "claim": "Back referral first"
+  },
+  {
+    "builder": "sequence",
+    "pack": "data",
+    "seed": 300,
+    "structure": "row-chain",
+    "claim": "Collect to transform"
+  },
+  {
+    "builder": "mechanism-proof",
+    "pack": "product",
+    "seed": 4313,
+    "structure": "mechanism-chart",
+    "claim": "API changes adoption"
+  },
+  {
+    "builder": "kpi-tiles",
+    "pack": "ops",
+    "seed": 326,
+    "structure": "figures",
+    "claim": "Incidents is what moved"
+  },
+  {
+    "builder": "two-columns",
+    "pack": "sales",
+    "seed": 4339,
+    "structure": "two-groups",
+    "claim": "Keep the sales part simple"
+  },
+  {
+    "builder": "stack",
+    "pack": "people",
+    "seed": 352,
+    "structure": "column-stack",
+    "claim": "Four layers, one owner each"
+  },
+  {
+    "builder": "hub-spokes",
+    "pack": "data",
+    "seed": 2365,
+    "structure": "layers",
+    "claim": "Everything runs through serve"
+  },
+  {
+    "builder": "big-number",
+    "pack": "product",
+    "seed": 4378,
+    "structure": "figure-and-facts",
+    "claim": "Adoption, one number"
+  }
+]

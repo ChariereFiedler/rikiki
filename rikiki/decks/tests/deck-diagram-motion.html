@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Diagramme animé · fixture de test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-diagram.js"></script>
+</head>
+<body>
+<!-- Cinq concepts animés écrits dans la grammaire, sans coordonnée · e2e/diagram.spec.ts la lit. -->
+<deck-root>
+
+  <deck-feature id="kill-switch" eyebrow="Remède · kill switch (feature flag)">
+    <h1 slot="title">Mon bouton stop, je le teste comment ?</h1>
+    <deck-diagram data-testid="kill-switch" layout="column" align="start">
+      <dg-group layout="row" gap="airy">
+        <dg-box name="essai" icon="flag" label="essai réel" note="bascule STOP" paint="none"></dg-box>
+        <dg-box name="db" icon="database" label="DB 2 · MARCHE" paint="outline"></dg-box>
+        <dg-box name="lit" icon="code" label="is_active()" note="le seul code qui lit le STOP" paint="outline"></dg-box>
+        <dg-link from="essai" to="db" label="écrit"></dg-link>
+        <dg-link from="lit" to="db" label="lu"></dg-link>
+        <dg-text for="db" side="bottom" label="un seul endroit"></dg-text>
+      </dg-group>
+      <dg-group layout="lanes" gap="tight">
+        <dg-lane name="api" icon="cloud" label="API"></dg-lane>
+        <dg-lane name="tache" icon="clock" label="tâche"></dg-lane>
+        <dg-lane name="service" icon="database" label="service"></dg-lane>
+        <dg-gate name="stop" by="lit" state="open closed"></dg-gate>
+        <dg-box name="acme" icon="target" label="ACME" paint="outline"></dg-box>
+        <dg-text for="stop" side="bottom" label="STOP · plus rien ne passe" step="1"></dg-text>
+      </dg-group>
+    </deck-diagram>
+    <deck-source>Illustration · scénario de démonstration</deck-source>
+  </deck-feature>
+
+  <deck-feature id="round-trip" eyebrow="couches · aller et retour">
+    <h1 slot="title">Une requête descend trois couches, puis la réponse remonte</h1>
+    <deck-diagram data-testid="round-trip" layout="layers" direction="right">
+      <dg-box name="nav" icon="user" label="Navigateur" note="clic sur Payer"></dg-box>
+      <dg-box name="cdn" icon="cloud" label="CDN" note="cache manqué"></dg-box>
+      <dg-box name="api" icon="code" label="API" note="vérifie le panier"></dg-box>
+      <dg-box name="db" icon="database" label="Postgres" note="réserve le stock" emphasis></dg-box>
+      <dg-link name="aller" from="nav" to="cdn" enter="draw" flow="1" step="1"></dg-link>
+      <dg-link name="relais" from="cdn" to="api" enter="draw" flow="1" after="aller"></dg-link>
+      <dg-link name="requete" from="api" to="db" label="SQL" enter="draw" flow="1" after="relais"></dg-link>
+      <dg-link name="retour" from="db" to="nav" back dashed label="réponse · 180 ms" flow="1" step="2"></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration · chiffres inventés</deck-source>
+  </deck-feature>
+
+  <deck-feature id="queue-shed" eyebrow="couloirs · file puis délestage">
+    <h1 slot="title">Saturée, l’API refuse un appel sur deux plutôt que tous</h1>
+    <deck-diagram data-testid="queue-shed" layout="lanes">
+      <dg-lane name="web" icon="user" label="web" flow="6"></dg-lane>
+      <dg-lane name="mobile" icon="team" label="mobile" flow="6"></dg-lane>
+      <dg-lane name="batch" icon="clock" label="batch" flow="6" speed="fast"></dg-lane>
+      <dg-gate name="limite" label="100 req/s" state="closed shed"></dg-gate>
+      <dg-box name="api" icon="code" label="API" note="saturée" paint="outline"></dg-box>
+      <dg-text for="limite" side="bottom" label="un appel sur deux passe" step="1"></dg-text>
+    </deck-diagram>
+    <deck-source>Illustration · chiffres inventés</deck-source>
+  </deck-feature>
+
+  <deck-feature id="state-machine" eyebrow="machine à états · transition minutée">
+    <h1 slot="title">Un échec repasse en attente au bout de 30 secondes</h1>
+    <deck-diagram data-testid="state-machine" layout="layers" direction="right">
+      <dg-box name="attente" icon="clock" label="En attente"></dg-box>
+      <dg-box name="cours" icon="refresh" label="En cours" emphasis></dg-box>
+      <dg-box name="fini" icon="check" label="Terminé"></dg-box>
+      <dg-box name="echec" icon="alert" label="Échec" tone="danger"></dg-box>
+      <dg-link name="lance" from="attente" to="cours" label="lancer" flow="1" step="1"></dg-link>
+      <dg-link from="cours" to="fini" label="succès"></dg-link>
+      <dg-link name="casse" from="cours" to="echec" label="erreur" flow="1" after="lance"></dg-link>
+      <dg-link name="relance" from="echec" to="attente" back dashed label="après 30 s" flow="1" after="casse"></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration</deck-source>
+  </deck-feature>
+
+  <deck-feature id="frise" eyebrow="axe · frise et curseur">
+    <h1 slot="title">À mi-parcours, la généralisation commence</h1>
+    <deck-diagram data-testid="frise" layout="axis">
+      <dg-bar label="lancement" tag="2023" value="2023"></dg-bar>
+      <dg-bar label="pilote" tag="2024" value="2024"></dg-bar>
+      <dg-bar label="généralisation" tag="2025" value="2025" emphasis></dg-bar>
+      <dg-bar label="bilan" tag="2026" value="2026"></dg-bar>
+      <dg-bar label="objectif" tag="2027" value="2027"></dg-bar>
+      <dg-cursor label="aujourd’hui" value="2025"></dg-cursor>
+    </deck-diagram>
+    <deck-source>Illustration · dates inventées</deck-source>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

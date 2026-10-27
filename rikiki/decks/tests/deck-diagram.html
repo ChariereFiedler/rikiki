@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Diagram · test fixture</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-diagram.js"></script>
+</head>
+<body>
+<!-- Six illustrations written in the grammar, with no coordinate · e2e/diagram.spec.ts reads it. -->
+<deck-root>
+
+  <deck-feature id="graph" eyebrow="layers">
+    <h1 slot="title">Every request goes through the gateway</h1>
+    <deck-diagram data-testid="graph" layout="layers" direction="right">
+      <dg-box name="web" icon="user" label="Web"></dg-box>
+      <dg-box name="app" icon="user" label="Mobile"></dg-box>
+      <dg-box name="gw" label="Gateway" note="one entry, one policy" emphasis></dg-box>
+      <dg-box name="auth" icon="lock" label="Auth"></dg-box>
+      <dg-box name="orders" label="Orders"></dg-box>
+      <dg-box name="db" icon="database" label="Postgres"></dg-box>
+      <dg-link from="web app" to="gw"></dg-link>
+      <dg-link from="gw" to="auth orders"></dg-link>
+      <dg-link from="auth orders" to="db" label="SQL"></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration</deck-source>
+  </deck-feature>
+
+  <deck-feature id="funnel" eyebrow="column of bars">
+    <h1 slot="title">Few visitors become customers</h1>
+    <deck-diagram data-testid="funnel" layout="column" align="start" gap="tight">
+      <dg-bar label="Visitors" value="12000" tag="12 000"></dg-bar>
+      <dg-bar label="Sign-ups" value="2400" tag="2 400 · 20 %"></dg-bar>
+      <dg-bar label="Activated" value="900" tag="900 · 38 %"></dg-bar>
+      <dg-bar label="Paying" value="310" tag="310 · 34 %" emphasis></dg-bar>
+    </deck-diagram>
+    <deck-source>Illustration</deck-source>
+  </deck-feature>
+
+  <deck-feature id="cycle" eyebrow="ring">
+    <h1 slot="title">Learning closes the loop</h1>
+    <deck-diagram data-testid="cycle" layout="ring" link="arrow">
+      <dg-box label="Build" icon="code"></dg-box>
+      <dg-box label="Measure" icon="chart"></dg-box>
+      <dg-box label="Learn" icon="spark" emphasis></dg-box>
+      <dg-box label="Decide" icon="flag"></dg-box>
+    </deck-diagram>
+    <deck-source>Illustration</deck-source>
+  </deck-feature>
+
+  <deck-feature id="crowd" eyebrow="grid of dots · note">
+    <h1 slot="title">38 of 400 leave in the first year</h1>
+    <deck-diagram data-testid="crowd" layout="grid">
+      <dg-dot count="362"></dg-dot>
+      <dg-dot name="lost" count="38" emphasis></dg-dot>
+      <dg-text for="lost" side="right" label="38 leave in year one" note="about one in ten"></dg-text>
+    </deck-diagram>
+    <deck-source>Illustration · invented figures</deck-source>
+  </deck-feature>
+
+  <deck-feature id="before-after" eyebrow="row of groups · notes">
+    <h1 slot="title">One field instead of twelve</h1>
+    <deck-diagram data-testid="before-after" layout="row" link="arrow">
+      <dg-group name="before" label="Before" paint="outline" layout="column">
+        <dg-box label="12 fields"></dg-box>
+        <dg-box label="Captcha"></dg-box>
+        <dg-box label="Confirm email"></dg-box>
+      </dg-group>
+      <dg-group name="after" label="After" paint="inverse" layout="column">
+        <dg-box name="submit" label="Email only" emphasis></dg-box>
+      </dg-group>
+      <dg-text for="before" side="bottom" label="41 % finish"></dg-text>
+      <dg-text for="after" side="bottom" label="78 % finish"></dg-text>
+    </deck-diagram>
+    <deck-source>Illustration · invented figures</deck-source>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

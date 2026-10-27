@@ -1,0 +1,826 @@
+<!doctype html>
+<!--
+  Rikiki · galerie de diagrammes · trente histoires, trente dessins
+  Chaque diapo part d'un brief de quatre à six faits concrets (système, rythme normal,
+  événement daté, cause identifiée, conséquence chiffrée, preuve ou remède), écrit en
+  commentaire au-dessus d'elle. Toutes se jouent à l'entrée (play="enter") : un incident
+  est bref et dur, le remède qui suit prend son temps. Les modèles graphiques sont :
+  frise d'incident, voies et barrière, sonde, câblage,
+  bascule, course, filtre, couloirs de versions, escalade, pouls, anneaux, rejeu,
+  terminal, foule, courbe, histogramme, parts, jauges, matrice, entonnoir, panneaux…
+  Aucune coordonnée. `rikiki check --steps --diversity` vérifie chaque histoire et
+  qu'aucune ne ressemble à une autre. Noms, heures et chiffres sont inventés, et chaque
+  diapo le dit dans son deck-source.
+-->
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rikiki · diagrammes</title>
+<link rel="stylesheet" href="../../rikiki/themes/rikiki.css">
+<script type="module" src="../../rikiki/dist/index.js"></script>
+<script type="module" src="../../rikiki/dist/deck-diagram.js"></script>
+</head>
+<body>
+<deck-root transition="slide">
+
+  <deck-cover id="ouverture" brand="rikiki · diagrammes" speaker="Une grammaire" duration="4 min">
+    <h1>30 histoires,<br><span class="accent">30 dessins</span></h1>
+    <p class="sub">Un incident bref, puis le remède qui prend son&nbsp;temps.</p>
+    <deck-notes>Trente histoires concrètes, toutes inventées : des heures, des noms, des identifiants. Aucune ne se dessine comme la précédente.</deck-notes>
+  </deck-cover>
+
+  <!-- Brief · Trajo, covoiturage · POST /trajets couvert par 48 tests verts · autour :
+       cache Redis, file d'envoi, cron 02:00 · l'hébergement : certificat TLS, quota SMS,
+       DNS · les passagers : Android 9, gare sans réseau, heure d'hiver · recette scope-rings -->
+  <deck-feature id="anneaux" eyebrow="Ouverture · ce que les tests ne voient pas">
+    <h1 slot="title">48 tests verts. Et autour ?</h1>
+    <deck-diagram play="enter" compose="inset">
+      <dg-panel name="passagers" label="les passagers" paint="outline" layout="row" gap="normal">
+        <dg-panel name="hebergement" label="l'hébergement" paint="pale" layout="row" gap="normal">
+          <dg-group name="infra" layout="column" gap="tight" align="start" beat="effect" after="vers-hebergement">
+            <dg-box icon="lock" label="certificat TLS" paint="none"></dg-box>
+            <dg-box icon="cloud" label="quota SMS" paint="none"></dg-box>
+            <dg-box icon="search" label="DNS" paint="none"></dg-box>
+          </dg-group>
+          <dg-panel name="service" label="le service" paint="pale" layout="row" gap="normal">
+            <dg-box name="code" icon="code" label="POST /trajets" note="48 tests verts" paint="ink"></dg-box>
+            <dg-group name="autour" layout="column" gap="tight" align="start" beat="spread" after="vers-service">
+              <dg-box icon="database" label="cache Redis" paint="none"></dg-box>
+              <dg-box icon="refresh" label="file d'envoi" paint="none"></dg-box>
+              <dg-box icon="clock" label="cron 02:00" paint="none"></dg-box>
+            </dg-group>
+          </dg-panel>
+        </dg-panel>
+        <dg-group name="gens" layout="column" gap="tight" align="start" beat="proof" after="vers-tout">
+          <dg-box icon="user" label="Android 9" paint="none"></dg-box>
+          <dg-box icon="ban" label="gare sans réseau" paint="none"></dg-box>
+          <dg-box icon="calendar" label="heure d'hiver" paint="none"></dg-box>
+        </dg-group>
+      </dg-panel>
+      <dg-camera name="vers-service" focus="service.code" to="service" beat="spread"></dg-camera>
+      <dg-camera name="vers-hebergement" to="hebergement" beat="effect"></dg-camera>
+      <dg-camera name="vers-tout" to="all" beat="proof"></dg-camera>
+    </deck-diagram>
+    <deck-source>Illustration · service inventé pour l'exemple (nom, nombre de tests et périmètre fictifs)</deck-source>
+    <deck-notes>On part de ce qu'on maîtrise, le code et ses tests, et chaque anneau ajoute ce qu'ils ne voient pas.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · billetterie de la salle Le Ferrailleur · une vente toutes les 2 min un
+       vendredi soir · ven. 20:15, clé Stripe révoquée par erreur · 6 h 45 sans vente,
+       214 billets estimés perdus · sonde HTTP restée verte · sam. 03:00, clé rétablie
+       après un message d'un fan · recette incident-band -->
+  <deck-feature id="billetterie" eyebrow="Incident · la billetterie">
+    <h1 slot="title">Sonde verte, 6 h 45 sans billet</h1>
+    <deck-diagram play="enter" layout="column" align="stretch" gap="airy">
+      <dg-group layout="row" gap="airy">
+        <dg-box name="sonde" icon="check" label="billetterie · 200 OK" note="sonde HTTP verte" paint="ok"></dg-box>
+        <dg-counter name="perdus" value="214" unit="billets" label="non vendus, estimés" tone="danger" beat="event" with="ventes" duration="1s"></dg-counter>
+      </dg-group>
+      <dg-band name="ventes" label="ventes" note="une toutes les 2 min" from="16" to="36" cut="20.25" until="27" tag="ven. 20:15 · clé Stripe révoquée" brace="6 h 45 sans vente" steady="1.6s" duration="1s" beat="event"></dg-band>
+      <dg-status for="ventes" state="ok" label="sam. 03:00 · clé rétablie" note="un fan a écrit sur Instagram" side="bottom" beat="proof"></dg-status>
+    </deck-diagram>
+    <deck-source>Illustration · incident inventé pour l'exemple (salle, heures et volumes fictifs)</deck-source>
+    <deck-notes>La sonde regardait la page, pas les ventes. Le vide sur la frise dure aussi longtemps que la panne.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Lunetterie Morvan, trois files de SMS (soldes 18 400 SMS, paniers oubliés
+       toutes les 30 min, rappels de rendez-vous J-1) · drapeau SMS, ENVOI ou STOP · un seul
+       lecteur may_send() · essai jeu. 10:02 · 0 SMS parti · recette lanes-gate -->
+  <deck-feature id="interrupteur" eyebrow="Remède · un interrupteur, un lecteur">
+    <h1 slot="title">Un STOP, trois files à l'arrêt</h1>
+    <deck-diagram play="enter" layout="column" align="start">
+      <dg-group layout="row" gap="airy">
+        <dg-box name="ines" icon="user" label="Inès · ops" note="jeudi 10:02" paint="ok"></dg-box>
+        <dg-box name="drapeau" icon="flag" label="SMS · ENVOI" swap="SMS · STOP" swap-icon="ban" paint="pale" tone="normal warn" beat="event" after="bascule"></dg-box>
+        <dg-box name="lecteur" icon="code" label="may_send()" note="seul lecteur du drapeau" paint="ink"></dg-box>
+        <dg-link name="bascule" from="ines" to="drapeau" label="écrit" flow="1" beat="event"></dg-link>
+        <dg-link name="lu" from="drapeau" to="lecteur" label="lu" flow="1" beat="spread"></dg-link>
+      </dg-group>
+      <dg-group layout="lanes" gap="tight">
+        <dg-lane name="soldes" icon="spark" label="soldes d'hiver" note="campagne · 18 400 SMS" steady="3s"></dg-lane>
+        <dg-lane name="paniers" icon="refresh" label="paniers oubliés" note="toutes les 30 min" steady="3s"></dg-lane>
+        <dg-lane name="rappels" icon="calendar" label="rappels RDV" note="J-1 à 18:00" steady="3s"></dg-lane>
+        <dg-gate name="coupe" by="lecteur" state="open closed" beat="spread" after="lu"></dg-gate>
+        <dg-box name="passerelle" icon="cloud" label="opérateur" paint="pale" proof="0 SMS parti" beat="proof"></dg-box>
+        <dg-text name="heure" for="coupe" side="bottom" label="10:02:04" note="plus rien ne sort" beat="effect"></dg-text>
+      </dg-group>
+    </deck-diagram>
+    <deck-source>Illustration · essai inventé pour l'exemple (enseigne, files, heures et volumes fictifs)</deck-source>
+    <deck-notes>L'interrupteur ne sert que si un seul code le lit, avant chaque envoi. L'essai le prouve en vrai.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · API de l'Atelier Lin (vente de linge) · Claude lance la migration
+       RenameColumn orders.ref · tout est vert dans le terminal · les références des
+       commandes du jour deviennent vides · 3 412 commandes · l'import ERP de 09:14 les
+       rejette -->
+  <deck-feature id="migration" eyebrow="Incident · le terminal ne voit pas la base">
+    <h1 slot="title">Migration verte, 3 412 refs vides</h1>
+    <deck-diagram play="enter" layout="column" align="stretch" gap="airy">
+      <dg-group layout="row" gap="airy">
+        <dg-link from="terminal" to="commandes" steady="1.6s"></dg-link>
+        <dg-terminal name="terminal" label="claude · ~/atelier-api" beat="steady" duration="1.6s" lines="
+          $ bin/rails db:migrate
+          == RenameColumn orders.ref
+          ✓ migré en 0,8 s
+          ✓ 214 tests passent"></dg-terminal>
+        <dg-table name="commandes" label="commandes du jour" icon="database" paint="pale" beat="event" rows="
+          CMD-88120 · réf. A-4471
+          CMD-88121 · réf. A-4472
+          CMD-88122 · réf. A-4473" swap="
+          CMD-88120 · réf. vide
+          CMD-88121 · réf. vide
+          CMD-88122 · réf. vide"></dg-table>
+      </dg-group>
+      <dg-group layout="row" gap="airy">
+        <dg-counter name="vides" value="3 412" unit="commandes" label="sans référence" tone="danger" beat="event" with="commandes" duration="1s"></dg-counter>
+        <dg-box name="erp" icon="ban" label="import ERP · 09:14" swap="import ERP · rejeté" paint="pale" tone="normal danger" beat="proof"></dg-box>
+      </dg-group>
+    </deck-diagram>
+    <deck-source>Illustration · migration inventée pour l'exemple (boutique, identifiants et volumes fictifs)</deck-source>
+    <deck-notes>Le terminal dit vrai sur ce qu'il voit. Il ne voit pas les données.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Pharmacie du Port, vente en ligne · commande témoin T-0700 chaque heure ·
+       chaîne ordonnance → paiement 3DS → bon de préparation · 07:01, certificat 3DS
+       expiré · Nadia, pharmacienne d'astreinte, appelée à 07:04 · ouverture à 08:30 ·
+       recette probe-stations -->
+  <deck-feature id="temoin" eyebrow="Remède · la commande témoin">
+    <h1 slot="title">La commande de 7 h bloque au 3DS</h1>
+    <deck-diagram play="enter" layout="column" gap="airy">
+      <dg-group layout="row" gap="airy">
+        <dg-box name="sonde" icon="flag" label="commande témoin" note="chaque heure" paint="gold"></dg-box>
+        <dg-box name="ordonnance" icon="search" label="ordonnance" paint="pale"></dg-box>
+        <dg-box name="paiement" icon="lock" label="paiement 3DS" paint="pale"></dg-box>
+        <dg-box name="bon" icon="document" label="bon de préparation" paint="ink"></dg-box>
+        <dg-link from="sonde" to="ordonnance" steady="3s"></dg-link>
+        <dg-link from="ordonnance" to="paiement" steady="3s"></dg-link>
+        <dg-link name="coupe" from="paiement" to="bon" steady="3s" dim beat="event"></dg-link>
+      </dg-group>
+      <dg-group layout="row" gap="airy">
+        <dg-table name="passages" label="passages" icon="clock" paint="pale" beat="spread" after="attente" rows="
+          06:00 · témoin T-0600
+          07:00 · témoin T-0700" swap="
+          ✓ 06:00 · prête en 41 s
+          ✗ 07:00 · rien à préparer"></dg-table>
+        <dg-box name="alerte" icon="alert" label="appel à Nadia" note="pharmacienne d'astreinte" paint="bad" proof="07:04 · avant l'ouverture" beat="proof"></dg-box>
+      </dg-group>
+      <dg-status for="paiement" state="ok fail" label="07:01" note="certificat 3DS expiré" side="top" beat="event" with="coupe"></dg-status>
+      <dg-status name="attente" for="bon" state="ok wait" label="07:00" note="aucun bon" side="top" beat="spread"></dg-status>
+    </deck-diagram>
+    <deck-source>Illustration · sonde inventée pour l'exemple (pharmacie, heures et prénom fictifs)</deck-source>
+    <deck-notes>Une fausse commande traverse la vraie chaîne chaque heure. Celle de 7 h ne ressort pas, et Nadia le sait avant le premier client.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · réseau de 400 bornes de recharge Volta Ouest · 2 816 recharges ce jour ·
+       06:12, une mise à jour du firmware 3.2 coupe 37 bornes · elles affichent « libre »
+       mais refusent la carte · vu par un chauffeur à 14:30 -->
+  <deck-feature id="bornes" eyebrow="Incident · le parc de bornes">
+    <h1 slot="title">37 bornes sur 400, muettes</h1>
+    <deck-diagram play="enter" layout="column" gap="airy">
+      <dg-group layout="row" gap="airy">
+        <dg-counter name="recharges" value="2 816" unit="recharges" label="ce mardi" beat="steady" duration="1.6s"></dg-counter>
+        <dg-box name="firmware" icon="refresh" label="firmware 3.2" note="déployé à 06:12" paint="bad" beat="event"></dg-box>
+        <dg-text name="vu" label="« libre », refuse la carte" note="vu par un chauffeur à 14:30" beat="proof"></dg-text>
+      </dg-group>
+      <dg-group name="parc" layout="grid">
+        <dg-dot count="363"></dg-dot>
+        <dg-dot name="muettes" count="37" emphasis></dg-dot>
+      </dg-group>
+    </deck-diagram>
+    <deck-source>Illustration · parc inventé pour l'exemple (réseau, version, heures et volumes fictifs)</deck-source>
+    <deck-notes>Chaque point est une borne. Trente-sept s'allument, et aucune alerte ne le dit : elles se déclarent libres.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Compta Rive, cabinet comptable · quatre bases sauvegardées (clients-pg
+       12 Go, factures-pg 4 Go, photos-s3 310 Go, crm-mysql 2 Go) · la garde refuse le
+       déploiement : crm-mysql n'a aucune tâche · ajout dim. 04:00 · restauration testée
+       pour les quatre · recette wiring -->
+  <deck-feature id="sauvegardes" eyebrow="Remède · une base, une tâche">
+    <h1 slot="title">Une base sans copie, refusée</h1>
+    <deck-diagram play="enter" layout="layers" direction="right" gap="airy">
+      <dg-table name="bases" label="bases du cabinet" icon="database" paint="pale" beat="event" rows="
+        clients · 12 Go
+        factures · 4 Go
+        photos · 310 Go
+        crm · 2 Go" swap="
+        ✓ clients · 12 Go
+        ✓ factures · 4 Go
+        ✓ photos · 310 Go
+        ✗ crm · 2 Go"></dg-table>
+      <dg-box name="garde" icon="lock" label="garde" note="1 base → 1 tâche" paint="gold"></dg-box>
+      <dg-box name="nuit" icon="refresh" label="nuit · 02:00" paint="ink"></dg-box>
+      <dg-box name="dimanche" icon="clock" label="dim. · 04:00" paint="ink" beat="effect"></dg-box>
+      <dg-table name="restaurations" label="restaurées" icon="check" paint="ok" beat="proof" rows="
+        clients
+        factures
+        photos
+        crm" swap="
+        ✓ clients · lun. 02:14
+        ✓ factures · lun. 02:16
+        ✓ photos · lun. 03:40
+        ✓ crm · dim. 04:09"></dg-table>
+      <dg-link from="bases" to="garde" steady="3s"></dg-link>
+      <dg-link from="garde" to="nuit" steady="3s"></dg-link>
+      <dg-link name="fil" from="garde" to="dimanche" enter="draw" flow="1" beat="effect" after="dimanche"></dg-link>
+      <dg-link from="nuit" to="restaurations"></dg-link>
+      <dg-link from="dimanche" to="restaurations"></dg-link>
+      <dg-text name="regle" for="garde" side="bottom" label="déploiement refusé" note="crm sans copie" beat="event" after="bases"></dg-text>
+      <dg-text name="jetable" for="restaurations" side="bottom" label="sur une base jetable" note="chaque dimanche à 05:00" beat="proof"></dg-text>
+    </deck-diagram>
+    <deck-source>Illustration · cabinet inventé pour l'exemple (bases, tailles et horaires fictifs)</deck-source>
+    <deck-notes>La garde lit le câblage : chaque base a sa tâche, sinon on ne déploie pas. Le rapport prouve que la copie se restaure.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Repas Minute, livraison à Lille · samedi soir, délai médian 28 min à 19:00 ·
+       17 coursiers sur 42 se déconnectent avec la pluie · le délai passe 45 min à 21:00 et
+       atteint 63 min · 312 commandes en retard · 22:40, bonus pluie activé -->
+  <deck-feature id="delai" eyebrow="Incident · la soirée de pluie">
+    <h1 slot="title">Le délai passe 45 min à 21 h</h1>
+    <deck-diagram play="enter" layout="row" gap="airy">
+      <dg-group layout="column" gap="airy" align="stretch">
+        <dg-box name="cuisines" icon="document" label="88 restaurants" note="140 commandes / h" paint="pale"></dg-box>
+        <dg-box name="coursiers" icon="team" label="42 coursiers" swap="25 coursiers" note="17 rentrés à l'abri" paint="ink" tone="normal danger" beat="event"></dg-box>
+        <dg-link from="cuisines" to="coursiers" steady="1.6s" flow="2"></dg-link>
+      </dg-group>
+      <dg-curve name="mediane" label="délai médian de livraison" values="28 29 31 37 46 55 63 58" max="70" unit="min" threshold="45" ticks="19:00 19:30 20:00 20:30 21:00 21:30 22:00 22:30" beat="event" with="coursiers" duration="1.2s"></dg-curve>
+      <dg-status for="mediane" state="fail" label="312 commandes en retard" note="bonus pluie activé à 22:40" side="bottom" beat="proof"></dg-status>
+    </deck-diagram>
+    <deck-source>Illustration · soirée inventée pour l'exemple (ville, délais, effectifs et volumes fictifs)</deck-source>
+    <deck-notes>La courbe ne dit pas la cause : ce sont dix-sept coursiers rentrés à l'abri. Le seuil franchi, on le voit à 21 h ; on agit à 22:40.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Allô Taxi 44, dispatch des courses · 380 courses par heure la nuit · pg-a
+       principal, pg-b réplique continue · sam. 02:47:20, disque de pg-a plein · Patroni
+       bascule sur pg-b · 20 s de données perdues, 70 s de coupure · recette switch-over -->
+  <deck-feature id="replique" eyebrow="Remède · réplique et bascule">
+    <h1 slot="title">pg-a tombe à 02:47, pg-b répond</h1>
+    <deck-diagram play="enter" compose="body-axis" gap="tight">
+      <dg-panel name="reseau" layout="layers" direction="right" gap="normal" paint="none">
+        <dg-box name="dispatch" icon="team" label="dispatch" note="380 courses / h" paint="pale"></dg-box>
+        <dg-box name="patroni" icon="refresh" label="Patroni" swap="Patroni · pg-b" paint="gold" beat="effect" with="vers-b"></dg-box>
+        <dg-box name="pga" entity="pga" icon="database" label="pg-a · principal" swap="pg-a · disque plein" paint="ink" tone="normal danger" beat="event"></dg-box>
+        <dg-box name="pgb" entity="pgb" icon="database" label="pg-b · réplique" note="en retard de 20 s" paint="pale" tone="normal ok" beat="effect" with="vers-b"></dg-box>
+        <dg-link from="dispatch" to="patroni" steady="3s"></dg-link>
+        <dg-link name="vers-a" from="patroni" to="pga" route="straight" steady="3s" dim beat="effect" with="vers-b"></dg-link>
+        <dg-link name="vers-b" from="patroni" to="pgb" route="straight" steady="2s" lever beat="effect"></dg-link>
+        <dg-status name="servi" for="pgb" state="ok" label="courses reprises à 02:48:30" side="bottom" beat="proof"></dg-status>
+      </dg-panel>
+      <dg-panel name="temps" layout="axis" paint="none">
+        <dg-bar name="rpo" label="RPO · 20 s perdues" from="0" to="20" tone="danger" beat="spread"></dg-bar>
+        <dg-bar name="rto" label="RTO · 70 s coupées" from="20" to="90" tone="warn" beat="proof" with="reseau.servi"></dg-bar>
+        <dg-cursor name="copie" label="02:47:00 · copie" value="0" beat="steady"></dg-cursor>
+        <dg-cursor name="panne" entity="pga" label="02:47:20 · panne" value="20" beat="event" with="reseau.pga"></dg-cursor>
+        <dg-cursor name="reprise" entity="pgb" label="02:48:30 · reprise" value="90" beat="effect" with="reseau.vers-b"></dg-cursor>
+      </dg-panel>
+    </deck-diagram>
+    <deck-source>Illustration · panne inventée pour l'exemple (centrale, serveurs, heures et débit fictifs)</deck-source>
+    <deck-notes>La réplique tourne en continu ; le jour où pg-a tombe, Patroni la sert. L'axe dit ce qu'on a perdu et combien de temps on a coupé.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Brico Loire, boutique en ligne · lun. 09:31, le DNS interne dns-int ne répond
+       plus · auth et catalogue tombent, puis panier, puis paiement · l'appli affiche
+       « réessayez » · 1 940 paiements refusés entre 09:31 et 09:53 -->
+  <deck-feature id="cascade" eyebrow="Incident · la cascade">
+    <h1 slot="title">dns-int tombe, 4 services suivent</h1>
+    <deck-diagram play="enter" layout="column" gap="airy">
+      <dg-group layout="layers" direction="right">
+        <dg-box name="dns" icon="search" label="dns-int" swap="dns-int · muet" paint="ink" tone="normal danger" beat="event"></dg-box>
+        <dg-box name="auth" icon="lock" label="auth" paint="pale" tone="normal danger" beat="spread"></dg-box>
+        <dg-box name="catalogue" icon="document" label="catalogue" paint="pale" tone="normal danger" beat="spread" with="auth"></dg-box>
+        <dg-box name="panier" icon="database" label="panier" paint="pale" tone="normal danger" beat="spread" after="auth"></dg-box>
+        <dg-box name="paiement" icon="cloud" label="paiement" paint="pale" tone="normal danger" beat="spread" after="panier"></dg-box>
+        <dg-box name="app" icon="user" label="app mobile" note="« réessayez »" paint="pale" tone="normal danger" beat="spread" with="paiement"></dg-box>
+        <dg-link from="dns" to="auth" steady="1.6s"></dg-link>
+        <dg-link from="dns" to="catalogue" steady="1.6s"></dg-link>
+        <dg-link from="auth" to="panier"></dg-link>
+        <dg-link from="catalogue" to="panier"></dg-link>
+        <dg-link from="panier" to="paiement"></dg-link>
+        <dg-link from="paiement" to="app"></dg-link>
+      </dg-group>
+      <dg-counter name="refuses" value="1 940" unit="paiements refusés" label="lundi, de 09:31 à 09:53" tone="danger" beat="proof" duration="0.8s"></dg-counter>
+    </deck-diagram>
+    <deck-source>Illustration · panne inventée pour l'exemple (boutique, services, heures et volumes fictifs)</deck-source>
+    <deck-notes>Personne n'appelle le DNS directement ; tout le monde en dépend. La panne descend le graphe, rang après rang.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Clinique des Tilleuls · copie de recette prise chaque lundi à 06:00 · noms
+       remplacés, NIR barré, dates de naissance gardées · les tests trouvent qu'une
+       naissance au 29/02 est refusée par le nouveau portail · trouvé avant la mise en
+       ligne · recette filter-records -->
+  <deck-feature id="dossiers" eyebrow="Remède · données de recette">
+    <h1 slot="title">Vrais dossiers, faux patients</h1>
+    <deck-diagram play="enter" layout="row" gap="airy">
+      <dg-table name="prod" label="production" icon="database" paint="ink" rows="
+        Jeanne Abadie · 1952
+        Koffi Mensah · 29/02/1988
+        Ewa Nowak · 1979
+        NIR 2 52 03 75 114 021"></dg-table>
+      <dg-table name="masque" label="pseudonymiser" icon="lock" paint="gold" from="prod" beat="event" rows="
+        Jeanne Abadie · 1952
+        Koffi Mensah · 29/02/1988
+        Ewa Nowak · 1979
+        NIR 2 52 03 75 114 021" swap="
+        Marie Roux · 1952
+        Paul Diallo · 29/02/1988
+        Anna Kowal · 1979
+        NIR 2 52 03 75 114 021" strike="4"></dg-table>
+      <dg-table name="recette" label="base de recette" icon="refresh" paint="pale" from="masque" beat="effect" rows="
+        Marie Roux · 1952
+        Paul Diallo · 29/02/1988
+        Anna Kowal · 1979" swap="
+        ✓ Marie Roux · 1952
+        ✗ Paul Diallo · 29/02/1988
+        ✓ Anna Kowal · 1979"></dg-table>
+      <dg-link name="prelever" from="prod" to="masque" label="lun. 06:00" steady="3s"></dg-link>
+      <dg-link from="masque" to="recette" label="rejouer"></dg-link>
+      <dg-status for="recette" state="fail" label="29 février refusé" note="vu en recette, pas à l'accueil" side="bottom" beat="proof"></dg-status>
+    </deck-diagram>
+    <deck-source>Illustration · dossiers inventés pour l'exemple (clinique, noms, dates et numéro fictifs)</deck-source>
+    <deck-notes>Les noms changent, les cas difficiles restent : c'est la date réelle d'un patient né un 29 février qui casse le portail, en recette.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Vigie, alertes de stock pour 140 boutiques · une intégration envoie PATCH
+       /listes/42 pour changer un filtre · l'API remplace la liste entière · les 3
+       destinataires sont effacés · 83 listes vidées en 40 min -->
+  <deck-feature id="patch" eyebrow="Incident · l'API changée sans prévenir">
+    <h1 slot="title">Un PATCH, 83 listes vidées</h1>
+    <deck-diagram play="enter" layout="column" gap="airy">
+      <dg-box name="appel" icon="code" label="PATCH /listes/42" note="changer un filtre" paint="ink"></dg-box>
+      <dg-group layout="row" gap="airy">
+        <dg-group name="attendu" label="attendu" paint="ok" layout="column" gap="tight">
+          <dg-person name="gardes" label="destinataires" count="3"></dg-person>
+          <dg-box icon="check" label="filtre seul modifié" paint="none"></dg-box>
+        </dg-group>
+        <dg-group name="obtenu" label="obtenu" paint="bad" layout="column" gap="tight" beat="event">
+          <dg-person name="effaces" label="destinataires" count="3" absent="0 3" beat="effect"></dg-person>
+          <dg-box icon="cross" label="liste entière remplacée" paint="none"></dg-box>
+        </dg-group>
+        <dg-counter name="listes" value="83" unit="listes" label="vidées en 40 min" tone="danger" beat="proof" duration="0.8s"></dg-counter>
+      </dg-group>
+      <dg-link from="appel" to="attendu" steady="1.6s" dashed></dg-link>
+      <dg-link name="reel" from="appel" to="obtenu" steady="1.6s" flow="1" turn="danger" beat="event"></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration · incident inventé pour l'exemple (service, route, volumes et durée fictifs)</deck-source>
+    <deck-notes>Le client attendait qu'un PATCH change un champ. L'API a remplacé la ressource entière, et personne n'a été prévenu.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Banque Ardoise, codes de connexion par SMS · pendant un déploiement, deux
+       pods otp-7f et otp-9c traitent la même demande · verrou Redis sur la clé req-5521 ·
+       otp-7f le prend, otp-9c ne fait rien · Mme Garnier reçoit un seul code à 08:12 ·
+       recette race-lock -->
+  <deck-feature id="code-sms" eyebrow="Remède · verrou et clé d'idempotence">
+    <h1 slot="title">Deux pods, un seul code SMS</h1>
+    <deck-diagram play="enter" layout="layers" direction="right">
+      <dg-box name="ancien" icon="code" label="otp · pod 9c" note="en fin de vie" paint="pale" swap="pod 9c · ne fait rien" dim beat="effect" after="course-ancien"></dg-box>
+      <dg-box name="nouveau" icon="cloud" label="otp · pod 7f" note="démarré à 08:11" paint="pale" beat="event"></dg-box>
+      <dg-box name="verrou" icon="lock" label="req-5521 · libre" swap="req-5521 · pod 7f" note="Redis SET NX" paint="gold" beat="spread" after="course-nouveau"></dg-box>
+      <dg-box name="sms" icon="document" label="SMS « 482 913 »" note="valable 5 min" paint="pale"></dg-box>
+      <dg-box name="cliente" icon="user" label="Mme Garnier" note="08:12" paint="ink" proof="1 code reçu" beat="proof"></dg-box>
+      <dg-link name="course-nouveau" from="nouveau" to="verrou" flow="1" speed="fast" beat="spread"></dg-link>
+      <dg-link name="course-ancien" from="ancien" to="verrou" steady="3s" flow="1" speed="slow" turn="danger" beat="spread" with="course-nouveau"></dg-link>
+      <dg-link name="envoi" from="verrou" to="sms" steady="3s" flow="1" beat="effect" after="ancien"></dg-link>
+      <dg-link name="livre" from="sms" to="cliente" steady="3s" flow="1" beat="effect" after="envoi"></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration · déploiement inventé pour l'exemple (banque, pods, clé, code et cliente fictifs)</deck-source>
+    <deck-notes>Pendant un déploiement, deux versions tournent. Le verrou décide qui envoie ; l'autre ne fait rien, et la cliente reçoit un seul code.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Banque Ardoise, centre d'appels · 300 à 420 appels par heure un mardi ·
+       13:58, un e-mail « votre mot de passe expire » part à 48 000 clients · 3 780 appels
+       entre 14 h et 15 h, neuf fois la normale · 41 min d'attente -->
+  <deck-feature id="appels" eyebrow="Incident · le centre d'appels">
+    <h1 slot="title">Mardi 14 h, neuf fois les appels</h1>
+    <deck-diagram play="enter" layout="row" gap="airy" balance="free">
+      <dg-group layout="column" align="start" gap="tight">
+        <dg-bar name="h10" label="10 h" value="340" tag="340" beat="steady" duration="1.6s"></dg-bar>
+        <dg-bar name="h11" label="11 h" value="420" tag="420" beat="steady" with="h10"></dg-bar>
+        <dg-bar name="h12" label="12 h" value="300" tag="300" beat="steady" with="h10"></dg-bar>
+        <dg-bar name="h13" label="13 h" value="390" tag="390" beat="steady" with="h10"></dg-bar>
+        <dg-bar name="h14" label="14 h" value="3780" tag="3 780 · ×9" beat="effect" emphasis></dg-bar>
+      </dg-group>
+      <dg-group layout="column" gap="normal" align="start">
+        <dg-box name="mail" icon="document" label="e-mail « expiré »" note="13:58 · 48 000 clients" paint="bad" beat="event"></dg-box>
+        <dg-text name="attente" label="41 min d'attente" note="à 14:20, 212 en ligne" beat="proof"></dg-text>
+      </dg-group>
+    </deck-diagram>
+    <deck-source>Illustration · journée inventée pour l'exemple (banque, volumes, heures et e-mail fictifs)</deck-source>
+    <deck-notes>Un e-mail de routine, envoyé à tous d'un coup. Le centre d'appels absorbe 400 appels par heure ; il en reçoit neuf fois plus.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Colis Rapide, API de suivi pour 4 intégrateurs · v1 annoncée fermée au 30 juin
+       par l'en-tête Sunset dès le 2 mars · v2 ouverte le 10 avril · les intégrateurs
+       migrent un à un · v1 coupée le 30 juin, 0 appel en échec · recette version-lanes -->
+  <deck-feature id="api-v2" eyebrow="Remède · fin d'une version d'API">
+    <h1 slot="title">La v1 ferme sans casser personne</h1>
+    <deck-diagram play="enter" layout="column" gap="airy">
+      <dg-group layout="row" gap="airy">
+        <dg-box name="annonce" icon="calendar" label="« v1 ferme le 30 juin »" note="en-tête Sunset · 2 mars" paint="gold" beat="event"></dg-box>
+        <dg-person name="sur-v1" label="intégrateurs sur v1" count="4" absent="0 4" beat="effect"></dg-person>
+        <dg-person name="sur-v2" label="sur v2" count="4" absent="4 0" tone="accent" beat="effect" with="sur-v1"></dg-person>
+      </dg-group>
+      <dg-group name="temps" layout="axis">
+        <dg-bar name="v1" label="API v1" from="0" to="17" tone="muted" beat="steady" duration="2.4s"></dg-bar>
+        <dg-bar name="v2" label="API v2" from="6" to="24" tone="ok" beat="spread"></dg-bar>
+        <dg-cursor name="fin" label="30 juin · v1 coupée, 0 échec" value="17" beat="proof"></dg-cursor>
+      </dg-group>
+      <dg-text name="recouvrement" for="sur-v2" side="bottom" label="11 semaines côte à côte" beat="spread" with="v2"></dg-text>
+    </deck-diagram>
+    <deck-source>Illustration · calendrier inventé pour l'exemple (transporteur, dates et intégrateurs fictifs)</deck-source>
+    <deck-notes>On annonce, on ouvre la v2 à côté, on laisse chacun migrer à son rythme, et on coupe à la date dite.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Maison Ébène, meubles en ligne · un prix modifié purge le CDN de la zone de
+       la boutique · lun. 9 sept., la boutique a migré en zone fr-par, la purge part encore
+       vers eu-west · la page affiche 349 €, la caisse facture 429 € · 61 commandes
+       contestées -->
+  <deck-feature id="purge" eyebrow="Incident · le cache et sa purge">
+    <h1 slot="title">Purge envoyée, mauvaise zone</h1>
+    <deck-diagram play="enter" compose="model-incident">
+      <dg-panel name="modele" label="le mécanisme" layout="column" gap="tight">
+        <dg-box name="prix" icon="flag" label="prix modifié" note="buffet Oslo · 429 €" paint="gold"></dg-box>
+        <dg-box name="purge" entity="purge" icon="refresh" label="purge du CDN" note="zone de la boutique" paint="ink"></dg-box>
+        <dg-box name="cache" icon="cloud" label="cache vidé" note="prix relu en base" paint="pale"></dg-box>
+        <dg-link from="prix" to="purge" steady="1.6s"></dg-link>
+        <dg-link from="purge" to="cache" steady="1.6s"></dg-link>
+      </dg-panel>
+      <dg-panel name="incident" label="lun. 9 sept., 10:20" layout="column" gap="normal" beat="event">
+        <dg-box name="purge" entity="purge" icon="refresh" label="purge · eu-west" note="la zone d'avant" paint="ink"></dg-box>
+        <dg-screen name="page" label="ebene.fr/buffet-oslo" note="Buffet Oslo · 349 €" count="2"></dg-screen>
+        <dg-link name="perdue" from="purge" to="page" label="jamais reçue" dim beat="spread"></dg-link>
+        <dg-status for="page" state="ok fail" label="caisse : 429 €" note="61 commandes contestées" side="right" beat="proof"></dg-status>
+      </dg-panel>
+    </deck-diagram>
+    <deck-source>Illustration · incident inventé pour l'exemple (boutique, zones, prix et volumes fictifs)</deck-source>
+    <deck-notes>Le mécanisme est juste ; c'est l'adresse qui a changé. La purge part, arrive dans une zone vide, et la vraie page garde l'ancien prix.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Cave coopérative du Vinatier, cuves de fermentation · cuve 7 à 22 °C, alerte
+       au-dessus de 26 °C · 03:40, la cuve passe 29 °C · Hugo, d'astreinte, ne répond pas ·
+       10 min sans accusé de réception, le relais passe à Mathilde · procédure cochée ligne à
+       ligne · recette escalation-runbook -->
+  <deck-feature id="cuve" eyebrow="Remède · astreinte et relais">
+    <h1 slot="title">03:40, la cuve 7 chauffe, Hugo dort</h1>
+    <deck-diagram play="enter" layout="column" gap="airy">
+      <dg-group layout="row" gap="normal" link="arrow">
+        <dg-box name="cuve" icon="alert" label="cuve 7 · 22 °C" swap="cuve 7 · 29 °C" note="alerte au-dessus de 26 °C" paint="pale" tone="normal danger" beat="event"></dg-box>
+        <dg-person name="hugo" label="Hugo · astreinte" count="1" absent="0 1" beat="spread"></dg-person>
+        <dg-timer name="delai" label="sans réponse" value="10" unit="min" tone="warn" beat="spread" after="hugo"></dg-timer>
+        <dg-switch name="relais" label="relais" state="off on" off="Hugo" on="Mathilde" beat="effect"></dg-switch>
+      </dg-group>
+      <dg-table name="procedure" label="procédure cuve chaude" icon="document" paint="pale" beat="proof" rows="
+        ouvrir l'eau froide du serpentin
+        viser 18 °C en 40 min
+        noter au registre de cave
+        prévenir l'œnologue à 07:00" swap="
+        ✓ ouvrir l'eau froide du serpentin
+        ✓ viser 18 °C en 40 min
+        ✓ noter au registre de cave
+        ✓ prévenir l'œnologue à 07:00"></dg-table>
+      <dg-link name="appels" from="cuve" to="hugo" steady="3s"></dg-link>
+      <dg-link from="relais" to="procedure"></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration · nuit inventée pour l'exemple (cave, prénoms, températures et heures fictifs)</deck-source>
+    <deck-notes>L'alerte n'a de valeur que si quelqu'un répond. Au bout de dix minutes de silence, le relais passe seul, et la procédure se coche ligne à ligne.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Kiné Agenda, prise de rendez-vous en ligne · 6 200 rendez-vous par jour · 3
+       tickets au support cette semaine · sous la ligne, 41 erreurs JavaScript muettes ·
+       1 280 sessions abandonnées sur Safari 16 · vues dans Sentry le lundi 09:10 -->
+  <deck-feature id="iceberg" eyebrow="Incident · ce que le support ne voit pas">
+    <h1 slot="title">3 tickets, 41 erreurs muettes</h1>
+    <deck-diagram play="enter" layout="column" gap="tight" align="center">
+      <dg-group name="surface" label="ce que les patients signalent · 6 200 RDV par jour" paint="outline" layout="row" gap="normal">
+        <dg-box name="agenda" icon="calendar" label="agenda.kine.fr" paint="none"></dg-box>
+        <dg-box icon="document" label="ticket #4471" paint="none"></dg-box>
+        <dg-box icon="document" label="ticket #4472" paint="none"></dg-box>
+        <dg-box icon="document" label="ticket #4475" paint="none"></dg-box>
+      </dg-group>
+      <dg-group layout="row" gap="airy">
+        <dg-text name="sessions" label="1 280 sessions" note="abandonnées, Safari 16" beat="effect"></dg-text>
+        <dg-group name="dessous" label="41 erreurs JavaScript muettes" paint="ink" layout="grid" beat="event">
+          <dg-dot name="muettes" count="41" emphasis></dg-dot>
+        </dg-group>
+        <dg-text name="sentry" label="vues dans Sentry" note="lundi 09:10, par hasard" beat="proof"></dg-text>
+      </dg-group>
+      <dg-link from="agenda" to="dessous" steady="1.6s" dashed></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration · semaine inventée pour l'exemple (service, tickets, navigateur et volumes fictifs)</deck-source>
+    <deck-notes>Trois personnes ont écrit. Mille deux cent quatre-vingts ont abandonné sans rien dire : ce sont elles qu'il faut aller chercher.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Bus Ligeria, ligne 4 · 60 positions GPS par minute · 07:12, la passerelle
+       radio redémarre en boucle · la série passe sous 30 par minute · 4 min de grâce ·
+       alerte au PC trafic à 07:16, avant le premier usager qui appelle · recette
+       pulse-threshold -->
+  <deck-feature id="balises" eyebrow="Remède · battement des balises">
+    <h1 slot="title">Les bus du 4 disparaissent à 7:12</h1>
+    <deck-diagram play="enter" layout="row" gap="airy">
+      <dg-group layout="column" gap="normal">
+        <dg-box name="radio" icon="refresh" label="passerelle radio" note="ligne 4 · 12 bus" swap="passerelle · en boucle" paint="pale" tone="normal danger" beat="event" with="positions"></dg-box>
+        <dg-box name="veille" icon="search" label="veille trafic" note="alerte après 4 min" paint="gold"></dg-box>
+        <dg-timer name="grace" label="délai de grâce" value="4" unit="min" tone="warn" beat="effect"></dg-timer>
+        <dg-link name="positions" from="radio" to="veille" label="5 / bus / min" steady="3s" dim beat="event"></dg-link>
+        <dg-link from="veille" to="grace"></dg-link>
+      </dg-group>
+      <dg-group layout="column" gap="normal" align="end">
+        <dg-curve name="pouls" label="positions reçues par minute" values="60 60 59 60 61 60 22 0" max="70" threshold="30" ticks="07:05 07:12" beat="spread"></dg-curve>
+        <dg-box name="alerte" icon="alert" label="alerte au PC trafic" note="appel au régulateur" paint="bad" proof="07:16 · avant le 1er usager" beat="proof"></dg-box>
+      </dg-group>
+      <dg-link from="grace" to="alerte"></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration · matinée inventée pour l'exemple (réseau, ligne, débits et heures fictifs)</deck-source>
+    <deck-notes>On n'attend pas qu'un usager appelle : la veille compte les battements, et leur absence déclenche une seule alerte, quatre minutes plus tard.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Agence Pixelune, facture cloud de septembre · 3 480 € · stockage 46 % alors que
+       le budget en prévoit 15 % · cause : logs de debug gardés trois ans · calcul 22 %,
+       base 15 %, réseau 9 %, autres 8 % -->
+  <deck-feature id="facture" eyebrow="Incident · la facture cloud de septembre">
+    <h1 slot="title">Les logs, 46 % de la facture</h1>
+    <deck-diagram play="enter" layout="column" align="stretch" gap="airy">
+      <dg-group layout="axis">
+        <dg-bar name="calcul" label="calcul" tag="22 %" from="0" to="22" beat="steady" duration="1.6s"></dg-bar>
+        <dg-bar name="stockage" label="stockage" tag="46 % · 1 600 €" from="22" to="68" tone="danger" beat="event" duration="1s" emphasis></dg-bar>
+        <dg-bar name="base" label="base" tag="15 %" from="68" to="83" beat="steady" with="calcul"></dg-bar>
+        <dg-bar name="reseau" label="réseau" tag="9 %" from="83" to="92" beat="steady" with="calcul"></dg-bar>
+        <dg-bar name="autres" label="autres" tag="8 %" from="92" to="100" beat="steady" with="calcul"></dg-bar>
+      </dg-group>
+      <dg-group layout="row" gap="airy">
+        <dg-box name="budget" icon="target" label="budget : 15 %" note="stockage, voté en janvier" paint="gold" beat="effect"></dg-box>
+        <dg-box name="cause" icon="document" label="logs de debug" note="gardés 3 ans par défaut" paint="bad" beat="proof"></dg-box>
+      </dg-group>
+    </deck-diagram>
+    <deck-source>Illustration · facture inventée pour l'exemple (agence, montants et parts fictifs)</deck-source>
+    <deck-notes>Une seule ligne mange presque la moitié de la facture, et personne ne l'a décidé : une rétention par défaut, jamais relue.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Soleo, supervision de 2 400 onduleurs solaires · 312 alertes par semaine, toutes
+       envoyées par SMS · trois règles : une alerte par onduleur, attendre 5 min, ne réveiller
+       que si la production est perdue · 6 appels de nuit la semaine du 14 octobre, tous
+       utiles -->
+  <deck-feature id="alertes" eyebrow="Remède · trier avant de réveiller">
+    <h1 slot="title">312 alertes, 6 qui réveillent</h1>
+    <deck-diagram play="enter" layout="row" gap="airy" balance="free">
+      <dg-group name="toutes" label="312 alertes par semaine" layout="grid">
+        <dg-dot count="312"></dg-dot>
+      </dg-group>
+      <dg-group name="regles" label="trois règles" paint="gold" layout="column" gap="tight">
+        <dg-box name="r1" icon="refresh" label="une par onduleur" paint="none" beat="event"></dg-box>
+        <dg-box name="r2" icon="clock" label="attendre 5 min" paint="none" beat="event"></dg-box>
+        <dg-box name="r3" icon="alert" label="production perdue ?" paint="none" beat="event"></dg-box>
+      </dg-group>
+      <dg-group layout="column" gap="normal" align="start">
+        <dg-group name="appels" layout="grid" beat="effect">
+          <dg-dot name="utiles" count="6" emphasis></dg-dot>
+        </dg-group>
+        <dg-text name="bilan" label="6 appels de nuit" note="6 sur 6 utiles · semaine du 14 oct." beat="proof"></dg-text>
+      </dg-group>
+      <dg-link from="toutes" to="regles" steady="3s" flow="4"></dg-link>
+      <dg-link name="tri" from="regles" to="appels" flow="1" beat="spread"></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration · supervision inventée pour l'exemple (parc, volumes, règles et dates fictifs)</deck-source>
+    <deck-notes>Trois règles simples, et le bruit d'une semaine se réduit à six appels de nuit qui valaient tous le réveil.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Atelier Lin, serveur de l'API · /var à 61 % à minuit, rempli par les logs de
+       debug · 04:10, 100 % · la base refuse les écritures · processeur et mémoire normaux ·
+       les commandes de nuit restent en « en attente » · vu à 07:30 -->
+  <deck-feature id="disque" eyebrow="Incident · le disque">
+    <h1 slot="title">/var plein à 04:10, base figée</h1>
+    <deck-diagram play="enter" layout="column" align="stretch" gap="airy">
+      <dg-meter name="memoire" label="mémoire · processeur normaux" value="51" unit="%" tone="muted" beat="steady" duration="1.6s"></dg-meter>
+      <dg-meter name="var" label="disque /var · alerte à 90 %" value="61 100" unit="%" threshold="90" tone="ok danger" beat="event" duration="1s" emphasis></dg-meter>
+      <dg-group layout="row" gap="airy">
+        <dg-box name="base" icon="database" label="PostgreSQL · écrit" swap="PostgreSQL · lecture seule" paint="pale" tone="normal danger" beat="effect"></dg-box>
+        <dg-text name="attente" label="38 commandes en attente" note="vues à 07:30" beat="proof"></dg-text>
+      </dg-group>
+      <dg-link name="ecritures" from="base" to="var" steady="1.6s" dim beat="effect" with="base"></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration · nuit inventée pour l'exemple (serveur, taux, heures et volumes fictifs)</deck-source>
+    <deck-notes>Le processeur et la mémoire vont bien ; c'est un disque que personne ne regardait qui fige la base.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Fréquence Ouest, radio en streaming · 18 240 auditeurs à 18:00 · 18:02, le CDN A
+       coupe le flux 128k, taux de coupure 6,2 % (seuil 2 %) · 18:05, bascule sur le CDN B ·
+       le journal montre la coupure et le retour -->
+  <deck-feature id="radio" eyebrow="Remède · le tableau de bord du direct">
+    <h1 slot="title">Flux coupé à 18:02, CDN B à 18:05</h1>
+    <deck-diagram play="enter" compose="dashboard" gap="tight">
+      <dg-panel name="auditeurs" layout="row" gap="normal">
+        <dg-counter name="direct" entity="direct" value="18 240" unit="auditeurs" label="en direct à 18:00" beat="steady"></dg-counter>
+      </dg-panel>
+      <dg-panel name="coupures" layout="column">
+        <dg-meter name="taux" entity="coupures" label="coupures · flux 128k" value="0.4 6.2" max="10" unit="%" threshold="2" tone="ok danger" beat="event"></dg-meter>
+      </dg-panel>
+      <dg-panel name="bascule" layout="column" gap="normal">
+        <dg-switch name="cdn" entity="cdn" label="CDN de secours" state="off on" off="A" on="B" beat="effect"></dg-switch>
+        <dg-text name="qui" label="18:05 · Léo, à la régie" note="un geste, pas un déploiement" beat="effect" after="cdn"></dg-text>
+      </dg-panel>
+      <dg-panel name="journal" layout="column">
+        <dg-table name="evenements" entity="coupures cdn direct" label="journal du direct" icon="clock" beat="proof" rows="
+          18:00 · CDN A · 128k
+          18:02 · coupures 6,2 %
+          18:05 · CDN B · 128k" swap="
+          ✓ 18:00 · CDN A · 128k
+          ✗ 18:02 · coupures 6,2 %
+          ✓ 18:05 · CDN B · 0,3 %"></dg-table>
+      </dg-panel>
+    </deck-diagram>
+    <deck-source>Illustration · soirée inventée pour l'exemple (radio, CDN, taux et audience fictifs)</deck-source>
+    <deck-notes>Quatre lectures d'un même direct : l'audience, le taux de coupure, l'interrupteur de secours et le journal qui garde la trace.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Colis Rapide, normalisation d'adresses · jeu de test : 3 adresses, toutes
+       justes · production : 180 000 adresses, avec lieux-dits, BP, Cedex, appartements ·
+       « Cedex 9 » pris pour une ville · 212 colis renvoyés en octobre -->
+  <deck-feature id="adresses" eyebrow="Ce que les tests ne voient pas · les données">
+    <h1 slot="title">3 adresses testées sur 180 000</h1>
+    <deck-diagram play="enter" compose="inset">
+      <dg-panel name="prod" label="production · 180 000 adresses" paint="ink" layout="row" gap="airy">
+        <dg-panel name="jeu" label="jeu de test · 3 sur 3" paint="ok" layout="column">
+          <dg-table name="cas" entity="adresses" paint="ok" beat="steady" rows="
+            12 rue Crébillon, Nantes
+            4 place Bellecour, Lyon
+            8 bd Carnot, Lille" swap="
+            ✓ 12 rue Crébillon, Nantes
+            ✓ 4 place Bellecour, Lyon
+            ✓ 8 bd Carnot, Lille"></dg-table>
+        </dg-panel>
+        <dg-table name="reelles" entity="adresses" label="adresses réelles" icon="database" paint="pale" beat="spread" rows="
+          Lieu-dit La Garenne
+          BP 12, 44 Nantes Cedex 9
+          Appt 3B, bât. C, 2e étage
+          (vide)
+          Rés. Les Pins, porte 7"></dg-table>
+        <dg-group layout="column" gap="normal">
+          <dg-box name="verdict" icon="alert" label="« Cedex 9 », une ville ?" paint="bad" beat="effect"></dg-box>
+          <dg-text name="retours" label="212 colis renvoyés" note="en octobre" beat="proof"></dg-text>
+        </dg-group>
+        <dg-link name="tri" from="reelles" to="verdict" flow="2" turn="danger" beat="effect" with="verdict"></dg-link>
+      </dg-panel>
+      <dg-camera name="recul" focus="jeu" to="all" beat="event"></dg-camera>
+    </deck-diagram>
+    <deck-source>Illustration · adresses inventées pour l'exemple (transporteur, volumes et retours fictifs)</deck-source>
+    <deck-notes>On ouvre sur le jeu de test, tout vert, puis on recule : il est perdu dans la production, et la production a des Cedex.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Atelier Lin, l'équipe produit · Romain, product owner, écrit les demandes ·
+       Claude les découpe pour quatre agents (écran, API, tests, doc) · tout passe par une
+       relecture avant la fusion · 38 PR fusionnées en octobre, 0 sans relecture -->
+  <deck-feature id="roles" eyebrow="Remède · qui décide, qui exécute">
+    <h1 slot="title">Romain décide, 4 agents codent</h1>
+    <deck-diagram play="enter" layout="layers" direction="down" gap="tight" bounds="1600x560">
+      <dg-box name="romain" icon="user" label="Romain · PO" paint="ink"></dg-box>
+      <dg-box name="claude" icon="spark" label="Claude" swap="Claude · 4 tâches" paint="gold" beat="event"></dg-box>
+      <dg-box name="ecran" icon="document" label="agent écran" paint="pale" beat="spread"></dg-box>
+      <dg-box name="api" icon="code" label="agent API" paint="pale" beat="spread" with="ecran"></dg-box>
+      <dg-box name="tests" icon="check" label="agent tests" paint="pale" beat="spread" with="ecran"></dg-box>
+      <dg-box name="doc" icon="search" label="agent doc" paint="pale" beat="spread" with="ecran"></dg-box>
+      <dg-box name="depot" icon="database" label="atelier-api · main" swap="main · 4 PR relues" paint="ok" beat="effect"></dg-box>
+      <dg-link from="romain" to="claude" label="demande #212" steady="3s"></dg-link>
+      <dg-link name="vers-ecran" from="claude" to="ecran" flow="1" beat="spread" with="ecran"></dg-link>
+      <dg-link from="claude" to="api" flow="1" beat="spread" with="ecran"></dg-link>
+      <dg-link from="claude" to="tests" flow="1" beat="spread" with="ecran"></dg-link>
+      <dg-link from="claude" to="doc" flow="1" beat="spread" with="ecran"></dg-link>
+      <dg-link name="pr-ecran" from="ecran" to="depot" flow="1" beat="effect" with="depot"></dg-link>
+      <dg-link from="api" to="depot" flow="1" beat="effect" with="depot"></dg-link>
+      <dg-link from="tests" to="depot" flow="1" beat="effect" with="depot"></dg-link>
+      <dg-link from="doc" to="depot" flow="1" beat="effect" with="depot"></dg-link>
+      <dg-status for="depot" state="ok" label="38 PR en octobre" note="0 fusion sans relecture" side="right" beat="proof"></dg-status>
+    </deck-diagram>
+    <deck-source>Illustration · équipe inventée pour l'exemple (prénom, demande, agents et volumes fictifs)</deck-source>
+    <deck-notes>Une personne décide, une IA découpe et relit, quatre agents exécutent. Rien n'entre dans main sans relecture.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · hub Colis Rapide de Saint-Priest, poste de douane · 120 colis hors UE par heure
+       en novembre · un seul scanner, 40 colis par heure · la file monte de 0 à 12 palettes ·
+       1 340 colis ratent le camion de 18:00 -->
+  <deck-feature id="douane" eyebrow="Incident · le poste de douane">
+    <h1 slot="title">120 colis/h, la douane en scanne 40</h1>
+    <deck-diagram play="enter" layout="row" gap="normal">
+      <dg-box name="arrivees" icon="cloud" label="vols hors UE" value="120 / h" paint="pale"></dg-box>
+      <dg-queue name="file" label="palettes en attente" count="12" fill="0 12" tone="normal danger" beat="event" duration="1.2s"></dg-queue>
+      <dg-box name="scanner" icon="search" label="scanner douane" value="40 / h" paint="ink"></dg-box>
+      <dg-box name="camion" icon="clock" label="camion de 18:00" paint="pale" tone="normal danger" swap="parti sans eux" beat="effect"></dg-box>
+      <dg-link from="arrivees" to="file" steady="1.6s" flow="3"></dg-link>
+      <dg-link from="file" to="scanner"></dg-link>
+      <dg-link from="scanner" to="camion" steady="1.6s" flow="1"></dg-link>
+      <dg-status for="camion" state="fail" label="1 340 colis en retard" note="lundi 18 nov." side="bottom" beat="proof"></dg-status>
+    </deck-diagram>
+    <deck-source>Illustration · journée inventée pour l'exemple (hub, débits, date et volumes fictifs)</deck-source>
+    <deck-notes>Le débit d'entrée triple en novembre, le scanner reste seul. La file se lit avant le retard : douze palettes, puis le camion part.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Gîtes de la Brière, réservations en ligne · de 14 réservations la première
+       quinzaine (mars) à 410 (octobre) · 3 120 au total · jalons : 2 mars ouverture,
+       10 mai paiement en trois fois, 1er juillet avis clients · recette data-replay -->
+  <deck-feature id="rejeu" eyebrow="Les gîtes · le rejeu">
+    <h1 slot="title">Huit mois de réservations, rejoués</h1>
+    <deck-diagram play="enter" compose="split" gap="tight">
+      <dg-panel name="tableau" layout="column" gap="normal">
+        <dg-group layout="row" gap="airy">
+          <dg-box name="periode" entity="periode" icon="calendar" label="2 mars" swap="26 oct. · ×29" paint="ink" beat="proof"></dg-box>
+          <dg-counter name="total" from="14" value="3 120" unit="séjours" label="réservés depuis l'ouverture" beat="steady" duration="4.5s"></dg-counter>
+        </dg-group>
+        <dg-curve name="serie" label="réservations par quinzaine" values="14 40 72 118 150 205 260 310 344 380 395 410" max="450" ticks="mars oct." beat="steady" with="total" duration="4.5s"></dg-curve>
+      </dg-panel>
+      <dg-panel name="jalons" layout="column">
+        <dg-table name="dates" entity="periode" label="jalons" icon="flag" paint="pale" from="tableau.serie" beat="steady" with="tableau.total" rows="
+          2 mars · ouverture
+          10 mai · paiement en 3 fois
+          1er juil. · avis clients"></dg-table>
+      </dg-panel>
+    </deck-diagram>
+    <deck-source>Illustration · historique inventé pour l'exemple (gîtes, quinzaines et volumes fictifs)</deck-source>
+    <deck-notes>Le rejeu remonte le temps : la courbe se trace, le compteur tourne, les jalons arrivent à leur date, et l'arrivée reste à l'écran.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Assurance Hélios, devis auto en ligne · 2 300 devis par jour · vendredi 17:48,
+       un commit « nettoyage config » passe le timeout du tarificateur de 30 s à 3 s · les
+       devis en échec passent de 0,2 % à 18 % · 414 devis perdus le samedi -->
+  <deck-feature id="reglage" eyebrow="Incident · un réglage de trop">
+    <h1 slot="title">Un zéro de moins, 18 % d'échecs</h1>
+    <deck-diagram play="enter" layout="row" gap="airy">
+      <dg-group layout="column" gap="airy" align="start">
+        <dg-terminal name="commit" label="vendredi 17:48 · ~/devis-auto" beat="steady" duration="1.6s" lines="
+          $ git commit -am 'nettoyage config'
+          ✓ 1 fichier modifié
+          $ git push"></dg-terminal>
+        <dg-text name="perdus" label="414 devis perdus samedi" note="sur 2 300 par jour d'habitude" beat="proof"></dg-text>
+      </dg-group>
+      <dg-group layout="column" gap="airy" align="stretch">
+        <dg-table name="config" label="tarificateur.yml" icon="document" paint="gold" beat="event" rows="
+          retries · 2
+          timeout · 30 s
+          pool · 20 connexions" swap="
+          retries · 2
+          timeout · 3 s
+          pool · 20 connexions"></dg-table>
+        <dg-meter name="echecs" label="devis en échec · alerte à 2 %" value="0.2 18" max="25" unit="%" threshold="2" tone="ok danger" beat="effect" duration="0.8s"></dg-meter>
+      </dg-group>
+      <dg-link from="commit" to="config" steady="1.6s"></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration · incident inventé pour l'exemple (assureur, fichier, réglages et volumes fictifs)</deck-source>
+    <deck-notes>Un nettoyage anodin, un zéro de moins dans un fichier de réglages, et le tarificateur n'a plus le temps de répondre.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · Atelier Lin, après la migration du lundi · Claude déploie puis ouvre la vraie
+       page des commandes · le test de fumée vérifie trois parcours · Romain donne le feu vert
+       à 11:04 · remède à « migration verte, 3 412 refs vides » -->
+  <deck-feature id="verifier" eyebrow="Remède · regarder la vraie page">
+    <h1 slot="title">Après le déploiement, la vraie page</h1>
+    <deck-diagram play="enter" layout="row" link="arrow" gap="normal">
+      <dg-terminal name="terminal" label="claude · ~/atelier-api" beat="steady" lines="
+        $ git push prod main
+        ✓ déployé · v3.8.1
+        $ npx playwright test smoke
+        ✓ 3 parcours sur 3"></dg-terminal>
+      <dg-screen name="page" label="atelier-lin.fr/commandes" note="Commandes du jour" count="2" beat="event"></dg-screen>
+      <dg-table name="smoke" label="test de fumée" icon="check" paint="ok" beat="spread" rows="
+        commande CMD-88140
+        réf. A-4490 présente
+        export ERP 11:00" swap="
+        ✓ commande CMD-88140
+        ✓ réf. A-4490 présente
+        ✓ export ERP 11:00"></dg-table>
+      <dg-status for="smoke" state="ok" label="feu vert de Romain, 11:04" note="il a vu la même page" side="bottom" beat="proof"></dg-status>
+    </deck-diagram>
+    <deck-source>Illustration · déploiement inventé pour l'exemple (boutique, version, références et heures fictives)</deck-source>
+    <deck-notes>Le terminal ne suffit plus : Claude ouvre la page, le test de fumée suit trois parcours réels, et c'est une personne qui donne le feu vert.</deck-notes>
+  </deck-feature>
+
+  <!-- Brief · synthèse de la galerie · quatre incidents, chacun avec son remède et sa preuve
+       chiffrée : sonde (billetterie), données de recette (dossiers), réplique (dispatch),
+       relais (cave) · le socle : une preuve qui se lit sans nous -->
+  <deck-feature id="matrice" eyebrow="Synthèse · incident, remède, preuve">
+    <h1 slot="title">Chaque incident a sa preuve</h1>
+    <deck-diagram play="enter" layout="grid" columns="3" gap="tight">
+      <dg-box name="h1" label="incident" paint="none" beat="steady"></dg-box>
+      <dg-box name="h2" label="remède" paint="none" beat="steady"></dg-box>
+      <dg-box name="h3" label="preuve" paint="none" beat="steady"></dg-box>
+      <dg-box name="i1" icon="ban" label="6 h 45 sans billet" paint="bad" beat="event"></dg-box>
+      <dg-box name="r1" icon="flag" label="commande témoin" paint="gold" beat="event"></dg-box>
+      <dg-box name="p1" icon="check" label="alerte à 07:04" paint="ok" beat="event"></dg-box>
+      <dg-box name="i2" icon="ban" label="3 412 refs vides" paint="bad" beat="spread"></dg-box>
+      <dg-box name="r2" icon="lock" label="données de recette" paint="gold" beat="spread"></dg-box>
+      <dg-box name="p2" icon="check" label="29 février trouvé" paint="ok" beat="spread"></dg-box>
+      <dg-box name="i3" icon="ban" label="pg-a, disque plein" paint="bad" beat="effect"></dg-box>
+      <dg-box name="r3" icon="refresh" label="réplique pg-b" paint="gold" beat="effect"></dg-box>
+      <dg-box name="p3" icon="check" label="70 s de coupure" paint="ok" beat="effect"></dg-box>
+      <dg-box name="i4" icon="ban" label="cuve 7 à 29 °C" paint="bad" beat="proof"></dg-box>
+      <dg-box name="r4" icon="team" label="relais à 10 min" paint="gold" beat="proof"></dg-box>
+      <dg-box name="p4" icon="check" label="procédure cochée" paint="ok" beat="proof" emphasis></dg-box>
+    </deck-diagram>
+    <deck-source>Illustration · synthèse des histoires inventées de cette galerie</deck-source>
+    <deck-notes>Le tableau se remplit rang par rang : chaque incident appelle un remède, et chaque remède se juge à une preuve qu'on lit sans nous.</deck-notes>
+  </deck-feature>
+
+  <deck-takeaway id="idee" kicker="L'idée">
+    Un brief concret d'abord, puis le modèle qui raconte l'histoire, joué dans le temps.
+    <deck-notes>Trente histoires, une vingtaine de modèles graphiques, aucun deux fois de suite.</deck-notes>
+  </deck-takeaway>
+
+</deck-root>
+</body>
+</html>
