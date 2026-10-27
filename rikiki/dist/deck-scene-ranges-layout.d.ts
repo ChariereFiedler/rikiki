@@ -10,6 +10,10 @@ export interface Span {
 /** A number from an attribute, or null · an author who wrote "ten" meant
  *  something, but not a position on the scale. */
 export declare function parseValue(attribute: string | null): number | null;
+/** The maximum of the scale, as the header says it · the very number the bars are
+ *  drawn against. It is read from what the author wrote (`scale`, or the largest
+ *  value of the rows), so its shortest form is the figure written, never rounded. */
+export declare function formatScale(scale: number): string;
 /** Where a value lands, clamped to the scale · a value past the maximum sits at
  *  the end of the track rather than off the slide. */
 export declare function scaleX(value: number, scale: number, area: ScaleArea): number;

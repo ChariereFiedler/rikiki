@@ -1,3 +1,4 @@
+import { type Motif, type Progress } from './deck-motifs.js';
 import type { InkModel } from './ill-rules.js';
 export type Topology = 'none' | 'chain' | 'fan-out' | 'fan-in' | 'graph' | 'cycle';
 export interface StructureSignature {
@@ -93,6 +94,8 @@ export interface GalleryEntry {
     slideId?: string | null;
     element?: string;
     signature: DiagramSignature;
+    /** Its named marks and their words, its act · whether it moves on from a look-alike. */
+    motif?: Motif | null;
 }
 export interface ClosePair {
     a: {
@@ -104,6 +107,8 @@ export interface ClosePair {
         slideId?: string | null;
     };
     distance: Distance;
+    /** How the later moves on from the earlier · a motif that progresses, no repeat. */
+    progress?: Progress[];
 }
 export interface DiversityReport {
     illustrations: number;
@@ -120,6 +125,9 @@ export interface DiversityReport {
     } | null;
     /** Pairs closer than `repeated`, the closest first. */
     repeated: ClosePair[];
+    /** Pairs as close, whose later drawing moves on from the earlier (a step, a scope,
+     *  figures, a state) · a motif of the deck, not the same picture twice. */
+    progressing: ClosePair[];
     /** The mean distance of each drawing to its nearest neighbour. */
     meanNearest: number;
     /** Where each target stands. */

@@ -1,3 +1,4 @@
+import { type Motif } from './deck-motifs.js';
 import type { DiagramSignature } from './diversity.js';
 import { type InkModel } from './ill-rules.js';
 /** Every code the richness says · `rikiki check` lists, selects and configures them
@@ -77,13 +78,12 @@ export interface RichnessIssue {
 }
 /** What a drawing's richness says, when asked · nothing precise, roles painted alike. */
 export declare function richnessIssues(richness: Richness): RichnessIssue[];
-export interface ModelUse {
+/** One use of a graphic model · and its motif: a motif that progresses keeps its
+ *  marks and moves on (deck-motifs.ts). */
+export interface ModelUse extends Motif {
     slide: number;
     slideId?: string | null;
     model: string;
-    /** The words of each named mark · a motif that progresses keeps its marks and
-     *  changes their words. */
-    words: Record<string, string>;
 }
 /** The words of a drawing, by the mark that wrote them. */
 export declare function wordsByMark(model: InkModel): Record<string, string>;

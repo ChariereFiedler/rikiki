@@ -6,8 +6,9 @@ export declare class DeckScene extends SceneElement {
     link?: string;
     align?: string;
     stagger?: number;
-    /** The children, each with the part it plays · scenes are regions, a band
-     *  closes, anything else is a stray the lint names and the grid hides. */
+    /** The children, each with the part it plays · scenes are regions, the first
+     *  band closes, anything else (a second band included) is a stray the lint
+     *  names and the grid hides · two bands would share one row, one over the other. */
     private get parts();
     private get regions();
     private get layoutKind();

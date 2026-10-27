@@ -1,6 +1,7 @@
 import { type PropertyValues } from 'lit';
 import { type DiagramLayout } from './diagram/layout.js';
 import { SceneElement } from './scene-kit.js';
+import { type Rect } from './diagram/camera.js';
 import type { SceneIssue } from './scene-lint.js';
 export declare class DeckDiagram extends SceneElement {
     static styles: import("lit").CSSResult[];
@@ -21,6 +22,14 @@ export declare class DeckDiagram extends SceneElement {
     balance?: string;
     play?: string;
     budget?: string;
+    acts?: string;
+    act?: string;
+    pair?: string;
+    /** The id of the slide the deck came from to this one · a camera that opens from it
+     *  (`zoom-from`) takes over its frame, any other way in it frames its own mark. */
+    private arrivedFrom;
+    /** Where the picture shown is drawn in the viewBox · what `placeInView` maps by. */
+    private placed?;
     /** The click the slide is on · what a playing diagram shows. */
     private stage;
     /** A story plays again once it ends, from its Loop button. */
@@ -51,6 +60,43 @@ export declare class DeckDiagram extends SceneElement {
     protected willUpdate(): void;
     /** Each time a story starts playing, a loop waits for its end. */
     protected updated(changed?: PropertyValues): void;
+    private deck;
+    connectedCallback(): void;
+    disconnectedCallback(): void;
+    /** The slide of this drawing is about to be hidden · how its picture stands on the
+     *  screen at this instant is kept, a camera half way through its move included. */
+    private readonly onSlideLeave;
+    /** Which slide the deck came from, when it arrives on this one · told before the
+     *  slide plays (deck-root changes the slide, then its step). */
+    private readonly onSlideChange;
+    /** How the picture stood on the screen when its slide was left · from the units of
+     *  the picture to the screen, through every move of its camera as it then stood. A
+     *  slide left is hidden, and the next one's camera still needs to know where it was. */
+    private leftView?;
+    private drawingSvg;
+    /** From the units of the picture to the screen, now · through the innermost move of
+     *  the camera, which holds the picture, so its animated transform counts. */
+    private screenView;
+    /** Where a mark of the picture stood on the screen when its slide was last left ·
+     *  what the next slide's camera takes over (`zoom-from`), where and as large as the
+     *  room saw it, a camera stopped half way included. */
+    placeOnScreen(name: string): Rect | undefined;
+    /** Where a mark of the picture shown stands, in the units of its viewBox. */
+    placeInView(name: string): Rect | undefined;
+    /** The frame the slide before showed `zoom-from`'s mark in, seen here · only when
+     *  the deck came from that slide, else the camera frames its own mark. */
+    private openingFrom;
+    /** A mark a camera takes over from the slide before (`zoom-from`) is already there
+     *  when the slide opens · the room has just seen it, so it does not enter again:
+     *  it stands from the first frame, and the rest of the picture comes around it. */
+    private holdTakenOver;
+    /** The step of the act the slide stands at · null when the diagram draws no strip. */
+    private actOf;
+    /** The strip of the act, above the picture and out of the camera's frame. */
+    private actStrip;
+    /** What the drawing says of its place in the deck · `rikiki check` reads it
+     *  (deck-motifs.ts) beside the words it measures. */
+    private motifOf;
     /** The animations of the drawing · what the story's buttons and `seek` drive. */
     private animations;
     /** Hold the story at `seconds` from its start, every animation paused there ·

@@ -15,7 +15,6 @@ export declare class DeckSceneRanges extends SceneElement {
     /** The declared maximum, or the largest value of the rows when the author
      *  left it out · a chart drawn to its own data rather than not drawn at all. */
     private scaleMaximum;
-    private formatScale;
     private header;
     /** The bar's centre, from the top of its row · the tag sits above the bar. */
     private barCentre;

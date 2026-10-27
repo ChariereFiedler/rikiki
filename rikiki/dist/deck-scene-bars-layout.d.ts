@@ -12,6 +12,9 @@ export declare const GROUP_GAP = 96;
 export declare const LABEL_CLEAR = 16;
 /** A label is centred on its bar and may run this far past either side of it. */
 export declare const LABEL_OVERHANG: number;
+/** A bar keeps at least this width · the radius of its rounded top. In a region
+ *  too narrow for the gaps as written, the gaps give way first. */
+export declare const MIN_BAR_WIDTH = 8;
 /** Between a figure and its unit · narrow and unbreakable, so "1,7 %" never
  *  leaves its sign alone on a line and reads the same in French and SI. */
 export declare const UNIT_SPACE = "\u202F";

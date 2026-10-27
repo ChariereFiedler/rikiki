@@ -19,6 +19,12 @@ export declare const COMPOSES: readonly ["split", "model-incident", "body-axis",
 export type Compose = (typeof COMPOSES)[number];
 /** What a camera names for the whole picture, every panel in the frame. */
 export declare const CAMERA_ALL = "all";
+/** `slide-id/panel.mark` → the slide a camera opens from and the mark it takes over ·
+ *  null for anything else. */
+export declare function readZoomFrom(text: string | undefined): {
+    slide: string;
+    mark: string;
+} | null;
 /** A group or a panel · both hold marks and place them with their `layout`. */
 export declare const isGroupLike: (node: {
     kind: MarkKind;
@@ -89,6 +95,15 @@ export declare function treeAt(nodes: DgNode[], stage: number): DgNode[];
 export declare const readNumber: (text: string) => number;
 /** The maximum of a meter, 100 when unsaid. */
 export declare const DEFAULT_METER_MAX = 100;
+/** The cells a `dg-dot` stands for · its `count` read as the parser checks it, one
+ *  when it is unsaid or no number (`DG_VALUE_INVALID`: drawn without it). */
+export declare function dotCount(node: DgNode): number;
+/** The most marks a diagram may hold · `max-marks` tightens the ceiling, never lifts
+ *  it, and one that is no whole number is said (`DG_VALUE_INVALID`) and left out. */
+export declare function marksCeiling(rootAttrs: Readonly<Record<string, string>>): number;
+/** The cells one grid of dots draws at most · past it, the first ones are drawn and
+ *  `DG_BUDGET` says the rest are not. */
+export declare const dotCeiling: (rootAttrs: Readonly<Record<string, string>>) => number;
 export interface ParsedDiagram {
     attrs: Readonly<Record<string, string>>;
     children: DgNode[];

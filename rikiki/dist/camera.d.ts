@@ -27,6 +27,15 @@ export declare const CAMERA_SECONDS = 1.2;
  *  frame and `MAX_ZOOM` allow (never smaller than the picture), and moved back inside
  *  the picture where centring would show what lies past its edge. */
 export declare function viewOn(target: Rect, frame: Rect): View;
+/** A chapter opened from the slide before keeps this close at most · past it the
+ *  mark taken over fills the slide, and its words are larger than any it holds. */
+export declare const ZOOM_FROM_MAX = 4;
+/** The view that shows `here` where `before` stood on the slide before · both in the
+ *  units of their viewBox, which are one width and stand under the same title, so a
+ *  mark taken over stays where the room last saw it, at the size it had, even where
+ *  that shows past the edge of this picture (nothing is drawn there). Never smaller
+ *  than the picture: a mark drawn larger here is centred on where it stood. */
+export declare function viewFrom(before: Rect, here: Rect): View;
 /** The view that frames `target`, widened until it cuts none of `texts` in half · the
  *  name of the scope it shows, sliced by the edge of the slide, reads as a mistake, so
  *  what the frame would cut is taken into it, and the frame is computed again. */
@@ -69,6 +78,9 @@ export interface CameraInput {
         keep: readonly Rect[];
         avoid: readonly Rect[];
     };
+    /** The frame the picture opens on when it takes over the slide before's (`zoom-from`
+     *  reached from that slide, `viewFrom`) · else the first camera frames its mark here. */
+    opening?: View;
 }
 /** The views a story's cameras show, and the moves that go from one to the next. */
 export declare function planCamera(input: CameraInput): CameraPlan;
