@@ -102,7 +102,9 @@ $ npm i rikiki-deck && npx rikiki-deck skills
 rikiki skills · installed rikiki-deck → .claude/skills/rikiki-deck
 rikiki skills · installed rikiki-theme → .claude/skills/rikiki-theme
 rikiki skills · installed rikiki-debug → .claude/skills/rikiki-debug
-rikiki skills · 3 skill(s) installed · restart Claude Code to pick them up
+rikiki skills · installed rikiki-illustrate → .claude/skills/rikiki-illustrate
+rikiki skills · installed rikiki-scenes → .claude/skills/rikiki-scenes
+rikiki skills · 5 skill(s) installed for claude · reload the agent if needed
 ```
 
 Now *"make me a deck about our Q3 incident review"* is enough. The skill
@@ -141,6 +143,25 @@ deck from becoming twenty slides of bullet points.
 **The loop closes without a human.** `rikiki check <deck> --json` returns the
 defects as data, and `rikiki render --steps` gives one picture per revealed
 state when looking beats reading. Write, measure, fix, measure again.
+
+**An illustration is written as data, never as a coordinate.** Eight
+`deck-scene-*` elements draw what a slide says (cards to compare, steps in
+order, a flow into a hub, bars, a status matrix, durations, lanes cut by a gate,
+a crowd one cell per person): the scene measures every string in the slide's
+own font, wraps it without cutting a word and plays when the slide opens.
+`rikiki scene plan brief.json` lists the scenes that can say a brief and
+`rikiki scene compile` writes the slide of the one you pick. For a picture that
+demonstrates something, `rikiki intent "<sentence>"` prints a `deck-diagram`
+written as what it shows, one of sixteen intents (a cause, a barrier, a loop, a
+threshold, a trade-off, a drift, parts of a whole…), and `rikiki recipe` fills
+a twelve-story model from a brief. Each is drawn its own way, and `check` proves
+the drawing says it.
+
+**`check` follows your rules.** Put a `check` section in `rikiki.config.json`
+to drop a rule, set a severity or move a threshold, per slide, per kind of slide
+or per element. `--checks`, `--severity` and `--warnings-as-errors` do the same
+from the command line, `--list-checks` says what a deck can meet and why a rule
+is kept, and `--slides 4-9` measures only the slides you name.
 
 None of this makes a deck good. It removes the part where a model guesses at
 an API and a human finds out on a projector.

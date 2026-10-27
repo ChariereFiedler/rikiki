@@ -5,7 +5,7 @@
 > stylesheet, then the component bundle, then write a `<deck-root>` wrapping
 > `deck-*` slide elements. No build step to author or run a deck.
 
-This reference documents rikiki v0.7.2.
+This reference documents rikiki v0.8.0.
 
 The framework is opinionated:
 
@@ -34,6 +34,17 @@ Authoring tags fall into four buckets (see the reference for the exhaustive attr
 - **Atoms (primitives)**: `<deck-badge>` · `<deck-kicker>` · `<deck-punch>` · `<deck-code>`
 - **Runtime (authoring touchpoints)**: `<deck-root>` (navigation host) · `<deck-notes>` (speaker notes, read by the presenter window)
 
+## Illustrations · choose before drawing
+
+A slide's picture is written as data or as an intent, never as a coordinate.
+Pick from what the picture says:
+
+- **A scene** (`<deck-scene-cards|steps|flow|bars|matrix|ranges|lanes|units>` filled with `<deck-scene-item>`, composed with `<deck-scene>`): things of the same rank, steps in order, inputs into a hub, a few bars, a status matrix, durations on a scale, lanes cut by a gate, a crowd one cell per person. Each is an opt-in module (`dist/deck-scene-*.js`). The skill `rikiki-scenes` picks the shape; `npx rikiki scene plan <brief.json>` lists the candidates and `npx rikiki scene compile <brief.json> --candidate <id>` writes the slide.
+- **A diagram** (`<deck-diagram>`): something demonstrated · a cause, a barrier, a bottleneck, a stock, a loop, a threshold, a trade-off, a drift, parts of a whole; a picture that changes on a click; a story played on entry; charts (`dg-pie`, `dg-columns`, `dg-waterfall`, `dg-curve`). Start from `npx rikiki intent "<sentence>"` or `npx rikiki recipe "<sentence>"` and read the skill `rikiki-illustrate`.
+- **A hand-drawn SVG**: only when no scene or diagram says it. `rikiki check` measures its text and its frame like the others.
+
+`rikiki check` proves each one: a scene that would draw silently (`SCENE_*`), a diagram that does not demonstrate its intent (`INT_*`), an illustration off-centre, crowded or too like the one before (`ILL_*`).
+
 ## Plugins (opt-in, lazy)
 
 - **Transitions**: `transition="slide|slide-up|slide-down|slide-right|fade|zoom|flip"` on `<deck-root>` (per-slide `data-transition`).
@@ -59,17 +70,28 @@ Every command below works from an install, with no clone and no build step.
   came from. This is how an agent sees a deck. `--baseline <dir>` compares each
   fresh picture to the same-named one of an earlier render and ranks the slides
   by how much moved. Needs the optional peer `playwright`.
-- `npx rikiki check <deck>.html [--json] [--steps]` · measures the deck in a browser and
+- `npx rikiki check <deck>.html [--json] [--steps] [--slides 4,6-9] [--diversity]` · measures the deck in a browser and
   reports what is wrong: a runtime that never loaded, a missing file, a
   misspelled `deck-*` element, content clipped by the slide, text too small for
   a room, content painting outside its box or over a sibling, graph nodes
   overlapping each other. `--json` writes a versioned report to stdout and
   nothing else; `--steps` measures every revealed state of a slide instead of
-  its opening one. Exit 0 clean, 1 defects found, 2 could not look. Needs
-  `playwright`.
+  its opening one; it also says how alike the illustrations are to each other
+  (`diversity`, `ILL_REPEATED_LOOK`), and `--diversity` adds every distance.
+  Exit 0 clean, 1 defects found, 2 could not look. A `check` section in
+  `rikiki.config.json`, or `--checks`, `--severity`, `--warnings-as-errors`,
+  `--limit`, drops or takes back rules, sets severities and moves thresholds
+  (`--list-checks` says what a deck can meet). Needs `playwright`.
+- `npx rikiki scene plan|compile|budgets` · turns a JSON brief into a slide made
+  of a scene (see Illustrations). `plan` and `budgets` read no model; `plan
+  --measure` also draws each candidate in a browser.
+- `npx rikiki intent "<sentence>"` · prints the skeleton of the diagram intent
+  closest to a sentence, with its roles and the mistakes `check` rejects;
+  `npx rikiki recipe "<sentence>"` prints one of twelve graphic models told as a
+  story, to fill from a brief (`--fill`). No model is called.
 - `npx rikiki export <deck>.html [--output deck.pdf]` · one PDF page per slide.
   Needs the optional peer `playwright`.
-- `npx rikiki skills` · installs the three agent skills into `.claude/skills/`.
+- `npx rikiki skills` · installs the five agent skills (`rikiki-deck`, `rikiki-theme`, `rikiki-debug`, `rikiki-illustrate`, `rikiki-scenes`) into `.claude/skills/`.
 
 A missing optional peer is reported with the command that installs it.
 

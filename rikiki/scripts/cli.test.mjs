@@ -211,7 +211,13 @@ describe('export · what it refuses', () => {
 });
 
 describe('skills · installing the agent instructions', () => {
-  const SHIPPED = ['rikiki-deck', 'rikiki-theme', 'rikiki-debug'];
+  const SHIPPED = [
+    'rikiki-deck',
+    'rikiki-theme',
+    'rikiki-debug',
+    'rikiki-illustrate',
+    'rikiki-scenes',
+  ];
 
   it('installs the three shipped skills where an agent looks for them', () => {
     const run = cli('skills');
@@ -248,5 +254,178 @@ describe('skills · installing the agent instructions', () => {
     const run = cli('skills', '--dir', 'agent/skills');
     expect(run.status, run.stderr).toBe(0);
     expect(existsSync(join(dir, 'agent/skills/rikiki-theme/SKILL.md'))).toBe(true);
+  });
+});
+
+describe('intent · from a sentence to a skeleton, with no model', () => {
+  const INTENTS = [
+    'cause',
+    'barrier',
+    'bottleneck',
+    'accumulate',
+    'transform',
+    'feedback',
+    'scale',
+    'contain',
+    'parallel',
+    'propagate',
+    'threshold',
+    'tradeoff',
+    'drift',
+    'compare',
+    'partition',
+    'merge',
+  ];
+
+  it('lists the sixteen intents, every one compiled, with what it looks like', () => {
+    const run = cli('intent', '--list');
+    expect(run.status, run.stderr).toBe(0);
+    const rows = run.stdout
+      .split('\n')
+      .filter((line) => /^ {2}[a-z]+ +(flow|structure|quantity|time|decision) /.test(line));
+    expect(rows.map((row) => row.trim().split(/\s+/)[0])).toEqual(INTENTS);
+    expect(run.stdout).not.toMatch(/planned/);
+  });
+
+  it.each(
+    INTENTS,
+  )('prints the exact skeleton of %s, its roles and what the check rejects', (name) => {
+    const run = cli('intent', name);
+    expect(run.status, run.stderr).toBe(0);
+    expect(run.stdout).toContain(`<deck-diagram intent="${name}">`);
+    expect(run.stdout).toMatch(/role="/);
+    expect(run.stdout).toMatch(/INT_[A-Z_]+ · /);
+    // Pasteable as it is: one comment, then the diagram, and no coordinate in it.
+    expect(run.stdout.trim()).toMatch(/^<!--[\s\S]*-->\n<deck-diagram[\s\S]*<\/deck-diagram>$/);
+    expect(run.stdout).not.toMatch(/\b(x|y|width|height|style)="/);
+  });
+
+  it('picks the closest intent from a sentence, the same one every time', () => {
+    const sentence = 'Six dossiers arrivent, la validation en traite deux : les autres attendent';
+    const first = cli('intent', sentence);
+    expect(first.status, first.stderr).toBe(0);
+    expect(first.stdout).toContain('<deck-diagram intent="bottleneck">');
+    expect(first.stdout).toMatch(/picked from the sentence: "attend"/);
+    expect(cli('intent', sentence).stdout).toBe(first.stdout);
+    expect(cli('intent', 'Le', 'STOP', 'coupe', 'tous', 'les', 'appels').stdout).toContain(
+      'intent="barrier"',
+    );
+  });
+
+  it('finds the intents of the third lot from their sentence', () => {
+    for (const [sentence, name] of [
+      ['La boucle s’auto-alimente', 'feedback'],
+      ['Au-delà de 80 %, tout bascule', 'threshold'],
+      ['Plus rapide, au prix de la fraîcheur', 'tradeoff'],
+      ['Trois canaux convergent vers une file', 'merge'],
+    ]) {
+      const run = cli('intent', sentence);
+      expect(run.status, run.stderr).toBe(0);
+      expect(run.stdout).toContain(`<deck-diagram intent="${name}">`);
+    }
+  });
+
+  it('says what an intent composes with, and why the others are refused', () => {
+    expect(cli('intent', 'threshold').stdout).toMatch(
+      /composes with: also="cause", also="accumulate"/,
+    );
+    expect(cli('intent', 'scale').stdout).toMatch(/composes with nothing/);
+    expect(cli('intent', 'scale').stdout).toMatch(/INT_COMPOSE_INVALID · only cause/);
+  });
+
+  it('refuses a sentence it cannot read, and nothing at all', () => {
+    for (const args of [['Bonjour à tous'], []]) {
+      const run = cli('intent', ...args);
+      expect(run.status, args.join(' ')).toBe(1);
+      expect(run.stdout).toBe('');
+      expect(run.stderr).toMatch(
+        /cause, barrier, bottleneck, accumulate, transform, feedback|--list/,
+      );
+    }
+  });
+
+  it('proposes the closest recipes when no intent fits a story, with exit code 3', () => {
+    const run = cli('intent', 'Comment on évite le rapport en double ?');
+    expect(run.status).toBe(3);
+    expect(run.stdout).toBe('');
+    expect(run.stderr).toMatch(/no intent found[\s\S]*rikiki recipe race-lock/);
+    expect(cli('intent', 'Le STOP coupe tous les appels').stdout).toMatch(
+      /recipes near it, told as a story: lanes-gate/,
+    );
+  });
+});
+
+describe('rikiki recipe', () => {
+  const RECIPES = [
+    'incident-band',
+    'lanes-gate',
+    'probe-stations',
+    'wiring',
+    'switch-over',
+    'race-lock',
+    'filter-records',
+    'version-lanes',
+    'escalation-runbook',
+    'pulse-threshold',
+    'scope-rings',
+    'data-replay',
+  ];
+
+  it('lists the twelve recipes, their model and their tempo', () => {
+    const run = cli('recipe', '--list');
+    expect(run.status, run.stderr).toBe(0);
+    for (const name of RECIPES) expect(run.stdout).toContain(name);
+    expect(run.stdout).toMatch(/M15 +incident/);
+    expect(run.stdout).toMatch(/12 recipes/);
+  });
+
+  it.each(
+    RECIPES,
+  )('prints the brief, the sequence, the pitfalls and the skeleton of %s', (name) => {
+    const run = cli('recipe', name);
+    expect(run.status, run.stderr).toBe(0);
+    expect(run.stdout).toMatch(/the brief first/);
+    expect(run.stdout).toMatch(/the sequence it plays/);
+    expect(run.stdout).toMatch(/pitfalls:/);
+    expect(run.stdout).toMatch(/\{\{claim\}\}/);
+    expect(run.stdout.trim()).toMatch(/^<!--[\s\S]*-->\n<deck-feature[\s\S]*<\/deck-feature>$/);
+    expect(run.stdout).not.toMatch(/\b(x|y|width|height|style)="/);
+  });
+
+  it('picks the closest recipe from a sentence, the same every time', () => {
+    const first = cli('recipe', 'Tout est vert, et 19 h sans un lead');
+    expect(first.status, first.stderr).toBe(0);
+    expect(first.stdout).toMatch(/recipe · incident-band · M15/);
+    expect(first.stdout).toMatch(/picked from the sentence: "h sans"/);
+    expect(cli('recipe', 'Tout est vert, et 19 h sans un lead').stdout).toBe(first.stdout);
+    expect(cli('recipe', 'M24').stdout).toMatch(/recipe · escalation-runbook/);
+  });
+
+  it('fills a brief, and refuses one that is empty, generic or vague', () => {
+    const brief = JSON.parse(cli('recipe', 'race-lock', '--brief').stdout);
+    writeFileSync(join(dir, 'brief.json'), JSON.stringify(brief));
+    const filled = cli('recipe', 'race-lock', '--fill', 'brief.json');
+    expect(filled.status, filled.stderr).toBe(0);
+    expect(filled.stdout).toBe(cli('recipe', 'race-lock', '--example').stdout);
+    expect(filled.stdout).toContain(`label="${brief.target}"`);
+
+    writeFileSync(
+      join(dir, 'vague.json'),
+      JSON.stringify({ ...brief, target: 'client', proof: '' }),
+    );
+    const vague = cli('recipe', 'race-lock', '--fill', 'vague.json');
+    expect(vague.status).toBe(1);
+    expect(vague.stdout).toBe('');
+    expect(vague.stderr).toMatch(/target · "client" says nothing/);
+    expect(vague.stderr).toMatch(/proof · empty/);
+  });
+
+  it('refuses an unknown recipe, a sentence it cannot read, and a missing brief', () => {
+    expect(cli('recipe', 'fan-chart', '--example').stderr).toMatch(/unknown recipe "fan-chart"/);
+    const none = cli('recipe', 'Bonjour à tous');
+    expect(none.status).toBe(1);
+    expect(none.stderr).toMatch(/no recipe found[\s\S]*incident-band/);
+    expect(cli('recipe').status).toBe(1);
+    expect(cli('recipe', 'wiring', '--fill', 'absent.json').stderr).toMatch(/brief not found/);
   });
 });

@@ -44,6 +44,12 @@ const CLI_DESCRIPTIONS = {
     'measure the deck and report what is wrong, from clipped text to a slide that says nothing',
   export: 'PDF, one slide per page',
   skills: 'install the Claude Code skills into a project',
+  scene:
+    'from a JSON brief to the scenes that can say it, sized, measured and compiled into a slide',
+  intent:
+    'from a sentence to the skeleton of a diagram written as what it demonstrates, with the roles to fill and what `check` rejects',
+  recipe:
+    'from a brief to a slide drawn on one of twelve models of a talk, told as a story, its sequence and its pitfalls said',
 };
 
 function cliCommands() {

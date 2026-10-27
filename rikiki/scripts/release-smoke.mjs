@@ -44,7 +44,7 @@ try {
   const invoke = (...args) => run(process.execPath, [cli, ...args]);
   invoke('init', 'talk.html');
   invoke('skills');
-  for (const name of ['rikiki-deck', 'rikiki-theme', 'rikiki-debug'])
+  for (const name of ['rikiki-deck', 'rikiki-theme', 'rikiki-debug', 'rikiki-illustrate', 'rikiki-scenes'])
     assert(existsSync(join(workspace, `.claude/skills/${name}/SKILL.md`)));
   const source = readFileSync(join(workspace, 'talk.html'), 'utf8');
   assert(source.includes('rikiki/dist/index.js'));

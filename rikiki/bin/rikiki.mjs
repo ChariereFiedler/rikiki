@@ -8,9 +8,14 @@
 //   rikiki assemble <deck.config.js> [out.html|-]
 //   rikiki render <deck.html> [--out dir] [--slides a,b] [--steps]
 //                             [--baseline dir] [--threshold pct] [--json]
-//   rikiki check <deck.html> [--json] [--no-visual]
+//   rikiki check <deck.html> [--json] [--no-visual] [--slides a,b] [--diversity] [--richness]
 //   rikiki export <deck.html> [--output deck.pdf]
 //   rikiki skills [--dir <path>] [--force]
+//   rikiki scene plan <brief.json> [--out dir] [--json] [--measure] [--theme rikiki|siliceum]
+//   rikiki scene compile <brief.json> --candidate <id> [--out file]
+//   rikiki scene budgets <kind> [--width N] [--json]
+//   rikiki intent "<sentence>" | <name> | --list
+//   rikiki recipe "<sentence>" | <name> | --list [--brief | --example | --fill brief.json]
 //
 // `init` writes an editable source deck plus the runtime it needs, next to it.
 // `init --standalone` generates a self-contained, share-anywhere deck with no
@@ -20,7 +25,8 @@
 // ════════════════════════════════════════════════════════════════
 
 import { parseArgs } from 'node:util';
-import { readFileSync, writeFileSync, existsSync, statSync, cpSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, statSync, cpSync, mkdirSync, mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { resolve, dirname, basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { inlineDeck } from './lib/inline.mjs';
@@ -34,6 +40,27 @@ import { assembleDeck } from './lib/assemble.mjs';
 import { renderDeck } from './lib/render.mjs';
 import { DEFAULT_THRESHOLD, diffFailed, formatDiff } from './lib/diff.mjs';
 import { checkDeck, formatReport } from './lib/check.mjs';
+import { LEVELS } from './lib/check-config.mjs';
+import { buildPolicy } from './lib/check-policy.mjs';
+import { compileSlide, planScenes } from './lib/scene-plan.mjs';
+import {
+  SCENE_KINDS,
+  SCENE_WIDTH,
+  compiledSlide,
+  formatBudgets,
+  formatPlan,
+  formatProblems,
+  sceneBudgets,
+} from './lib/scene-report.mjs';
+import { MEASURE_THEMES, measureCandidates } from './lib/scene-measure.mjs';
+import { answerIntent, formatIntentList } from './lib/intent.mjs';
+import {
+  answerRecipe,
+  exampleBrief,
+  fillRecipe,
+  formatRecipeList,
+  recipeOrFail,
+} from './lib/recipe.mjs';
 
 const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -44,26 +71,55 @@ const HELP = `rikiki · self-contained slide decks
   rikiki assemble <deck.config.js> [out.html|-]     build one deck from ordered partials
   rikiki bundle <deck.html> [out.html|-] [options]  fold an existing deck into one file
   rikiki render <deck.html> [options]               one PNG per slide, plus a gallery and a manifest
-  rikiki check <deck.html> [--json] [--no-visual] [--steps]  measure the deck and report what is wrong
+  rikiki check <deck.html> [--json] [--no-visual] [--steps] [--slides a,b] [--diversity]
+               [--richness] [--checks rules] [--severity rule=level] [--list-checks]
+                                                  measure the deck (or some slides) and report what is wrong
   rikiki export <deck.html> [--output deck.pdf]     render the deck to PDF, one slide per page
   rikiki skills [--agent codex|claude] [--plugin package] [--dir path] [--force]
                                                   install core and module agent skills
+  rikiki scene plan <brief.json> [--out dir] [--json] [--measure] [--theme rikiki|siliceum]
+                                                  the scenes that can say a brief, written and sized
+  rikiki scene compile <brief.json> --candidate <id> [--out file]
+                                                  the slide of one candidate of the plan
+  rikiki scene budgets <kind> [--width N] [--json]  characters each field of a shape holds
+  rikiki intent "<sentence>" | <name> | --list     the skeleton of a diagram written as an
+                                                  intent, its roles and what the check rejects ·
+                                                  exit 3 when no intent fits and recipes do
+  rikiki recipe "<sentence>" | <name> | --list     a graphic model told as a story: the brief
+                                                  to fill, its skeleton, its sequence, its pitfalls
+  rikiki recipe <name> --brief | --example | --fill <brief.json>
+                                                  its example brief as JSON · the slide it draws ·
+                                                  your brief drawn, or why it is refused
 
 Options:
   --title "…"          deck title (init)
   --standalone         init: emit one self-contained file instead of a source deck
   --force              init: overwrite an existing deck
   --theme rikiki|siliceum   theme · siliceum inlines its local fonts (default: rikiki)
+                       scene plan --measure: the theme the scenes are drawn in
   --with-mermaid       inline the mermaid runtime (+~3 MB)
   --with-shiki         inline the curated Shiki highlighter (+~0.7 MB raw)
   --output, -o <file>  PDF path (export · default <deck>.pdf)
   --out <dir>          picture directory (render · default <deck>.shots/)
-  --slides a,b         render: which slides · numbers (1-based) or ids
+                       scene plan: where candidates.json, <id>.html and <id>.png go
+                       scene compile: the file the slide is written to (default stdout)
+  --slides a,b         render/check: which slides · a number (1-based), an id, an interval
+                       (4-9, -3, 8-) or two ends (intro..outro), comma-separated
   --steps              render: one picture per revealed state, not just the first
   --baseline <dir>     render: compare this render to an earlier one, slide by slide
   --threshold <pct>    render: percent of pixels that makes a slide changed (default 0.5)
   --width, --height    render/check: canvas size in pixels (default 1920×1080)
-  --json               check / render --baseline: write the report to stdout as JSON
+                       scene budgets: --width is the scene's width in drawing units (default 1600)
+  --json               check / render --baseline / scene: write the report to stdout as JSON
+  --measure            scene plan: draw each candidate in Chromium, read its height and
+                       its issues, and photograph it
+  --candidate <id>     scene compile: the candidate of the plan to write as a slide
+  --list               intent: every intent of the grammar, and which compile today
+                       recipe: the twelve recipes, their model and their tempo
+  --brief              recipe: the example brief, as JSON to copy and edit
+  --example            recipe: the slide the example brief draws
+  --fill <brief.json>  recipe: the slide your brief draws · refused (exit 1) when a field is
+                       empty, generic, too long, or the brief holds under two precise values
   --no-visual          check: skip the pixel pass (one screenshot per slide)
   --config <file>      check/skills: explicit rikiki.config.json
   --plugin <package>   check/skills: activate a module (repeatable)
@@ -75,6 +131,19 @@ Options:
   --narrative-review <file> check: import the current agent's structured review
   --plugin-timeout <ms>     check: execution deadline per plugin call (default 5000)
   --steps              check: measure every revealed state of each slide, not just the first
+  --diversity          check: how alike the illustrations are · each one's nearest neighbour,
+                       and the matrix of every distance in the JSON
+  --richness           check: each illustration's richness on its five criteria, and the
+                       warnings ILL_GENERIC, ILL_FLAT_PAINT, ILL_MODEL_REPEAT (a measure, off by default)
+  --checks <rules>     check: rules taken back or dropped, after the config's · comma list,
+                       '-' drops, '*' matches, by name or code (-text-*,ill-wordy)
+  --severity <rule=level>   check: error, warning or off for a rule or a glob (repeatable)
+  --warnings-as-errors <rules>  check: the warnings of these rules fail the run
+  --limit <name=value>      check: a threshold (minTextPx=20, ill.words=120) (repeatable)
+  --check-option <CODE.option=value>  check: an option a plugin rule reads (repeatable)
+  --no-inline-exceptions    check: ignore the data-check-off exceptions written in the deck
+  --list-checks        check: every rule the deck can meet, and whether its policy keeps it
+  --show-suppressed    check: list what the deck's policy left out, with the reason
   --no-fonts           drop fonts instead of inlining them (smaller, system fonts)
   --all                bundle every component (skip the used-only curation)
   --include a,b        force-include components used only from JS
@@ -306,9 +375,19 @@ async function cmdAssemble(argv) {
   console.error(`rikiki · wrote ${outputPath} · ${slides} partial(s) · ${kb} KB`);
 }
 
+/** `--slides -3` reads as two options to parseArgs · glue the value to its flag
+ *  so an interval that opens at the start of the deck can be typed as it reads. */
+function glueSlidesValue(argv) {
+  return argv.flatMap((arg, i) => {
+    if (argv[i - 1] === '--slides' && /^-\d/.test(arg)) return [];
+    const next = argv[i + 1];
+    return arg === '--slides' && next !== undefined && /^-\d/.test(next) ? [`--slides=${next}`] : [arg];
+  });
+}
+
 async function cmdRender(argv) {
   const { values, positionals } = parseArgs({
-    args: argv,
+    args: glueSlidesValue(argv),
     allowPositionals: true,
     options: {
       out: { type: 'string' },
@@ -377,11 +456,99 @@ function deckArgument(command, input, { exitCode = 1 } = {}) {
   return inputPath;
 }
 
+/** `--checks -text-*` · a value that starts with a dash is the flag's, not a flag. */
+function glueRuleLists(argv) {
+  const flags = ['--checks', '--warnings-as-errors'];
+  return argv.flatMap((arg, i) => {
+    if (flags.includes(argv[i - 1]) && arg.startsWith('-') && !arg.startsWith('--')) return [];
+    const next = argv[i + 1];
+    return flags.includes(arg) && next?.startsWith('-') && !next.startsWith('--') ? [`${arg}=${next}`] : [arg];
+  });
+}
+
+/** `--severity ill-wordy=error` and its kind, as `[name, value]` pairs · a pair
+ *  without `=` is the caller's mistake, said before a browser is spent. */
+function pairsOf(list, flag) {
+  return (list ?? []).map((entry) => {
+    const at = entry.indexOf('=');
+    if (at < 1) throw new ExpectedError(`check · --${flag} expects <name>=<value>, got "${entry}"`, { exitCode: 2 });
+    return [entry.slice(0, at), entry.slice(at + 1)];
+  });
+}
+
+/** The policy written on the command line · refused here, exit 2, when it cannot work. */
+function selectionOf(values) {
+  const severity = Object.fromEntries(pairsOf(values.severity, 'severity'));
+  const limits = Object.fromEntries(
+    pairsOf(values.limit, 'limit').map(([name, raw]) => {
+      const value = Number(raw);
+      if (!Number.isFinite(value)) throw new ExpectedError(`check · --limit ${name} must be a number, got "${raw}"`, { exitCode: 2 });
+      return [name, value];
+    }),
+  );
+  const options = Object.create(null);
+  for (const [key, raw] of pairsOf(values['check-option'], 'check-option')) {
+    if (!/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(key))
+      throw new ExpectedError(`check · --check-option expects <rule>.<option>=<value>, got "${key}"`, { exitCode: 2 });
+    let value = raw;
+    try {
+      value = JSON.parse(raw);
+    } catch {
+      // A bare word is a string.
+    }
+    options[key] = value;
+  }
+  const selection = {
+    ...(values.checks !== undefined ? { checks: values.checks } : {}),
+    ...(values['warnings-as-errors'] !== undefined ? { warningsAsErrors: values['warnings-as-errors'] } : {}),
+    ...(Object.keys(severity).length ? { severity } : {}),
+    ...(Object.keys(limits).length ? { limits } : {}),
+    ...(Object.keys(options).length ? { options: { ...options } } : {}),
+    ...(values['no-inline-exceptions'] ? { inline: 'none' } : {}),
+  };
+  const problems = [
+    ...(selection.severity ? Object.entries(selection.severity).filter(([, level]) => !LEVELS.includes(level)).map(([rule, level]) => `--severity ${rule}=${level}: the level is one of ${LEVELS.join(', ')}`) : []),
+  ];
+  if (problems.length) throw new ExpectedError(`check · ${problems.join(' · ')}`, { exitCode: 2 });
+  try {
+    buildPolicy({ cli: selection });
+  } catch (error) {
+    throw new ExpectedError(`check · ${error.message}`, { exitCode: 2 });
+  }
+  return selection;
+}
+
+/** `--list-checks` in words · one line per rule, kept (+), dropped (-) or kept on
+ *  some slides only (~). */
+function formatChecks(report) {
+  const mark = { true: '+', false: '-', mixed: '~' };
+  const lines = report.checks.map((c) => {
+    const notes = [
+      c.origin,
+      ...(c.alwaysOn ? ['always on'] : []),
+      ...(c.severity ? [c.severity] : []),
+      ...(c.slides ? [`off on slides ${c.slides.off.join(', ')}`] : []),
+      ...(c.decidedBy ? [`by ${c.decidedBy}`] : []),
+    ];
+    return `${mark[String(c.enabled)]} ${c.name}  (${c.code} · ${notes.join(' · ')})`;
+  });
+  for (const d of report.diagnostics) lines.push(`${d.severity === 'error' ? '✗' : '!'} ${d.code} · ${d.message}`);
+  return lines.join('\n');
+}
+
 async function cmdCheck(argv) {
   const { values, positionals } = parseArgs({
-    args: argv,
+    args: glueRuleLists(glueSlidesValue(argv)),
     allowPositionals: true,
     options: {
+      checks: { type: 'string' },
+      severity: { type: 'string', multiple: true },
+      'warnings-as-errors': { type: 'string' },
+      limit: { type: 'string', multiple: true },
+      'check-option': { type: 'string', multiple: true },
+      'no-inline-exceptions': { type: 'boolean', default: false },
+      'list-checks': { type: 'boolean', default: false },
+      'show-suppressed': { type: 'boolean', default: false },
       json: { type: 'boolean', default: false },
       'no-visual': { type: 'boolean', default: false },
       config: { type: 'string' },
@@ -394,12 +561,21 @@ async function cmdCheck(argv) {
       'narrative-review': { type: 'string' },
       'plugin-timeout': { type: 'string' },
       steps: { type: 'boolean', default: false },
+      diversity: { type: 'boolean', default: false },
+      richness: { type: 'boolean', default: false },
+      slides: { type: 'string' },
       width: { type: 'string' },
       height: { type: 'string' },
     },
   });
   const inputPath = deckArgument('check', positionals[0], { exitCode: 2 });
+  const selection = selectionOf(values);
   const report = await checkDeck(inputPath, {
+    selection,
+    listChecks: values['list-checks'],
+    slides: values.slides,
+    diversity: values.diversity,
+    richness: values.richness,
     width: pixels(values, 'width', 1920),
     height: pixels(values, 'height', 1080),
     visual: !values['no-visual'],
@@ -415,10 +591,18 @@ async function cmdCheck(argv) {
     pluginTimeoutMs: values['plugin-timeout'] === undefined ? 5000 : Number(values['plugin-timeout']),
   });
 
+  if (values['list-checks']) {
+    if (values.json) process.stdout.write(JSON.stringify(report, null, 2) + '\n');
+    else console.error(formatChecks(report));
+    // A policy that cannot be read is the caller's to fix · the list would lie.
+    if (report.diagnostics.some((d) => d.severity === 'error')) process.exit(2);
+    return;
+  }
+
   // In --json mode stdout carries the report and nothing else, so a caller can
   // pipe it without stripping anything · including when the deck is broken.
   if (values.json) process.stdout.write(JSON.stringify(report, null, 2) + '\n');
-  else console.error(formatReport(report));
+  else console.error(formatReport(report, { showSuppressed: values['show-suppressed'], richness: values.richness }));
 
   if (report.summary.error > 0) process.exit(1);
 }
@@ -521,10 +705,201 @@ async function cmdBundle(argv) {
   if (!ok) process.exit(1);
 }
 
+// ── rikiki scene · from a brief to a slide ──────────────────────
+// Exit codes follow `check`: 2 when the call cannot be carried out (no brief, a
+// brief that is not JSON or not valid, an unknown candidate or shape), 1 when
+// the plan holds no candidate that fits, 0 otherwise.
+
+const SCENE_SUBCOMMANDS = ['plan', 'compile', 'budgets'];
+
+/** A scene call that cannot be carried out is the call's fault, not the brief's. */
+const sceneCallError = (message, options = {}) =>
+  new ExpectedError(`scene · ${message}`, { exitCode: 2, ...options });
+
+/** parseArgs for a scene sub-command · an unknown flag is a bad call (exit 2),
+ *  said in one line rather than as a stack. */
+function parseSceneArgs(argv, options) {
+  try {
+    return parseArgs({ args: argv, allowPositionals: true, options });
+  } catch (cause) {
+    if (!String(cause?.code).startsWith('ERR_PARSE_ARGS')) throw cause;
+    throw sceneCallError(cause.message, { cause });
+  }
+}
+
+/** Read a brief · a file that is not there, or not JSON, is a bad call. */
+function readBrief(input, fail = sceneCallError) {
+  if (!input) throw fail('missing <brief.json>');
+  const path = resolve(process.cwd(), input);
+  if (!existsSync(path) || !statSync(path).isFile()) throw fail(`brief not found: ${path}`);
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'));
+  } catch (cause) {
+    throw fail(`${path} is not JSON · ${cause.message}`, { cause });
+  }
+}
+
+/** Plan a brief, or stop on what is wrong with it · in --json mode stdout still
+ *  carries the result, the errors included, and nothing else. */
+function planOrStop(brief, { json }) {
+  const plan = planScenes(brief);
+  if (plan.ok) return plan;
+  if (json) {
+    process.stdout.write(JSON.stringify(plan, null, 2) + '\n');
+    throw sceneCallError(`the brief is not valid · ${plan.errors.length} error(s)`);
+  }
+  throw sceneCallError(
+    ['the brief is not valid', ...formatProblems(plan.errors, 'error'), ...formatProblems(plan.warnings, 'warning')].join('\n'),
+  );
+}
+
+function writePlan(plan, outDir) {
+  mkdirSync(outDir, { recursive: true });
+  writeFileSync(join(outDir, 'candidates.json'), JSON.stringify(plan, null, 2) + '\n');
+  for (const candidate of plan.candidates) {
+    writeFileSync(join(outDir, `${candidate.id}.html`), candidate.html + '\n');
+  }
+  console.error(`rikiki · wrote candidates.json and ${plan.candidates.length} candidate(s) to ${outDir}`);
+}
+
+async function cmdScenePlan(argv) {
+  const { values, positionals } = parseSceneArgs(argv, {
+    out: { type: 'string' },
+    json: { type: 'boolean', default: false },
+    measure: { type: 'boolean', default: false },
+    theme: { type: 'string', default: 'rikiki' },
+  });
+  if (!MEASURE_THEMES.includes(values.theme)) {
+    throw sceneCallError(`--theme is one of ${MEASURE_THEMES.join(', ')}`);
+  }
+  let plan = planOrStop(readBrief(positionals[0]), { json: values.json });
+  const outDir = values.out === undefined ? undefined : resolve(process.cwd(), values.out);
+
+  if (values.measure) {
+    const shotsDir = outDir ?? mkdtempSync(join(tmpdir(), 'rikiki-scene-'));
+    if (!outDir) console.error(`rikiki · scene · pictures go to ${shotsDir}`);
+    const measured = await measureCandidates(plan.candidates, { outDir: shotsDir, theme: values.theme });
+    for (const line of measured.notes) console.error(`rikiki · scene · note · ${line}`);
+    plan = { ...plan, candidates: measured.candidates };
+  }
+  if (outDir) writePlan(plan, outDir);
+
+  if (values.json) process.stdout.write(JSON.stringify(plan, null, 2) + '\n');
+  else console.error(formatPlan(plan));
+  if (!plan.candidates.some((candidate) => candidate.fits)) process.exit(1);
+}
+
+function cmdSceneCompile(argv) {
+  const { values, positionals } = parseSceneArgs(argv, {
+    candidate: { type: 'string' },
+    out: { type: 'string' },
+  });
+  const brief = readBrief(positionals[0]);
+  const plan = planOrStop(brief, { json: false });
+  const ids = plan.candidates.map((candidate) => candidate.id).join(', ');
+  const candidate = plan.candidates.find((c) => c.id === values.candidate);
+  if (!candidate) {
+    throw sceneCallError(
+      values.candidate === undefined
+        ? `compile needs --candidate, one of ${ids}`
+        : `no candidate "${values.candidate}" in this plan · one of ${ids}`,
+    );
+  }
+  if (!candidate.fits) {
+    console.error(`rikiki · scene · WARNING · ${candidate.id} does not fit · \`rikiki scene plan\` says why`);
+  }
+  const slide = compiledSlide(compileSlide(brief, candidate), candidate.id);
+  writeOut(slide, values.out === undefined ? '-' : resolve(process.cwd(), values.out));
+}
+
+/** `--width` of a scene, in drawing units · not a size is an error, not a fallback. */
+function drawingUnits(input) {
+  if (input === undefined) return SCENE_WIDTH;
+  const n = Number(input);
+  if (!Number.isInteger(n) || n < 1) throw sceneCallError('--width must be a positive whole number of drawing units');
+  return n;
+}
+
+function cmdSceneBudgets(argv) {
+  const { values, positionals } = parseSceneArgs(argv, {
+    width: { type: 'string' },
+    json: { type: 'boolean', default: false },
+  });
+  const kind = positionals[0];
+  if (!SCENE_KINDS.includes(kind)) {
+    const what = kind === undefined ? 'budgets needs a shape' : `unknown shape "${kind}"`;
+    throw sceneCallError(`${what} · one of ${SCENE_KINDS.join(', ')}`);
+  }
+  const budgets = sceneBudgets(kind, drawingUnits(values.width));
+  if (values.json) process.stdout.write(JSON.stringify(budgets, null, 2) + '\n');
+  else console.error(formatBudgets(budgets));
+}
+
+async function cmdScene(argv) {
+  const [sub, ...rest] = argv;
+  if (sub === 'plan') return cmdScenePlan(rest);
+  if (sub === 'compile') return cmdSceneCompile(rest);
+  if (sub === 'budgets') return cmdSceneBudgets(rest);
+  const what = sub === undefined ? 'missing sub-command' : `unknown sub-command "${sub}"`;
+  throw sceneCallError(`${what} · one of ${SCENE_SUBCOMMANDS.join(', ')}\n\n${HELP}`);
+}
+
+/** `rikiki intent` · the skeleton of an intent, by name or from a sentence, to stdout. */
+function cmdIntent(argv) {
+  const { values, positionals } = parseArgs({
+    args: argv,
+    allowPositionals: true,
+    options: { list: { type: 'boolean', default: false } },
+  });
+  if (values.list) {
+    console.log(formatIntentList());
+    return;
+  }
+  const query = positionals.join(' ').trim();
+  if (!query) throw new ExpectedError('intent needs a sentence or a name · `rikiki intent --list` names them');
+  console.log(answerIntent(query));
+}
+
+/** `rikiki recipe` · a graphic model, its brief, its skeleton and its sequence, to stdout. */
+function cmdRecipe(argv) {
+  const { values, positionals } = parseArgs({
+    args: argv,
+    allowPositionals: true,
+    options: {
+      list: { type: 'boolean', default: false },
+      brief: { type: 'boolean', default: false },
+      example: { type: 'boolean', default: false },
+      fill: { type: 'string' },
+    },
+  });
+  if (values.list) {
+    console.log(formatRecipeList());
+    return;
+  }
+  const query = positionals.join(' ').trim();
+  if (!query) throw new ExpectedError('recipe needs a sentence or a name · `rikiki recipe --list` names them');
+  if (!values.brief && !values.example && !values.fill) {
+    console.log(answerRecipe(query));
+    return;
+  }
+  const recipe = recipeOrFail(query);
+  if (values.brief) console.log(JSON.stringify(exampleBrief(recipe), null, 2));
+  else if (values.example) console.log(fillRecipe(recipe, exampleBrief(recipe)));
+  else console.log(fillRecipe(recipe, readBrief(values.fill, recipeCallError)));
+}
+
+const recipeCallError = (message, options = {}) => new ExpectedError(`recipe · ${message}`, options);
+
 // Consumer-facing skills shipped in the npm tarball. `rikiki-component` and
 // `bump-version` stay repo-only (they need the TS sources / release scripts a
 // package consumer doesn't have).
-const DISTRIBUTED_SKILLS = ['rikiki-deck', 'rikiki-theme', 'rikiki-debug'];
+const DISTRIBUTED_SKILLS = [
+  'rikiki-deck',
+  'rikiki-theme',
+  'rikiki-debug',
+  'rikiki-illustrate',
+  'rikiki-scenes',
+];
 
 function cmdSkills(argv) {
   const { values } = parseArgs({
@@ -569,6 +944,9 @@ try {
   else if (cmd === 'check') await cmdCheck(rest);
   else if (cmd === 'export') await cmdExport(rest);
   else if (cmd === 'skills') cmdSkills(rest);
+  else if (cmd === 'scene') await cmdScene(rest);
+  else if (cmd === 'intent') cmdIntent(rest);
+  else if (cmd === 'recipe') cmdRecipe(rest);
   else if (!cmd || cmd === '-h' || cmd === '--help' || cmd === 'help') { console.log(HELP); }
   else { console.error('rikiki · unknown command: ' + cmd + '\n\n' + HELP); process.exit(1); }
 } catch (e) {

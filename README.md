@@ -21,13 +21,13 @@ resurrect. Turns out the three choices that keep a deck alive are the same
 three that let a model write one. I did not plan that, and it is the most
 useful thing about this project.
 
-- **The reference ships in the package**, 1738 lines of it, and
+- **The reference ships in the package**, 2740 lines of it, and
   the test suite holds it against the code · an agent reads ground truth, not
   documentation somebody meant to update.
 - **`check` returns the defects as data** · clipped text, undersized type,
   missing assets and layout risks. Use the report to guide the next edit;
   review the argument and evidence yourself.
-- **36 elements in the default bundle**, and 23 more
+- **36 elements in the default bundle**, and 35 more
   behind one `<script>` tag each.
 - **43 KB gzip** for a deck with everything it needs to
   render. Measured, not estimated · see below.
@@ -103,7 +103,9 @@ $ npm i rikiki-deck && npx rikiki-deck skills
 rikiki skills · installed rikiki-deck → .claude/skills/rikiki-deck
 rikiki skills · installed rikiki-theme → .claude/skills/rikiki-theme
 rikiki skills · installed rikiki-debug → .claude/skills/rikiki-debug
-rikiki skills · 3 skill(s) installed · restart Claude Code to pick them up
+rikiki skills · installed rikiki-illustrate → .claude/skills/rikiki-illustrate
+rikiki skills · installed rikiki-scenes → .claude/skills/rikiki-scenes
+rikiki skills · 5 skill(s) installed for claude · reload the agent if needed
 ```
 
 Now *"make me a deck about our Q3 incident review"* is enough. The skill
@@ -122,7 +124,7 @@ renders wrong. It assumes nothing beyond a shell and a browser.
 
 **The package ships its own documentation.** `npm install rikiki-deck` puts
 `llms.txt` inside `node_modules`, next to an element reference of
-1738 lines and a working guide of 540, where
+2740 lines and a working guide of 557, where
 an agent finds them with no network call. The site serves them as well, at
 [`/llms.txt`](https://rikiki.tordu-jardin.fr/llms.txt), for the ones that fetch rather than read
 from disk.
@@ -133,7 +135,7 @@ must appear in its catalogue entry · a component that grows an attribute and
 does not document it fails the build. The file an agent reads is the file the
 code is checked against, which is a stronger claim than "the docs are current".
 
-**3 Claude Code skills ship with it** · `rikiki-deck`, `rikiki-theme`, `rikiki-debug` · and
+**5 Claude Code skills ship with it** · `rikiki-deck`, `rikiki-theme`, `rikiki-debug`, `rikiki-illustrate`, `rikiki-scenes` · and
 `npx rikiki-deck skills` installs them into a project's `.claude/skills/`.
 They carry what a reference cannot: which composition fits which intent, what
 to try first when a deck renders wrong, and the editorial rules that keep a
@@ -142,6 +144,25 @@ deck from becoming twenty slides of bullet points.
 **The loop closes without a human.** `rikiki check <deck> --json` returns the
 defects as data, and `rikiki render --steps` gives one picture per revealed
 state when looking beats reading. Write, measure, fix, measure again.
+
+**An illustration is written as data, never as a coordinate.** Eight
+`deck-scene-*` elements draw what a slide says (cards to compare, steps in
+order, a flow into a hub, bars, a status matrix, durations, lanes cut by a gate,
+a crowd one cell per person): the scene measures every string in the slide's
+own font, wraps it without cutting a word and plays when the slide opens.
+`rikiki scene plan brief.json` lists the scenes that can say a brief and
+`rikiki scene compile` writes the slide of the one you pick. For a picture that
+demonstrates something, `rikiki intent "<sentence>"` prints a `deck-diagram`
+written as what it shows, one of sixteen intents (a cause, a barrier, a loop, a
+threshold, a trade-off, a drift, parts of a whole…), and `rikiki recipe` fills
+a twelve-story model from a brief. Each is drawn its own way, and `check` proves
+the drawing says it.
+
+**`check` follows your rules.** Put a `check` section in `rikiki.config.json`
+to drop a rule, set a severity or move a threshold, per slide, per kind of slide
+or per element. `--checks`, `--severity` and `--warnings-as-errors` do the same
+from the command line, `--list-checks` says what a deck can meet and why a rule
+is kept, and `--slides 4-9` measures only the slides you name.
 
 None of this makes a deck good. It removes the part where a model guesses at
 an API and a human finds out on a projector.
@@ -162,7 +183,7 @@ decks would keep running.
 
 **3 · Light by default.** The default bundle registers the 36
 elements most decks use, 26 KB gzip of them. The other
-23 are one `<script>` tag each. Past about four of those,
+35 are one `<script>` tag each. Past about four of those,
 `rikiki bundle` is smaller than any combination of them · that threshold is
 measured and the figures are pinned by a test.
 
@@ -233,6 +254,9 @@ including the rejected ones and why · in [`docs/design/`](./docs/design/).
 | `check` | measure the deck and report what is wrong, from clipped text to a slide that says nothing |
 | `export` | PDF, one slide per page |
 | `skills` | install the Claude Code skills into a project |
+| `scene` | from a JSON brief to the scenes that can say it, sized, measured and compiled into a slide |
+| `intent` | from a sentence to the skeleton of a diagram written as what it demonstrates, with the roles to fill and what `check` rejects |
+| `recipe` | from a brief to a slide drawn on one of twelve models of a talk, told as a story, its sequence and its pitfalls said |
 
 `check` is the one worth trying first. It opens the deck in a real browser and
 reports clipped content, undersized text, missing assets and layout risks.
@@ -272,7 +296,7 @@ the full element reference, which is also what an agent reads.
 small. It was meant as a working title until the engine stopped growing, and
 then the engine stopped growing.
 
-This page documents rikiki v0.7.2 · the badge above tracks what is
+This page documents rikiki v0.8.0 · the badge above tracks what is
 published, and `npm run bump` keeps the two from disagreeing.
 
 MIT licensed. Built by [Cédric Chariere Fiedler](https://github.com/ChariereFiedler).

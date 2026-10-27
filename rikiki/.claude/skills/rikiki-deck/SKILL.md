@@ -238,6 +238,7 @@ the core bundle.
 | A trajectory in time | `deck-timeline` + `deck-milestone` (opt-in) |
 | Code, explained | `deck-code lang="…" hero` |
 | The close | `deck-takeaway` |
+| An animated illustration: options, steps, a flow, bars, a status matrix, durations | `deck-scene-*` (opt-in) · see the `rikiki-scenes` skill |
 
 `deck-mermaid` renders a diagram from text, but a hand-placed `deck-graph`
 reads better for anything you can position yourself.
@@ -349,6 +350,14 @@ ugly slide is still an ugly slide.
 
 Read what the report says it did **not** check: your wording, your figures, your
 argument, accessibility. Silence there is not approval.
+
+**Never silence a finding to get to 0.** A deck's policy can drop or lower a rule
+(`check` in `rikiki.config.json`, for slides, kinds, `data-tags` or elements) and
+a deck can write an exception on itself (`data-check-off` with its
+`data-check-reason`). Those are the owner's decisions, written where a reviewer
+reads them: add one only when the user asks for it, with the reason they gave,
+and fix the slide otherwise. What a policy silences is in the report's
+`suppressed`; say so when you hand the deck over.
 
 ## Before saying it is done
 

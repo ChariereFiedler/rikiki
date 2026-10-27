@@ -344,6 +344,16 @@ Trou relevé : les instructions de `narrativeRequest` renvoient au skill `rikiki
 
 ## 9 · Modèle « linter » proposé
 
+> **État au 2026-10-22.** La sélection et le ciblage sont faits, sur une syntaxe qui remplace
+> celle esquissée en 9.2 et 9.5 : clé `check` de `rikiki.config.json` (`checks` à la clang-tidy
+> appliqués sur l'hérité, `severity` error/warning/off, `warningsAsErrors`, `limits`, `options`,
+> `inline`, `overrides` par `slides`, `kinds`, `tags` (`data-tags`) et `elements`), exceptions dans le
+> deck par `data-check-off` + `data-check-reason`, registre des codes dérivé des tables des règles
+> (`bin/lib/check-registry.mjs`), rapport `suppressed` / `selection`, garde-fous `CHECK_SELECTION_*`
+> et `CHECK_SUPPRESSION_*`. Voir `rikiki/docs/llms/rikiki-reference.md` (« A check policy »). Restent
+> ouverts : presets (9.3), collecteurs séparés (9.4), règles déclaratives (9.6), seuils par portée,
+> sortie SARIF. Le reste de la section décrit la proposition d'origine.
+
 ### 9.1 · Un seul registre de règles
 
 Chaque règle (native, déclarative, plugin, juge) devient un objet décrit de la même façon :
