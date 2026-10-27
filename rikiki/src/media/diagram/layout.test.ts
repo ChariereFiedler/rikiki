@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { type LBox, type LItem, type Meter, layoutDiagram } from './layout.js';
+import { type LBox, type Meter, layoutDiagram } from './layout.js';
 import { type ElementLike, parseDiagram } from './model.js';
 
 /** A font that is the same width for every letter · a test needs numbers, not glyphs. */
@@ -584,5 +584,3 @@ describe('any tree', () => {
     }
   });
 });
-
-export type { LItem };
