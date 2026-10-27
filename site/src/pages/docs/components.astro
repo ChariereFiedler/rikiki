@@ -731,6 +731,146 @@ const optionalComponents: OptionalComponent[] = [
     tokens: '--deck-quote-color · --deck-quote-size · --deck-quote-mark-color · --deck-quote-mark-size · --deck-quote-rule · --deck-quote-rule-width · --deck-quote-gap · --deck-quote-author-color · --deck-quote-role-color · --deck-quote-max-width',
   },
   {
+    tag: 'deck-scene',
+    summary: 'Composition of scenes · two or three side by side, or two stacked, with a link in each gutter and an optional closing band. One unit is the same length in every region, so a scene in half a row is laid out for half the canvas and keeps the size of its text.',
+    module: 'deck-scene.js',
+    attrs: 'layout: row (default, up to 3) or stack (2) · split: the shares of a row, "2:1" · link: arrow, vs, equals or plus · align: start, center, end or stretch · stagger: seconds between entrances',
+    slots: 'default: scenes (deck-scene-*) and at most one deck-scene-band, last',
+    example: `<deck-scene layout="row" link="arrow">
+  <deck-scene-units total="50" columns="10">
+    <deck-scene-item label="before" value="18"></deck-scene-item>
+  </deck-scene-units>
+  <deck-scene-units total="50" columns="10">
+    <deck-scene-item label="after" value="36" emphasis></deck-scene-item>
+  </deck-scene-units>
+  <deck-scene-band label="Twice as many stay"></deck-scene-band>
+</deck-scene>`,
+    tokens: '--deck-scene-line (the link) · each scene keeps its own',
+  },
+  {
+    tag: 'deck-diagram',
+    summary: 'An illustration written without a coordinate · marks (box, text, dots, bar, link, lane, gate, cursor, meter, queue, curve, and the marks that tell a story in their own words: terminal, table, switch, status, timer, band, people, screen, counter, and the charts: a pie, columns) in groups that name how their children are placed: a row, a column, a grid, layers for a graph, a ring, lanes that carry tokens past gates, an axis with a cursor. It measures, places, routes the links and the notes, times the motion (enter, after, step: a click brings what waits for it), and says when it does not fit. With dg-state each click is a picture of its own, and what two pictures name alike moves from one place to the other. Written as an intent (intent="barrier", each mark a role="…"), it chooses the layout, the one thing put forward and the motion itself, each of the sixteen its own way (a chain, lanes and a gate, a ring, a crowd, frames in frames, columns, a tree that turns rank by rank, a gauge and its line, a fork into two gauges, gaps from a line, bars, one band, a funnel…), and check proves the drawing demonstrates it (INT_* findings, errors whatever the score) · rikiki intent prints the skeleton. With play="enter" it tells a story instead of clicks: one scene played on entry, six to ten seconds written and played at the pace of the room, where the system runs (an established flow), an event lands, spreads, shows its effect, and the proof comes last in the target · each mark says its beat, and the picture at rest is the end of the story. With compose="…" it lays out several sub-pictures under one story, each a dg-panel with its own layout and a surface that says its part: a mechanism beside its track (split, 1.65 to 1), a model beside its incident, a body over its time axis, a panel inside a panel, a dashboard two by two · panels must share an entity or an axis (DG_PANEL_APART otherwise), and a dg-camera frames a mark or a panel then pulls back to the whole composition, its scale and margin computed. rikiki recipe prints twelve such stories ready to fill, each a graphic model (an incident frise, lanes and a gate, a probe, wiring, a switch-over, a race, records through a filter, lanes of versions, an escalation, a pulse, rings of scope, a replay of data): a skeleton whose fields are the facts of a brief, whose beats are the sequence the model imposes, and a brief that is refused when it is empty, generic or holds fewer than two precise values.',
+    module: 'deck-diagram.js',
+    attrs: 'compose: split · model-incident · body-axis · inset · dashboard (panels laid out by the composition, exclusive of layout and intent: an intent beside it is DG_PANEL_INTENT, dropped and said) · intent: cause · barrier · bottleneck · accumulate · transform · feedback · scale · contain · parallel · propagate · threshold · tradeoff · drift · compare · partition · merge (the intent places, so layout is its own) · also: one or two secondary intents among cause (above), accumulate and threshold (below) · barrier takes cause and accumulate, accumulate and threshold take each other and cause, cause takes accumulate and threshold, bottleneck, feedback and merge take accumulate, propagate takes cause, the others take none · layout: row · column · grid · layers · ring · lanes · axis · direction: right or down (layers, axis) · columns: cells per row · align: start, center, end or stretch · gap: tight, normal or airy · paint: none, outline, soft, solid or inverse, or the part a surface plays, its icon in a disc of its state: pale (context), gold (control), ink (target), ok (sound), bad (incident) · weights · wrap · link: arrow chains the children · bounds: "800x500" · max-marks: tightens the 500 marks ceiling · balance: free says an asymmetry is meant · play: enter plays a story on entry, with no click (Pause, Replay and Loop buttons while it plays; seek(seconds) holds one instant) · budget: what the story may last once played, "10s" by default, "12s" at most',
+    slots: 'default: dg-box (tone: one word per click, it turns), dg-text, dg-dot (count; in a story one beat for the whole crowd, its cells in one wave), dg-bar, dg-link (route="straight" is a straight line, even in a graph), dg-group, dg-lane, dg-gate, dg-cursor (its word clear of the labels, its line never through one), dg-meter (value, max, unit, threshold, tone: one word per click), dg-queue (count, fill, tone: one word per click; in a ring, it stands in the middle) and dg-curve (values: 2 to 12 at equal steps, ticks, max, unit, threshold: the point it crosses is put forward; traced on entry) marks · a dg-link may join marks of two groups · stretches of an axis that lie end to end are one band cut into parts · each reads enter (fade, rise, pop, draw), after (a name), step (a click) and role (its part in the intent) · dg-state (step, role) holds the marks of its place from that click on · in a story each mark also reads beat (steady, event, spread, effect, proof), with (a name it starts with, in the steady beat too), duration and dim (it pales on its beat); a dg-box reads swap and swap-icon (its word and icon change on its beat) and proof (a check and its words in the target); a dg-lane and a dg-link read steady="3s" (tokens pass that long before the event, and stop where it cuts them); a dg-link reads turn (its tokens change colour on the way) and lever (a lever turns there from the route that is cut) · the marks that tell a story act on their beat: dg-terminal (label, lines one per line: a command after a prompt is typed with its caret, ✓ and ✗ in their colour), dg-table (label, icon, rows one per line, paint, strike; in a story from: its rows are carried from that mark, and swap: they change one by one), dg-switch (label, state on or off per click, on and off: its words), dg-status (for a mark, state ok, fail or wait, two in a story: it turns, label, note, side), dg-timer (label, value, unit: a ring fills, the figure counts), dg-band (label, note, from, to, cut, until, tag, brace, steady: the void after the cut grows as long as it lasted, braced), dg-person (label, count, absent: hollow for the missing), dg-screen (label: the address, note: the heading, count: figured lines), dg-counter (label, value, from, unit: a large figure that counts) · the charts: dg-pie (label, slices: 2 to 6 parts, one per line, its words then its figure, unit, value: the figure in its hole, note, focus: the part in the accent; swept part after part) and dg-columns (label, columns: 2 to 12, one per line, its words then one figure per series, series: 1 to 3 names one per line, max, unit, threshold, focus: the column brought forward; they grow one after the other) and dg-waterfall (label, steps: 2 to 11, one per line, its words then its figure, the first a total with no sign then +n or −n, total: the words of the closing total, computed from the walk, unit, focus: the step brought forward; the steps are taken one after the other) · in a composition: dg-panel (name, label, layout and the attributes of a group, paint: pale by default; its marks are named locally and reached from outside as panel.mark), entity on any mark (the same business object in several panels, one or more words), dg-camera (focus: the mark or panel the picture opens on, to: the one it moves to on its beat, all by default; beat, after, with, duration; a camera that ends on a detail goes back to the whole picture)',
+    example: `<deck-diagram layout="layers" direction="right">
+  <dg-box name="web" label="Web" icon="user"></dg-box>
+  <dg-box name="gw" label="Gateway" emphasis></dg-box>
+  <dg-box name="db" label="Postgres" icon="database"></dg-box>
+  <dg-link from="web" to="gw"></dg-link>
+  <dg-link from="gw" to="db" label="SQL"></dg-link>
+</deck-diagram>`,
+    tokens: 'the scenes’ own: --deck-scene-card-bg · --deck-scene-emphasis-bg · --deck-scene-line · --deck-scene-band-bg',
+  },
+  {
+    tag: 'deck-scene-band',
+    summary: 'Animated scene · the sentence a composition answers to, one band on the inverse surface with an optional icon, a bold sentence and a line under it.',
+    module: 'deck-scene-band.js',
+    attrs: 'label: the sentence, up to two lines · note: one line under it · icon: a deck-icon name at its left',
+    slots: 'none',
+    example: `<deck-scene-band label="Twice as many stay" note="at the same headcount" icon="target"></deck-scene-band>`,
+    tokens: '--deck-scene-band-bg · --deck-scene-band-text · --deck-scene-band-muted · --deck-scene-band-icon',
+  },
+  {
+    tag: 'deck-scene-bars',
+    summary: 'Animated scene · up to eight vertical bars with their figure above and label below, grouped by note. No axis: the bars carry the scale.',
+    module: 'deck-scene-bars.js',
+    attrs: 'unit: appended after a narrow no-break space · max: top of the scale, default the largest value · height: bar area in drawing units, default 280',
+    slots: 'default: deck-scene-item children reading value, label, tag (printed instead of the figure), note (the group caption), emphasis',
+    example: `<deck-scene-bars unit="%">
+  <deck-scene-item note="2025" label="AI visits" value="1,7" emphasis></deck-scene-item>
+  <deck-scene-item note="2025" label="other channels" value="2,3"></deck-scene-item>
+</deck-scene-bars>`,
+    tokens: '--deck-scene-card-bg · --deck-scene-card-stroke · --deck-scene-emphasis-bg · --deck-scene-muted · --deck-scene-value · --deck-scene-value-emphasis',
+  },
+  {
+    tag: 'deck-scene-cards',
+    summary: 'Animated scene · two to five equal cards side by side, each with an icon, a label, a wrapped note and a tag. The emphasised card is filled with the accent.',
+    module: 'deck-scene-cards.js',
+    attrs: 'none · the scene reads its items',
+    slots: 'default: deck-scene-item children reading icon, label, note, tag, emphasis',
+    example: `<deck-scene-cards>
+  <deck-scene-item icon="target" label="MCP" tag="safe bet" emphasis note="one connector for every assistant"></deck-scene-item>
+  <deck-scene-item icon="cloud" label="UCP" tag="publish too" note="real volume, but American"></deck-scene-item>
+  <deck-scene-item icon="ban" label="AP2" tag="too early" note="no production deployment found"></deck-scene-item>
+</deck-scene-cards>`,
+    tokens: '--deck-scene-card-bg · --deck-scene-card-stroke · --deck-scene-emphasis-bg · --deck-scene-emphasis-text · --deck-scene-muted · --deck-scene-tag · --deck-scene-icon',
+  },
+  {
+    tag: 'deck-scene-flow',
+    summary: 'Animated scene · sources merge into a hub, the hub feeds one or two outcomes. The emphasised item is the hub; the items before it are sources, the items after it outcomes.',
+    module: 'deck-scene-flow.js',
+    attrs: 'none · roles come from the order of the items',
+    slots: 'default: deck-scene-item children reading icon, label, note, emphasis, and tag on an outcome (drawn on its arrow)',
+    example: `<deck-scene-flow>
+  <deck-scene-item icon="document" label="Product file" note="price, stock and specifications"></deck-scene-item>
+  <deck-scene-item icon="search" label="Pages and reviews" note="what the web says"></deck-scene-item>
+  <deck-scene-item icon="spark" label="The assistant" emphasis note="reads, compares, picks"></deck-scene-item>
+  <deck-scene-item icon="target" label="Two retailers cited" tag="cited" note="the rest are not seen"></deck-scene-item>
+</deck-scene-flow>`,
+    tokens: '--deck-scene-card-bg · --deck-scene-card-stroke · --deck-scene-emphasis-bg · --deck-scene-emphasis-text · --deck-scene-muted · --deck-scene-tag · --deck-scene-icon · --deck-scene-line',
+  },
+  {
+    tag: 'deck-scene-lanes',
+    summary: 'Animated scene · what happens when one thing changes: several lanes carry the same traffic, a gate comes down across all of them, and what was still on its way queues against it. A kill switch, a freeze, a rate limit.',
+    module: 'deck-scene-lanes.js',
+    attrs: 'gate: the word on the gate · trigger: what brought it down, above the lanes · passed: tokens per lane that get through, 0 to 8, default 3 · blocked: tokens per lane that are stopped, 0 to 8, default 3',
+    slots: 'default: 2 to 5 deck-scene-item lanes reading label, note, icon, tag (the outcome, written at the end of the lane)',
+    example: `<deck-scene-lanes gate="STOP" trigger="a drill flips the switch">
+  <deck-scene-item icon="code" label="API" tag="3 served, 3 refused"></deck-scene-item>
+  <deck-scene-item icon="clock" label="Jobs" tag="3 served, 3 held"></deck-scene-item>
+</deck-scene-lanes>`,
+    tokens: '--deck-scene-emphasis-bg · --deck-scene-muted · --deck-scene-tag · --deck-scene-icon · --deck-scene-line',
+  },
+  {
+    tag: 'deck-scene-matrix',
+    summary: 'Animated scene · rows of status dots against columns, with optional column groups and a legend in the deck\'s language.',
+    module: 'deck-scene-matrix.js',
+    attrs: 'columns: headers separated by |, 2 to 12 · groups: name:count pairs separated by | · statuses: status=word pairs separated by |, for prod, pilot, test, announced, none',
+    slots: 'default: deck-scene-item children reading label, level (one status per column, space-separated), emphasis (the row on a tinted band)',
+    example: `<deck-scene-matrix columns="catalogue|basket|payment" statuses="prod=live|test=in test|none=nothing yet">
+  <deck-scene-item label="France" emphasis level="prod test none"></deck-scene-item>
+  <deck-scene-item label="United States" level="prod prod prod"></deck-scene-item>
+</deck-scene-matrix>`,
+    tokens: '--deck-scene-card-bg · --deck-scene-card-stroke · --deck-scene-emphasis-bg · --deck-scene-muted · --deck-scene-tag · --deck-scene-line · --deck-scene-row-emphasis-bg · --deck-scene-band-bg',
+  },
+  {
+    tag: 'deck-scene-ranges',
+    summary: 'Animated scene · durations or ranges on one shared scale, one row each. A row without values is drawn open, dashed, rather than left out.',
+    module: 'deck-scene-ranges.js',
+    attrs: 'scale: maximum of the shared scale · unit: word after the maximum · caption: header label in the accent · open-label: tag of an open row, default "to be set"',
+    slots: 'default: deck-scene-item children reading label, note, from, to (alone, a single point), tag',
+    example: `<deck-scene-ranges scale="12" unit="days" caption="approximate durations">
+  <deck-scene-item label="A1" note="Connected catalogue" from="5" to="10" tag="5 to 10 days"></deck-scene-item>
+  <deck-scene-item label="C2" note="Basket in one sentence"></deck-scene-item>
+</deck-scene-ranges>`,
+    tokens: '--deck-scene-emphasis-bg · --deck-scene-muted · --deck-scene-tag · --deck-scene-line',
+  },
+  {
+    tag: 'deck-scene-steps',
+    summary: 'Animated scene · one to six numbered rows joined by a connector, with an optional closing band on the inverse surface.',
+    module: 'deck-scene-steps.js',
+    attrs: 'conclusion: the closing sentence · conclusion-note: one line under it · conclusion-icon: a deck-icon name at its left',
+    slots: 'default: deck-scene-item children reading label, note, tag, emphasis',
+    example: `<deck-scene-steps conclusion="No change without consent" conclusion-icon="lock">
+  <deck-scene-item label="measure" tag="no prerequisite" note="five assistants, typical questions, a score"></deck-scene-item>
+  <deck-scene-item label="advise" tag="once measured" emphasis note="what to fix first"></deck-scene-item>
+</deck-scene-steps>`,
+    tokens: '--deck-scene-card-bg · --deck-scene-card-stroke · --deck-scene-emphasis-bg · --deck-scene-emphasis-text · --deck-scene-muted · --deck-scene-tag · --deck-scene-band-bg · --deck-scene-band-text · --deck-scene-band-muted · --deck-scene-band-icon',
+  },
+  {
+    tag: 'deck-scene-units',
+    summary: 'Animated scene · one cell per person. One to three grids of the same size, the first cells of each lit: 200 lit beside the same 200 switched off says a share without a percentage. The cells light column by column.',
+    module: 'deck-scene-units.js',
+    attrs: 'total: cells per grid, 1 to 400, default 100 · columns: cells per row, 1 to 40, a landscape grid by default',
+    slots: 'default: 1 to 3 deck-scene-item panels reading label (the caption), icon, value (how many cells are lit, 0 to total), note, emphasis (the panel lit in the accent)',
+    example: `<deck-scene-units total="200">
+  <deck-scene-item icon="team" label="200 people" value="200" emphasis></deck-scene-item>
+  <deck-scene-item label="chose the right setting" value="0" note="not one of them"></deck-scene-item>
+</deck-scene-units>`,
+    tokens: '--deck-scene-emphasis-bg · --deck-scene-line · --deck-scene-card-stroke · --deck-scene-muted · --deck-scene-icon',
+  },
+  {
     tag: 'deck-table',
     summary: 'Progressive table wrapper that highlights rows or columns as steps advance.',
     module: 'deck-table.js',
@@ -918,6 +1058,25 @@ const optionalChildren: ChildComponent[] = [
   <deck-milestone date="Now" label="Source" tone="accent">Write the brief</deck-milestone>
   <deck-milestone date="Next" label="Proof">Run the checks</deck-milestone>
 </deck-timeline>`,
+  },
+  {
+    tag: 'deck-scene-item',
+    parent: 'deck-scene-cards',
+    summary: 'One entry of any deck-scene-* · it carries words and figures and draws nothing; each scene reads the attributes it draws.',
+    attrs: [
+      { name: 'label',    type: 'string',    note: 'The name of the entry, one to three words' },
+      { name: 'note',     type: 'string',    note: 'One sentence, wrapped by the scene to the room it has' },
+      { name: 'icon',     type: 'icon name', note: 'One of the 24 deck-icon glyphs · cards and flow' },
+      { name: 'tag',      type: 'string',    note: 'A short status in the accent' },
+      { name: 'value',    type: 'number',    note: 'A figure · bars' },
+      { name: 'level',    type: 'statuses',  note: 'One status per column, space-separated · matrix' },
+      { name: 'from',     type: 'number',    note: 'Start of a range · ranges' },
+      { name: 'to',       type: 'number',    note: 'End of a range, or a single point without from · ranges' },
+      { name: 'emphasis', type: 'boolean',   note: 'The one entry the scene puts forward' },
+    ],
+    example: `<deck-scene-cards>
+  <deck-scene-item icon="target" label="MCP" tag="safe bet" emphasis note="one connector for every assistant"></deck-scene-item>
+</deck-scene-cards>`,
   },
 ];
 

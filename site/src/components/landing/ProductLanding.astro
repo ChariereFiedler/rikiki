@@ -51,7 +51,6 @@ const filmVersion = createHash('sha256').update(readFileSync(new URL('../../../p
         <p><a href="/landing/rikiki-demo.mp4">Download the Rikiki demonstration.</a></p>
       </video>
       <p id="film-description" class="film-description">An agent writes the HTML. Rikiki checks the deck, reports defects and renders screenshots for review. Fix the draft, inspect it and take the presentation into the room. The film uses on-screen text and music.</p>
-      <p class="film-description"><strong>Rikiki Sales · Coming soon.</strong></p>
     </section>
     <section class="agent-garden" id="agents" aria-labelledby="agent-title"><div class="wrap">
       <div class="section-head"><div><p class="eyebrow">Built for the agent workflow</p><h2 id="agent-title">Would you present<br/>the first draft?</h2></div><p>Give the agent a brief and the tools to inspect its work.<br/>You keep the final review (and the microphone).</p></div>
@@ -78,6 +77,22 @@ npx rikiki skills`} lang="sh" label="Set up agent authoring" /><a class="text-li
       </div>
       <div class="capability-links"><a href="/docs/navigation"><strong>Navigate the deck.</strong><span>Slide steps, keyboard navigation and an overview of the whole deck.</span></a><a href="/docs/plugins#presenter"><strong>See what comes next.</strong><span>Current and next slides, speaker notes and a timer in presenter mode.</span></a><a href="/docs/cli"><strong>Send the finished deck.</strong><span>Layout checks, screenshot review, standalone HTML and PDF export.</span></a></div>
     </section>
+    <section class="scenes-section" id="scenes" aria-labelledby="scenes-title"><div class="wrap scenes-grid">
+      <div class="scenes-copy">
+        <p class="eyebrow">Illustrate</p>
+        <h2 id="scenes-title">Say what the picture shows.<br/>Rikiki draws it.</h2>
+        <p>A scene is a few lines of data: cards to compare, steps in order, lanes that a gate cuts across. Rikiki measures every word in the slide's own font, lays the drawing out in your theme and plays it when the slide opens.</p>
+        <p>When an item does not fit, <code>rikiki check</code> names it, says which field is too long and how many characters that field holds.</p>
+        <CodeBlock code={`npx rikiki scene plan brief.json --measure
+npx rikiki scene compile brief.json --candidate lanes
+npx rikiki check talk.html --slides 5`} lang="sh" label="Draw a scene from a brief" wrap />
+        <a class="text-link" href="/decks/scenes/index.html" target="_blank" rel="noopener">Open the scenes deck</a>
+      </div>
+      <figure class="scenes-stage">
+        <div class="scenes-screen"><iframe src="/decks/scenes/index.html#5" title="Scenes deck, slide 5: lanes of traffic and the gate that comes down across them" loading="lazy"></iframe></div>
+        <figcaption>One slide of a real deck. Traffic runs, a check goes red, the gate comes down and the late ones queue against it.</figcaption>
+      </figure>
+    </div></section>
     <Section id="themes" eyebrow="Make it yours" title="Change the theme. Keep the deck." tone="tint"><ThemeSwap /></Section>
     <section class="source-section" aria-labelledby="source-title"><div class="wrap source-grid"><div class="source-copy"><p class="eyebrow">Yours, all the way down</p><h2 id="source-title">The slide<br/>is the source.</h2><p>Choose a layout. Add your content. Style it with CSS. This is the source of the incident-review cover. Yes, the whole cover.</p><p>Keep it in Git, review a diff, or let your coding agent make the first draft.</p><a class="text-link" href="/docs/components">Meet the components</a></div><div class="source-code"><div class="file-label"><span>incident.html</span><span>HTML + web components</span></div><CodeBlock code={snippet} lang="html" wrap /><p>No slide editor required. No build step to view your deck.</p></div></div></section>
     <section class="workflow wrap" id="workflow" aria-labelledby="workflow-title"><div class="section-head"><div><p class="eyebrow">From a file to a room</p><h2 id="workflow-title">Start with a file.</h2></div><a class="text-link" href="/docs/getting-started">Follow the setup guide</a></div><div class="workflow-grid"><article><div class="workflow-mark"><LucideIcon name="file-code" size={32}/><span>Write</span></div><h3>Make the first draft.</h3><p>Start from an editable file. Write it yourself, or let your agent work from the brief.</p><code>npx rikiki init talk.html</code></article><article><div class="workflow-mark"><LucideIcon name="scan-eye" size={32}/><span>Review</span></div><h3>Give the draft feedback.</h3><p>Fix the reported defects. Inspect the screenshots. Check the claims against your sources.</p><code>npx rikiki check talk.html</code></article><article><div class="workflow-mark"><LucideIcon name="package-check" size={32}/><span>Deliver</span></div><h3>Send the presentation.</h3><p>Present with notes, send an offline HTML file, or hand over a PDF. Keep the editable source.</p><code>npx rikiki bundle talk.html</code></article></div><p class="setup-note">The setup guide covers the extra dependencies (the browser and bundler need installing too).</p><aside class="agent"><span class="agent-icon" aria-hidden="true">&lt;/&gt;</span><div><strong>Working with a coding agent?</strong><p>Run <code>npx rikiki skills</code> to give it the authoring workflow and component reference.</p></div><a href="/docs/getting-started#agent">Read the agent guide</a></aside></section>
@@ -140,6 +155,10 @@ h1,h2,h3{font-family:var(--rik-font-display);letter-spacing:-.04em}h1{font-size:
 .film-section{padding-block:56px 80px}.film-section video{display:block;width:100%;height:auto;aspect-ratio:16/9;background:#06080f;border:1px solid #39343d;border-radius:10px;box-shadow:8px 8px 0 #f07020}.film-description{font-size:14px;line-height:1.7;color:#bdb7c7;max-width:85ch;margin-top:28px}.film-section .section-head>p{color:#bdb7c7}.film-section h2{color:#e8e4f0}.film-section .eyebrow{color:#f07020}@media(max-width:720px){.film-section{padding-block:32px 56px}.film-section video{box-shadow:4px 4px 0 #f07020}}
 </style>
 <style>.agent-instructions :global(.code){margin-top:28px}.tour-controls{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 20px;font-size:14px;color:#e8e4f0}.tour-controls button{border:1px solid #635966;color:#e8e4f0;background:#16121c;padding:12px 18px;border-radius:5px;min-height:44px;font-size:14px}.tour-controls button:last-child{background:#f07020;color:#06080f;border-color:#f07020;font-weight:700}.film-section h2{color:#2a2520}.film-section .section-head>p,.film-description{color:#615953}.film-section .eyebrow{color:#a33a12}</style>
+<style>
+.scenes-section{background:#06080f;color:#e8e4f0;padding-block:84px}.scenes-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr);gap:64px;align-items:center}.scenes-copy .eyebrow{color:#f07020}.scenes-copy h2{color:#e8e4f0;margin-bottom:24px}.scenes-copy p:not(.eyebrow){font-size:16px;line-height:1.7;color:#c9c5d1;max-width:46ch;margin:0 0 16px}.scenes-copy{min-width:0}.scenes-copy code{font-size:14px}.scenes-copy :global(.label){color:#c9c5d1}.scenes-copy :global(.code){margin:24px 0 0}.scenes-copy .text-link{display:inline-block;margin-top:22px;color:#e8e4f0;text-decoration:underline}.scenes-stage{margin:0;min-width:0}.scenes-screen{aspect-ratio:16/9;background:#080b13;border:1px solid #3c4047;border-radius:8px;overflow:hidden;box-shadow:8px 8px 0 #f07020}.scenes-stage figcaption{font-size:14px;line-height:1.6;color:#c9c5d1;margin-top:22px;max-width:60ch}
+@media(max-width:1100px){.scenes-grid{grid-template-columns:minmax(0,1fr);gap:40px}}@media(max-width:720px){.scenes-section{padding-block:48px}.scenes-screen{box-shadow:4px 4px 0 #f07020}}
+</style>
 <script>
 const tourFrame = document.querySelector<HTMLIFrameElement>('#live-deck');
 for(const [selector,key]of [['[data-tour-prev]','ArrowLeft'],['[data-tour-next]','ArrowRight']]){document.querySelector(selector)?.addEventListener('click',()=>{tourFrame?.contentWindow?.document.dispatchEvent(new KeyboardEvent('keydown',{key,bubbles:true}));});}
