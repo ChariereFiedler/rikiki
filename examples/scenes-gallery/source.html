@@ -1,0 +1,377 @@
+<!doctype html>
+<!--
+  Rikiki · scenes gallery · thirty illustrations written as data
+  Authoring view · run
+    node rikiki/bundle.mjs examples/scenes-gallery/source.html examples/scenes-gallery/index.html
+  to produce a single-file shareable copy with everything inlined.
+
+  A stress test of the eight scenes: thirty different messages, from five to
+  eight shapes, with varied counts, emphases, groups, units and states. Every
+  figure is invented to exercise the shape and says so in its source line.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rikiki · scenes gallery</title>
+<link rel="stylesheet" href="../../rikiki/themes/rikiki.css">
+<script type="module" src="../../rikiki/dist/index.js"></script>
+<script type="module" src="../../rikiki/dist/deck-scene-cards.js"></script>
+<script type="module" src="../../rikiki/dist/deck-scene-steps.js"></script>
+<script type="module" src="../../rikiki/dist/deck-scene-flow.js"></script>
+<script type="module" src="../../rikiki/dist/deck-scene-lanes.js"></script>
+<script type="module" src="../../rikiki/dist/deck-scene-bars.js"></script>
+<script type="module" src="../../rikiki/dist/deck-scene-ranges.js"></script>
+<script type="module" src="../../rikiki/dist/deck-scene-matrix.js"></script>
+<script type="module" src="../../rikiki/dist/deck-scene-units.js"></script>
+</head>
+<body>
+<deck-root transition="slide">
+
+  <!-- ── cards · five slides ───────────────────────────────────── -->
+  <deck-feature id="plans" eyebrow="cards · 1">
+    <h1 slot="title">Four plans, one is enough</h1>
+    <deck-scene-cards>
+      <deck-scene-item icon="user" label="Free" tag="0 €" note="one person, public decks"></deck-scene-item>
+      <deck-scene-item icon="team" label="Team" tag="12 € a seat" emphasis note="shared themes and comments"></deck-scene-item>
+      <deck-scene-item icon="chart" label="Business" tag="30 € a seat" note="usage reports per deck"></deck-scene-item>
+      <deck-scene-item icon="lock" label="Enterprise" tag="on quote" note="single sign-on and audit log"></deck-scene-item>
+    </deck-scene-cards>
+    <deck-source>Illustration · invented plans</deck-source>
+    <deck-notes>Four plans of the same rank, the middle one argued for.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="two-vendors" eyebrow="cards · 2">
+    <h1 slot="title">Two vendors, only one fits</h1>
+    <deck-scene-cards>
+      <deck-scene-item icon="cloud" label="Vendor A" tag="hosted" emphasis note="runs in our region, signed DPA"></deck-scene-item>
+      <deck-scene-item icon="ban" label="Vendor B" tag="rejected" note="data leaves the region"></deck-scene-item>
+    </deck-scene-cards>
+    <deck-source>Illustration · invented vendors</deck-source>
+    <deck-notes>Two cards: the comparison is the whole slide.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="five-pillars" eyebrow="cards · 3">
+    <h1 slot="title">Five pillars of a calm launch</h1>
+    <deck-scene-cards>
+      <deck-scene-item icon="flag" label="Date" note="fixed and shared"></deck-scene-item>
+      <deck-scene-item icon="check" label="Tests" note="green on main"></deck-scene-item>
+      <deck-scene-item icon="refresh" label="Rollback" emphasis tag="rehearsed" note="one command back"></deck-scene-item>
+      <deck-scene-item icon="team" label="On call" note="two names named"></deck-scene-item>
+      <deck-scene-item icon="document" label="Notes" note="written before, not after"></deck-scene-item>
+    </deck-scene-cards>
+    <deck-source>Illustration · a checklist, not a measurement</deck-source>
+    <deck-notes>Five at the limit of the row; each note stays short.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="three-roles" eyebrow="cards · 4">
+    <h1 slot="title">Three roles meet in the room</h1>
+    <deck-scene-cards>
+      <deck-scene-item icon="user" label="Sponsor" tag="decides" note="owns the budget and the date"></deck-scene-item>
+      <deck-scene-item icon="code" label="Builder" tag="delivers" emphasis note="turns the brief into the product"></deck-scene-item>
+      <deck-scene-item icon="target" label="Reader" tag="judges" note="the one the deck is written for"></deck-scene-item>
+    </deck-scene-cards>
+    <deck-source>Illustration</deck-source>
+    <deck-notes>Roles of the same rank around one table.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="data-homes" eyebrow="cards · 5">
+    <h1 slot="title">Where the data may live</h1>
+    <deck-scene-cards>
+      <deck-scene-item icon="database" label="Our servers" tag="allowed" emphasis note="inside the legal perimeter"></deck-scene-item>
+      <deck-scene-item icon="cloud" label="EU cloud" tag="allowed" note="under a signed contract"></deck-scene-item>
+      <deck-scene-item icon="alert" label="Elsewhere" tag="to review" note="needs a case-by-case approval"></deck-scene-item>
+    </deck-scene-cards>
+    <deck-source>Illustration · a sample policy</deck-source>
+    <deck-notes>Three homes, ranked by how little paperwork they need.</deck-notes>
+  </deck-feature>
+
+  <!-- ── steps · four slides ───────────────────────────────────── -->
+  <deck-feature id="onboarding" eyebrow="steps · 1">
+    <h1 slot="title">Onboarding in four moves</h1>
+    <deck-scene-steps conclusion="Productive by the end of week one" conclusion-icon="flag">
+      <deck-scene-item label="Accounts" note="mail, repository, chat"></deck-scene-item>
+      <deck-scene-item label="Setup" note="one script, one hour"></deck-scene-item>
+      <deck-scene-item label="First fix" emphasis tag="day two" note="a small bug, a real review"></deck-scene-item>
+      <deck-scene-item label="Own a piece" note="a name on a component"></deck-scene-item>
+    </deck-scene-steps>
+    <deck-source>Illustration · an onboarding path</deck-source>
+    <deck-notes>Order matters, so steps; the band states the outcome.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="release" eyebrow="steps · 2">
+    <h1 slot="title">A release in five steps</h1>
+    <deck-scene-steps>
+      <deck-scene-item label="Freeze" tag="Mon" note="no new features"></deck-scene-item>
+      <deck-scene-item label="Verify" tag="Tue" note="full test run"></deck-scene-item>
+      <deck-scene-item label="Tag" tag="Wed" note="version and changelog"></deck-scene-item>
+      <deck-scene-item label="Publish" emphasis tag="Thu" note="package and site"></deck-scene-item>
+      <deck-scene-item label="Watch" tag="Fri" note="errors and feedback"></deck-scene-item>
+    </deck-scene-steps>
+    <deck-source>Illustration · a weekly cadence</deck-source>
+    <deck-notes>Five steps without a band stay inside the slide.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="incident" eyebrow="steps · 3">
+    <h1 slot="title">The first hour of an incident</h1>
+    <deck-scene-steps conclusion="Write it down while it is fresh" conclusion-icon="document">
+      <deck-scene-item label="Stabilise" emphasis tag="0 to 15 min" note="stop the bleeding first"></deck-scene-item>
+      <deck-scene-item label="Tell" tag="15 to 30 min" note="one message to everyone"></deck-scene-item>
+      <deck-scene-item label="Find" tag="30 to 60 min" note="cause, not culprit"></deck-scene-item>
+    </deck-scene-steps>
+    <deck-source>Illustration</deck-source>
+    <deck-notes>Three steps with times, stabilise first.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="good-slide" eyebrow="steps · 4">
+    <h1 slot="title">How a slide earns its place</h1>
+    <deck-scene-steps>
+      <deck-scene-item label="One claim" emphasis note="the title says what is proven"></deck-scene-item>
+      <deck-scene-item label="One proof" note="a figure, a picture, a quote"></deck-scene-item>
+    </deck-scene-steps>
+    <deck-source>Illustration</deck-source>
+    <deck-notes>The smallest steps scene: two rows.</deck-notes>
+  </deck-feature>
+
+  <!-- ── flow · four slides ────────────────────────────────────── -->
+  <deck-feature id="report-sources" eyebrow="flow · 1">
+    <h1 slot="title">Three sources feed one report</h1>
+    <deck-scene-flow>
+      <deck-scene-item icon="database" label="Orders" note="from the shop"></deck-scene-item>
+      <deck-scene-item icon="user" label="Support" note="tickets this week"></deck-scene-item>
+      <deck-scene-item icon="cloud" label="Traffic" note="visits by page"></deck-scene-item>
+      <deck-scene-item icon="chart" label="Monday report" emphasis note="merged and cleaned"></deck-scene-item>
+      <deck-scene-item icon="team" label="Leadership" tag="read at 9"></deck-scene-item>
+    </deck-scene-flow>
+    <deck-source>Illustration</deck-source>
+    <deck-notes>Three inputs, one hub, one reader.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="one-api" eyebrow="flow · 2">
+    <h1 slot="title">One API, two consumers</h1>
+    <deck-scene-flow>
+      <deck-scene-item icon="database" label="Catalogue" note="the single source"></deck-scene-item>
+      <deck-scene-item icon="code" label="Public API" emphasis note="versioned and documented"></deck-scene-item>
+      <deck-scene-item icon="user" label="Mobile app" tag="v3"></deck-scene-item>
+      <deck-scene-item icon="cloud" label="Partners" tag="v2"></deck-scene-item>
+    </deck-scene-flow>
+    <deck-source>Illustration</deck-source>
+    <deck-notes>One source, one hub, two outcomes.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="four-inputs" eyebrow="flow · 3">
+    <h1 slot="title">Four inputs, one decision</h1>
+    <deck-scene-flow>
+      <deck-scene-item icon="chart" label="Revenue"></deck-scene-item>
+      <deck-scene-item icon="clock" label="Delay"></deck-scene-item>
+      <deck-scene-item icon="user" label="Team load"></deck-scene-item>
+      <deck-scene-item icon="alert" label="Risk"></deck-scene-item>
+      <deck-scene-item icon="target" label="Go or no go" emphasis note="decided on Friday"></deck-scene-item>
+      <deck-scene-item icon="flag" label="Plan" tag="signed"></deck-scene-item>
+    </deck-scene-flow>
+    <deck-source>Illustration</deck-source>
+    <deck-notes>Four sources is the maximum the flow draws.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="ticket-to-deploy" eyebrow="flow · 4">
+    <h1 slot="title">From ticket to production</h1>
+    <deck-scene-flow>
+      <deck-scene-item icon="document" label="Ticket" note="what and why"></deck-scene-item>
+      <deck-scene-item icon="code" label="Branch" note="the change"></deck-scene-item>
+      <deck-scene-item icon="check" label="Pipeline" emphasis note="tests, checks, build"></deck-scene-item>
+      <deck-scene-item icon="cloud" label="Staging" tag="auto"></deck-scene-item>
+      <deck-scene-item icon="flag" label="Production" tag="on approval"></deck-scene-item>
+    </deck-scene-flow>
+    <deck-source>Illustration · a typical pipeline</deck-source>
+    <deck-notes>Two inputs, the pipeline as hub, two stages after it.</deck-notes>
+  </deck-feature>
+
+  <!-- ── bars · four slides ────────────────────────────────────── -->
+  <deck-feature id="latency" eyebrow="bars · 1">
+    <h1 slot="title">Latency fell by a factor of four</h1>
+    <deck-scene-bars unit="ms" max="800">
+      <deck-scene-item label="Before" value="760" tag="760 ms"></deck-scene-item>
+      <deck-scene-item label="Cache" value="310" tag="310 ms"></deck-scene-item>
+      <deck-scene-item label="Index" value="190" tag="190 ms" emphasis></deck-scene-item>
+    </deck-scene-bars>
+    <deck-source>Illustration · invented timings</deck-source>
+    <deck-notes>Three bars, the last one is the argument.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="quarters" eyebrow="bars · 2">
+    <h1 slot="title">Every quarter beat the last year</h1>
+    <deck-scene-bars unit="k€" max="500">
+      <deck-scene-item note="Q1" label="2025" value="240"></deck-scene-item>
+      <deck-scene-item note="Q1" label="2026" value="310" emphasis></deck-scene-item>
+      <deck-scene-item note="Q2" label="2025" value="280"></deck-scene-item>
+      <deck-scene-item note="Q2" label="2026" value="395" emphasis></deck-scene-item>
+      <deck-scene-item note="Q3" label="2025" value="300"></deck-scene-item>
+      <deck-scene-item note="Q3" label="2026" value="440" emphasis></deck-scene-item>
+    </deck-scene-bars>
+    <deck-source>Illustration · invented revenue</deck-source>
+    <deck-notes>Pairs grouped by note, one emphasis per group.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="regions" eyebrow="bars · 3">
+    <h1 slot="title">Eight regions, one clear leader</h1>
+    <deck-scene-bars unit="%" max="100">
+      <deck-scene-item label="North" value="82" emphasis></deck-scene-item>
+      <deck-scene-item label="South" value="61"></deck-scene-item>
+      <deck-scene-item label="East" value="58"></deck-scene-item>
+      <deck-scene-item label="West" value="54"></deck-scene-item>
+      <deck-scene-item label="Centre" value="47"></deck-scene-item>
+      <deck-scene-item label="Coast" value="44"></deck-scene-item>
+      <deck-scene-item label="Alps" value="39"></deck-scene-item>
+      <deck-scene-item label="Islands" value="31"></deck-scene-item>
+    </deck-scene-bars>
+    <deck-source>Illustration · invented adoption rates</deck-source>
+    <deck-notes>Eight bars is the maximum.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="before-after" eyebrow="bars · 4">
+    <h1 slot="title">Setup shrank from days to minutes</h1>
+    <deck-scene-bars unit="min" max="3000">
+      <deck-scene-item label="Manual" value="2880" tag="2 days"></deck-scene-item>
+      <deck-scene-item label="Scripted" value="12" tag="12 min" emphasis></deck-scene-item>
+    </deck-scene-bars>
+    <deck-source>Illustration · tags carry the readable duration</deck-source>
+    <deck-notes>Two bars with a huge ratio; the tags state the time.</deck-notes>
+  </deck-feature>
+
+  <!-- ── matrix · three slides ─────────────────────────────────── -->
+  <deck-feature id="browser-support" eyebrow="matrix · 1">
+    <h1 slot="title">Who supports what, by browser</h1>
+    <deck-scene-matrix columns="Chrome|Firefox|Safari" statuses="prod=full|test=partial|none=missing">
+      <deck-scene-item label="Layout" level="prod prod prod"></deck-scene-item>
+      <deck-scene-item label="Animation" emphasis level="prod prod test"></deck-scene-item>
+      <deck-scene-item label="Print" level="prod test none"></deck-scene-item>
+    </deck-scene-matrix>
+    <deck-source>Illustration · invented support levels</deck-source>
+    <deck-notes>Three rows, three columns, the emphasis on the risky row.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="maturity" eyebrow="matrix · 2">
+    <h1 slot="title">Maturity by team and practice</h1>
+    <deck-scene-matrix columns="Tests|Review|Deploy|Monitoring">
+      <deck-scene-item label="Payments" level="prod prod prod pilot"></deck-scene-item>
+      <deck-scene-item label="Search" emphasis level="pilot test announced none"></deck-scene-item>
+    </deck-scene-matrix>
+    <deck-source>Illustration · default status words</deck-source>
+    <deck-notes>Default legend, four columns, two rows.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="environments" eyebrow="matrix · 3">
+    <h1 slot="title">Coverage by environment</h1>
+    <deck-scene-matrix columns="Dev|Staging|Prod" statuses="prod=monitored|pilot=sampled|none=blind">
+      <deck-scene-item label="Errors" level="prod prod prod"></deck-scene-item>
+      <deck-scene-item label="Traces" level="pilot pilot none"></deck-scene-item>
+      <deck-scene-item label="Logs" emphasis level="prod prod pilot"></deck-scene-item>
+    </deck-scene-matrix>
+    <deck-source>Illustration · custom legend</deck-source>
+    <deck-notes>Custom words for the legend.</deck-notes>
+  </deck-feature>
+
+  <!-- ── ranges · three slides ─────────────────────────────────── -->
+  <deck-feature id="phases" eyebrow="ranges · 1">
+    <h1 slot="title">Four phases over twelve months</h1>
+    <deck-scene-ranges scale="12" unit="months" caption="project plan">
+      <deck-scene-item label="Discovery" from="0" to="2" tag="2 mo"></deck-scene-item>
+      <deck-scene-item label="Build" from="2" to="8" tag="6 mo"></deck-scene-item>
+      <deck-scene-item label="Pilot" from="7" to="10" tag="3 mo"></deck-scene-item>
+      <deck-scene-item label="Rollout" from="10" to="12" tag="2 mo"></deck-scene-item>
+    </deck-scene-ranges>
+    <deck-source>Illustration · invented plan</deck-source>
+    <deck-notes>Overlapping phases on one scale.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="opening-hours" eyebrow="ranges · 2">
+    <h1 slot="title">When support is staffed</h1>
+    <deck-scene-ranges scale="24" unit="h" caption="hours of the day">
+      <deck-scene-item label="Europe" from="8" to="18" tag="8 to 18"></deck-scene-item>
+      <deck-scene-item label="Americas" from="14" to="23" tag="14 to 23"></deck-scene-item>
+      <deck-scene-item label="Night cover" from="0" to="6" tag="0 to 6"></deck-scene-item>
+    </deck-scene-ranges>
+    <deck-source>Illustration · invented rota</deck-source>
+    <deck-notes>Three shifts on a 24-hour scale.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="open-work" eyebrow="ranges · 3">
+    <h1 slot="title">Two done, one still undated</h1>
+    <deck-scene-ranges scale="10" unit="weeks" open-label="to be fixed">
+      <deck-scene-item label="Design" from="0" to="3" tag="3 wk"></deck-scene-item>
+      <deck-scene-item label="Backend" from="3" to="7" tag="4 wk"></deck-scene-item>
+      <deck-scene-item label="Migration" note="waiting on legal"></deck-scene-item>
+    </deck-scene-ranges>
+    <deck-source>Illustration · a row without bounds is drawn dashed</deck-source>
+    <deck-notes>The open row shows the unknown instead of hiding it.</deck-notes>
+  </deck-feature>
+
+  <!-- ── lanes · three slides ──────────────────────────────────── -->
+  <deck-feature id="rate-limit" eyebrow="lanes · 1">
+    <h1 slot="title">The limit stops the late requests</h1>
+    <deck-scene-lanes gate="LIMIT" trigger="100 calls a minute" passed="3" blocked="4">
+      <deck-scene-item icon="user" label="Web" tag="3 served, 4 held"></deck-scene-item>
+      <deck-scene-item icon="cloud" label="Mobile" tag="3 served, 4 held"></deck-scene-item>
+      <deck-scene-item icon="code" label="Partners" tag="3 served, 4 held"></deck-scene-item>
+    </deck-scene-lanes>
+    <deck-source>Illustration · token counts are not measurements</deck-source>
+    <deck-notes>Same traffic on three lanes until the limit closes.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="freeze" eyebrow="lanes · 2">
+    <h1 slot="title">A freeze holds every merge</h1>
+    <deck-scene-lanes gate="FREEZE" trigger="release week" passed="4" blocked="2">
+      <deck-scene-item icon="code" label="Features" tag="held"></deck-scene-item>
+      <deck-scene-item icon="refresh" label="Fixes" tag="held"></deck-scene-item>
+    </deck-scene-lanes>
+    <deck-source>Illustration</deck-source>
+    <deck-notes>Two lanes, more tokens passed than held.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="maintenance" eyebrow="lanes · 3">
+    <h1 slot="title">Maintenance quiets five services</h1>
+    <deck-scene-lanes gate="WINDOW" trigger="02:00 maintenance" passed="2" blocked="5">
+      <deck-scene-item label="Auth" tag="paused"></deck-scene-item>
+      <deck-scene-item label="Billing" tag="paused"></deck-scene-item>
+      <deck-scene-item label="Search" tag="paused"></deck-scene-item>
+      <deck-scene-item label="Mail" tag="paused"></deck-scene-item>
+      <deck-scene-item label="Reports" tag="paused"></deck-scene-item>
+    </deck-scene-lanes>
+    <deck-source>Illustration · five lanes is the maximum</deck-source>
+    <deck-notes>Five lanes, most traffic held.</deck-notes>
+  </deck-feature>
+
+  <!-- ── units · three slides ──────────────────────────────────── -->
+  <deck-feature id="visitors" eyebrow="units · 1">
+    <h1 slot="title">Of a hundred visitors, three buy</h1>
+    <deck-scene-units total="100" columns="20">
+      <deck-scene-item icon="user" label="buyers" value="3" emphasis note="the rest only look"></deck-scene-item>
+    </deck-scene-units>
+    <deck-source>Illustration · an invented conversion rate</deck-source>
+    <deck-notes>One grid, three lit cells among a hundred.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="training" eyebrow="units · 2">
+    <h1 slot="title">Training moved fifteen more over the line</h1>
+    <deck-scene-units total="50" columns="10">
+      <deck-scene-item label="before" value="18" note="passed the audit"></deck-scene-item>
+      <deck-scene-item label="after" value="33" emphasis note="passed the audit"></deck-scene-item>
+    </deck-scene-units>
+    <deck-source>Illustration · invented audit results</deck-source>
+    <deck-notes>Two grids of fifty, before and after.</deck-notes>
+  </deck-feature>
+
+  <deck-feature id="cohorts" eyebrow="units · 3">
+    <h1 slot="title">Three cohorts of forty, one stayed</h1>
+    <deck-scene-units total="40" columns="8">
+      <deck-scene-item label="Spring" value="14"></deck-scene-item>
+      <deck-scene-item label="Summer" value="19"></deck-scene-item>
+      <deck-scene-item label="Autumn" value="31" emphasis note="still active"></deck-scene-item>
+    </deck-scene-units>
+    <deck-source>Illustration · invented retention</deck-source>
+    <deck-notes>Three panels, the third is the argument.</deck-notes>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

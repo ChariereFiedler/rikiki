@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · deck-scene-ranges</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-scene-ranges.js"></script>
+</head>
+<body>
+<deck-root>
+
+  <deck-feature eyebrow="deck-scene-ranges" data-testid="scene-ranges-slide">
+    <h1 slot="title">A demo takes about two weeks</h1>
+    <deck-scene-ranges data-testid="scene-ranges" scale="12" unit="days" caption="approximate durations">
+      <deck-scene-item label="A1" note="Connected catalogue" from="5" to="10" tag="5 to 10 days"></deck-scene-item>
+      <deck-scene-item label="B1" note="Brand simulator" from="8" to="12" tag="8 to 12 days"></deck-scene-item>
+      <deck-scene-item label="B2" note="My account in ChatGPT" to="10" tag="10 days"></deck-scene-item>
+      <deck-scene-item label="C1" note="Recommended basket" from="5" to="10" tag="5 to 10 days"></deck-scene-item>
+      <deck-scene-item label="C2" note="Basket in one sentence, rebuilt from the last order in the account"></deck-scene-item>
+    </deck-scene-ranges>
+    <deck-source>Demo durations for the fixture · estimates before scoping</deck-source>
+  </deck-feature>
+
+  <deck-feature eyebrow="deck-scene-ranges · months" data-testid="scene-ranges-months-slide">
+    <h1 slot="title">Production takes 3 to 9 months</h1>
+    <deck-scene-ranges data-testid="scene-ranges-months" scale="9" unit="months">
+      <deck-scene-item label="A1" note="Connected catalogue" from="3" to="6" tag="3 to 6 months"></deck-scene-item>
+      <deck-scene-item label="B1" note="Brand simulator" from="3" to="5" tag="3 to 5 months"></deck-scene-item>
+      <deck-scene-item label="B2" note="My account in ChatGPT" from="3" to="6" tag="3 to 6 months"></deck-scene-item>
+      <deck-scene-item label="C1" note="Recommended basket" from="3" to="6" tag="3 to 6 months"></deck-scene-item>
+      <deck-scene-item label="C2" note="Basket in one sentence" from="6" to="9" tag="6 to 9 months"></deck-scene-item>
+    </deck-scene-ranges>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

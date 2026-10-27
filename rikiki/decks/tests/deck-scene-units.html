@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · deck-scene-units</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-scene-units.js"></script>
+</head>
+<body>
+<deck-root>
+
+  <deck-feature eyebrow="deck-scene-units" data-testid="scene-units-slide">
+    <h1 slot="title">Two hundred people came, and not one of them stayed</h1>
+    <deck-scene-units data-testid="scene-units" total="200">
+      <deck-scene-item icon="team" label="200 people, nine months" value="200" emphasis></deck-scene-item>
+      <deck-scene-item label="chose the right setting" value="0" note="not one of them"></deck-scene-item>
+    </deck-scene-units>
+    <deck-source>Fixture · no real figures</deck-source>
+  </deck-feature>
+
+  <deck-feature eyebrow="deck-scene-units · three panels" data-testid="scene-units-three-slide">
+    <h1 slot="title">By Friday most of the team is on board</h1>
+    <deck-scene-units data-testid="scene-units-three" total="100" columns="10">
+      <deck-scene-item label="Monday" value="18"></deck-scene-item>
+      <deck-scene-item label="Wednesday" value="47" note="the pilot group joined"></deck-scene-item>
+      <deck-scene-item label="Friday" value="83" emphasis note="everyone but the night shift"></deck-scene-item>
+    </deck-scene-units>
+  </deck-feature>
+
+  <deck-feature eyebrow="deck-scene-units · one big grid" data-testid="scene-units-one-slide">
+    <h1 slot="title">One in four of the 360 is already served</h1>
+    <deck-scene-units data-testid="scene-units-one" total="360">
+      <deck-scene-item icon="user" label="served so far" value="90" emphasis note="the other 270 are still waiting"></deck-scene-item>
+    </deck-scene-units>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

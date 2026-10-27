@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · deck-scene-steps</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-scene-steps.js"></script>
+</head>
+<body>
+<deck-root>
+
+  <deck-feature eyebrow="deck-scene-steps" data-testid="scene-steps-slide">
+    <h1 slot="title">Measure first, advise after</h1>
+    <deck-scene-steps data-testid="scene-steps"
+      conclusion="No change to a retailer's site without its consent"
+      conclusion-note="our tests run on a test shop or on recorded data"
+      conclusion-icon="lock">
+      <deck-scene-item label="measure" tag="no prerequisite"
+        note="five assistants asked typical questions, then a score"></deck-scene-item>
+      <deck-scene-item label="connect" tag="one week"
+        note="one read-only connector on the catalogue and the stock"></deck-scene-item>
+      <deck-scene-item label="advise" tag="once measured"
+        note="what to fix first, ranked by its effect on the score"></deck-scene-item>
+      <deck-scene-item label="specialise" tag="on demand"
+        note="one vertical at a time, where the score says the gap is widest"></deck-scene-item>
+    </deck-scene-steps>
+  </deck-feature>
+
+  <deck-feature eyebrow="deck-scene-steps · one emphasis, no band" data-testid="scene-steps-emphasis-slide">
+    <h1 slot="title">The second step pays</h1>
+    <deck-scene-steps data-testid="scene-steps-emphasis">
+      <deck-scene-item label="measure" tag="two weeks"
+        note="a score per assistant, on the questions buyers actually ask"></deck-scene-item>
+      <deck-scene-item label="fix the catalogue" tag="where it pays" emphasis
+        note="clean attributes and stock, so every assistant reads the same product"></deck-scene-item>
+      <deck-scene-item label="measure again" tag="monthly"
+        note="the same questions, to show the gap closing"></deck-scene-item>
+    </deck-scene-steps>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

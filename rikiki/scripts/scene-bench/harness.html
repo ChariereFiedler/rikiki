@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Scene bench · harness</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../tokens.css">
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<style>
+  /* One drawing unit is one pixel here · a scene of width W is W + 2 EDGE wide. */
+  body { margin: 0; background: var(--rik-surface-base, #fff); }
+  #stage { display: block; }
+  #stage > * { display: block; }
+</style>
+<script type="module" src="../../dist/deck-scene-cards.js"></script>
+<script type="module" src="../../dist/deck-scene-steps.js"></script>
+<script type="module" src="../../dist/deck-scene-flow.js"></script>
+<script type="module" src="../../dist/deck-scene-bars.js"></script>
+<script type="module" src="../../dist/deck-scene-matrix.js"></script>
+<script type="module" src="../../dist/deck-scene-ranges.js"></script>
+<script type="module" src="../../dist/deck-scene-lanes.js"></script>
+<script type="module" src="../../dist/deck-scene-units.js"></script>
+<script type="module" src="../../dist/deck-scene-band.js"></script>
+<script type="module" src="../../dist/deck-scene.js"></script>
+<script type="module" src="../../dist/deck-diagram.js"></script>
+<script type="module" src="./bench-page.mjs"></script>
+</head>
+<body>
+<div id="stage"></div>
+</body>
+</html>

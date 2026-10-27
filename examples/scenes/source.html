@@ -1,0 +1,169 @@
+<!doctype html>
+<!--
+  Rikiki · scenes · eight animated illustrations, written as data
+  Authoring view · run
+    node rikiki/bundle.mjs examples/scenes/source.html examples/scenes/index.html
+  to produce a single-file shareable copy with everything inlined.
+
+  Every claim on these slides is either true of rikiki itself or measured, and the
+  source line under the scene says which. The measured figures come from a real
+  86-slide deck checked on a busy laptop in October 2026, so read them as orders of
+  magnitude, not as a benchmark.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rikiki · scenes</title>
+<link rel="stylesheet" href="../../rikiki/themes/rikiki.css">
+<script type="module" src="../../rikiki/dist/index.js"></script>
+<script type="module" src="../../rikiki/dist/deck-scene-cards.js"></script>
+<script type="module" src="../../rikiki/dist/deck-scene-steps.js"></script>
+<script type="module" src="../../rikiki/dist/deck-scene-flow.js"></script>
+<script type="module" src="../../rikiki/dist/deck-scene-lanes.js"></script>
+<script type="module" src="../../rikiki/dist/deck-scene-bars.js"></script>
+<script type="module" src="../../rikiki/dist/deck-scene-ranges.js"></script>
+<script type="module" src="../../rikiki/dist/deck-scene-matrix.js"></script>
+<script type="module" src="../../rikiki/dist/deck-scene-units.js"></script>
+</head>
+<body>
+<deck-root transition="slide">
+
+  <deck-cover brand="rikiki · scenes" speaker="Eight shapes" duration="3 min">
+    <h1>Scenes that<br><span class="accent">self-check</span></h1>
+    <p class="sub">Words in, a measured drawing out.</p>
+    <deck-notes>
+      Eight scenes, one per kind of message. Each is a few lines of HTML: the scene measures the text in the deck's own font, lays everything out, animates it when the slide is shown, and rests at its final state in print.
+    </deck-notes>
+  </deck-cover>
+
+  <!-- ── cards · things of the same rank ───────────────────────── -->
+  <deck-feature id="three-ways" eyebrow="cards · parallel options">
+    <h1 slot="title">Three ways out for one deck</h1>
+    <deck-scene-cards>
+      <deck-scene-item icon="code" label="HTML file" tag="to edit"
+        note="readable source, no build step"></deck-scene-item>
+      <deck-scene-item icon="document" label="One file" tag="to send"
+        note="rikiki bundle inlines everything"></deck-scene-item>
+      <deck-scene-item icon="chart" label="PDF" tag="to print"
+        note="rikiki export, one page per slide"></deck-scene-item>
+    </deck-scene-cards>
+    <deck-source>rikiki CLI · bundle and export</deck-source>
+    <deck-notes>
+      Three things of the same rank, so three cards: nothing says one comes before another. If the order mattered it would be steps.
+    </deck-notes>
+  </deck-feature>
+
+  <!-- ── steps · things in order ───────────────────────────────── -->
+  <deck-feature id="brief-to-slide" eyebrow="steps · in order">
+    <h1 slot="title">From brief to verified slide</h1>
+    <deck-scene-steps conclusion="Then look at it, and check the whole deck" conclusion-icon="flag">
+      <deck-scene-item label="Say it" note="what the room must understand"></deck-scene-item>
+      <deck-scene-item label="Pick the shape" note="from what the items have in common"></deck-scene-item>
+      <deck-scene-item label="Write the items" note="words and numbers, no coordinates"></deck-scene-item>
+      <deck-scene-item label="Check" emphasis tag="a few seconds"
+        note="rikiki check deck.html --slides 7"></deck-scene-item>
+    </deck-scene-steps>
+    <deck-source>skill rikiki-scenes</deck-source>
+    <deck-notes>
+      The order is the message here, so steps. The emphasised one is the move that used to be missing: a check you can run on one slide.
+    </deck-notes>
+  </deck-feature>
+
+  <!-- ── flow · several inputs, one thing, one result ──────────── -->
+  <deck-feature id="what-check-reads" eyebrow="flow · converging">
+    <h1 slot="title">What check reads, and gives back</h1>
+    <deck-scene-flow>
+      <deck-scene-item icon="document" label="Your deck" note="HTML and the runtime"></deck-scene-item>
+      <deck-scene-item icon="code" label="Your scenes" note="the items you wrote"></deck-scene-item>
+      <deck-scene-item icon="search" label="Headless Chromium" emphasis
+        note="lays out, then measures"></deck-scene-item>
+      <deck-scene-item icon="document" label="A report" tag="JSON or text"
+        note="each finding on its slide"></deck-scene-item>
+      <deck-scene-item icon="flag" label="An exit code" tag="1 or 2"
+        note="1 fix the deck, 2 fix the call"></deck-scene-item>
+    </deck-scene-flow>
+    <deck-source>rikiki docs · the CLI, check</deck-source>
+    <deck-notes>
+      Inputs converge on one thing, which then gives a result: that is a flow. The emphasis marks the hub, and the order says who is a source and who an outcome.
+    </deck-notes>
+  </deck-feature>
+
+  <!-- ── lanes · the same traffic until one thing changes ─────── -->
+  <deck-feature id="red-stops-release" eyebrow="lanes · before and after">
+    <h1 slot="title">A red check stops what is late</h1>
+    <deck-scene-lanes gate="CI RED" trigger="check reports an error" passed="3" blocked="3">
+      <deck-scene-item icon="code" label="main" tag="3 merged, 3 held"></deck-scene-item>
+      <deck-scene-item icon="flag" label="Tags" tag="3 cut, 3 held"></deck-scene-item>
+      <deck-scene-item icon="cloud" label="Site" tag="3 live, 3 held"></deck-scene-item>
+    </deck-scene-lanes>
+    <deck-source>An illustration of the idea · the token counts are not measurements</deck-source>
+    <deck-notes>
+      The same traffic on three lanes, until one thing changes. What had already passed stays passed; what was still on its way queues against the gate.
+    </deck-notes>
+  </deck-feature>
+
+  <!-- ── bars · one number each ────────────────────────────────── -->
+  <deck-feature id="markup-size" eyebrow="bars · compared by size">
+    <h1 slot="title">A scene is a fraction of a drawing</h1>
+    <deck-scene-bars unit="B" max="4000">
+      <deck-scene-item label="hand-drawn SVG" value="3 491" tag="3 491 B"></deck-scene-item>
+      <deck-scene-item label="scene" value="411" tag="411 B" emphasis></deck-scene-item>
+    </deck-scene-bars>
+    <deck-source>Mean markup per illustration · 48 hand-drawn SVGs of a real deck, against this deck's 8 scenes</deck-source>
+    <deck-notes>
+      Bytes of source an author writes and maintains for one illustration. The hand-drawn figure is the mean of 48 slides, which ran from about 2 to 5 kilobytes.
+    </deck-notes>
+  </deck-feature>
+
+  <!-- ── ranges · durations on one scale ───────────────────────── -->
+  <deck-feature id="check-duration" eyebrow="ranges · how long">
+    <h1 slot="title">A few slides check in seconds</h1>
+    <deck-scene-ranges scale="450" unit="seconds" caption="an 86-slide deck, measured">
+      <deck-scene-item label="Whole deck" note="without, then with the pixel pass" from="169" to="426"
+        tag="169 to 426 s"></deck-scene-item>
+      <deck-scene-item label="A few slides" note="check --slides 50-54, or one" from="26" to="38"
+        tag="26 to 38 s"></deck-scene-item>
+    </deck-scene-ranges>
+    <deck-source>One 12 MB deck, October 2026, on a busy laptop · most of the few-slides time is loading the page</deck-source>
+    <deck-notes>
+      A bar from the shortest to the longest run we saw. The few-slides figure is mostly loading the page, which is why one slide is not much faster than five.
+    </deck-notes>
+  </deck-feature>
+
+  <!-- ── matrix · who stands where ─────────────────────────────── -->
+  <deck-feature id="what-each-reads" eyebrow="matrix · where each stands">
+    <h1 slot="title">What each scene reads</h1>
+    <deck-scene-matrix columns="label|note|icon|tag|value|emphasis" statuses="prod=read|none=ignored">
+      <deck-scene-item label="steps" level="prod prod none prod none prod"></deck-scene-item>
+      <deck-scene-item label="units" emphasis level="prod prod prod none prod prod"></deck-scene-item>
+    </deck-scene-matrix>
+    <deck-source>Kept equal to the code by a test · two of the eight</deck-source>
+    <deck-notes>
+      An attribute a scene does not read changes nothing on the slide. check reports it as SCENE_ATTRIBUTE_IGNORED, because the picture looks finished and is not what was written.
+    </deck-notes>
+  </deck-feature>
+
+  <!-- ── units · one cell per thing ────────────────────────────── -->
+  <deck-feature id="twelve-codes" eyebrow="units · one cell per thing">
+    <h1 slot="title">Twelve checks guard a scene</h1>
+    <deck-scene-units total="12" columns="6">
+      <deck-scene-item icon="alert" label="defects" value="8" emphasis note="the picture is wrong"></deck-scene-item>
+      <deck-scene-item icon="document" label="writing rules" value="4" note="the picture reads badly"></deck-scene-item>
+    </deck-scene-units>
+    <deck-source>rikiki check · SCENE_* codes, errors and warnings</deck-source>
+    <deck-notes>
+      One cell per check. Eight of them mean the slide shows something other than what was written; four are writing rules, such as one emphasis per scene.
+    </deck-notes>
+  </deck-feature>
+
+  <deck-takeaway kicker="The whole point">
+    Pick the shape from what the items have in common, write the words, and let the check say what the drawing would not.
+    <deck-notes>
+      The picture is not a decoration, it is the evidence for the title. When it is wrong, the check should know before the room does.
+    </deck-notes>
+  </deck-takeaway>
+
+</deck-root>
+</body>
+</html>

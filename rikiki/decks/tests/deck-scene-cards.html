@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · deck-scene-cards</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-scene-cards.js"></script>
+</head>
+<body>
+<deck-root>
+
+  <deck-feature eyebrow="deck-scene-cards" data-testid="scene-cards-slide">
+    <h1 slot="title">Only one protocol is a safe bet today</h1>
+    <deck-scene-cards data-testid="scene-cards">
+      <deck-scene-item icon="target" label="MCP" tag="safe bet" emphasis
+        note="one connector serves ChatGPT, Claude and Copilot"></deck-scene-item>
+      <deck-scene-item icon="cloud" label="UCP" tag="publish too"
+        note="real volume, but American, no settlement in the EU"></deck-scene-item>
+      <deck-scene-item icon="refresh" label="ACP" tag="too unstable"
+        note="five versions in seven months"></deck-scene-item>
+      <deck-scene-item icon="ban" label="AP2" tag="too early"
+        note="no production deployment found"></deck-scene-item>
+    </deck-scene-cards>
+    <deck-source>Protocol specifications and announcements, October 2026</deck-source>
+  </deck-feature>
+
+  <deck-feature eyebrow="deck-scene-cards · two cards" data-testid="scene-cards-two-slide">
+    <h1 slot="title">Two cards share the width</h1>
+    <deck-scene-cards data-testid="scene-cards-two">
+      <deck-scene-item icon="user" label="Before" note="every word placed by hand, coordinate by coordinate"></deck-scene-item>
+      <deck-scene-item icon="spark" label="After" emphasis note="the words, and the scene places them"></deck-scene-item>
+    </deck-scene-cards>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>
