@@ -2140,7 +2140,7 @@ test.describe('a check policy', () => {
   });
 
   /** A plugin whose one rule counts the words of each slide's title, and says so on the title. */
-  const plugin = (namespace: string, folder = 'policy-plugins') => {
+  const plugin = (namespace: string, folder = 'policy-plugins', scope = 'slide') => {
       const dir = join(workDir, folder, `plugin-${namespace.toLowerCase()}`);
       mkdirSync(dir, { recursive: true });
       writeFileSync(
@@ -2150,7 +2150,7 @@ test.describe('a check policy', () => {
       writeFileSync(
         join(dir, 'checks.js'),
         `globalThis[Symbol.for('rikiki.checks.v1')].define({ apiVersion: 1, id: 'demo-${namespace.toLowerCase()}', version: '1.0.0', rules: [{
-          code: '${namespace}_TITLE_WORDS', scope: 'slide', severity: 'warning',
+          code: '${namespace}_TITLE_WORDS', scope: '${scope}', severity: 'warning',
           run(ctx) {
             const max = (ctx.options ?? {}).max ?? 100;
             const title = ctx.query('h1')[0];
@@ -2193,6 +2193,17 @@ test.describe('a check policy', () => {
     const demo = r.json.diagnostics.filter((d: any) => d.code === 'DEMO_TITLE_WORDS');
     expect(demo.map((d: any) => d.slide), r.stdout).toEqual([2]);
     expect(r.json.suppressed.filter((d: any) => d.code === 'DEMO_TITLE_WORDS').map((d: any) => d.slide)).toEqual([1, 3, 4]);
+  });
+
+  test('runs a document plugin rule taken back by a slide override', () => {
+    const name = 'document-takes-back';
+    const deck = policyDeck({
+      plugins: [{ manifest: plugin('DEMO', `policy-${name}`, 'document') }],
+      check: { root: true, checks: '-demo-*', overrides: [{ slides: '1', checks: 'demo-title-words' }] },
+    }, name);
+    const r = run(['check', deck, '--json', '--no-visual']);
+    const demo = r.json.diagnostics.filter((d: any) => d.code === 'DEMO_TITLE_WORDS');
+    expect(demo.map((d: any) => d.slide), r.stdout).toEqual([1]);
   });
 
   test('says an option no rule reads · a typo in the rule it names', () => {

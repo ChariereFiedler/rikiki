@@ -2259,8 +2259,8 @@ function policyMistakes(policy, resolution, overrides, scopeErrors) {
 
 /** What a plugin's rules may do on a slide · which are silenced there (they then do
  *  not run at all) and the options the policy gives each (`check.options`,
- *  `--check-option`). A rule of the whole document is judged on the deck's policy;
- *  a rule of a slide also on the overrides that cover that slide by its slides,
+ *  `--check-option`). A rule of the whole document runs if kept anywhere;
+ *  a rule of a slide uses the overrides that cover that slide by its slides,
  *  kinds or tags · one that names elements is judged on its findings, after. */
 function pluginPolicyOf(policy, placed) {
   const optionsOf = (code) => {
@@ -2282,6 +2282,10 @@ function pluginPolicyOf(policy, placed) {
     const silenced = (rule) => {
       const around = rule.scope === 'document' ? [] : slideOverrides;
       if (keptWith(rule, around)) return false;
+      // A document rule can report findings on any slide. Run it if a slide
+      // override takes it back anywhere, then filter each finding at its owner.
+      if (rule.scope === 'document' && placed.outline.some((owner) =>
+        keptWith(rule, placed.overrides.filter((o) => o.elements === null && o.covers({ slide: owner.index }, owner))))) return false;
       // One element override at a time, in the order written, is enough to tell.
       return !elementOverrides(rule).some((one) => keptWith(rule, placed.overrides.filter((o) => o === one || around.includes(o))));
     };

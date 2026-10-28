@@ -1224,7 +1224,10 @@ export class DeckDiagram extends SceneElement {
       slide = slide.parentElement;
     if (!slide?.parentElement) return;
     const declared = Number(slide.getAttribute('steps') ?? slide.getAttribute('data-steps') ?? '0');
-    if (needed > declared) slide.setAttribute('data-steps', String(needed));
+    // The engine gives `steps` precedence over `data-steps`. Raise that same
+    // attribute when the author supplied it, or later pictures stay unreachable.
+    if (needed > declared)
+      slide.setAttribute(slide.hasAttribute('steps') ? 'steps' : 'data-steps', String(needed));
   }
 
   override render() {

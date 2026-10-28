@@ -473,6 +473,22 @@ for (const [index, id] of INTENT.entries()) {
   });
 }
 
+for (const declared of [0, 1, 3]) {
+  test(`a diagram preserves every click with an explicit steps="${declared}" on its slide`, async ({ page }) => {
+    await page.route('**/deck-diagram-intent.html', async (route) => {
+      const response = await route.fetch();
+      const body = (await response.text()).replace('id="kill-switch"', `id="kill-switch" steps="${declared}"`);
+      await route.fulfill({ response, body });
+    });
+    const scene = await openIntent(page, 1);
+    await expect(page.locator(`${LIVE} > #kill-switch`)).toHaveAttribute('steps', String(Math.max(declared, 2)));
+    await clickAndSettle(page, scene);
+    await clickAndSettle(page, scene);
+    await expect(page.locator(`${LIVE} > #kill-switch`)).toHaveAttribute('active', '');
+    await expect(scene.locator('rect.gate')).toHaveClass(/gate-closed/);
+  });
+}
+
 test('intent · the kill switch: the chain rides on click 1, the gate under the reader closes on click 2', async ({ page }) => {
   const scene = await openIntent(page, 1);
   await expect(page.locator(`${LIVE} > #kill-switch`)).toHaveAttribute('data-steps', '2');
