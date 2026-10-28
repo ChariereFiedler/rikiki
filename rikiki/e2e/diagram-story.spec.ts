@@ -43,6 +43,10 @@ class StoryDeck {
     return scene.evaluate((el) => JSON.parse(el.shadowRoot!.querySelector('svg')!.getAttribute('data-story')!));
   }
 
+  lineOpacity(scene: Locator) {
+    return scene.evaluate((el) => Number(getComputedStyle(el.shadowRoot!.querySelector('path.line')!).opacity));
+  }
+
   /** Hold the story at `seconds` and wait for the frame to be painted. */
   async seek(scene: Locator, seconds: number) {
     await scene.evaluate((el, s) => (el as unknown as { seek(s: number): void }).seek(s), seconds);
@@ -93,6 +97,27 @@ async function reducedDeck(browser: Browser) {
   const context = await browser.newContext({ reducedMotion: 'reduce' });
   return { context, deck: new StoryDeck(await context.newPage()) };
 }
+
+test('a story keeps its link hidden until both endpoints have entered', async ({ page }) => {
+  await page.route('**/deck-diagram-story.html', async (route) => {
+    const response = await route.fetch();
+    const body = (await response.text()).replace(/<deck-diagram\b[^>]*>[\s\S]*?<\/deck-diagram>/,
+      `<deck-diagram data-testid="kill-switch" play="enter" layout="row">
+        <dg-box name="a" label="A" beat="event"></dg-box>
+        <dg-box name="b" label="B" beat="proof"></dg-box>
+        <dg-link from="a" to="b"></dg-link>
+      </deck-diagram>`);
+    await route.fulfill({ response, body });
+  });
+  const deck = new StoryDeck(page);
+  const scene = await deck.open(1);
+  const script = await deck.script(scene);
+  const target = script.beats.find((beat: { mark: string }) => beat.mark === 'b').atMs / 1000;
+  await deck.seek(scene, target - 0.05);
+  expect(await deck.lineOpacity(scene)).toBe(0);
+  await deck.seek(scene, 12);
+  expect(await deck.lineOpacity(scene)).toBe(1);
+});
 
 for (const [index, id] of STORIES.entries()) {
   test.describe(`story · ${id}`, () => {

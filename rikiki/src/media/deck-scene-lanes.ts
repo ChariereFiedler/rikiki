@@ -73,6 +73,8 @@ const MAX_TAG = 360;
 const MAX_GATE_LABEL = 280;
 const ARROW_HEAD = 12;
 const GATE_RADIUS = 12;
+/** The label ends above the lane's centre and its note starts below it. */
+const LABEL_NOTE_GAP = 12;
 
 interface Lane {
   label: Fitted;
@@ -230,16 +232,20 @@ export class DeckSceneLanes extends SceneElement {
 
   private laneRow(lane: Lane, y: number, frame: Frame, textLeft: number) {
     const hasNote = lane.note.lines.length > 0;
-    const labelBase = hasNote ? y - 4 : y + (lane.label.size * BASELINE) / 2 - 2;
+    const labelBase = hasNote ? y - LABEL_NOTE_GAP / 2 : y + (lane.label.size * BASELINE) / 2 - 2;
     const head = frame.trackRight;
     return svg`<g class="pop">
       ${lane.icon ? svg`<g transform="translate(0 ${y - ICON_SIZE / 2}) scale(${ICON_SCALE})"><path class="icon" d=${lane.icon}></path></g>` : ''}
       ${lane.label.lines.map(
+        // Anchor each font box at its side of the gap. Fallback fonts can have
+        // taller ascenders/descenders than the theme's face.
         (line) => svg`<text class="label" x=${textLeft} y=${labelBase}
+          dominant-baseline=${hasNote ? 'text-after-edge' : 'alphabetic'}
           font-size=${lane.label.size} font-weight=${TYPE.label.weight}>${line}</text>`,
       )}
       ${lane.note.lines.map(
-        (line) => svg`<text class="note" x=${textLeft} y=${y + 8 + lane.note.size * BASELINE}
+        (line) => svg`<text class="note" x=${textLeft} y=${y + LABEL_NOTE_GAP / 2}
+          dominant-baseline="text-before-edge"
           font-size=${lane.note.size} font-weight=${TYPE.note.weight}>${line}</text>`,
       )}
       <path class="line muted" d="M${frame.trackLeft} ${y}H${head}M${head - ARROW_HEAD} ${y - ARROW_HEAD / 2}L${head} ${y}L${head - ARROW_HEAD} ${y + ARROW_HEAD / 2}"></path>

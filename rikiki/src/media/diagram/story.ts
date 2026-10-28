@@ -519,15 +519,20 @@ function setupCues(choreography: Choreography, skipped: Set<string>): Cue[] {
 const says = (node: DgNode, attribute: string) => node.attrs[attribute] !== undefined;
 
 /** Links and notes that join a mark coming in on its beat come in with it. */
-function followersOfLate(drawn: DiagramLayout, entering: Map<string, string>): Map<string, string> {
-  const follow = new Map<string, string>();
+function followersOfLate(
+  drawn: DiagramLayout,
+  entering: Map<string, string>,
+): Map<string, string[]> {
+  const follow = new Map<string, string[]>();
   drawn.links.forEach((link, j) => {
-    const lead = entering.get(link.from) ?? entering.get(link.to);
-    if (lead) follow.set(cueIds.link(j), lead);
+    const leads = [entering.get(link.from), entering.get(link.to)].filter(
+      (name): name is string => !!name,
+    );
+    if (leads.length) follow.set(cueIds.link(j), leads);
   });
   drawn.notes.forEach((note, k) => {
     const lead = entering.get(note.target);
-    if (lead) follow.set(cueIds.note(k), lead);
+    if (lead) follow.set(cueIds.note(k), [lead]);
   });
   return follow;
 }
@@ -752,10 +757,13 @@ export function planStory(
     });
   }
   // What joins a mark that comes in late comes in once it is there.
-  for (const [id, lead] of follow) {
-    const at = placed.get(lead);
+  for (const [id, leads] of follow) {
+    const ends = leads.flatMap((lead) => {
+      const at = placed.get(lead);
+      return at ? [at.end] : [];
+    });
     const cue = cues.get(id);
-    if (at && cue) set(id, at.end, cue.duration);
+    if (ends.length && cue) set(id, Math.max(timing.get(id)?.start ?? 0, ...ends), cue.duration);
   }
   // A ride that waits for its line comes in with it.
   for (const cue of choreography.cues)

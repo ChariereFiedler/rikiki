@@ -369,6 +369,23 @@ describe('a story · a lever and the route it turns away from', () => {
 });
 
 describe('a group or a panel that comes in on its beat', () => {
+  for (const reverse of [false, true]) {
+    it(`waits for both endpoints before showing a link (${reverse ? 'later source' : 'later target'})`, () => {
+      const { drawn, plan } = story([
+        el('dg-box', { name: 'a', label: 'A', beat: 'event' }),
+        el('dg-box', { name: 'b', label: 'B', beat: 'proof' }),
+        el('dg-link', { from: reverse ? 'b' : 'a', to: reverse ? 'a' : 'b' }),
+      ]);
+      const end = (name: string) => {
+        const timing = plan.timing.get(cueIds.item(indexOf(drawn, name)))!;
+        return timing.start + timing.duration;
+      };
+      expect(plan.timing.get(cueIds.link(0))!.start).toBeGreaterThanOrEqual(
+        Math.max(end('a'), end('b')),
+      );
+    });
+  }
+
   const late = () => [
     el('dg-box', { name: 'avant', label: 'avant', beat: 'event' }),
     el(

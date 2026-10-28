@@ -22,6 +22,13 @@ class ChartsDeck {
     return this.page.locator(`${LIVE} > [active] [data-testid="${id}"]`);
   }
 
+  async replaceColumns(scene: Locator, attrs: Record<string, string>) {
+    await scene.evaluate((el, attributes) => {
+      const columns = el.querySelector('dg-columns')!;
+      for (const [name, value] of Object.entries(attributes)) columns.setAttribute(name, value);
+    }, attrs);
+  }
+
   async open(id: (typeof SLIDES)[number]): Promise<Locator> {
     await this.page.route('https://fonts.googleapis.com/**', (route) =>
       route.fulfill({ contentType: 'text/css', body: '' }),
@@ -83,6 +90,17 @@ async function reducedDeck(browser: Browser) {
   const context = await browser.newContext({ reducedMotion: 'reduce' });
   return { context, deck: new ChartsDeck(await context.newPage()) };
 }
+
+test('reports a stacked total above max and clears it when the total fits', async ({ page }) => {
+  const deck = new ChartsDeck(page);
+  const scene = await deck.open('lundi');
+  await deck.replaceColumns(scene, {
+    series: 'x\ny', columns: 'a 60 60\nb 40 50', max: '100', stacked: '', focus: 'a',
+  });
+  await expect(scene).toHaveAttribute('data-scene-issues', /DG_VALUE_RANGE/);
+  await deck.replaceColumns(scene, { columns: 'a 60 40\nb 40 50' });
+  await expect(scene).not.toHaveAttribute('data-scene-issues', /DG_VALUE_RANGE/);
+});
 
 for (const id of SLIDES) {
   test.describe(`charts · ${id}`, () => {

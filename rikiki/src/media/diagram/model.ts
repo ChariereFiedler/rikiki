@@ -841,9 +841,16 @@ function checkRanges(node: DgNode, where: string, state: ParseState): void {
     const max = readNumber(node.attrs.max);
     if (!(max > 0)) outside.push(`max="${node.attrs.max}" is not above 0`);
     const series = Math.max(1, linesOf(node.attrs.series).length);
-    for (const line of linesOf(node.attrs.columns))
-      for (const value of chartRow(line, series).figures.map(figureValue))
-        if (value > max) outside.push(`value ${value} above max ${max}`);
+    const stacked =
+      node.attrs.stacked !== undefined && node.attrs.stacked !== 'false' && series > 1;
+    for (const line of linesOf(node.attrs.columns)) {
+      const row = chartRow(line, series);
+      const values = row.figures.map(figureValue);
+      for (const value of values) if (value > max) outside.push(`value ${value} above max ${max}`);
+      const total = values.reduce((sum, value) => sum + Math.max(0, value), 0);
+      if (stacked && total > max)
+        outside.push(`stacked total ${total} above max ${max} for "${row.label}"`);
+    }
     const threshold = node.attrs.threshold ? readNumber(node.attrs.threshold) : 0;
     if (threshold < 0 || threshold > max)
       outside.push(`threshold ${threshold} outside 0 to ${max}`);

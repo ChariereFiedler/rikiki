@@ -105,6 +105,35 @@ test.describe('the layout keeps every word readable', () => {
   }
 });
 
+test('lane labels and notes keep a gap with a tall fallback font', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await openScene(page, 'lanes', 2);
+  // Font metrics differ on the browser runner. Keep that condition portable:
+  // use a shipped face with taller ascent/descent, rather than a system font.
+  await page.addStyleTag({ content: `
+    @font-face {
+      font-family: 'Tall lane fixture';
+      src: url('/rikiki/fonts/6xK3dSBYKcSV-LCoeQqfX1RYOo3qOK7l.woff2');
+      ascent-override: 120%;
+      descent-override: 30%;
+    }
+    [data-testid="scene-lanes-notes"] { --rik-font-sans: 'Tall lane fixture'; }
+  ` });
+  const scene = sceneById(page, 'scene-lanes-notes');
+  await scene.evaluate(async (el) => {
+    await document.fonts.load('31px "Tall lane fixture"');
+    const host = el as HTMLElement & { requestUpdate(): void; updateComplete: Promise<boolean> };
+    host.requestUpdate();
+    await host.updateComplete;
+  });
+  const { texts } = await textBoxes(page, 'lanes');
+  for (const [label, note] of [['Free', 'shared pool'], ['Team', 'per workspace']]) {
+    const title = texts.find((t) => t.text === label)!;
+    const aside = texts.find((t) => t.text === note)!;
+    expect(aside.top - title.bottom, `${label} leaves space before its note`).toBeGreaterThan(0);
+  }
+});
+
 test('two scene modules in one deck both draw', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

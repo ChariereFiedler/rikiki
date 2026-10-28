@@ -236,6 +236,15 @@ describe('what a chart needs to read', () => {
     expect(columns({ columns: 'a 10\nb 20', threshold: 'haut' })).toContain('DG_VALUE_INVALID');
   });
 
+  it('checks stacked column totals against max, while grouped series keep their own scale', () => {
+    const data = { columns: 'a 60 60\nb 40 50', series: 'x\ny', max: '100' };
+    expect(columns({ ...data, stacked: '' })).toContain('DG_VALUE_RANGE');
+    expect(columns({ ...data, stacked: 'false' })).not.toContain('DG_VALUE_RANGE');
+    expect(columns({ ...data, columns: 'a 60 40\nb 40 50', stacked: '' })).not.toContain(
+      'DG_VALUE_RANGE',
+    );
+  });
+
   it('a part or a column below 0 is said · only a step of a waterfall goes down', () => {
     expect(pie('a −10\nb 50')).toContain('DG_CHART_DATA');
     expect(columns({ columns: 'a −10\nb 20' })).toContain('DG_CHART_DATA');
