@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.8.0] - 2026-10-27
+## [0.8.0] - 2026-10-28
 
 Illustration is the theme of this release: a slide's picture is now written as data or as an intent, never as a coordinate, and `check` proves it.
 
@@ -88,6 +88,7 @@ Illustration is the theme of this release: a slide's picture is now written as d
 
 ### Fixed
 - Pre-release review fixes: diagrams retain every click when their slide declares `steps`; document plugin rules re-enabled for a slide run again; lane labels and notes keep a gap with fallback fonts; stacked column totals above `max` are reported; story links wait for both endpoints to enter.
+- Illustration checks include every drawing on a slide and ignore shapes hidden by an opacity-zero ancestor. Malformed signature hints fall back to measured geometry. Negative scene values are reported even with an inferred scale. Invalid optional brief fields are rejected before planning, and scene measurements report an unavailable external font while using its fallback.
 - Traps of the free grammar in `deck-diagram`, each found by authors drawing fifteen concepts (`examples/diagrams-prompts`) and each the engine's: `link="arrow"` on a `dg-group` was dropped (`DG_ATTR_UNKNOWN`), and a nested row, column or ring now chains its children; a link between two boxes of a row ran in a straight line under the box between them, and now goes round it, above, or under when above is taken; a `tone` on a `dg-bar` was read and never painted, and now fills the bar; gates in series on one lane filtered once, and now filter in cascade (each shedding gate lets half of what reaches it through, a closed one holds it); a `dg-text side="top"` on a mark at the top of the drawing, or on what lanes run into, found no side and was reported as `DG_NO_FIT`, and now stands above it, the drawing moved down to hold it, and a note above or under a mark flush with an edge slides inside the room.
 - A gate standing on the last lanes only had its word on the track of the lane above it: the word goes under the gate. A cursor's word glued to an axis label beside it now goes under every label.
 - An intent no longer drops a mark without a word: an `inflow` or `outflow` of a stock another intent draws (a merge's `into`, a cause's `effect`, a threshold's `measure`) was not drawn, and is now `INT_ROLE_EXTRA`; a mark that is both the `effect` of a cause and the `origin` of a wave was drawn twice, and is now drawn once and reported the same way.
