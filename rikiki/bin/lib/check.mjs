@@ -199,7 +199,7 @@ const sceneFix = (issue) => {
 
 /** What a diagram wrote of itself on its svg · null for any other drawing, or for
  *  an attribute that is not the diagram's JSON (a hand-written one). */
-const declaredSignature = (text) => {
+const declaredMetadata = (text) => {
   if (!text) return null;
   try {
     return JSON.parse(text);
@@ -207,6 +207,29 @@ const declaredSignature = (text) => {
     return null;
   }
 };
+
+/** A diagram signature supplies every field the diversity and richness readers
+ *  consume. Other metadata falls back to the drawing's measured ink, just as
+ *  an attribute containing malformed JSON does. */
+export function readIllustrationSignature(text) {
+  const signature = declaredMetadata(text);
+  const object = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
+  const strings = (value) => Array.isArray(value) && value.every((entry) => typeof entry === 'string');
+  const count = (value) => Number.isSafeInteger(value) && value >= 0;
+  if (!object(signature)) return null;
+  const { structure, visual, time } = signature;
+  if (!object(structure) || !object(visual) || !object(time)) return null;
+  const valid = typeof structure.kind === 'string'
+    && (structure.intent === null || typeof structure.intent === 'string')
+    && strings(structure.layouts)
+    && object(structure.marks) && Object.values(structure.marks).every(count)
+    && count(structure.links)
+    && ['none', 'chain', 'fan-out', 'fan-in', 'graph', 'cycle'].includes(structure.topology)
+    && ['tokens', 'gates', 'morph'].every((name) => typeof structure[name] === 'boolean')
+    && strings(visual.surfaces) && strings(visual.tones) && count(visual.density)
+    && count(time.clicks) && strings(time.motifs);
+  return valid ? signature : null;
+}
 
 /** A diagram's intent finding · the drawing does not show what it declares. */
 const isMeaning = (issue) => issue.code.startsWith('INT_');
@@ -560,13 +583,14 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, pathRead
   const SVG_NOT_PAINTED = new Set(['defs', 'clipPath', 'mask', 'pattern', 'symbol', 'marker']);
 
   /** Is this element of `svg` on screen at all? `display: none` on it or on
-   *  any group above it, `visibility: hidden`, and sitting in a definition all
+   *  any group above it, zero opacity, `visibility: hidden`, and a definition all
    *  say no. Walked by hand: `checkVisibility()` answers true for a <text>
    *  inside a hidden <g>. */
-  const isDrawnIn = (el, svg) => {
-    for (let node = el; node && node !== svg; node = node.parentElement) {
+  const isDrawnIn = (el) => {
+    for (let node = el; node; node = node.parentElement ?? node.getRootNode()?.host) {
       if (SVG_NOT_PAINTED.has(node.localName)) return false;
-      if (getComputedStyle(node).display === 'none') return false;
+      const style = getComputedStyle(node);
+      if (style.display === 'none' || Number(style.opacity) === 0) return false;
     }
     return getComputedStyle(el).visibility !== 'hidden';
   };
@@ -632,7 +656,7 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, pathRead
   const shapesOf = (svg) => [...svg.querySelectorAll('rect, circle')]
     .filter((shape) => {
       const style = getComputedStyle(shape);
-      return (style.fill !== 'none' || style.stroke !== 'none') && isDrawnIn(shape, svg);
+      return (style.fill !== 'none' || style.stroke !== 'none') && isDrawnIn(shape);
     })
     .map((shape) => {
       const box = screenBoxOf(shape);
@@ -643,7 +667,7 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, pathRead
   /** Every label of a drawing worth measuring: words in it, drawn, with an
    *  area. Its box is the ink it lays down, on screen. */
   const labelsOf = (svg) => [...svg.querySelectorAll('text')]
-    .filter((text) => text.textContent.trim() && text.getNumberOfChars() && isDrawnIn(text, svg))
+    .filter((text) => text.textContent.trim() && text.getNumberOfChars() && isDrawnIn(text))
     .map((text) => ({ el: text, box: screenBoxOf(text, inkBoxOf(text)) }))
     .filter((label) => label.box);
 
@@ -772,7 +796,7 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, pathRead
       return opacity;
     };
     const shapes = [...svg.querySelectorAll('rect, circle')]
-      .filter((shape) => isDrawnIn(shape, svg))
+      .filter((shape) => isDrawnIn(shape))
       .map((shape) => {
         const fill = toRgba(getComputedStyle(shape).fill);
         const opacity = opacityOf(shape) * Number(getComputedStyle(shape).fillOpacity);
@@ -876,7 +900,7 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, pathRead
    *  and whether the fill is the accent · what the illustration rules read. */
   const inkShapesOf = (svg, accent) => {
     const painted = [...svg.querySelectorAll('rect, circle, ellipse, path, line, polygon, polyline')]
-      .filter((shape) => isDrawnIn(shape, svg));
+      .filter((shape) => isDrawnIn(shape));
     return painted
       .map((shape) => {
         const style = getComputedStyle(shape);
@@ -1088,7 +1112,7 @@ const inspectPage = ({ limits, titleReader, graphGeometry, boxGeometry, pathRead
       svgTextOverlaps: overlaps.sort((a, b) => b.area - a.area).slice(0, limits.svgFindingsPerSlide),
       svgTextSmall: small.sort((a, b) => a.px - b.px).slice(0, limits.svgFindingsPerSlide),
       svgTextContrast: contrast.sort((a, b) => a.ratio - b.ratio).slice(0, limits.svgFindingsPerSlide),
-      illustrations: illustrations.slice(0, 6),
+      illustrations,
       motifs,
       sceneIssues,
       sceneFonts,
@@ -1891,12 +1915,12 @@ function diagnose(page, source, limits, illustrations = null, motifs = null) {
         slide: slide.index,
         slideId: slide.id,
         element: declared.path,
-        motif: { ...declaredSignature(declared.motif), words: wordsByMark({ texts: declared.texts }) },
+        motif: { ...declaredMetadata(declared.motif), words: wordsByMark({ texts: declared.texts }) },
       });
     for (const illustration of slide.illustrations ?? []) {
       const verdict = lintIllustration(illustration.model, limits.ill);
       const meaning = meaningOf(illustration, slide.sceneIssues ?? []);
-      const declared = declaredSignature(illustration.signature);
+      const declared = readIllustrationSignature(illustration.signature);
       illustrations?.push({
         slide: slide.index,
         slideId: slide.id,
@@ -1914,7 +1938,7 @@ function diagnose(page, source, limits, illustrations = null, motifs = null) {
         // (`data-motif`: its marks, its act, its pair, its zoom-from) · whether a
         // repeat progresses and what the deck declares, read by `diversityOf`,
         // `richnessOf` and `motifsOf`, and dropped from the report.
-        motif: { ...declaredSignature(illustration.motif), words: wordsByMark(illustration.model) },
+        motif: { ...declaredMetadata(illustration.motif), words: wordsByMark(illustration.model) },
         // What the verdict is made of · judged again once the deck's policy has
         // dropped findings or changed their severity (`rescoreIllustrations`).
         findings: {

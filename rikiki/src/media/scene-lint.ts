@@ -422,17 +422,17 @@ function lintBars(
     [...(max === false ? ['max'] : []), ...(height === false ? ['height'] : [])],
     '`max` and `height` must be positive numbers · the scene drew its default instead',
   );
-  if (typeof max === 'number') {
-    report(
-      'SCENE_VALUE_CLIPPED',
-      'error',
-      named((item) => {
-        const value = readFigure(item.value);
-        return value !== null && (value > max || value < 0);
-      }),
-      `a value is past the scale (0 to ${max}) · its bar stops at the edge, so it is not the size it says · raise \`max\``,
-    );
-  }
+  report(
+    'SCENE_VALUE_CLIPPED',
+    'error',
+    named((item) => {
+      const value = readFigure(item.value);
+      return value !== null && (value < 0 || (typeof max === 'number' && value > max));
+    }),
+    typeof max === 'number'
+      ? `a value is outside the scale (0 to ${max}) · its bar stops at the edge · use non-negative values, or raise \`max\` for values above it`
+      : 'a value is negative · the automatic scale starts at zero, so its bar stays flat · use non-negative values or a chart with a signed scale',
+  );
   report(
     'SCENE_GROUP_SPLIT',
     'warning',
@@ -468,16 +468,17 @@ function lintScale(
     scale === false ? ['scale'] : [],
     '`scale` must be a positive number · the scene fitted the scale to the rows instead',
   );
-  if (typeof scale !== 'number') return;
   const past = (text: string | null) => {
     const value = parseValue(text);
-    return value !== null && (value > scale || value < 0);
+    return value !== null && (value < 0 || (typeof scale === 'number' && value > scale));
   };
   report(
     'SCENE_VALUE_CLIPPED',
     'error',
     named((item) => past(item.from) || past(item.to)),
-    `a bound is past the scale (0 to ${scale}) · the bar stops at the edge, so it is not the length it says · raise \`scale\``,
+    typeof scale === 'number'
+      ? `a bound is outside the scale (0 to ${scale}) · the bar stops at the edge · use non-negative bounds, or raise \`scale\` for bounds above it`
+      : 'a bound is negative · the automatic scale starts at zero, so the bar stops at the edge · use non-negative bounds',
   );
 }
 

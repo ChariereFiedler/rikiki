@@ -1276,6 +1276,55 @@ test.describe('text inside a drawing', () => {
     expect(silenced.suppressed.map((d: any) => d.code)).toContain('ILL_ESCAPE');
   });
 
+  test('measures a seventh illustration on the same slide and catches its defect', () => {
+    const drawings = Array.from({ length: 7 }, (_, i) => `<svg id="ill-${i + 1}" viewBox="0 0 500 150" style="width:500px;height:150px">
+      <rect x="10" y="20" width="100" height="100" fill="#aaa"/>
+      <rect x="180" y="20" width="100" height="100" fill="#aaa"/>
+      <rect x="${i === 6 ? 470 : 350}" y="20" width="100" height="100" fill="#aaa"/>
+    </svg>`).join('');
+    deck('ill-seven', `<deck-feature><h1 slot="title">Seven drawings</h1>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">${drawings}</div>
+    </deck-feature>`);
+    const r = reportFast('ill-seven');
+    expect(r.json.illustrations, r.stdout).toHaveLength(7);
+    const escape = r.json.diagnostics.find((d: any) => d.code === 'ILL_ESCAPE');
+    expect(escape?.element, r.stdout).toContain('svg#ill-7');
+    expect(r.json.illustrations.find((row: any) => row.element.includes('svg#ill-7')).verdict).toBe('fail');
+  });
+
+  test('leaves fully transparent SVG groups out of the painted geometry', () => {
+    const escaped = '<rect x="770" y="60" width="160" height="280" fill="#eee"/>';
+    illustration('ill-transparent-group', `${cards([60, 300, 540])}<g opacity="0">${escaped}</g>`);
+    const hidden = reportFast('ill-transparent-group');
+    expect(illCodes(hidden), hidden.stdout).not.toContain('ILL_ESCAPE');
+    illustration('ill-visible-group', `${cards([60, 300, 540])}<g opacity="1">${escaped}</g>`);
+    const visible = reportFast('ill-visible-group');
+    expect(illCodes(visible), visible.stdout).toContain('ILL_ESCAPE');
+  });
+
+  test('reports negative scene values flattened by an automatic scale', () => {
+    deck('scene-negative-auto', `<deck-feature id="negative-bars"><h1 slot="title">Sales and returns</h1>
+      <deck-scene-bars><deck-scene-item label="Returns" value="-3"></deck-scene-item>
+        <deck-scene-item label="Sales" value="8"></deck-scene-item></deck-scene-bars>
+      </deck-feature><deck-feature id="negative-ranges"><h1 slot="title">Durations</h1>
+      <deck-scene-ranges><deck-scene-item label="Before" from="-3" to="2"></deck-scene-item>
+        <deck-scene-item label="After" from="0" to="8"></deck-scene-item></deck-scene-ranges>
+      </deck-feature>`, ['deck-scene-bars', 'deck-scene-ranges']);
+    const r = reportFast('scene-negative-auto');
+    const clipped = r.json.diagnostics.filter((d: any) => d.code === 'SCENE_VALUE_CLIPPED');
+    expect(clipped.map((d: any) => d.slideId), r.stdout).toEqual(['negative-bars', 'negative-ranges']);
+    expect(clipped.every((d: any) => d.severity === 'error')).toBe(true);
+  });
+
+  test('derives ink when a hand-written signature has the wrong structure and still catches defects', () => {
+    illustration('ill-invalid-signature', `${cards([60, 300])}<rect x="700" y="60" width="160" height="280" fill="#eee"/>`, ' data-signature="{}"');
+    const r = reportFast('ill-invalid-signature');
+    expect(r.json.illustrations, r.stdout).toHaveLength(1);
+    expect(illCodes(r), r.stdout).toContain('ILL_ESCAPE');
+    expect(r.json.illustrations[0].signature.structure.kind).toBe('svg');
+    expect(r.json.illustrations[0].verdict).toBe('fail');
+  });
+
   test('ILL_SHAPE_OVERLAP is a defect, and a shape inside another is not', () => {
     illustration('ill-overlap', `<rect x="60" y="60" width="300" height="280" fill="#eee"/><rect x="300" y="100" width="300" height="240" fill="#ddd"/><rect x="620" y="60" width="120" height="280" fill="#eee"/>`);
     expect(illCodes(reportFast('ill-overlap'))).toContain('ILL_SHAPE_OVERLAP');

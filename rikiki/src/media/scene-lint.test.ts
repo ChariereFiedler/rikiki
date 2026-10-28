@@ -424,10 +424,12 @@ describe('bars: a scale and groups that say what the picture says', () => {
     expect(found).toMatchObject({ severity: 'error', items: ['B'] });
   });
 
-  it('flags a negative value, which stays on the baseline', () => {
-    expect(codes('bars', [bar('', '-3'), bar('', '8')], { max: '10' })).toContain(
-      'SCENE_VALUE_CLIPPED',
-    );
+  it.each([
+    {},
+    { max: '10' },
+    { max: 'ten' },
+  ])('flags a negative value on explicit or automatic scales: %j', (scene) => {
+    expect(codes('bars', [bar('', '-3'), bar('', '8')], scene)).toContain('SCENE_VALUE_CLIPPED');
   });
 
   it('is quiet when every value is inside the scale, and with no max at all', () => {
@@ -473,6 +475,15 @@ describe('ranges: a scale the rows fit', () => {
       (issue) => issue.code === 'SCENE_VALUE_CLIPPED',
     );
     expect(found).toMatchObject({ severity: 'error', items: ['R'] });
+  });
+
+  it.each([
+    {},
+    { scale: '12' },
+    { scale: 'ten' },
+  ])('flags negative bounds on explicit or automatic scales: %j', (scene) => {
+    expect(codes('ranges', [row('-3', '2')], scene)).toContain('SCENE_VALUE_CLIPPED');
+    expect(codes('ranges', [row('', '-3')], scene)).toContain('SCENE_VALUE_CLIPPED');
   });
 
   it('flags a scale that is not a positive number', () => {
