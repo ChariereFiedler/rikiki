@@ -187,6 +187,20 @@ describe('scene plan', () => {
     expect(plan.errors.map((e) => e.path)).toEqual(expect.arrayContaining(['claim', 'relation']));
   });
 
+  it('--json reports a malformed optional field as a bad brief, without throwing', () => {
+    const brief = {
+      ...BRIEFS.parallel,
+      items: [{ label: 'Rewrite', note: 42 }, ...BRIEFS.parallel.items.slice(1)],
+    };
+    const run = cli('scene', 'plan', writeBrief('bad-note.json', brief), '--json');
+    expect(run.status).toBe(2);
+    expect(run.stderr).not.toMatch(/TypeError| {4}at /);
+    expect(JSON.parse(run.stdout)).toMatchObject({
+      ok: false,
+      errors: expect.arrayContaining([expect.objectContaining({ path: 'items[0].note' })]),
+    });
+  });
+
   it('--out writes the plan and one fragment per candidate', () => {
     const run = cli(
       'scene',

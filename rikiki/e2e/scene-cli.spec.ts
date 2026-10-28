@@ -1,9 +1,11 @@
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test } from '@playwright/test';
+import { launchChromium, loadChromium, serveDir } from '../bin/lib/browser.mjs';
+import { planScenes } from '../bin/lib/scene-plan.mjs';
 
 // `rikiki scene plan --measure` draws each candidate in the real scene elements,
 // in a Chromium of its own, and reads back what the scenes say once drawn. The
@@ -93,4 +95,51 @@ test('a scene taller than the slide does not fit once measured', () => {
     scene: 'deck-scene-matrix',
   });
   expect(statSync(matrix.measured.shot).size).toBeGreaterThan(MIN_SHOT_BYTES);
+});
+
+test('a failed web-font download keeps the measuring page usable with a reported fallback', async () => {
+  const server = await serveDir(PKG_DIR);
+  const browser = await launchChromium(await loadChromium());
+  try {
+    const page = await browser.newPage();
+    // The stylesheet succeeds, then its font files fail: unlike a missing
+    // stylesheet, FontFaceSet.load rejects in this ordinary network failure.
+    await page.route('https://fonts.googleapis.com/**', (route) => route.fulfill({
+      contentType: 'text/css',
+      body: '@font-face{font-family:RikikiSceneMissingSans;font-weight:100 900;src:url(https://fonts.gstatic.com/failed-inter.woff2)} @font-face{font-family:RikikiSceneMissingDisplay;font-weight:100 900;src:url(https://fonts.gstatic.com/failed-unbounded.woff2)}',
+    }));
+    // Unique families keep an installed system font from concealing the failed
+    // download on a developer machine.
+    await page.route('**/themes/rikiki.css', (route) => route.fulfill({
+      contentType: 'text/css',
+      body: readFileSync(join(PKG_DIR, 'themes/rikiki.css'), 'utf8')
+        .replaceAll("'Inter'", "'RikikiSceneMissingSans'")
+        .replaceAll("'Unbounded'", "'RikikiSceneMissingDisplay'"),
+    }));
+    await page.route('https://fonts.gstatic.com/**', (route) => route.abort('failed'));
+    await page.goto(`${server.origin}/bin/lib/scene-measure.html?theme=rikiki`);
+    await page.evaluate(() => window.sceneMeasureReady);
+    const [candidate] = planScenes(BEFORE_AFTER).candidates;
+    const drawn = await page.evaluate(({ imports, html }) => window.measureScene(imports, html), candidate);
+    expect(drawn.height).toBeGreaterThan(0);
+    expect(drawn.missingFonts).toEqual(expect.arrayContaining(['RikikiSceneMissingSans', 'RikikiSceneMissingDisplay']));
+    expect((await page.getByTestId('scene-measure-stage').screenshot()).byteLength).toBeGreaterThan(MIN_SHOT_BYTES);
+  } finally {
+    await browser.close();
+    await server.close();
+  }
+});
+
+test('a failed local theme is still a broken measuring page', async () => {
+  const server = await serveDir(PKG_DIR);
+  const browser = await launchChromium(await loadChromium());
+  try {
+    const page = await browser.newPage();
+    await page.route('**/themes/rikiki.css', (route) => route.abort('failed'));
+    await page.goto(`${server.origin}/bin/lib/scene-measure.html?theme=rikiki`);
+    await expect(page.evaluate(() => window.sceneMeasureReady)).rejects.toThrow(/theme stylesheet did not load/);
+  } finally {
+    await browser.close();
+    await server.close();
+  }
 });

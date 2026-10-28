@@ -52,7 +52,9 @@
     const faces = families.flatMap((family) =>
       Object.values(TYPE).map(({ size, weight }) => `${weight} ${size}px "${family}"`),
     );
-    await Promise.all(faces.map((face) => document.fonts.load(face)));
+    // Failed font downloads remain visible through missingFamilies() and the
+    // page's request watcher. They must not abort a usable fallback drawing.
+    await Promise.allSettled(faces.map((face) => document.fonts.load(face)));
   }
 
   /** Every scene of the drawing has drawn, and none has an update queued · a
@@ -121,6 +123,6 @@
 </script>
 </head>
 <body>
-<div id="stage"></div>
+<div id="stage" data-testid="scene-measure-stage"></div>
 </body>
 </html>

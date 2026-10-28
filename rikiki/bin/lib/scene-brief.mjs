@@ -69,6 +69,25 @@ const isNumber = (value) => typeof value === 'number' && Number.isFinite(value);
 /** One problem with a brief · where it is, and what to write instead. */
 const problem = (path, message) => ({ path, message });
 
+function checkOptionalText(entry, path, fields, errors) {
+  for (const field of fields) {
+    if (entry[field] !== undefined && typeof entry[field] !== 'string') {
+      errors.push(problem(path ? `${path}.${field}` : field, 'must be text when present'));
+    }
+  }
+}
+
+function checkHub(hub, path, errors) {
+  if (!isObject(hub) || !isText(hub.label)) errors.push(problem(`${path}.label`, 'is required text'));
+  if (isObject(hub)) checkOptionalText(hub, path, ['note', 'icon'], errors);
+}
+
+function checkMax(entry, path, errors) {
+  if (entry.max !== undefined && (!isNumber(entry.max) || entry.max <= 0)) {
+    errors.push(problem(path ? `${path}.max` : 'max', 'is a positive number when present'));
+  }
+}
+
 function checkItems(list, path, { min, max, need = ['label'], numbers = [] }, errors) {
   if (!Array.isArray(list)) {
     errors.push(problem(path, `must be a list of ${min} to ${max} items`));
@@ -88,6 +107,7 @@ function checkItems(list, path, { min, max, need = ['label'], numbers = [] }, er
     for (const field of numbers) {
       if (!isNumber(entry[field])) errors.push(problem(`${path}[${i}].${field}`, 'must be a number'));
     }
+    checkOptionalText(entry, `${path}[${i}]`, ['note', 'tag', 'icon', 'group'], errors);
   });
 }
 
@@ -101,7 +121,7 @@ const DATA_CHECKS = {
   },
   converge(brief, errors) {
     checkItems(brief.inputs, 'inputs', { min: 1, max: 4 }, errors);
-    if (!isObject(brief.hub) || !isText(brief.hub.label)) errors.push(problem('hub.label', 'is required text'));
+    checkHub(brief.hub, 'hub', errors);
     checkItems(brief.outcomes, 'outcomes', { min: 1, max: 2 }, errors);
   },
   'compare-size'(brief, errors) {
@@ -110,6 +130,16 @@ const DATA_CHECKS = {
   'position-2d'(brief, errors) {
     if (!Array.isArray(brief.columns) || brief.columns.length < 2 || brief.columns.length > 12) {
       errors.push(problem('columns', 'is a list of 2 to 12 words'));
+    }
+    for (const [i, column] of (Array.isArray(brief.columns) ? brief.columns : []).entries()) {
+      if (!isText(column)) errors.push(problem(`columns[${i}]`, 'is required text'));
+    }
+    if (brief.statuses !== undefined) {
+      if (!isObject(brief.statuses)) errors.push(problem('statuses', 'is an object mapping statuses to their text labels'));
+      else for (const [status, label] of Object.entries(brief.statuses)) {
+        if (!STATUSES.includes(status)) errors.push(problem(`statuses.${status}`, `names one of ${STATUSES.join(', ')}`));
+        if (!isText(label)) errors.push(problem(`statuses.${status}`, 'is required text'));
+      }
     }
     checkItems(brief.rows, 'rows', { min: 1, max: 6 }, errors);
     for (const [i, row] of (Array.isArray(brief.rows) ? brief.rows : []).entries()) {
@@ -163,6 +193,7 @@ const DATA_CHECKS = {
       } else if (isNumber(brief[side].of) && brief[side].value > brief[side].of) {
         errors.push(problem(`${side}.value`, `is past the total (${brief[side].of})`));
       }
+      if (isObject(brief[side])) checkOptionalText(brief[side], side, ['note'], errors);
     }
     const [b, a] = [brief.before?.of, brief.after?.of];
     if ((b === undefined) !== (a === undefined) || (b !== undefined && b !== a)) {
@@ -174,11 +205,15 @@ const DATA_CHECKS = {
       errors.push(problem('mechanism', 'is { inputs, hub, outcomes }'));
     } else {
       checkItems(brief.mechanism.inputs, 'mechanism.inputs', { min: 1, max: 4 }, errors);
-      if (!isObject(brief.mechanism.hub) || !isText(brief.mechanism.hub.label)) errors.push(problem('mechanism.hub.label', 'is required text'));
+      checkHub(brief.mechanism.hub, 'mechanism.hub', errors);
       checkItems(brief.mechanism.outcomes, 'mechanism.outcomes', { min: 1, max: 1 }, errors);
     }
     if (!isObject(brief.proof)) errors.push(problem('proof', 'is { items: [{ label, value }] }'));
-    else checkItems(brief.proof.items, 'proof.items', { min: 2, max: 4, numbers: ['value'] }, errors);
+    else {
+      checkItems(brief.proof.items, 'proof.items', { min: 2, max: 4, numbers: ['value'] }, errors);
+      checkOptionalText(brief.proof, 'proof', ['unit'], errors);
+      checkMax(brief.proof, 'proof', errors);
+    }
   },
 };
 
@@ -222,7 +257,9 @@ export function validateBrief(brief) {
     errors.push(problem('source.nature', `is one of ${NATURES.join(', ')}`));
   }
 
-  if (brief.focus !== undefined && isText(brief.focus) && !labelsOf(brief).includes(brief.focus)) {
+  checkOptionalText(brief, '', ['eyebrow', 'notes', 'unit', 'caption', 'trigger'], errors);
+  checkMax(brief, '', errors);
+  if (brief.focus !== undefined && (!isText(brief.focus) || !labelsOf(brief).includes(brief.focus))) {
     errors.push(problem('focus', `names no item (it is the label of the one the title argues for): ${labelsOf(brief).slice(0, 8).join(', ')}`));
   }
   if (brief.focus === undefined && brief.relation !== 'position-2d' && brief.relation !== 'gate') {
@@ -231,6 +268,7 @@ export function validateBrief(brief) {
   if (brief.verdict !== undefined && (!isObject(brief.verdict) || !isText(brief.verdict.label))) {
     errors.push(problem('verdict', 'is { label, note?, icon? }'));
   }
+  if (isObject(brief.verdict)) checkOptionalText(brief.verdict, 'verdict', ['note', 'icon'], errors);
   if (isText(brief.claim) && brief.claim.trim().split(/\s+/).length > 14) {
     warnings.push(problem('claim', 'is over 14 words · it becomes the title, and a two-line title costs the slide its room'));
   }
