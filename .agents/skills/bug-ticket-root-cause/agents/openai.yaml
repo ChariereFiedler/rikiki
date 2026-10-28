@@ -1,0 +1,4 @@
+interface:
+  display_name: "Bug Ticket Root Cause"
+  short_description: "Bug Ticket Root Cause workflow"
+  default_prompt: "Use $bug-ticket-root-cause for the requested scope in this repository."

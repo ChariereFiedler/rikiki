@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ci Pipeline Orchestration"
+  short_description: "Ci Pipeline Orchestration"
+  default_prompt: "Use $ci-pipeline-orchestration for the requested scope in this repository."

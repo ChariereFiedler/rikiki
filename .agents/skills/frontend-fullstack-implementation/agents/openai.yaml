@@ -1,0 +1,4 @@
+interface:
+  display_name: "Frontend Fullstack Implementation"
+  short_description: "Frontend Fullstack Implementation"
+  default_prompt: "Use $frontend-fullstack-implementation for the requested scope in this repository."

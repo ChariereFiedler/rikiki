@@ -1,0 +1,4 @@
+interface:
+  display_name: "Writing Robust Tests"
+  short_description: "Writing Robust Tests workflow"
+  default_prompt: "Use $writing-robust-tests for the requested scope in this repository."

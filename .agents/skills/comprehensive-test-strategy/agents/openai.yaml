@@ -1,0 +1,4 @@
+interface:
+  display_name: "Comprehensive Test Strategy"
+  short_description: "Comprehensive Test Strategy"
+  default_prompt: "Use $comprehensive-test-strategy for the requested scope in this repository."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Visual Regression Check"
+  short_description: "Visual Regression Check workflow"
+  default_prompt: "Use $visual-regression-check for the requested scope in this repository."

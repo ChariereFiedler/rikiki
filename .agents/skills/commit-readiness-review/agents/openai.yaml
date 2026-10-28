@@ -1,0 +1,4 @@
+interface:
+  display_name: "Commit Readiness Review"
+  short_description: "Commit Readiness Review workflow"
+  default_prompt: "Use $commit-readiness-review for the requested scope in this repository."
