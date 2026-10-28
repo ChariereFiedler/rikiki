@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -826,12 +826,25 @@ test.describe('two icons in one box', () => {
     expect(found.element).toContain('deck-callout');
   });
 
+  test('reports a text symbol made an emoji by VS16', () => {
+    deck('icon-vs16', `<deck-feature id="icon-vs16"><h1 slot="title">Careful</h1>
+        <deck-callout type="warn">⚠️ Wipes the build tree</deck-callout>
+      </deck-feature>`);
+    const r = reportFast('icon-vs16');
+    const found = r.json.diagnostics.find((d: any) => d.code === 'ICON_DOUBLED');
+    expect(found, r.stdout).toBeTruthy();
+    expect(found.measurement.emoji).toBe('⚠️');
+  });
+
   test('leaves an emoji alone where no component icon competes with it', () => {
-    // A plain paragraph, an emoji later in a callout's sentence, and a
+    // A plain paragraph, an emoji later in a callout's sentence, text
+    // symbols that are pictographs but not emoji (©, ↔), and a
     // deck-graph (whose shadow SVG is a canvas, not an icon) are all fine.
     deck('icon-quiet', `<deck-feature id="icon-quiet"><h1 slot="title">🚩 Flags</h1>
         <p>🚩 Each module ends with a flag.</p>
         <deck-callout type="info">Capture all ten 🚩</deck-callout>
+        <deck-callout type="info">© 2026 Tordu Jardin</deck-callout>
+        <deck-callout type="ok">↔ swaps the panes</deck-callout>
         <deck-graph><deck-node id="a" at="30,50" label="🚩 start"></deck-node><deck-node id="b" at="70,50" label="end"></deck-node><deck-edge from="a" to="b"></deck-edge></deck-graph>
       </deck-feature>`, ['deck-graph']);
     const r = reportFast('icon-quiet');
@@ -1052,6 +1065,709 @@ test.describe('painted box geometry', () => {
   });
 });
 
+test.describe('text inside a drawing', () => {
+  // A hand-drawn SVG places every label by coordinates: nothing wraps and
+  // nothing clips, so a word too long for its card runs over the edge in
+  // silence. The margins below are tens of pixels wide on purpose · what is
+  // under test is the rule, not the width of a glyph in the CI font.
+  const svgCodes = (r: { json: any }) => codes(r).filter((c: string) => /^(SVG_|SCENE_)/.test(c));
+  const DRAWING_IN_SHADOW = `<script>
+    customElements.define('sales-drawing', class extends HTMLElement {
+      connectedCallback() {
+        this.attachShadow({ mode: 'open' }).innerHTML = '<svg viewBox="0 0 800 300" style="width:800px">'
+          + '<rect x="20" y="20" width="160" height="80" fill="#eee"/>'
+          + '<text x="40" y="70" font-size="32">A shadow label much too long</text></svg>';
+      }
+    });
+  </script>`;
+
+  test('reports a label that runs past its card, past the viewBox, and inside a shadow root', () => {
+    deck('svg-escape', `${DRAWING_IN_SHADOW}
+      <deck-feature id="svg-card"><h1 slot="title">Card</h1>
+        <svg viewBox="0 0 800 300" style="width:800px">
+          <rect x="20" y="20" width="200" height="80" fill="#eee"/>
+          <text x="40" y="70" font-size="32">A label far too long for this card</text>
+          <text x="700" y="200" font-size="32">Past the edge</text>
+        </svg>
+      </deck-feature>
+      <deck-feature id="svg-shadow"><h1 slot="title">Shadow</h1><sales-drawing></sales-drawing></deck-feature>`);
+    const r = reportFast('svg-escape');
+    const escapes = r.json.diagnostics.filter((d: any) => d.code === 'SVG_TEXT_ESCAPES');
+
+    const card = escapes.find((d: any) => d.measurement.against === 'rect' && d.slideId === 'svg-card');
+    expect(card, r.stdout).toBeTruthy();
+    expect(card.severity).toBe('error');
+    expect(card.excerpt).toContain('A label far too long');
+    expect(card.measurement.escapePx).toBeGreaterThan(100);
+    expect(card.measurement.shape).toContain('rect');
+
+    const edge = escapes.find((d: any) => d.measurement.against === 'viewBox');
+    expect(edge, r.stdout).toBeTruthy();
+    expect(edge.slideId).toBe('svg-card');
+    expect(edge.excerpt).toBe('Past the edge');
+
+    const shadow = escapes.find((d: any) => d.slideId === 'svg-shadow');
+    expect(shadow, r.stdout).toBeTruthy();
+    expect(shadow.element).toContain('sales-drawing ::shadow');
+  });
+
+  test('reports two labels painted over each other, once, under its own code', () => {
+    deck('svg-overlap', `<deck-feature id="svg-overlap"><h1 slot="title">Overlap</h1>
+        <svg viewBox="0 0 800 300" style="width:800px">
+          <text x="40" y="100" font-size="32">First label</text>
+          <text x="60" y="110" font-size="32">Second label</text>
+        </svg>
+      </deck-feature>`);
+    const r = reportFast('svg-overlap');
+    const overlap = r.json.diagnostics.find((d: any) => d.code === 'SVG_TEXT_OVERLAP');
+    expect(overlap, r.stdout).toBeTruthy();
+    expect(overlap.severity).toBe('error');
+    expect(overlap.slideId).toBe('svg-overlap');
+    expect(overlap.message).toContain('First label');
+    expect(overlap.measurement.otherText).toBe('Second label');
+    expect(overlap.measurement.overlapPx.x).toBeGreaterThan(2);
+    expect(overlap.measurement.overlapPx.y).toBeGreaterThan(2);
+    // A drawn label is not a laid-out box · the layout code stays out of it.
+    expect(codes(r), r.stdout).not.toContain('CONTENT_OVERLAPS_SIBLING');
+  });
+
+  test('leaves a well-drawn scene alone, hidden labels and a late entrance included', () => {
+    // Every trap is here: a label centred in a circle, one in a translated
+    // group, a definition holding a rect, labels hidden three ways right on
+    // top of the visible one, an empty label, two caption lines set tighter
+    // than the font's line cell, and a card that grows in over thirty seconds
+    // · far longer than the wait for a still frame.
+    deck('svg-clean', `<style>
+        @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+        .late { transform-box: fill-box; animation: grow 30s linear both; }
+      </style>
+      <deck-feature id="svg-clean"><h1 slot="title">Clean</h1>
+        <svg viewBox="0 0 800 400" style="width:800px">
+          <defs><clipPath id="c"><rect x="0" y="0" width="10" height="10"/></clipPath></defs>
+          <rect x="20" y="20" width="400" height="80" fill="#eee"/>
+          <text x="40" y="70" font-size="32">Fits</text>
+          <text x="40" y="70" font-size="32" style="display:none">Hidden over the first</text>
+          <g style="display:none"><text x="40" y="70" font-size="32">Hidden group</text></g>
+          <text x="40" y="70" font-size="32" style="visibility:hidden">Hidden too</text>
+          <text x="300" y="70" font-size="32"> </text>
+          <circle cx="620" cy="80" r="60" fill="#ddd"/>
+          <text x="620" y="90" font-size="28" text-anchor="middle">Dot</text>
+          <g transform="translate(20 140)"><rect width="400" height="60" fill="#eee"/><text x="200" y="40" font-size="28" text-anchor="middle">Centred</text></g>
+          <text x="460" y="180" font-size="25">first caption line</text>
+          <text x="460" y="206" font-size="25">and its second</text>
+          <rect class="late" x="20" y="260" width="500" height="80" fill="#eee"/>
+          <text x="40" y="310" font-size="32">A card that grows in late</text>
+        </svg>
+      </deck-feature>`);
+    const r = reportFast('svg-clean');
+    expect(svgCodes(r), r.stdout).toEqual([]);
+  });
+
+  test('reports a scene that could not fit an item by its own words, not its drawing', () => {
+    // A scene names the field it could not fit, with its measure, in
+    // data-scene-issues and draws it anyway. The field is what the author
+    // fixes, so it is reported once, by name, and the over-long label it drew
+    // is not reported a second time.
+    const issue = JSON.stringify([{
+      code: 'SCENE_TEXT_TOO_LONG',
+      severity: 'error',
+      items: ['MCP · label'],
+      message: 'could not fit',
+      fields: [{ item: 'MCP', field: 'label', text: 'A scene label much too long', measured: 420, budget: 140 }],
+    }]);
+    deck('scene-overflow', `<script>
+        customElements.define('deck-scene-probe', class extends HTMLElement {
+          connectedCallback() {
+            this.attachShadow({ mode: 'open' }).innerHTML = '<svg viewBox="0 0 800 300" style="width:800px">'
+              + '<rect x="20" y="20" width="160" height="80" fill="#eee"/>'
+              + '<text x="40" y="70" font-size="32">A scene label much too long</text></svg>';
+            this.setAttribute('data-scene-issues', ${JSON.stringify(issue)});
+          }
+        });
+      </script>
+      <deck-feature id="scene-overflow"><h1 slot="title">Scene</h1><deck-scene-probe></deck-scene-probe></deck-feature>`);
+    const r = reportFast('scene-overflow');
+    const found = r.json.diagnostics.find((d: any) => d.code === 'SCENE_TEXT_TOO_LONG');
+    expect(found, r.stdout).toBeTruthy();
+    expect(found.severity).toBe('error');
+    expect(found.slideId).toBe('scene-overflow');
+    expect(found.measurement.items).toEqual(['MCP · label']);
+    expect(found.measurement.fields[0]).toMatchObject({ field: 'label', measured: 420, budget: 140 });
+    expect(found.suggestion).toContain('shorten the label');
+    expect(found.element).toContain('deck-scene-probe');
+    expect(codes(r), r.stdout).not.toContain('SVG_TEXT_ESCAPES');
+  });
+
+  test('reports text a drawing sets under the readable floor, by what the room sees', () => {
+    // 10 units in a 400-unit viewBox drawn 400px wide is 10px · under the 18px floor.
+    // The same 10 units in a viewBox drawn at twice the size is 20px and is fine.
+    deck('svg-small', `<deck-feature id="svg-small"><h1 slot="title">Small</h1>
+        <svg viewBox="0 0 400 100" style="width:400px"><text x="10" y="40" font-size="10">too small</text>
+          <text x="10" y="80" font-size="24">fine</text></svg>
+        <svg viewBox="0 0 200 50" style="width:400px"><text x="5" y="20" font-size="10">scaled up, fine</text></svg>
+      </deck-feature>`);
+    const r = reportFast('svg-small');
+    const small = r.json.diagnostics.filter((d: any) => d.code === 'SVG_TEXT_TOO_SMALL');
+    expect(small, r.stdout).toHaveLength(1);
+    expect(small[0].excerpt).toBe('too small');
+    expect(small[0].measurement.px).toBeLessThan(18);
+    expect(small[0].severity).toBe('warning');
+  });
+
+  test('reports a label whose colour is too close to what it is drawn on', () => {
+    deck('svg-contrast', `<deck-feature id="svg-contrast"><h1 slot="title">Contrast</h1>
+        <svg viewBox="0 0 800 300" style="width:800px">
+          <rect x="20" y="20" width="360" height="80" fill="#888888"/>
+          <text x="40" y="70" font-size="32" fill="#7c7c7c">grey on grey</text>
+          <rect x="420" y="20" width="360" height="80" fill="#ffffff"/>
+          <text x="440" y="70" font-size="32" fill="#000000">black on white</text>
+          <rect x="20" y="140" width="360" height="80" fill="#ffffff"/>
+          <rect x="20" y="140" width="360" height="80" fill="#000000"/>
+          <text x="40" y="190" font-size="32" fill="#ffffff">on the top shape</text>
+          <rect x="420" y="140" width="360" height="80" fill="#ffffff"/>
+          <text x="440" y="190" font-size="32" fill="#ffffff" opacity="0">not painted</text>
+        </svg>
+      </deck-feature>`);
+    const r = reportFast('svg-contrast');
+    const low = r.json.diagnostics.filter((d: any) => d.code === 'SVG_TEXT_CONTRAST_LOW');
+    expect(low.map((d: any) => d.excerpt), r.stdout).toEqual(['grey on grey']);
+    expect(low[0].severity).toBe('error');
+    expect(low[0].measurement.ratio).toBeLessThan(1.5);
+  });
+
+  /** The illustration rules read any SVG of a slide · these draw one on purpose. */
+  const illustration = (id: string, body: string, attrs = '') =>
+    deck(
+      id,
+      `<deck-feature id="${id}"><h1 slot="title">Illustration</h1>
+        <svg viewBox="0 0 800 400" style="width:800px;height:400px"${attrs}>${body}</svg></deck-feature>`,
+    );
+  const cards = (x: number[]) =>
+    x.map((left) => `<rect x="${left}" y="60" width="200" height="280" fill="#eee"/><text x="${left + 20}" y="110" font-size="30">Card</text>`).join('');
+  const illCodes = (r: { json: any }) =>
+    r.json.diagnostics.filter((d: any) => d.code.startsWith('ILL_')).map((d: any) => d.code);
+
+  test('a drawing that is framed, centred and has one focal is left alone, and scored', () => {
+    illustration(
+      'ill-clean',
+      `${cards([60, 300, 540])}<rect x="300" y="60" width="200" height="280" fill="#f07020"/><text x="320" y="110" font-size="30" fill="#000">Focal</text>`,
+    );
+    const r = reportFast('ill-clean');
+    expect(illCodes(r), r.stdout).toEqual([]);
+    expect(r.json.illustrations).toHaveLength(1);
+    expect(r.json.illustrations[0]).toMatchObject({ slideId: 'ill-clean', verdict: 'ship' });
+    expect(r.json.illustrations[0].facets).toHaveProperty('balance');
+  });
+
+  test('ILL_ESCAPE is a defect, with the pixels it runs past the frame', () => {
+    illustration('ill-escape', `${cards([60, 300])}<rect x="700" y="60" width="160" height="280" fill="#eee"/>`);
+    const r = reportFast('ill-escape');
+    const found = r.json.diagnostics.find((d: any) => d.code === 'ILL_ESCAPE');
+    expect(found, r.stdout).toBeTruthy();
+    expect(found.severity).toBe('error');
+    expect(found.fix.action).toBe('move-inside');
+    expect(r.json.illustrations[0].verdict).toBe('fail');
+    // Silenced by the deck's policy, the defect no longer fails the drawing · and the
+    // row says what was left out of its verdict.
+    const run = cli(['check', 'ill-escape.html', '--json', '--no-visual', '--severity', 'ill-escape=off']);
+    const silenced = JSON.parse(run.stdout);
+    expect(silenced.illustrations[0].verdict, run.stdout).not.toBe('fail');
+    expect(silenced.illustrations[0].suppressed).toEqual(['ILL_ESCAPE']);
+    expect(silenced.suppressed.map((d: any) => d.code)).toContain('ILL_ESCAPE');
+  });
+
+  test('measures a seventh illustration on the same slide and catches its defect', () => {
+    const drawings = Array.from({ length: 7 }, (_, i) => `<svg id="ill-${i + 1}" viewBox="0 0 500 150" style="width:500px;height:150px">
+      <rect x="10" y="20" width="100" height="100" fill="#aaa"/>
+      <rect x="180" y="20" width="100" height="100" fill="#aaa"/>
+      <rect x="${i === 6 ? 470 : 350}" y="20" width="100" height="100" fill="#aaa"/>
+    </svg>`).join('');
+    deck('ill-seven', `<deck-feature><h1 slot="title">Seven drawings</h1>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">${drawings}</div>
+    </deck-feature>`);
+    const r = reportFast('ill-seven');
+    expect(r.json.illustrations, r.stdout).toHaveLength(7);
+    const escape = r.json.diagnostics.find((d: any) => d.code === 'ILL_ESCAPE');
+    expect(escape?.element, r.stdout).toContain('svg#ill-7');
+    expect(r.json.illustrations.find((row: any) => row.element.includes('svg#ill-7')).verdict).toBe('fail');
+  });
+
+  test('leaves fully transparent SVG groups out of the painted geometry', () => {
+    const escaped = '<rect x="770" y="60" width="160" height="280" fill="#eee"/>';
+    illustration('ill-transparent-group', `${cards([60, 300, 540])}<g opacity="0">${escaped}</g>`);
+    const hidden = reportFast('ill-transparent-group');
+    expect(illCodes(hidden), hidden.stdout).not.toContain('ILL_ESCAPE');
+    illustration('ill-visible-group', `${cards([60, 300, 540])}<g opacity="1">${escaped}</g>`);
+    const visible = reportFast('ill-visible-group');
+    expect(illCodes(visible), visible.stdout).toContain('ILL_ESCAPE');
+  });
+
+  test('reports negative scene values flattened by an automatic scale', () => {
+    deck('scene-negative-auto', `<deck-feature id="negative-bars"><h1 slot="title">Sales and returns</h1>
+      <deck-scene-bars><deck-scene-item label="Returns" value="-3"></deck-scene-item>
+        <deck-scene-item label="Sales" value="8"></deck-scene-item></deck-scene-bars>
+      </deck-feature><deck-feature id="negative-ranges"><h1 slot="title">Durations</h1>
+      <deck-scene-ranges><deck-scene-item label="Before" from="-3" to="2"></deck-scene-item>
+        <deck-scene-item label="After" from="0" to="8"></deck-scene-item></deck-scene-ranges>
+      </deck-feature>`, ['deck-scene-bars', 'deck-scene-ranges']);
+    const r = reportFast('scene-negative-auto');
+    const clipped = r.json.diagnostics.filter((d: any) => d.code === 'SCENE_VALUE_CLIPPED');
+    expect(clipped.map((d: any) => d.slideId), r.stdout).toEqual(['negative-bars', 'negative-ranges']);
+    expect(clipped.every((d: any) => d.severity === 'error')).toBe(true);
+  });
+
+  test('derives ink when a hand-written signature has the wrong structure and still catches defects', () => {
+    illustration('ill-invalid-signature', `${cards([60, 300])}<rect x="700" y="60" width="160" height="280" fill="#eee"/>`, ' data-signature="{}"');
+    const r = reportFast('ill-invalid-signature');
+    expect(r.json.illustrations, r.stdout).toHaveLength(1);
+    expect(illCodes(r), r.stdout).toContain('ILL_ESCAPE');
+    expect(r.json.illustrations[0].signature.structure.kind).toBe('svg');
+    expect(r.json.illustrations[0].verdict).toBe('fail');
+  });
+
+  test('ILL_SHAPE_OVERLAP is a defect, and a shape inside another is not', () => {
+    illustration('ill-overlap', `<rect x="60" y="60" width="300" height="280" fill="#eee"/><rect x="300" y="100" width="300" height="240" fill="#ddd"/><rect x="620" y="60" width="120" height="280" fill="#eee"/>`);
+    expect(illCodes(reportFast('ill-overlap'))).toContain('ILL_SHAPE_OVERLAP');
+    illustration('ill-inside', `${cards([60, 540])}<rect x="80" y="130" width="100" height="100" fill="#ddd"/>`);
+    expect(illCodes(reportFast('ill-inside'))).not.toContain('ILL_SHAPE_OVERLAP');
+  });
+
+  test('a drawing that leans to one side is a warning, and balance="free" says it is meant', () => {
+    illustration('ill-lean', `<rect x="20" y="60" width="200" height="280" fill="#eee"/><rect x="240" y="60" width="200" height="280" fill="#eee"/><text x="40" y="110" font-size="30">Left</text>`);
+    const lean = reportFast('ill-lean');
+    const found = lean.json.diagnostics.find((d: any) => d.code === 'ILL_OFF_CENTRE');
+    expect(found, lean.stdout).toBeTruthy();
+    expect(found.severity).toBe('warning');
+    expect(lean.status, 'a warning does not fail the run').toBe(0);
+    deck(
+      'ill-free',
+      `<deck-feature id="ill-free"><h1 slot="title">Illustration</h1>
+        <div balance="free"><svg viewBox="0 0 800 400" style="width:800px;height:400px"><rect x="20" y="60" width="200" height="280" fill="#eee"/><rect x="240" y="60" width="200" height="280" fill="#eee"/><text x="40" y="110" font-size="30">Left</text></svg></div></deck-feature>`,
+    );
+    expect(illCodes(reportFast('ill-free'))).not.toContain('ILL_OFF_CENTRE');
+  });
+
+  test('an animation that never ends is a defect, and a long one a warning', () => {
+    illustration(
+      'ill-motion',
+      `<style>.spin{animation:spin 1s linear infinite;transform-box:fill-box;transform-origin:center}.slow{animation:slow 4s ease 0s both}@keyframes spin{to{transform:rotate(360deg)}}@keyframes slow{from{opacity:0}to{opacity:1}}</style>${cards([60, 300, 540])}<circle class="spin" cx="400" cy="200" r="30" fill="#f07020"/><rect class="slow" x="360" y="300" width="80" height="20" fill="#ccc"/>`,
+    );
+    const r = reportFast('ill-motion');
+    expect(illCodes(r), r.stdout).toEqual(expect.arrayContaining(['ILL_MOTION_ENDLESS', 'ILL_MOTION_LONG']));
+    expect(r.json.diagnostics.find((d: any) => d.code === 'ILL_MOTION_ENDLESS').severity).toBe('error');
+  });
+
+  test('a scene is measured too, and the report scores it', () => {
+    const html = readFileSync(join(PKG_DIR, 'decks', 'tests', 'deck-scene-cards.html'), 'utf8');
+    deck('ill-scene', html.split('<deck-root>')[1].split('</deck-root>')[0], ['deck-scene-cards']);
+    const r = reportFast('ill-scene');
+    expect(r.json.illustrations.length, r.stdout).toBeGreaterThan(0);
+    expect(r.json.illustrations[0].tag).toBe('deck-scene-cards');
+  });
+
+  test('a diagram written as an intent is scored on its meaning, and a defect of meaning fails it whatever its score', () => {
+    const bottleneck = (neck: string) => `<deck-feature id="goulot"><h1 slot="title">Six arrive, two pass</h1>
+        <deck-diagram intent="bottleneck">
+          <dg-box role="source" name="arrivees" icon="document" label="Arrivées" value="6 / min"></dg-box>
+          <dg-queue role="queue" name="file" label="en attente"></dg-queue>
+          <dg-box role="neck" name="validation" icon="search" label="Validation" value="${neck}"></dg-box>
+          <dg-box role="sink" name="valides" icon="check" label="Validés" value="2 / min"></dg-box>
+        </deck-diagram></deck-feature>`;
+    deck('int-shown', bottleneck('2 / min'), ['deck-diagram']);
+    const shown = reportFast('int-shown');
+    expect(shown.json.diagnostics.filter((d: any) => d.code.startsWith('INT_')), shown.stdout).toEqual([]);
+    expect(shown.json.illustrations[0]).toMatchObject({ tag: 'deck-diagram', intent: 'bottleneck' });
+    expect(shown.json.illustrations[0].facets.meaning).toBe(100);
+
+    deck('int-wide', bottleneck('8 / min'), ['deck-diagram']);
+    const wide = reportFast('int-wide');
+    const found = wide.json.diagnostics.find((d: any) => d.code === 'INT_BOTTLENECK_NOT_NARROWEST');
+    expect(found, wide.stdout).toBeTruthy();
+    expect(found.severity).toBe('error');
+    expect(found.measurement.rates).toMatchObject({ arriving: 6, neck: 8 });
+    expect(found.measurement.items).toContain('validation');
+    expect(found.expected).toBeTruthy();
+    expect(found.fix.action).toBe('set-attribute');
+    expect(wide.status).not.toBe(0);
+    const row = wide.json.illustrations[0];
+    expect(row.verdict).toBe('fail');
+    expect(row.facets.meaning).toBeLessThan(100);
+    // The score still ranks the drawing as drawn · the verdict is what the meaning decides.
+    expect(row.score).toBeGreaterThan(70);
+  });
+
+  /** `check --steps` on a deck of diagrams, fast · a finding of an early click counts. */
+  const stepsFast = (name: string) => {
+    const run = cli(['check', `${name}.html`, '--json', '--no-visual', '--steps']);
+    return { ...run, json: JSON.parse(run.stdout) };
+  };
+
+  test('a story played on entry is judged on its own budget and its script · the four remedies are clean', () => {
+    const html = readFileSync(join(PKG_DIR, 'decks', 'tests', 'deck-diagram-story.html'), 'utf8');
+    deck('story', html.split('<deck-root>')[1].split('</deck-root>')[0], ['deck-diagram']);
+    const r = stepsFast('story');
+    const ours = r.json.diagnostics.filter((d: any) => /^(ILL|INT|DG)_/.test(d.code));
+    expect(ours, r.stdout).toEqual([]);
+    expect(r.json.illustrations).toHaveLength(4);
+    for (const row of r.json.illustrations) expect(row.verdict, JSON.stringify(row)).toBe('ship');
+  });
+
+  // The recipes of `rikiki recipe`, each filled with its example brief · one slide,
+  // checked click by click in the browser, the ILL_* rules included.
+  const RECIPES = [
+    'incident-band',
+    'lanes-gate',
+    'probe-stations',
+    'wiring',
+    'switch-over',
+    'race-lock',
+    'filter-records',
+    'version-lanes',
+    'escalation-runbook',
+    'pulse-threshold',
+    'scope-rings',
+    'data-replay',
+  ];
+  for (const name of RECIPES)
+    test(`the recipe ${name}, filled with its example brief, passes check --steps clean`, () => {
+      const slide = cli(['recipe', name, '--example']);
+      expect(slide.status, slide.stderr).toBe(0);
+      deck(`recipe-${name}`, slide.stdout, ['deck-diagram']);
+      const r = stepsFast(`recipe-${name}`);
+      const ours = r.json.diagnostics.filter((d: any) => /^(ILL|INT|DG)_/.test(d.code));
+      expect(ours, r.stdout).toEqual([]);
+      expect(r.json.illustrations[0].verdict).toBe('ship');
+    });
+
+  test('the twelve recipes of the acceptance deck are clean click by click, and no two look alike', () => {
+    const html = readFileSync(join(PKG_DIR, 'decks', 'tests', 'deck-diagram-recipes.html'), 'utf8');
+    deck('recipes', html.split('<deck-root>')[1].split('</deck-root>')[0], ['deck-diagram']);
+    const run = cli(['check', 'recipes.html', '--json', '--no-visual', '--steps', '--diversity']);
+    const json = JSON.parse(run.stdout);
+    const ours = json.diagnostics.filter((d: any) => /^(ILL|INT|DG)_/.test(d.code));
+    expect(ours, run.stdout).toEqual([]);
+    expect(json.illustrations).toHaveLength(RECIPES.length);
+    for (const row of json.illustrations) expect(row.verdict, JSON.stringify(row)).toBe('ship');
+    expect(json.diversity.repeated).toEqual([]);
+    expect(json.diversity.structures).toBe(RECIPES.length);
+  });
+
+  test('a story whose break is told by tokens alone fails, and one with no flow before it is said', () => {
+    deck(
+      'story-thin',
+      `<deck-feature id="thin"><h1 slot="title">A request, then nothing</h1>
+        <deck-diagram play="enter" layout="row" gap="airy">
+          <dg-box name="client" icon="user" label="client" paint="pale"></dg-box>
+          <dg-box name="api" icon="code" label="API" paint="ink" proof="200 OK" beat="proof"></dg-box>
+          <dg-link name="appel" from="client" to="api" flow="1" beat="event"></dg-link>
+        </deck-diagram></deck-feature>`,
+      ['deck-diagram'],
+    );
+    const r = reportFast('story-thin');
+    const lost = r.json.diagnostics.find((d: any) => d.code === 'ILL_FINAL_INCOMPLETE');
+    expect(lost, r.stdout).toBeTruthy();
+    expect(lost.severity).toBe('error');
+    expect(lost.measurement).toMatchObject({ phases: ['event'], marks: ['appel'] });
+    expect(lost.fix.action).toBe('make-it-last');
+    const steady = r.json.diagnostics.find((d: any) => d.code === 'ILL_NO_STEADY_STATE');
+    expect(steady?.severity).toBe('warning');
+    expect(steady.measurement.minMs).toBe(1500);
+    expect(r.status).not.toBe(0);
+  });
+
+  test('a balance finding on a diagram names the marks and the attribute, and the change it proposes clears it', () => {
+    const body = (paint: string) => `<deck-feature id="lean"><h1 slot="title">The full queue backs up</h1>
+        <deck-diagram layout="column" gap="airy">
+          <dg-group layout="row" link="arrow">
+            <dg-box name="amont" icon="spark" label="Producer"${paint}></dg-box>
+            <dg-queue name="file" label="queue" count="6" fill="6" tone="danger"></dg-queue>
+            <dg-box name="aval" icon="clock" label="Consumer" emphasis></dg-box>
+          </dg-group>
+          <dg-meter name="perte" label="Messages lost" value="1.5" max="5" unit="%"></dg-meter>
+          <dg-text for="aval" side="top" label="slow"></dg-text>
+        </deck-diagram></deck-feature>`;
+    deck('named-lean', body(' paint="outline"'), ['deck-diagram']);
+    const leaning = reportFast('named-lean');
+    const found = leaning.json.diagnostics.find((d: any) => d.code === 'ILL_OFF_CENTRE');
+    expect(found, leaning.stdout).toBeTruthy();
+    expect(found.fix.pulls[0]).toMatchObject({ mark: 'aval', kind: 'box' });
+    const proposed = found.fix.try.find((t: any) => t.mark === 'amont');
+    expect(proposed).toMatchObject({ set: 'paint="soft"' });
+    expect(Math.abs(proposed.leanAfterPct)).toBeLessThanOrEqual(found.measurement.limitXPct);
+    deck('named-lean-applied', body(` ${proposed.set}`), ['deck-diagram']);
+    const applied = reportFast('named-lean-applied');
+    expect(codes(applied), applied.stdout).not.toContain('ILL_OFF_CENTRE');
+  });
+
+  test('an open gate is not a weak accent, gates in series are one barrier, and lanes do not lean by their labels', () => {
+    deck('gates', `<deck-feature id="canary"><h1 slot="title">The gauge passes, the gate drops</h1>
+        <deck-diagram layout="column" gap="airy">
+          <dg-meter name="gauge" label="Errors · line at 5 %" value="1 2 8" max="20" unit="%" threshold="5" tone="ok ok danger"></dg-meter>
+          <dg-group layout="lanes" gap="tight">
+            <dg-lane name="v2" icon="spark" label="v2" flow="2"></dg-lane>
+            <dg-lane name="v1" icon="check" label="v1" flow="6"></dg-lane>
+            <dg-gate name="gate" over="v2" by="gauge" label="back to v1" state="open open closed"></dg-gate>
+            <dg-box name="clients" icon="team" label="Clients" paint="outline"></dg-box>
+          </dg-group>
+        </deck-diagram></deck-feature>
+      <deck-feature id="layers"><h1 slot="title">Three layers, little gets through</h1>
+        <deck-diagram layout="lanes" gap="airy">
+          <dg-lane name="scans" icon="search" label="Scans" flow="4"></dg-lane>
+          <dg-lane name="logins" icon="user" label="Fake logins" flow="4"></dg-lane>
+          <dg-lane name="copies" icon="document" label="Stolen copies" flow="4"></dg-lane>
+          <dg-gate name="firewall" over="scans" at="start" label="firewall" state="open closed"></dg-gate>
+          <dg-gate name="auth" over="logins" at="middle" label="authentication" state="open open shed"></dg-gate>
+          <dg-gate name="crypto" over="copies" at="end" label="encryption" state="open open open closed"></dg-gate>
+          <dg-box name="data" icon="database" label="Data" paint="outline"></dg-box>
+        </deck-diagram></deck-feature>`, ['deck-diagram']);
+    const r = stepsFast('gates');
+    const ill = r.json.diagnostics.filter((d: any) => d.code.startsWith('ILL_')).map((d: any) => `${d.code} s${d.slide}@${d.state}`);
+    expect(ill, r.stdout).toEqual([]);
+  });
+
+  test("a link's label with no free place is said, and drawn on a box it is a defect that names the box", () => {
+    deck('label-blocked', `<deck-feature id="blocked"><h1 slot="title">A label too long</h1>
+        <deck-diagram layout="column" gap="tight">
+          <dg-group layout="row"><dg-box name="top" label="Cart, payment and delivery teams"></dg-box></dg-group>
+          <dg-group layout="row"><dg-box name="bottom" label="The service at the far bottom left"></dg-box></dg-group>
+          <dg-link from="top" to="bottom" label="a label far too long to sit between them"></dg-link>
+        </deck-diagram></deck-feature>`, ['deck-diagram']);
+    const r = reportFast('label-blocked');
+    const blocked = r.json.diagnostics.find((d: any) => d.code === 'DG_LABEL_BLOCKED');
+    expect(blocked, r.stdout).toBeTruthy();
+    expect(blocked.fix).toMatchObject({ action: 'shorten-label', link: 'top → bottom' });
+    const over = r.json.diagnostics.find((d: any) => d.code === 'ILL_TEXT_OVER_SHAPE');
+    expect(over?.severity).toBe('error');
+    expect(over.measurement.on.length).toBeGreaterThan(0);
+    expect(r.json.illustrations[0].verdict).toBe('fail');
+  });
+
+  test('a per-click list on a mark that appears late names the words never seen, and the list that shows them', () => {
+    deck('late-words', `<deck-feature id="late"><h1 slot="title">The gate closes late</h1>
+        <deck-diagram layout="lanes">
+          <dg-lane name="api" icon="cloud" label="API"></dg-lane>
+          <dg-gate name="stop" label="STOP" step="2" state="open closed"></dg-gate>
+          <dg-box name="acme" icon="target" label="ACME" paint="outline"></dg-box>
+        </deck-diagram></deck-feature>`, ['deck-diagram']);
+    const r = reportFast('late-words');
+    const found = r.json.diagnostics.find((d: any) => d.code === 'DG_STEP_WORDS_UNSEEN');
+    expect(found, r.stdout).toBeTruthy();
+    expect(found.severity).toBe('warning');
+    expect(found.fix).toMatchObject({ attribute: 'state', write: 'open open open closed' });
+  });
+
+  /** Slides of one diagram each · the illustrations a gallery compares. */
+  const gallery = (diagrams: string[]) =>
+    diagrams
+      .map((body, i) => `<deck-feature id="d${i + 1}"><h1 slot="title">Picture ${i + 1}</h1><deck-diagram ${body}</deck-diagram></deck-feature>`)
+      .join('\n');
+  const graph = (words: string[]) => `layout="layers" direction="right">
+      <dg-box name="a" label="${words[0]}"></dg-box><dg-box name="b" label="${words[1]}" emphasis></dg-box>
+      <dg-box name="c" label="${words[2]}"></dg-box><dg-box name="d" label="${words[3]}"></dg-box>
+      <dg-link from="a" to="b"></dg-link><dg-link from="b" to="c d"></dg-link>`;
+
+  test('six clones of one picture are the same look six times · a warning about the deck, never an error', () => {
+    const words = ['Web Gateway Auth Postgres', 'Shop Cart Stock Billing', 'App API Queue Worker', 'CRM Sync Lake Report', 'Mail Relay Spam Inbox', 'Edge Cache Origin Disk'];
+    deck('div-clones', gallery(words.map((w) => graph(w.split(' ')))), ['deck-diagram']);
+    const r = reportFast('div-clones');
+    const repeated = r.json.diagnostics.filter((d: any) => d.code === 'ILL_REPEATED_LOOK');
+    expect(repeated, r.stdout).toHaveLength(15);
+    expect(repeated.every((d: any) => d.severity === 'warning')).toBe(true);
+    expect(repeated[0].measurement.slides).toHaveLength(2);
+    expect(repeated[0].fix.action).toBe('vary-the-look');
+    expect(r.status, 'a repeated look does not fail the run').toBe(0);
+    expect(r.json.diversity).toMatchObject({ illustrations: 6, structures: 1, largestFamily: { share: 1 } });
+    expect(r.json.diversity.matrix, 'the matrix only with --diversity').toBeUndefined();
+    expect(r.json.illustrations[0].signature.structure).toMatchObject({ kind: 'deck-diagram', topology: 'fan-out' });
+    const human = cli(['check', 'div-clones.html', '--no-visual', '--diversity']);
+    expect(human.stderr).toContain('Diversity · 6 illustrations · 1 structures');
+    expect(human.stderr).toContain('alike  slide 1 · slide 2');
+    expect(human.stderr).toContain('nearest slide');
+  });
+
+  test('a varied gallery is left alone, and --diversity adds every distance', () => {
+    deck('div-varied', gallery([
+      graph(['Web', 'Gateway', 'Auth', 'Postgres']),
+      `layout="column" align="start"><dg-bar label="Storage" value="52" emphasis></dg-bar><dg-bar label="Compute" value="31"></dg-bar><dg-bar label="Network" value="12"></dg-bar>`,
+      `layout="ring" link="arrow"><dg-box label="Build"></dg-box><dg-box label="Measure"></dg-box><dg-box label="Learn" emphasis></dg-box>`,
+      `intent="threshold"><dg-meter role="measure" name="disk" label="Disk" value="55 70 88" unit="%" threshold="80"></dg-meter><dg-box role="consequence" name="writes" icon="alert" label="Writes refused"></dg-box>`,
+    ]), ['deck-diagram']);
+    const run = cli(['check', 'div-varied.html', '--json', '--no-visual', '--diversity']);
+    const json = JSON.parse(run.stdout);
+    expect(json.diagnostics.filter((d: any) => d.code === 'ILL_REPEATED_LOOK'), run.stdout).toEqual([]);
+    expect(json.diversity).toMatchObject({ illustrations: 4, structures: 4, intents: ['threshold'], repeated: [] });
+    expect(json.diversity.matrix).toHaveLength(4);
+  });
+
+  /** One picture of an act, at a step, its API in a version · the motif of a deck. */
+  const act = (step: string, api: string, extra = '') =>
+    `acts="code · environnement · exploitation" act="${step}" ${extra} ${graph(['Web', api, 'Auth', 'Postgres'])}`;
+
+  test('a motif that moves on is no repeat · the step of the act, a figure, and nothing else, is said apart', () => {
+    deck('motif-progress', gallery([act('code', 'API v1'), act('environnement', 'API v1'), act('environnement', 'API v2'), act('environnement', 'API v2')]), ['deck-diagram']);
+    const run = cli(['check', 'motif-progress.html', '--json', '--no-visual', '--diversity']);
+    const json = JSON.parse(run.stdout);
+    const repeated = json.diagnostics.filter((d: any) => d.code === 'ILL_REPEATED_LOOK');
+    // Slides 3 and 4 are the same picture at the same step with the same words · the
+    // only pair that does not move on.
+    expect(repeated.map((d: any) => d.measurement.slides), run.stdout).toEqual([[3, 4]]);
+    const progress = (a: number, b: number) =>
+      json.diversity.progressing.find((p: any) => p.a.slide === a && p.b.slide === b)?.progress;
+    expect(progress(1, 2)).toEqual(['step']);
+    expect(progress(2, 3)).toEqual(['data']);
+    const human = cli(['check', 'motif-progress.html', '--no-visual', '--diversity']);
+    expect(human.stderr).toContain('motif  slide 1 · slide 2');
+  });
+
+  test('a pair names its remedy, and a camera opens from the slide before · what a deck declares wrong is said, with its fix', () => {
+    deck('motif-declared', gallery([
+      act('code', 'API v1', 'pair="nowhere"'),
+      `play="enter" layout="row"><dg-box name="x" label="cache · 2 Go"></dg-box><dg-box name="y" label="queue · 40 jobs"></dg-box><dg-camera zoom-from="d1/nope" to="all"></dg-camera>`,
+    ]), ['deck-diagram']);
+    const r = reportFast('motif-declared');
+    const pair = r.json.diagnostics.find((d: any) => d.code === 'ILL_PAIR_TARGET');
+    expect(pair, r.stdout).toMatchObject({ severity: 'error', slide: 1, fix: { attribute: 'pair' } });
+    // The mark the camera takes over is neither here (DG_REF_UNKNOWN) nor on slide 1.
+    expect(codes(r)).toContain('DG_REF_UNKNOWN');
+    const zoom = r.json.diagnostics.find((d: any) => d.code === 'ILL_ZOOM_FROM_TARGET');
+    expect(zoom).toMatchObject({ severity: 'error', slide: 2, fix: { attribute: 'zoom-from' } });
+  });
+
+  test('reads what a deck declares on every diagram, however small · a small remedy counts, a small pair is checked', () => {
+    const small = (extra: string, words: string[]) => `style="display:block;width:200px" ${extra} ${graph(words)}`;
+    deck('motif-small', gallery([
+      act('code', 'API v1', 'pair="d2"'),
+      small('', ['Web', 'API v2', 'Auth', 'Postgres']),
+      small('pair="nowhere"', ['Shop', 'Cart', 'Stock', 'Billing']),
+    ]), ['deck-diagram']);
+    const r = reportFast('motif-small');
+    const pairs = r.json.diagnostics.filter((d: any) => d.code === 'ILL_PAIR_TARGET');
+    expect(pairs.map((d: any) => [d.slide, d.severity]), r.stdout).toEqual([[3, 'error']]);
+  });
+
+  test('the deck of motifs checks clean through every state · three pairs, one act, a chapter opened from the slide before', () => {
+    const run = cli(['check', join(PKG_DIR, 'decks/tests/deck-diagram-deck-motifs.html'), '--json', '--no-visual', '--steps', '--diversity', '--richness']);
+    const json = JSON.parse(run.stdout);
+    expect(json.diagnostics, run.stdout).toEqual([]);
+    expect(json.diversity.repeated).toEqual([]);
+    // The incident and its remedy look alike by design · each pair is a motif that moves on.
+    expect(json.diversity.progressing.map((p: any) => [p.a.slide, p.b.slide]).sort()).toEqual([[1, 2], [3, 4], [5, 6]]);
+  });
+
+  /** Pictures poor on purpose · generic words, no figure, one paint, one model. */
+  const POOR = [
+    `layout="row" link="arrow"><dg-box label="Service A"></dg-box><dg-box label="Service B"></dg-box><dg-box label="Service C"></dg-box>`,
+    `layout="layers" direction="right"><dg-box name="api" label="API"></dg-box><dg-box name="m1" label="Module 1"></dg-box><dg-box name="m2" label="Module 2"></dg-box><dg-link from="api" to="m1 m2"></dg-link>`,
+    `layout="column" link="arrow"><dg-box label="Étape 1"></dg-box><dg-box label="Étape 2"></dg-box><dg-box label="Étape 3"></dg-box>`,
+  ];
+  /** A kill switch tested for real (decks/tests/deck-diagram-story.html) · the facts
+   *  of its case, painted by role, told as a story and proven in the target. */
+  const RICH = `<deck-feature id="stop"><h1 slot="title">The STOP button, tested for real</h1>
+    <deck-diagram play="enter" layout="column" align="start">
+      <dg-group layout="row" gap="airy">
+        <dg-box name="essai" icon="flag" label="real test" note="Tuesday 14:02" paint="ok"></dg-box>
+        <dg-box name="drapeau" icon="database" label="DB 2 · ON" swap="DB 2 · STOP" swap-icon="ban" paint="pale" tone="normal warn" beat="event" after="ecrit"></dg-box>
+        <dg-box name="lit" icon="code" label="is_active()" note="the only code that reads STOP" paint="ink"></dg-box>
+        <dg-link name="ecrit" from="essai" to="drapeau" label="writes" flow="1" beat="event"></dg-link>
+        <dg-link name="lu" from="drapeau" to="lit" label="reads" flow="1" beat="spread"></dg-link>
+      </dg-group>
+      <dg-group layout="lanes" gap="tight">
+        <dg-lane name="api" icon="cloud" label="API" note="POST /quotes" steady="3s"></dg-lane>
+        <dg-lane name="tache" icon="clock" label="job" note="retry 15 min" steady="3s"></dg-lane>
+        <dg-gate name="stop" by="lit" state="open closed" beat="spread" after="lu"></dg-gate>
+        <dg-box name="acme" icon="target" label="ACME · prod" paint="pale" proof="0 quotes created" beat="proof"></dg-box>
+        <dg-text name="coupe" for="stop" side="bottom" label="14:02:03" note="nothing gets through" beat="effect"></dg-text>
+      </dg-group>
+    </deck-diagram>
+    <deck-source>Illustration · a test made up for the example (hours and client ACME invented)</deck-source>
+  </deck-feature>`;
+
+  test('the richness is measured on every drawing and says nothing by default · --richness says what the poor ones lack', () => {
+    deck('rich-poor', `${gallery(POOR)}\n${RICH}`, ['deck-diagram']);
+    const quiet = reportFast('rich-poor');
+    const richnessCodes = ['ILL_GENERIC', 'ILL_FLAT_PAINT', 'ILL_MODEL_REPEAT'];
+    expect(codes(quiet).filter((c: string) => richnessCodes.includes(c)), 'a measure, off by default').toEqual([]);
+    const scores = quiet.json.illustrations.map((row: any) => row.richness.score);
+    expect(Math.max(...scores.slice(0, 3)), quiet.stdout).toBeLessThanOrEqual(40);
+    expect(scores[3], JSON.stringify(quiet.json.illustrations[3].richness)).toBeGreaterThanOrEqual(90);
+    expect(quiet.json.illustrations[0].richness.criteria.content).toMatchObject({ points: 0, fix: { action: 'add-precise-facts' } });
+    expect(quiet.json.richness).toMatchObject({ illustrations: 4, min: { slide: 1 } });
+    expect(quiet.json.illustrations[0], 'the words of its marks stay inside the check').not.toHaveProperty('motif');
+
+    const asked = cli(['check', 'rich-poor.html', '--json', '--no-visual', '--richness']);
+    const json = JSON.parse(asked.stdout);
+    const found = json.diagnostics.filter((d: any) => richnessCodes.includes(d.code));
+    expect(found.every((d: any) => d.severity === 'warning'), asked.stdout).toBe(true);
+    expect(asked.status, 'a measure never fails the run').toBe(quiet.status);
+    expect(found.filter((d: any) => d.code === 'ILL_GENERIC').map((d: any) => d.slide)).toEqual([1, 2, 3]);
+    expect(found.find((d: any) => d.code === 'ILL_FLAT_PAINT')?.fix.action).toBe('paint-by-role');
+    const repeat = found.find((d: any) => d.code === 'ILL_MODEL_REPEAT');
+    expect(repeat?.measurement).toMatchObject({ slide: 3, model: 'deck-diagram:boxes', uses: 3 });
+    expect(found.filter((d: any) => d.slide === 4), 'the rich slide is left alone').toEqual([]);
+
+    const human = cli(['check', 'rich-poor.html', '--no-visual', '--richness']);
+    expect(human.stderr).toContain('Richness · 4 illustrations');
+    expect(human.stderr).toMatch(/slide +score +content +demo +story +paint +result +model/);
+    expect(human.stderr).toMatch(/ 1 +13 +0 +10 +- +0 +0 +deck-diagram:boxes/);
+  });
+
+  test('a crowd on a beat is one wave, and a cursor in a small part keeps its line off the labels · clean', () => {
+    deck('charts-limits', `<deck-feature id="foule"><h1 slot="title">38 of 100 leave</h1>
+        <deck-diagram play="enter" layout="grid">
+          <dg-dot count="62" beat="steady"></dg-dot>
+          <dg-dot name="partis" count="100" emphasis beat="event"></dg-dot>
+          <dg-text for="partis" side="right" label="100 gone" note="21 in month 2" beat="proof"></dg-text>
+        </deck-diagram></deck-feature>
+      <deck-feature id="plafond"><h1 slot="title">The cap falls in tools</h1>
+        <deck-diagram layout="axis">
+          <dg-bar name="a" label="salaries" tag="70 %" from="0" to="70"></dg-bar>
+          <dg-bar name="b" label="cloud" tag="22 %" from="70" to="92"></dg-bar>
+          <dg-bar name="c" label="tools" tag="4 %" from="92" to="96"></dg-bar>
+          <dg-bar name="d" label="other" tag="4 %" from="96" to="100"></dg-bar>
+          <dg-cursor name="p" label="cap · 94 %" value="94"></dg-cursor>
+        </deck-diagram></deck-feature>`, ['deck-diagram']);
+    const r = reportFast('charts-limits');
+    const ours = r.json.diagnostics.filter((d: any) => /^(ILL|INT|DG|SVG)_/.test(d.code) && d.code !== 'ILL_REPEATED_LOOK');
+    expect(ours, r.stdout).toEqual([]);
+  });
+
+  test('a deck can ask for the richness findings by its policy, and silence one', () => {
+    deck('rich-policy', gallery(POOR), ['deck-diagram']);
+    const run = cli(['check', 'rich-policy.html', '--json', '--no-visual', '--richness', '--checks', '-ill-flat-paint']);
+    const json = JSON.parse(run.stdout);
+    expect(codes({ json })).toContain('ILL_GENERIC');
+    expect(codes({ json })).not.toContain('ILL_FLAT_PAINT');
+  });
+
+  test('a scene that reported one text still has the rest of its drawing measured', () => {
+    // The known fault must not hide another: only the reported words are
+    // dropped from the geometry findings, the other label still spills.
+    const issue = JSON.stringify([{
+      code: 'SCENE_TEXT_TOO_LONG',
+      severity: 'error',
+      items: ['MCP · label'],
+      message: 'could not fit',
+      fields: [{ item: 'MCP', field: 'label', text: 'A scene label much too long' }],
+    }]);
+    deck('scene-two-faults', `<script>
+        customElements.define('deck-scene-probe2', class extends HTMLElement {
+          connectedCallback() {
+            this.attachShadow({ mode: 'open' }).innerHTML = '<svg viewBox="0 0 800 300" style="width:800px">'
+              + '<rect x="20" y="20" width="160" height="80" fill="#eee"/>'
+              + '<text x="40" y="70" font-size="32">A scene label much too long</text>'
+              + '<rect x="400" y="20" width="160" height="80" fill="#eee"/>'
+              + '<text x="420" y="70" font-size="32">Another label that spills</text></svg>';
+            this.setAttribute('data-scene-issues', ${JSON.stringify(issue)});
+          }
+        });
+      </script>
+      <deck-feature id="scene-two-faults"><h1 slot="title">Scene</h1><deck-scene-probe2></deck-scene-probe2></deck-feature>`);
+    const r = reportFast('scene-two-faults');
+    const spills = r.json.diagnostics.filter((d: any) => d.code === 'SVG_TEXT_ESCAPES');
+    expect(spills.map((d: any) => d.excerpt), r.stdout).toEqual(['Another label that spills']);
+  });
+});
+
 test.describe('every slide is measured, not only the one on screen', () => {
   // deck-root shows the active slide and hides the rest, so a single
   // inspection of the document measured empty rects everywhere but slide 1:
@@ -1199,5 +1915,359 @@ test.describe('the visual pass', () => {
     const r = report('novisual');
     expect(r.json.visualMeasured).toBe(false);
     expect(r.json.notChecked.join(' ')).toMatch(/pixels/);
+  });
+});
+
+// ── --slides · check only the slides that were asked for ─────────────
+test.describe('check --slides', () => {
+  const OVERFLOWING = `<svg viewBox="0 0 800 300" style="width:800px">
+    <rect x="20" y="20" width="200" height="80" fill="#eee"/>
+    <text x="40" y="70" font-size="32">A label far too long for this card</text></svg>`;
+  const slide = (id: string, drawing = '') =>
+    `<deck-feature id="${id}"><h1 slot="title">${id}</h1>${drawing}</deck-feature>`;
+
+  /** Slides 2 ("bad-early") and 4 ("bad-late") carry the same defect. */
+  const DECK = 'pick-slides';
+  test.beforeAll(() => {
+    deck(
+      DECK,
+      [slide('intro'), slide('bad-early', OVERFLOWING), slide('middle'), slide('bad-late', OVERFLOWING)].join('\n'),
+    );
+  });
+
+  const checkSlides = (selector: string) => {
+    const run = cli(['check', `${DECK}.html`, '--json', '--no-visual', '--slides', selector]);
+    return { ...run, json: run.status === 2 ? null : JSON.parse(run.stdout) };
+  };
+  const escaped = (r: { json: any }) =>
+    r.json.diagnostics.filter((d: any) => d.code === 'SVG_TEXT_ESCAPES').map((d: any) => d.slideId);
+
+  test('measures one slide and says which, leaving the defect elsewhere unreported', () => {
+    const r = checkSlides('4');
+    expect(r.json.slidesChecked).toEqual([4]);
+    expect(r.json.slideCount).toBe(4);
+    expect(escaped(r)).toEqual(['bad-late']);
+    expect(r.json.statesInspected).toBe(1);
+    expect(r.json.notChecked.join(' ')).toMatch(/1 of 4 slides measured/);
+  });
+
+  test('measures a set of slides, by position and by id, in deck order', () => {
+    const r = checkSlides('bad-late,1,intro');
+    expect(r.json.slidesChecked).toEqual([1, 4]);
+    expect(escaped(r)).toEqual(['bad-late']);
+  });
+
+  test('measures an interval, closed or open at either end', () => {
+    expect(checkSlides('2-3').json.slidesChecked).toEqual([2, 3]);
+    expect(escaped(checkSlides('2-3'))).toEqual(['bad-early']);
+    expect(checkSlides('-2').json.slidesChecked).toEqual([1, 2]);
+    expect(checkSlides('3-').json.slidesChecked).toEqual([3, 4]);
+    expect(escaped(checkSlides('3-'))).toEqual(['bad-late']);
+  });
+
+  test('measures several intervals, and the slides between two ends', () => {
+    expect(checkSlides('1,3-4').json.slidesChecked).toEqual([1, 3, 4]);
+    const between = checkSlides('bad-early..bad-late');
+    expect(between.json.slidesChecked).toEqual([2, 3, 4]);
+    expect(escaped(between)).toEqual(['bad-early', 'bad-late']);
+  });
+
+  test('measures every slide when no selection is given', () => {
+    const run = cli(['check', `${DECK}.html`, '--json', '--no-visual']);
+    const r = { json: JSON.parse(run.stdout) };
+    expect(r.json.slidesChecked).toEqual([1, 2, 3, 4]);
+    expect(escaped(r)).toEqual(['bad-early', 'bad-late']);
+    expect(r.json.notChecked.join(' ')).not.toMatch(/slides measured/);
+  });
+
+  test('still reads what belongs to the whole document when slide 1 is left out', () => {
+    // The document-wide pass is tied to the first slide walked, not to slide 1.
+    const r = checkSlides('3');
+    expect(r.json.slidesChecked).toEqual([3]);
+    expect(r.json.settled).toBe(true);
+    expect(r.json.statesInspected).toBe(1);
+  });
+
+  test('refuses an unknown or malformed selection with exit 2, naming what the deck holds', () => {
+    for (const selector of ['9', 'ghost', '4-2', '2..1']) {
+      const r = checkSlides(selector);
+      expect(r.status, selector).toBe(2);
+      expect(r.stdout, 'no report on stdout for a refused selection').toBe('');
+      expect(r.stderr).toContain('no slide matches');
+      expect(r.stderr).toContain('this deck has: 1 (intro), 2 (bad-early), 3 (middle), 4 (bad-late)');
+    }
+  });
+});
+
+// ── scene lint · what a scene would draw silently ────────────────────
+test.describe('scene lint', () => {
+  const SCENES = ['cards', 'steps', 'flow', 'bars', 'matrix', 'ranges', 'lanes', 'units'].map(
+    (kind) => `deck-scene-${kind}`,
+  );
+
+  /** A fixture's slides, from the repository · one source for the deck and the test. */
+  const fixtureSlides = (name: string) => {
+    const html = readFileSync(join(PKG_DIR, 'decks', 'tests', `${name}.html`), 'utf8');
+    return html.split('<deck-root>')[1].split('</deck-root>')[0];
+  };
+  const sceneCodes = (r: { json: any }) => codes(r).filter((c: string) => c.startsWith('SCENE_'));
+  const findings = (r: { json: any }, code: string) =>
+    r.json.diagnostics.filter((d: any) => d.code === code);
+
+  test('names every silent failure of a scene, once, on its slide, with the items concerned', () => {
+    deck('scene-lint', fixtureSlides('deck-scene-lint'), SCENES);
+    const r = reportFast('scene-lint');
+    const only = (code: string, slideId: string) => {
+      const found = findings(r, code).filter((d: any) => d.slideId === slideId);
+      expect(found, `${code} on ${slideId}\n${r.stdout}`).toHaveLength(1);
+      return found[0];
+    };
+
+    expect(only('SCENE_ITEMS_DROPPED', 'lint-cards')).toMatchObject({
+      severity: 'error',
+      measurement: { items: ['Sixth, never drawn'] },
+    });
+    expect(only('SCENE_ITEM_NO_LABEL', 'lint-cards').measurement.items).toEqual(['item 4']);
+    expect(only('SCENE_ICON_UNKNOWN', 'lint-cards').measurement.items).toEqual(['Unknown icon']);
+    expect(only('SCENE_VALUE_INVALID', 'lint-bars').measurement.items).toEqual(['Not a number', 'No value']);
+    expect(only('SCENE_LEVEL_INVALID', 'lint-matrix').measurement.items).toEqual(['Too short', 'Unknown word']);
+    expect(only('SCENE_VALUE_INVALID', 'lint-ranges').measurement.items).toEqual(['Backwards', 'A word']);
+    expect(only('SCENE_ITEMS_DROPPED', 'lint-flow').measurement.items).toEqual([
+      'Source 5 is cut',
+      'Outcome 3 is cut',
+    ]);
+
+    expect(only('SCENE_VALUE_INVALID', 'lint-lanes').measurement.items).toEqual(['passed', 'blocked']);
+    expect(only('SCENE_ATTRIBUTE_IGNORED', 'lint-lanes').measurement.items).toEqual(['Reads a value · value']);
+
+    const tall = only('SCENE_TOO_TALL', 'lint-tall');
+    expect(tall.severity).toBe('error');
+    expect(tall.measurement.items[0]).toMatch(/^6 items, \d{3,4} units tall$/);
+    expect(only('SCENE_VALUE_INVALID', 'lint-units').measurement.items).toEqual(['Past the total', 'No value']);
+    expect(only('SCENE_GRID_TOO_DENSE', 'lint-units').measurement.items[0]).toMatch(/400 cells in 40 columns/);
+
+    expect(only('SCENE_VALUE_CLIPPED', 'lint-bars-scale').measurement.items).toEqual(['Past max']);
+    expect(only('SCENE_ATTRIBUTE_INVALID', 'lint-bars-scale').measurement.items).toEqual(['height']);
+    expect(only('SCENE_GROUP_SPLIT', 'lint-bars-scale')).toMatchObject({
+      severity: 'warning',
+      measurement: { items: ['Q1'] },
+    });
+    expect(only('SCENE_VALUE_CLIPPED', 'lint-ranges-scale').measurement.items).toEqual(['Past scale']);
+    expect(only('SCENE_ATTRIBUTE_INVALID', 'lint-ranges-scale').measurement.items).toEqual(['scale']);
+
+    // Each field that did not fit is named with its measure, and the fix is
+    // the field's own · a figure is not shortened like a label.
+    const long = only('SCENE_TEXT_TOO_LONG', 'lint-fields');
+    const byField = Object.fromEntries(long.measurement.fields.map((f: any) => [f.field, f]));
+    expect(Object.keys(byField).sort()).toEqual(['figure', 'label']);
+    expect(byField.figure).toMatchObject({ item: 'Wide figure', text: '760 000 000 000 ms' });
+    expect(byField.figure.measured).toBeGreaterThan(byField.figure.budget);
+    expect(byField.label.item).toBe('Pneumonoultramicroscopicsilicovolcanoconiosis');
+    expect(long.suggestion).toContain('figure is too wide');
+    expect(long.suggestion).toContain('shorten the label');
+    // The fix a reader acts on without parsing words: the action, and for each
+    // field how long it is, how much the measured table says fits, and the units.
+    expect(long.fix.action).toBe('shorten');
+    const target = Object.fromEntries(long.fix.targets.map((t: any) => [t.field, t]));
+    expect(target.label).toMatchObject({ item: 'Pneumonoultramicroscopicsilicovolcanoconiosis', chars: 45 });
+    expect(target.label.holds).toBeGreaterThan(10);
+    expect(target.label.holds).toBeLessThan(45);
+    expect(target.label.needsUnits).toBeGreaterThan(target.label.hasUnits);
+    expect(target.figure.holds, 'a figure is not in the table').toBeNull();
+    expect(long.suggestion).toMatch(/about \d+ fit here/);
+
+    const fallback = only('SCENE_FONT_FALLBACK', 'lint-font');
+    expect(fallback.severity).toBe('warning');
+    expect(fallback.measurement.family).toBe('NoSuchFace');
+
+    const crowded = only('SCENE_EMPHASIS_MANY', 'lint-cards');
+    expect(crowded.severity).toBe('warning');
+    expect(crowded.element).toContain('deck-scene-cards');
+    expect(only('SCENE_LABEL_LONG', 'lint-cards').severity).toBe('warning');
+    expect(only('SCENE_NOTE_LONG', 'lint-cards').severity).toBe('warning');
+    expect(r.status, 'a defect fails the run').toBe(1);
+  });
+
+  test('leaves alone the scenes written as meant, grouped emphasis and an open row included', () => {
+    // The fixtures hold the two shapes a stricter lint got wrong: a bar
+    // emphasised once per period, and a duration still to be fixed (no bound).
+    for (const kind of ['cards', 'steps', 'flow', 'bars', 'matrix', 'ranges']) {
+      deck(`scene-ok-${kind}`, fixtureSlides(`deck-scene-${kind}`), SCENES);
+      const r = reportFast(`scene-ok-${kind}`);
+      expect(sceneCodes(r), `${kind}\n${r.stdout}`).toEqual([]);
+    }
+  });
+
+  test('does not trust an attribute that is not the lint\'s JSON, and does not crash on it', () => {
+    deck('scene-foreign', `<script>
+        customElements.define('deck-scene-probe', class extends HTMLElement {});
+      </script>
+      <deck-feature id="foreign"><h1 slot="title">Foreign</h1>
+        <deck-scene-probe data-scene-issues="not json"></deck-scene-probe>
+      </deck-feature>`);
+    const r = reportFast('scene-foreign');
+    expect(r.json.settled, r.stdout).toBe(true);
+    expect(sceneCodes(r)).toEqual([]);
+    expect(codes(r)).not.toContain('PAGE_ERROR');
+  });
+});
+
+// A deck's check policy · rikiki.config.json `check` and the exceptions written on the
+// deck. The deck and its config live in a folder of their own, so the policy reaches
+// no other test of this file.
+test.describe('a check policy', () => {
+  const tiny = '<p style="font-size:8px">texte trop petit pour le fond de la salle</p>';
+  // One folder per test · the tests of a file run in parallel, and a config is per folder.
+  const policyDeck = (config: object, name = test.info().title.replace(/\W+/g, '-').slice(0, 40)) => {
+    const dir = join(workDir, `policy-${name}`);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, 'rikiki.config.json'), JSON.stringify(config));
+    writeFileSync(
+      join(dir, 'deck.html'),
+      `<!doctype html>
+<html lang="fr"><head><meta charset="UTF-8">
+<link rel="stylesheet" href="../rikiki/tokens.css">
+<script type="module" src="../rikiki/dist/index.js"></script>
+</head><body>
+<deck-root>
+  <deck-feature id="cours" wobble="1"><h1 slot="title">Cours</h1>${tiny}</deck-feature>
+  <deck-feature id="annexe" data-tags="annexe"><h1 slot="title">Annexe</h1>${tiny}</deck-feature>
+  <deck-feature id="mentions" data-check-off="text-too-small" data-check-reason="mentions légales, lues en PDF"><h1 slot="title">Mentions</h1>${tiny}</deck-feature>
+  <deck-feature id="calme" data-check-off="slide-dense" data-check-reason="dense un jour, peut-être"><h1 slot="title">Calme</h1><p>Une phrase.</p></deck-feature>
+</deck-root>
+</body></html>`,
+    );
+    return `policy-${name}/deck.html`;
+  };
+  const run = (args: string[]) => {
+    const r = cli(args);
+    return { ...r, json: JSON.parse(r.stdout) };
+  };
+  const config = {
+    check: {
+      root: true,
+      checks: '-text-too-smal',
+      severity: { 'unknown-attribute': 'error' },
+      overrides: [{ tags: ['annexe'], checks: '-text-too-small', reason: 'annexe, lue en PDF' }],
+    },
+  };
+
+  test('silences by tag and by an exception with its reason, raises a rule, and says what it got wrong', () => {
+    const r = run(['check', policyDeck(config), '--json', '--no-visual']);
+    const small = r.json.diagnostics.filter((d: any) => d.code === 'TEXT_TOO_SMALL');
+    expect(small.map((d: any) => d.slide), r.stdout).toEqual([1]);
+    const silenced = r.json.suppressed.filter((d: any) => d.code === 'TEXT_TOO_SMALL');
+    expect(silenced.map((d: any) => [d.slide, d.suppressedBy.kind, d.suppressedBy.reason])).toEqual([
+      [2, 'override', 'annexe, lue en PDF'],
+      [3, 'inline', 'mentions légales, lues en PDF'],
+    ]);
+    expect(r.json.summary.suppressed).toBe(2);
+    expect(r.json.diagnostics.find((d: any) => d.code === 'UNKNOWN_ATTRIBUTE')?.severity).toBe('error');
+    expect(codes(r)).toEqual(expect.arrayContaining(['CHECK_SELECTION_UNMATCHED', 'CHECK_SUPPRESSION_UNUSED']));
+    expect(r.json.selection.overrides[0]).toMatchObject({ slides: [2], reason: 'annexe, lue en PDF' });
+    expect(r.json.notChecked.join(' ')).toMatch(/2 measured and left out by the deck's policy/);
+    expect(r.status).toBe(1);
+  });
+
+  test('lets the command line speak last, and refuses what cannot work before a browser is spent', () => {
+    const lowered = run(['check', policyDeck(config), '--json', '--no-visual', '--severity', 'unknown-attribute=warning', '--checks', '-text-*']);
+    expect(lowered.json.diagnostics.find((d: any) => d.code === 'UNKNOWN_ATTRIBUTE')?.severity).toBe('warning');
+    expect(lowered.json.diagnostics.filter((d: any) => d.code === 'TEXT_TOO_SMALL')).toEqual([]);
+    const bad = cli(['check', policyDeck(config), '--severity', 'text-too-small=loud']);
+    expect(bad.status).toBe(2);
+    expect(bad.stderr).toMatch(/the level is one of error, warning, off/);
+  });
+
+  test('ignores the exceptions of the deck when asked, and lists every rule with where it is kept', () => {
+    const strict = run(['check', policyDeck(config), '--json', '--no-visual', '--no-inline-exceptions']);
+    expect(strict.json.diagnostics.filter((d: any) => d.code === 'TEXT_TOO_SMALL').map((d: any) => d.slide)).toEqual([1, 3]);
+    const listed = run(['check', policyDeck(config), '--list-checks', '--json']);
+    const row = listed.json.checks.find((c: any) => c.code === 'TEXT_TOO_SMALL');
+    expect(row).toMatchObject({ name: 'text-too-small', enabled: 'mixed', slides: { off: [2] } });
+    expect(listed.json.checks.find((c: any) => c.code === 'PAGE_ERROR')).toMatchObject({ alwaysOn: true, enabled: true });
+    expect(listed.json.checks.length).toBeGreaterThan(150);
+  });
+
+  /** A plugin whose one rule counts the words of each slide's title, and says so on the title. */
+  const plugin = (namespace: string, folder = 'policy-plugins', scope = 'slide') => {
+      const dir = join(workDir, folder, `plugin-${namespace.toLowerCase()}`);
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(
+        join(dir, 'rikiki.module.json'),
+        JSON.stringify({ schemaVersion: 1, id: `demo-${namespace.toLowerCase()}`, version: '1.0.0', namespace, checks: { apiVersion: 1, entry: 'checks.js', profiles: ['recommended'] } }),
+      );
+      writeFileSync(
+        join(dir, 'checks.js'),
+        `globalThis[Symbol.for('rikiki.checks.v1')].define({ apiVersion: 1, id: 'demo-${namespace.toLowerCase()}', version: '1.0.0', rules: [{
+          code: '${namespace}_TITLE_WORDS', scope: '${scope}', severity: 'warning',
+          run(ctx) {
+            const max = (ctx.options ?? {}).max ?? 100;
+            const title = ctx.query('h1')[0];
+            const words = (title?.textContent ?? '').trim().split(/\\s+/).length;
+            ctx.report({ message: words + ' words, over ' + max, measurement: { words, max }, element: title });
+          },
+        }] });`,
+      );
+      return `./plugin-${namespace.toLowerCase()}/rikiki.module.json`;
+  };
+
+  test('gives a plugin rule its options, does not run it where it is silenced, and refuses a built-in namespace', () => {
+    const deck = policyDeck(
+      {
+        plugins: [{ manifest: plugin('DEMO') }, { manifest: plugin('TEXT') }],
+        check: { root: true, options: { 'demo-title-words.max': 0 }, overrides: [{ slides: 'annexe..calme', checks: '-demo-*' }] },
+      },
+      'plugins',
+    );
+    const r = run(['check', deck, '--json', '--no-visual']);
+    const demo = r.json.diagnostics.filter((d: any) => d.code === 'DEMO_TITLE_WORDS');
+    expect(demo.map((d: any) => d.slide), r.stdout).toEqual([1]);
+    expect(demo[0].measurement).toEqual({ words: 1, max: 0 });
+    // Silenced on slides 2 to 4 by the override, so never run there: nothing to suppress.
+    expect(r.json.suppressed.filter((d: any) => d.code === 'DEMO_TITLE_WORDS')).toEqual([]);
+    const refused = r.json.diagnostics.find((d: any) => d.code === 'CHECK_PLUGIN_LOAD_FAILED');
+    expect(refused?.message).toMatch(/namespace TEXT is a family of built-in rules/);
+  });
+
+  test('runs a plugin rule an element override takes back, and keeps it under that element only', () => {
+    const name = 'element-takes-back';
+    const deck = policyDeck(
+      {
+        plugins: [{ manifest: plugin('DEMO', `policy-${name}`) }],
+        check: { root: true, checks: '-demo-*', overrides: [{ elements: '#annexe h1', checks: 'demo-title-words', reason: 'titre relu' }] },
+      },
+      name,
+    );
+    const r = run(['check', deck, '--json', '--no-visual']);
+    const demo = r.json.diagnostics.filter((d: any) => d.code === 'DEMO_TITLE_WORDS');
+    expect(demo.map((d: any) => d.slide), r.stdout).toEqual([2]);
+    expect(r.json.suppressed.filter((d: any) => d.code === 'DEMO_TITLE_WORDS').map((d: any) => d.slide)).toEqual([1, 3, 4]);
+  });
+
+  test('runs a document plugin rule taken back by a slide override', () => {
+    const name = 'document-takes-back';
+    const deck = policyDeck({
+      plugins: [{ manifest: plugin('DEMO', `policy-${name}`, 'document') }],
+      check: { root: true, checks: '-demo-*', overrides: [{ slides: '1', checks: 'demo-title-words' }] },
+    }, name);
+    const r = run(['check', deck, '--json', '--no-visual']);
+    const demo = r.json.diagnostics.filter((d: any) => d.code === 'DEMO_TITLE_WORDS');
+    expect(demo.map((d: any) => d.slide), r.stdout).toEqual([1]);
+  });
+
+  test('says an option no rule reads · a typo in the rule it names', () => {
+    const name = 'option-typo';
+    const deck = policyDeck({ plugins: [{ manifest: plugin('DEMO', `policy-${name}`) }], check: { root: true } }, name);
+    const r = run(['check', deck, '--list-checks', '--json', '--check-option', 'DEMO_TITEL_WORDS.max=0', '--check-option', 'demo-title-words.max=3']);
+    const unknown = r.json.diagnostics.filter((d: any) => d.code === 'CHECK_OPTION_UNKNOWN');
+    expect(unknown.map((d: any) => d.measurement.option), r.stdout).toEqual(['DEMO_TITEL_WORDS.max']);
+    expect(unknown[0].severity).toBe('warning');
+  });
+
+  test('says an elements selector the browser cannot read, even when it only lists the rules', () => {
+    const r = cli(['check', policyDeck({ check: { root: true, overrides: [{ elements: '[', checks: '-text-too-small' }] } }), '--list-checks', '--json']);
+    const json = JSON.parse(r.stdout);
+    expect(json.diagnostics.map((d: any) => d.code), r.stdout).toContain('CHECK_CONFIG_INVALID');
+    expect(r.status).toBe(2);
   });
 });

@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Scene lint · test fixture</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../tokens.css">
+<link rel="stylesheet" href="../../themes/siliceum.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-scene-cards.js"></script>
+<script type="module" src="../../dist/deck-scene-bars.js"></script>
+<script type="module" src="../../dist/deck-scene-matrix.js"></script>
+<script type="module" src="../../dist/deck-scene-ranges.js"></script>
+<script type="module" src="../../dist/deck-scene-flow.js"></script>
+<script type="module" src="../../dist/deck-scene-lanes.js"></script>
+<script type="module" src="../../dist/deck-scene-units.js"></script>
+</head>
+<body>
+<!-- Every scene here is written wrong on purpose, once per rule of
+     src/media/scene-lint.ts · e2e/scenes.spec.ts and render-check.spec.ts read it. -->
+<deck-root>
+
+  <deck-feature id="lint-cards" eyebrow="Lint">
+    <h1 slot="title">Cards written wrong</h1>
+    <deck-scene-cards data-testid="lint-cards">
+      <deck-scene-item icon="rocket" label="Unknown icon" emphasis note="The glyph is not in the set."></deck-scene-item>
+      <deck-scene-item label="Second emphasis" emphasis note="Two emphases are none. It also has two sentences."></deck-scene-item>
+      <deck-scene-item label="A label that reads as a sentence"></deck-scene-item>
+      <deck-scene-item note="No label at all"></deck-scene-item>
+      <deck-scene-item label="Fifth"></deck-scene-item>
+      <deck-scene-item label="Sixth, never drawn"></deck-scene-item>
+    </deck-scene-cards>
+  </deck-feature>
+
+  <deck-feature id="lint-bars" eyebrow="Lint">
+    <h1 slot="title">Bars written wrong</h1>
+    <deck-scene-bars data-testid="lint-bars" unit="%">
+      <deck-scene-item label="Fine" value="12"></deck-scene-item>
+      <deck-scene-item label="Not a number" value="ten"></deck-scene-item>
+      <deck-scene-item label="No value"></deck-scene-item>
+    </deck-scene-bars>
+  </deck-feature>
+
+  <deck-feature id="lint-matrix" eyebrow="Lint">
+    <h1 slot="title">Matrix written wrong</h1>
+    <deck-scene-matrix data-testid="lint-matrix" columns="France|US|UK">
+      <deck-scene-item label="Fine" level="prod pilot none"></deck-scene-item>
+      <deck-scene-item label="Too short" level="prod pilot"></deck-scene-item>
+      <deck-scene-item label="Unknown word" level="prod live none"></deck-scene-item>
+    </deck-scene-matrix>
+  </deck-feature>
+
+  <deck-feature id="lint-ranges" eyebrow="Lint">
+    <h1 slot="title">Ranges written wrong</h1>
+    <deck-scene-ranges data-testid="lint-ranges" scale="12" unit="weeks">
+      <deck-scene-item label="Fine" from="2" to="6"></deck-scene-item>
+      <deck-scene-item label="Backwards" from="9" to="3"></deck-scene-item>
+      <deck-scene-item label="A word" from="soon" to="8"></deck-scene-item>
+      <deck-scene-item label="To fix" note="no bound at all · open on purpose, not a defect"></deck-scene-item>
+    </deck-scene-ranges>
+  </deck-feature>
+
+  <deck-feature id="lint-flow" eyebrow="Lint">
+    <h1 slot="title">Flow written wrong</h1>
+    <deck-scene-flow data-testid="lint-flow">
+      <deck-scene-item label="Source 1"></deck-scene-item>
+      <deck-scene-item label="Source 2"></deck-scene-item>
+      <deck-scene-item label="Source 3"></deck-scene-item>
+      <deck-scene-item label="Source 4"></deck-scene-item>
+      <deck-scene-item label="Source 5 is cut"></deck-scene-item>
+      <deck-scene-item label="Hub" emphasis></deck-scene-item>
+      <deck-scene-item label="Outcome 1"></deck-scene-item>
+      <deck-scene-item label="Outcome 2"></deck-scene-item>
+      <deck-scene-item label="Outcome 3 is cut"></deck-scene-item>
+    </deck-scene-flow>
+  </deck-feature>
+
+  <deck-feature id="lint-lanes" eyebrow="Lint">
+    <h1 slot="title">Lanes written wrong</h1>
+    <deck-scene-lanes data-testid="lint-lanes" gate="STOP" passed="three" blocked="9">
+      <deck-scene-item label="Fine" icon="code"></deck-scene-item>
+      <deck-scene-item label="Reads a value" value="4"></deck-scene-item>
+    </deck-scene-lanes>
+  </deck-feature>
+
+  <deck-feature id="lint-tall" eyebrow="Lint">
+    <h1 slot="title">A matrix too tall for the slide</h1>
+    <deck-scene-matrix data-testid="lint-tall" columns="A|B|C">
+      <deck-scene-item label="One" level="prod prod prod"></deck-scene-item>
+      <deck-scene-item label="Two" level="prod prod prod"></deck-scene-item>
+      <deck-scene-item label="Three" level="prod prod prod"></deck-scene-item>
+      <deck-scene-item label="Four" level="prod prod prod"></deck-scene-item>
+      <deck-scene-item label="Five" level="prod prod prod"></deck-scene-item>
+      <deck-scene-item label="Six" level="prod prod prod"></deck-scene-item>
+    </deck-scene-matrix>
+  </deck-feature>
+
+  <deck-feature id="lint-bars-scale" eyebrow="Lint">
+    <h1 slot="title">Bars on a scale they leave</h1>
+    <deck-scene-bars data-testid="lint-bars-scale" max="500" height="tall">
+      <deck-scene-item note="Q1" label="2025" value="240"></deck-scene-item>
+      <deck-scene-item note="Q2" label="Past max" value="760"></deck-scene-item>
+      <deck-scene-item note="Q1" label="2026" value="310"></deck-scene-item>
+    </deck-scene-bars>
+  </deck-feature>
+
+  <deck-feature id="lint-ranges-scale" eyebrow="Lint">
+    <h1 slot="title">Ranges on a scale they leave</h1>
+    <deck-scene-ranges data-testid="lint-ranges-scale" scale="12" unit="weeks">
+      <deck-scene-item label="Fine" from="2" to="6"></deck-scene-item>
+      <deck-scene-item label="Past scale" from="8" to="14"></deck-scene-item>
+    </deck-scene-ranges>
+    <deck-scene-ranges data-testid="lint-ranges-bad-scale" scale="ten">
+      <deck-scene-item label="Any" from="1" to="2"></deck-scene-item>
+    </deck-scene-ranges>
+  </deck-feature>
+
+  <deck-feature id="lint-fields" eyebrow="Lint">
+    <h1 slot="title">Fields that do not fit</h1>
+    <deck-scene-bars data-testid="lint-fields" unit="ms" max="1000000">
+      <deck-scene-item label="Wide figure" value="760" tag="760 000 000 000 ms"></deck-scene-item>
+      <deck-scene-item label="Pneumonoultramicroscopicsilicovolcanoconiosis" value="310"></deck-scene-item>
+      <deck-scene-item label="Fine" value="190"></deck-scene-item>
+    </deck-scene-bars>
+  </deck-feature>
+
+  <deck-feature id="lint-font" eyebrow="Lint">
+    <h1 slot="title">A scene measured in a fallback</h1>
+    <deck-scene-cards data-testid="lint-font" style="--rik-font-sans: 'NoSuchFace', sans-serif">
+      <deck-scene-item label="One" note="measured in a font that is not there"></deck-scene-item>
+      <deck-scene-item label="Two"></deck-scene-item>
+    </deck-scene-cards>
+  </deck-feature>
+
+  <deck-feature id="lint-units" eyebrow="Lint">
+    <h1 slot="title">Units written wrong</h1>
+    <deck-scene-units data-testid="lint-units" total="400" columns="40">
+      <deck-scene-item label="Fine" value="10"></deck-scene-item>
+      <deck-scene-item label="Past the total" value="500"></deck-scene-item>
+      <deck-scene-item label="No value"></deck-scene-item>
+    </deck-scene-units>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

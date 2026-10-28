@@ -1,0 +1,4 @@
+interface:
+  display_name: "Merge Request Review"
+  short_description: "Merge Request Review workflow"
+  default_prompt: "Use $merge-request-review for the requested scope in this repository."

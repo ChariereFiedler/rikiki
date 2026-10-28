@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · deck-scene-bars</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-scene-bars.js"></script>
+</head>
+<body>
+<deck-root>
+
+  <deck-feature eyebrow="deck-scene-bars" data-testid="scene-bars-slide">
+    <h1 slot="title">AI visits now convert better than the rest</h1>
+    <deck-scene-bars unit="%" data-testid="scene-bars">
+      <deck-scene-item note="holiday 2025" label="AI visits" value="1,7" emphasis></deck-scene-item>
+      <deck-scene-item note="holiday 2025" label="other channels" value="2,3"></deck-scene-item>
+      <deck-scene-item note="May 2026" label="AI visits" value="1,8" emphasis></deck-scene-item>
+      <deck-scene-item note="May 2026" label="other channels" value="1,5"></deck-scene-item>
+    </deck-scene-bars>
+    <deck-source>Conversion rate by channel · fixture figures</deck-source>
+  </deck-feature>
+
+  <deck-feature eyebrow="deck-scene-bars · tags" data-testid="scene-bars-tags-slide">
+    <h1 slot="title">AI-referred sessions, quarter on quarter</h1>
+    <deck-scene-bars data-testid="scene-bars-tags">
+      <deck-scene-item label="first quarter" value="1" tag="×1"></deck-scene-item>
+      <deck-scene-item label="second quarter" value="3" tag="×3"></deck-scene-item>
+      <deck-scene-item label="third quarter" value="5.7" tag="×5.7" emphasis></deck-scene-item>
+    </deck-scene-bars>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

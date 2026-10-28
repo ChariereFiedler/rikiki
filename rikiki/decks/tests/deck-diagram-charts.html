@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Graphiques · camembert et histogrammes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-diagram.js"></script>
+</head>
+<body>
+<!-- Les graphiques chiffrés : dg-pie (anneau de parts, part mise en avant, chiffre du tout au
+     centre) et dg-columns (histogramme vertical, une à trois séries, seuil, colonne mise en
+     avant). Chiffres inventés pour l'exemple. -->
+<deck-root>
+
+  <deck-feature id="anneau" eyebrow="Support · 1 240 tickets en septembre">
+    <h1 slot="title">3 clients font 62 % des tickets</h1>
+    <deck-diagram data-testid="anneau" play="enter" layout="row" align="center" gap="airy" balance="free">
+      <dg-pie name="tickets" focus="3 grands comptes" value="62 %" note="des tickets" unit="%" beat="steady" emphasis
+        slices="3 grands comptes 62
+                41 PME 23
+                212 indépendants 15"></dg-pie>
+      <dg-box name="plan" icon="user" label="un interlocuteur dédié" note="pour les 3 comptes" paint="ok" proof="−40 % de tickets" beat="proof"></dg-box>
+    </deck-diagram>
+    <deck-source>Illustration · répartition inventée pour l'exemple (volumes fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="lundi" eyebrow="Astreinte · incidents par jour, 12 semaines">
+    <h1 slot="title">Le lundi concentre les incidents</h1>
+    <deck-diagram data-testid="lundi" layout="column" align="stretch" balance="free">
+      <dg-columns name="jours" focus="lun." threshold="20" emphasis
+        columns="lun. 31
+                 mar. 14
+                 mer. 11
+                 jeu. 12
+                 ven. 17
+                 sam. 4
+                 dim. 3"></dg-columns>
+    </deck-diagram>
+    <deck-source>Illustration · relevé inventé pour l'exemple (effectifs fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="trimestres" eyebrow="Ventes · 2025 face à 2026">
+    <h1 slot="title">Le T3 a doublé en un an</h1>
+    <deck-diagram data-testid="trimestres" play="enter" layout="row" align="center" gap="airy">
+      <dg-columns name="ventes" focus="T3" unit="k€" beat="steady"
+        series="2025
+                2026"
+        columns="T1 42 51
+                 T2 47 58
+                 T3 38 79
+                 T4 55 64"></dg-columns>
+      <dg-counter name="hausse" value="108" unit="%" label="de plus au T3" beat="proof"></dg-counter>
+    </deck-diagram>
+    <deck-source>Illustration · chiffres d'affaires inventés pour l'exemple</deck-source>
+  </deck-feature>
+
+  <deck-feature id="regions" eyebrow="Latence p95 · trois régions">
+    <h1 slot="title">Paris reste sous les 200 ms</h1>
+    <deck-diagram data-testid="regions" layout="row" align="center" gap="airy">
+      <dg-box name="paris" icon="check" label="Paris" note="145 ms en moyenne" paint="ok"></dg-box>
+      <dg-columns name="latence" max="400" threshold="200" unit="ms"
+        series="Virginie
+                Francfort
+                Paris"
+        columns="lundi 320 210 140
+                 mardi 300 190 150
+                 mercredi 340 230 130
+                 jeudi 310 200 160
+                 vendredi 330 220 145"></dg-columns>
+    </deck-diagram>
+    <deck-source>Illustration · mesures inventées pour l'exemple</deck-source>
+  </deck-feature>
+
+  <deck-feature id="duo" eyebrow="Budget cloud · octobre">
+    <h1 slot="title">Le calcul, premier poste de coût</h1>
+    <deck-diagram data-testid="duo" play="enter" layout="row" align="center" gap="airy" balance="free">
+      <dg-pie name="postes" focus="calcul" unit="%" beat="steady"
+        slices="calcul 46
+                stockage 21
+                réseau 14
+                bases 12
+                autres 7"></dg-pie>
+      <dg-meter name="budget" label="octobre · 18 400 €" value="92" unit="%" threshold="80" tone="danger" beat="proof"></dg-meter>
+    </deck-diagram>
+    <deck-source>Illustration · facture inventée pour l'exemple (répartition fictive)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="cascade" eyebrow="Marge brute · 2025 → 2026">
+    <h1 slot="title">L'énergie a mangé la hausse des prix</h1>
+    <deck-diagram data-testid="cascade" layout="column" align="stretch">
+      <dg-waterfall name="marge" unit="k€" total="marge 2026" focus="énergie" emphasis
+        steps="marge 2025 120
+               prix +18
+               volume +9
+               énergie −31
+               salaires −12"></dg-waterfall>
+    </deck-diagram>
+    <deck-source>Illustration · compte de résultat inventé pour l'exemple (montants fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="empile" eyebrow="Chiffre d'affaires · par trimestre">
+    <h1 slot="title">Les services tirent la croissance</h1>
+    <deck-diagram data-testid="empile" play="enter" layout="column" align="center">
+      <dg-columns name="mix" stacked focus="T4" unit="k€" beat="steady"
+        series="licences
+                services"
+        columns="T1 30 10
+                 T2 32 16
+                 T3 33 24
+                 T4 35 38"></dg-columns>
+      <dg-text name="services" for="mix" side="right" label="services ×3,8" note="52 % du T4" beat="proof"></dg-text>
+    </deck-diagram>
+    <deck-source>Illustration · ventes inventées pour l'exemple (montants fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="camembert" eyebrow="Acquisition · 412 clients signés">
+    <h1 slot="title">Un client sur deux vient d'un client</h1>
+    <deck-diagram data-testid="camembert" layout="row" align="center" gap="airy" balance="free">
+      <dg-pie name="canaux" shape="pie" focus="recommandation" unit="%" value="412" note="clients signés en 2026"
+        slices="recommandation 51
+                salons 22
+                LinkedIn 17
+                site 10"></dg-pie>
+    </deck-diagram>
+    <deck-source>Illustration · répartition inventée pour l'exemple (canaux fictifs)</deck-source>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

@@ -11,7 +11,7 @@ const PORT = 7799;
 // project, 16 of the suite's 35 minutes, and the contention between those
 // extra browsers is what made its slowest case miss a 60 s page load.
 // `scripts/e2e-projects.test.mjs` keeps this list honest.
-const CLI_ONLY = [/render-check\.spec\.ts/, /workflow-recipes\.spec\.ts/];
+const CLI_ONLY = [/render-check\.spec\.ts/, /scene-cli\.spec\.ts/, /workflow-recipes\.spec\.ts/];
 
 // Chromium-only capabilities · skipped on the other engines because the engine
 // cannot do it, never because it is inconvenient.

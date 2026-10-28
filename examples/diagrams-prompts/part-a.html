@@ -1,0 +1,133 @@
+<!doctype html>
+<!--
+  Rikiki · cinq mécanismes de systèmes, cinq dessins (partie A)
+  Chaque diapo part d'une phrase d'intention passée à `rikiki intent`. Aucune des
+  seize intentions ne dit ces relations sans les trahir (une porte qui ne coupe
+  qu'une voie, un choix binaire, une pression qui remonte, une courbe), donc les
+  cinq sont en grammaire libre : voies et porte, fourche, états qui se
+  réorganisent, rangée de files, courbe puis verdict. Aucune coordonnée.
+  `rikiki check --steps` vérifie chaque clic. Tous les chiffres sont inventés.
+-->
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rikiki · systèmes distribués</title>
+<link rel="stylesheet" href="../../rikiki/themes/rikiki.css">
+<script type="module" src="../../rikiki/dist/index.js"></script>
+<script type="module" src="../../rikiki/dist/deck-diagram.js"></script>
+</head>
+<body>
+<deck-root transition="slide">
+
+  <deck-cover id="ouverture" brand="rikiki · diagrammes" speaker="Cinq mécanismes" duration="3 min">
+    <h1>Ce qui casse<br><span class="accent">à l'échelle</span></h1>
+    <p class="sub">Cinq mécanismes, un dessin chacun.</p>
+    <deck-notes>Split-brain, CAP, ruée sur le cache, contre-pression, dette : cinq façons dont un système se retourne contre lui-même.</deck-notes>
+  </deck-cover>
+
+  <!-- « Deux maîtres écrivent, le jeton de fencing fait refuser le vieux » · grammaire libre : voies et porte sur une seule voie -->
+  <deck-feature id="split-brain" eyebrow="bases de données · le split-brain">
+    <h1 slot="title">Le jeton fait taire le vieux maître</h1>
+    <deck-diagram layout="lanes">
+      <dg-lane name="ecrit-a" icon="database" label="A · jeton 33" note="se croit maître" flow="4"></dg-lane>
+      <dg-lane name="ecrit-b" icon="database" label="B · jeton 34" note="élu pendant la coupure" flow="4"></dg-lane>
+      <dg-gate name="fencing" over="ecrit-a" at="end" label="33 &lt; 34 · refusé" state="open open closed"></dg-gate>
+      <dg-box name="stockage" icon="document" label="Stockage" note="garde le plus grand jeton vu" tone="normal danger ok" paint="outline"></dg-box>
+    </deck-diagram>
+    <deck-source>Illustration · chiffres inventés</deck-source>
+    <deck-notes>Le réseau coupe, B est élu, mais A n'en sait rien et continue d'écrire. Premier clic : le stockage reçoit les deux, x vaut 1 et 2 à la fois. Chaque élection remet un jeton plus grand ; le stockage retient le plus grand qu'il a vu. Deuxième clic : une écriture qui porte 33 vient d'un maître déchu, elle est refusée. Le vieux maître n'a pas besoin de savoir qu'il est déchu.</deck-notes>
+  </deck-feature>
+
+  <!-- « Pendant une partition, cohérent ou disponible, pas les deux » · grammaire libre : graphe qui fourche -->
+  <deck-feature id="cap" eyebrow="systèmes distribués · CAP">
+    <h1 slot="title">Partitionné : refuser ou mentir</h1>
+    <deck-diagram layout="column" gap="airy">
+      <dg-group layout="row" gap="airy">
+        <dg-box name="frais" icon="database" label="Nœud A" tag="x = 2 · injoignable" paint="outline"></dg-box>
+        <dg-box name="isole" icon="database" label="Nœud B" tag="x = 1 · coupé de A" emphasis></dg-box>
+        <dg-box name="client" icon="user" label="Client" note="lit x"></dg-box>
+        <dg-link from="frais" to="isole" dashed></dg-link>
+        <dg-link from="client" to="isole" flow="1"></dg-link>
+      </dg-group>
+      <dg-group layout="row" gap="airy">
+        <dg-box name="refuse" icon="ban" label="Refuser" tag="C oui · A non" note="juste, mais muet"></dg-box>
+        <dg-box name="repond" icon="alert" label="Répondre x = 1" tag="A oui · C non" note="vivant, mais faux"></dg-box>
+      </dg-group>
+      <dg-link from="isole" to="refuse" enter="draw" flow="1" step="1"></dg-link>
+      <dg-link from="isole" to="repond" enter="draw" flow="1" step="2"></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration · chiffres inventés</deck-source>
+    <deck-notes>Le client parle à B, B ne joint plus A, et A détient la dernière valeur. B ne peut pas savoir que x vaut 2 ailleurs. Premier clic : il refuse, il reste juste mais le client n'a rien. Deuxième clic : il répond 1, le client est servi mais avec une valeur fausse. Tant que la partition dure, il n'existe pas de troisième flèche.</deck-notes>
+  </deck-feature>
+
+  <!-- « Une clé expire, dix mille requêtes tapent la base ; le coalescing n'en laisse passer qu'une » · grammaire libre : deux états, la foule allumée puis éteinte -->
+  <deck-feature id="ruee" eyebrow="cache · la ruée">
+    <h1 slot="title">Une seule requête recalcule</h1>
+    <deck-diagram>
+      <dg-state>
+        <dg-group layout="row" gap="airy">
+          <dg-group name="foule" layout="grid" columns="10" label="clé expirée · 10 000 ratés">
+            <dg-dot name="autres" count="60" emphasis></dg-dot>
+          </dg-group>
+          <dg-box name="base" icon="database" label="Base" tag="10 000 recalculs" tone="danger"></dg-box>
+          <dg-link from="foule" to="base" flow="8" speed="fast"></dg-link>
+        </dg-group>
+      </dg-state>
+      <dg-state step="1">
+        <dg-group layout="row" gap="airy">
+          <dg-group name="foule" layout="grid" columns="10" label="coalescing · 1 calcule">
+            <dg-dot name="premiere"></dg-dot>
+            <dg-dot name="autres" count="59" tone="muted"></dg-dot>
+          </dg-group>
+          <dg-text for="foule" side="bottom" label="la première recalcule" note="les autres attendent sa réponse"></dg-text>
+          <dg-box name="verrou" icon="lock" label="Un seul vol" note="verrou par clé" emphasis></dg-box>
+          <dg-box name="base" icon="database" label="Base" tag="1 recalcul" tone="ok" size="small"></dg-box>
+          <dg-link from="foule" to="verrou"></dg-link>
+          <dg-link from="verrou" to="base" flow="1"></dg-link>
+        </dg-group>
+      </dg-state>
+    </deck-diagram>
+    <deck-source>Illustration · chiffres inventés</deck-source>
+    <deck-notes>La clé la plus lue expire. Toutes les lectures de cette seconde ratent en même temps, et chacune lance le même calcul sur la base. Au clic : le coalescing pose un verrou par clé. La première lecture recalcule, les autres attendent sa réponse au lieu de la refaire. La base voit une requête au lieu de dix mille.</deck-notes>
+  </deck-feature>
+
+  <!-- « La pression remonte étage par étage jusqu'au producteur » · grammaire libre : rangée de files -->
+  <deck-feature id="contre-pression" eyebrow="flux · la contre-pression">
+    <h1 slot="title">La pression remonte au producteur</h1>
+    <deck-diagram layout="row" link="arrow">
+      <dg-box name="producteur" icon="spark" label="Producteur" note="émet 10 / s" emphasis></dg-box>
+      <dg-queue name="file-1" label="file 1" count="6" fill="0 0 3 6" tone="normal normal warn danger"></dg-queue>
+      <dg-box name="transfo" icon="refresh" label="Transformation" note="relaie" tone="normal normal warn warn"></dg-box>
+      <dg-queue name="file-2" label="file 2" count="6" fill="0 4 6 6" tone="normal warn danger danger"></dg-queue>
+      <dg-box name="consommateur" icon="clock" label="Consommateur" note="traite 2 / s" tone="danger"></dg-box>
+      <dg-text for="consommateur" side="bottom" label="lent" note="la cause"></dg-text>
+      <dg-text for="file-2" side="bottom" label="pleine" note="refuse d'en prendre plus" step="1"></dg-text>
+      <dg-text for="transfo" side="bottom" label="attend" note="ne pousse plus" step="2"></dg-text>
+      <dg-text for="producteur" side="bottom" label="ralentit" note="au lieu de jeter" step="3"></dg-text>
+    </deck-diagram>
+    <deck-source>Illustration · chiffres inventés</deck-source>
+    <deck-notes>Le producteur émet dix messages par seconde, le consommateur en traite deux. Premier clic : la dernière file se remplit et refuse d'en prendre plus. Deuxième clic : la transformation ne peut plus pousser, elle attend, et sa propre file se remplit. Troisième clic : la pression arrive au producteur, qui ralentit. Sans ce signal, la dernière file déborderait et on perdrait des messages.</deck-notes>
+  </deck-feature>
+
+  <!-- « La vélocité baisse chaque trimestre jusqu'au point où réécrire coûte moins » · grammaire libre : courbe qui passe sous la ligne -->
+  <deck-feature id="dette" eyebrow="équipe · la dette">
+    <h1 slot="title">La dette compose, la vélocité fond</h1>
+    <deck-diagram>
+      <dg-state>
+        <dg-curve name="velocite" label="Vélocité par trimestre" values="40 38 35 31 26 20 13 6" max="45" unit="pts" threshold="20" ticks="T1 T2 T3 T4 T5 T6 T7 T8" emphasis></dg-curve>
+      </dg-state>
+      <dg-state step="1">
+        <dg-group layout="row" gap="airy">
+          <dg-curve name="velocite" label="Vélocité par trimestre" values="40 38 35 31 26 20 13 6" max="45" unit="pts" threshold="20" ticks="T1 T2 T3 T4 T5 T6 T7 T8"></dg-curve>
+          <dg-box name="reecrire" icon="refresh" label="Réécrire" note="sous 20 pts, moins cher que continuer" emphasis></dg-box>
+        </dg-group>
+      </dg-state>
+    </deck-diagram>
+    <deck-source>Illustration · chiffres inventés</deck-source>
+    <deck-notes>Deux points perdus le premier trimestre, sept le dernier : la dette se paie en intérêts, et les intérêts portent sur la dette déjà accumulée. Au clic : sous vingt points par trimestre, une réécriture amortie coûte moins que de continuer à payer. Le point de bascule se voit sur la courbe bien avant qu'on l'admette en réunion.</deck-notes>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

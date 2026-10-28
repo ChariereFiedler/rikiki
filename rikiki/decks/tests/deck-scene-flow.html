@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · deck-scene-flow</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-scene-flow.js"></script>
+</head>
+<body>
+<deck-root>
+
+  <deck-feature eyebrow="deck-scene-flow" data-testid="scene-flow-slide">
+    <h1 slot="title">The assistant answers from three sources</h1>
+    <deck-scene-flow data-testid="scene-flow">
+      <deck-scene-item icon="document" label="Product file"
+        note="price, stock and specifications"></deck-scene-item>
+      <deck-scene-item icon="search" label="Pages and reviews"
+        note="what the web says about it"></deck-scene-item>
+      <deck-scene-item icon="code" label="Connector"
+        note="live data, asked on demand"></deck-scene-item>
+      <deck-scene-item icon="spark" label="The assistant" emphasis
+        note="reads, compares, picks"></deck-scene-item>
+      <deck-scene-item icon="target" label="2 or 3 retailers" tag="cited"
+        note="in the answer · the others are not seen"></deck-scene-item>
+    </deck-scene-flow>
+    <deck-source>Observed answers from ChatGPT, Claude and Copilot, October 2026</deck-source>
+  </deck-feature>
+
+  <deck-feature eyebrow="deck-scene-flow · two outcomes" data-testid="scene-flow-two-outcomes-slide">
+    <h1 slot="title">One catalogue, two ways out</h1>
+    <deck-scene-flow data-testid="scene-flow-two-outcomes">
+      <deck-scene-item icon="database" label="Catalogue" note="every product, one source of truth"></deck-scene-item>
+      <deck-scene-item icon="team" label="Merchandising" note="what to push this week"></deck-scene-item>
+      <deck-scene-item icon="cloud" label="Feed" emphasis note="rebuilt every night"></deck-scene-item>
+      <deck-scene-item icon="search" label="Search engines" tag="indexed" note="pages and rich results"></deck-scene-item>
+      <deck-scene-item icon="spark" label="Assistants" tag="read live" note="through the connector"></deck-scene-item>
+    </deck-scene-flow>
+  </deck-feature>
+
+  <deck-feature eyebrow="deck-scene-flow · no emphasis" data-testid="scene-flow-converge-slide">
+    <h1 slot="title">Without an emphasis, the last item is the hub</h1>
+    <deck-scene-flow data-testid="scene-flow-converge">
+      <deck-scene-item icon="user" label="Customer" note="asks a question"></deck-scene-item>
+      <deck-scene-item icon="document" label="Order history" note="what they bought before"></deck-scene-item>
+      <deck-scene-item icon="target" label="One answer" note="the assistant replies with both in mind"></deck-scene-item>
+    </deck-scene-flow>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

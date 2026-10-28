@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Scene composition · test fixture</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-scene.js"></script>
+<script type="module" src="../../dist/deck-scene-band.js"></script>
+<script type="module" src="../../dist/deck-scene-cards.js"></script>
+<script type="module" src="../../dist/deck-scene-bars.js"></script>
+<script type="module" src="../../dist/deck-scene-units.js"></script>
+<script type="module" src="../../dist/deck-scene-flow.js"></script>
+<script type="module" src="../../dist/deck-scene-lanes.js"></script>
+<script type="module" src="../../dist/deck-scene-matrix.js"></script>
+<script type="module" src="../../dist/deck-scene-ranges.js"></script>
+<script type="module" src="../../dist/deck-scene-steps.js"></script>
+</head>
+<body>
+<!-- Compositions of the scenes that exist · e2e/scenes.spec.ts reads it. -->
+<deck-root>
+
+  <deck-feature id="compose-before-after" eyebrow="row · link · band">
+    <h1 slot="title">Training doubled those who stay</h1>
+    <deck-scene data-testid="compose-before-after" layout="row" link="arrow">
+      <deck-scene-units total="50" columns="10">
+        <deck-scene-item label="before" value="18" note="stayed a year"></deck-scene-item>
+      </deck-scene-units>
+      <deck-scene-units total="50" columns="10">
+        <deck-scene-item label="after" value="36" emphasis note="stayed a year"></deck-scene-item>
+      </deck-scene-units>
+      <deck-scene-band label="Twice as many stay" note="at the same headcount" icon="target"></deck-scene-band>
+    </deck-scene>
+    <deck-source>Illustration · invented figures</deck-source>
+  </deck-feature>
+
+  <deck-feature id="compose-uneven" eyebrow="row · split 2:1">
+    <h1 slot="title">The mechanism, then its proof</h1>
+    <deck-scene data-testid="compose-uneven" layout="row" split="2:1" link="vs">
+      <deck-scene-flow>
+        <deck-scene-item icon="database" label="Catalogue"></deck-scene-item>
+        <deck-scene-item icon="code" label="Index" emphasis></deck-scene-item>
+        <deck-scene-item icon="user" label="Answer"></deck-scene-item>
+      </deck-scene-flow>
+      <deck-scene-bars unit="ms" max="800">
+        <deck-scene-item label="Before" value="760"></deck-scene-item>
+        <deck-scene-item label="After" value="190"></deck-scene-item>
+      </deck-scene-bars>
+    </deck-scene>
+    <deck-source>Illustration</deck-source>
+  </deck-feature>
+
+  <deck-feature id="compose-three" eyebrow="row · three">
+    <h1 slot="title">Three options, side by side</h1>
+    <deck-scene data-testid="compose-three" layout="row">
+      <deck-scene-cards>
+        <deck-scene-item label="Build" note="slow"></deck-scene-item>
+        <deck-scene-item label="Buy" note="fast" emphasis></deck-scene-item>
+      </deck-scene-cards>
+      <deck-scene-bars>
+        <deck-scene-item label="Cost" value="30"></deck-scene-item>
+        <deck-scene-item label="Time" value="12"></deck-scene-item>
+      </deck-scene-bars>
+      <deck-scene-units total="12" columns="4">
+        <deck-scene-item label="Users" value="5"></deck-scene-item>
+      </deck-scene-units>
+    </deck-scene>
+    <deck-source>Illustration</deck-source>
+  </deck-feature>
+
+  <deck-feature id="compose-stack" eyebrow="stack · band">
+    <h1 slot="title">Two checks, one verdict</h1>
+    <deck-scene data-testid="compose-stack" layout="stack">
+      <deck-scene-ranges scale="10" unit="weeks">
+        <deck-scene-item label="Design" from="0" to="4"></deck-scene-item>
+      </deck-scene-ranges>
+      <deck-scene-steps>
+        <deck-scene-item label="Verify"></deck-scene-item>
+      </deck-scene-steps>
+      <deck-scene-band label="Ship on Friday"></deck-scene-band>
+    </deck-scene>
+    <deck-source>Illustration</deck-source>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

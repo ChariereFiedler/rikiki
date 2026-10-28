@@ -1,0 +1,1 @@
+var n=["on","off"],s=["ok","fail","wait"],e=56,r=12,E=10,S=5,c=t=>(t??"").split(/\r?\n/).map(o=>o.trim()).filter(Boolean);export{S as DEFAULT_SCREEN_LINES,r as MAX_PEOPLE,E as MAX_SCREEN_LINES,s as STATUS_STATES,n as SWITCH_STATES,e as TERMINAL_MAX_CHARS,c as linesOf};

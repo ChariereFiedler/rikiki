@@ -6,7 +6,7 @@
 
 A tiny **Lit Web Components** framework for technical presentations. Drop a folder anywhere, open `index.html`, give the talk. No build step on the consumer side · the framework itself is built from TypeScript, but the output is plain ES modules you import directly.
 
-This documentation tracks rikiki v0.7.2.
+This documentation tracks rikiki v0.8.0.
 
 ## TL;DR
 
@@ -77,7 +77,7 @@ node_modules/rikiki-deck/
 │   ├── rikiki.css            ← default theme (acid greens + mango, on dark)
 │   ├── siliceum.css          ← alternative theme (warm paper + yellow)
 │   └── siliceum-fonts.css    ← self-hosted Source Sans Pro + JetBrains Mono
-├── fonts/                    ← woff2 files used by the Siliceum theme
+├── fonts/                    ← woff2 files used by the siliceum theme
 ├── dist/                     ← the runtime · plain ES modules, FLAT layout
 │   └── vendor/               ← lit and marked · mermaid and Shiki when asked
 ├── bin/                      ← the rikiki CLI
@@ -238,7 +238,7 @@ Picking a theme is one `<link>` change:
 <!-- Default Rikiki theme (tropical, on dark) -->
 <link rel="stylesheet" href="rikiki/tokens.css">
 
-<!-- Alternative Siliceum theme (warm paper, yellow accent) -->
+<!-- Alternative siliceum theme (warm paper, yellow accent) -->
 <link rel="stylesheet" href="rikiki/themes/siliceum.css">
 ```
 

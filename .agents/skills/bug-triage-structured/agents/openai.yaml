@@ -1,0 +1,4 @@
+interface:
+  display_name: "Bug Triage Structured"
+  short_description: "Bug Triage Structured workflow"
+  default_prompt: "Use $bug-triage-structured for the requested scope in this repository."

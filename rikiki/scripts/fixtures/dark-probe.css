@@ -1,0 +1,42 @@
+/* A dark theme as an author writes one · the rikiki theme with its semantic layer
+   re-pointed (rikiki-theme skill: the inverse surfaces stay darker than the page).
+   Not shipped: scripts/diagram-paint.test.mjs loads it over themes/rikiki.css to
+   prove the diagram's paint holds on a dark page, not only on paper. */
+:root {
+  --rik-surface-page: #161c2e;
+  --rik-surface-raised: #1e2840;
+  --rik-surface-raised--strong: #263350;
+  --rik-surface-sunken: #0f1422;
+  --rik-surface-tint: rgba(232, 228, 240, 0.05);
+  --rik-surface-tint--strong: rgba(232, 228, 240, 0.08);
+  --rik-surface-inverse: #06080f;
+  --rik-surface-inverse--soft: #0a0e18;
+  --rik-surface-inverse--soft-2: #0f1422;
+  --rik-surface-inverse--soft-3: #161c2e;
+  --rik-surface-inverse--soft-4: #1e2840;
+  --rik-surface-inverse--soft-5: #263350;
+
+  --rik-text-default: #e8e4f0;
+  --rik-text-default--muted: #c4c0cc;
+  --rik-text-default--faint: #a39fae;
+  --rik-text-inverse: #e8e4f0;
+  --rik-text-inverse--muted: rgba(232, 228, 240, 0.72);
+  --rik-text-inverse--faint: rgba(232, 228, 240, 0.55);
+
+  --rik-border-default: #3a4766;
+  --rik-border-default--subtle: rgba(232, 228, 240, 0.08);
+  --rik-border-inverse: rgba(232, 228, 240, 0.14);
+
+  --rik-accent--strong: #f59a5c;
+  --rik-accent__text: #f59a5c;
+  --rik-link: #f59a5c;
+
+  --rik-status-success__text: #2ee0bb;
+  --rik-status-warn__text: #ff8a50;
+  --rik-status-danger__text: #ff7a5c;
+}
+html,
+body {
+  background: var(--rik-surface-page);
+  color: var(--rik-text-default);
+}

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Diagramme · morph, jauge et file · fixture de test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-diagram.js"></script>
+</head>
+<body>
+<!-- Quatre concepts qui changent au clic, écrits sans coordonnée · e2e/diagram.spec.ts la lit. -->
+<deck-root>
+
+  <deck-feature id="decoupe" eyebrow="architecture · avant, puis après">
+    <h1 slot="title">Le monolithe devient quatre services derrière une passerelle</h1>
+    <deck-diagram data-testid="decoupe">
+      <dg-state>
+        <dg-group layout="column" gap="airy">
+          <dg-group name="bloc" label="un seul déploiement" paint="outline" layout="row" gap="tight">
+            <dg-box name="commandes" icon="document" label="Commandes"></dg-box>
+            <dg-box name="paiement" icon="lock" label="Paiement"></dg-box>
+            <dg-box name="catalogue" icon="search" label="Catalogue"></dg-box>
+            <dg-box name="comptes" icon="user" label="Comptes"></dg-box>
+          </dg-group>
+          <dg-box name="base" icon="database" label="une base pour tout"></dg-box>
+          <dg-link from="bloc" to="base"></dg-link>
+        </dg-group>
+      </dg-state>
+      <dg-state step="1">
+        <dg-group layout="layers" direction="down">
+          <dg-box name="passerelle" icon="cloud" label="Passerelle" note="une entrée, une règle" emphasis></dg-box>
+          <dg-box name="commandes" icon="document" label="Commandes"></dg-box>
+          <dg-box name="paiement" icon="lock" label="Paiement"></dg-box>
+          <dg-box name="catalogue" icon="search" label="Catalogue"></dg-box>
+          <dg-box name="comptes" icon="user" label="Comptes"></dg-box>
+          <dg-link from="passerelle" to="commandes paiement catalogue comptes"></dg-link>
+        </dg-group>
+      </dg-state>
+    </deck-diagram>
+    <deck-source>Illustration · architecture inventée</deck-source>
+  </deck-feature>
+
+  <deck-feature id="goulot" eyebrow="flux · le goulot">
+    <h1 slot="title">Il en arrive 6 par heure, la revue en traite 2</h1>
+    <deck-diagram data-testid="goulot" layout="row" link="arrow">
+      <dg-box name="arrivees" icon="team" label="Arrivées" note="6 par heure"></dg-box>
+      <dg-queue name="file" label="en attente" count="8" fill="0 4 8" tone="normal warn danger"></dg-queue>
+      <dg-box name="revue" icon="search" label="Revue" note="2 par heure" emphasis></dg-box>
+      <dg-box name="prod" icon="check" label="En production" note="2 par heure"></dg-box>
+      <dg-text for="file" side="bottom" label="pleine en deux heures" step="2"></dg-text>
+    </deck-diagram>
+    <deck-source>Illustration · chiffres inventés</deck-source>
+  </deck-feature>
+
+  <deck-feature id="saturation" eyebrow="capacité · la jauge">
+    <h1 slot="title">Le disque des journaux se remplit, le processeur ne bouge pas</h1>
+    <deck-diagram data-testid="saturation" layout="column" align="stretch" gap="airy">
+      <dg-meter name="disque" label="Disque des journaux · alerte à 80 %" value="40 62 85" unit="%" threshold="80" tone="ok warn danger"></dg-meter>
+      <dg-meter name="cpu" label="Processeur" value="35 38 36" unit="%" tone="muted"></dg-meter>
+    </deck-diagram>
+    <deck-source>Illustration · chiffres inventés</deck-source>
+  </deck-feature>
+
+  <deck-feature id="classement" eyebrow="usage · le classement se renverse">
+    <h1 slot="title">En un an, le web passe devant le mobile</h1>
+    <!-- Un classement pèse en haut par nature : la barre la plus longue est la première. -->
+    <deck-diagram data-testid="classement" layout="column" align="start" balance="free">
+      <dg-state>
+        <dg-bar name="mobile" label="Mobile" value="58" tag="58 % · 2025" emphasis></dg-bar>
+        <dg-bar name="web" label="Web" value="27" tag="27 %"></dg-bar>
+        <dg-bar name="borne" label="Borne" value="9" tag="9 %"></dg-bar>
+        <dg-bar name="tel" label="Téléphone" value="6" tag="6 %"></dg-bar>
+      </dg-state>
+      <dg-state step="1">
+        <dg-bar name="web" label="Web" value="51" tag="51 % · 2026" emphasis></dg-bar>
+        <dg-bar name="mobile" label="Mobile" value="38" tag="38 %"></dg-bar>
+        <dg-bar name="borne" label="Borne" value="8" tag="8 %"></dg-bar>
+        <dg-bar name="tel" label="Téléphone" value="3" tag="3 %"></dg-bar>
+      </dg-state>
+    </deck-diagram>
+    <deck-source>Illustration · chiffres inventés</deck-source>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

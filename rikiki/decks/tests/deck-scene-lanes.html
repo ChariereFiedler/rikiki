@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · deck-scene-lanes</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-scene-lanes.js"></script>
+</head>
+<body>
+<deck-root>
+
+  <deck-feature eyebrow="deck-scene-lanes" data-testid="scene-lanes-slide">
+    <h1 slot="title">One switch stops all three kinds of traffic</h1>
+    <deck-scene-lanes data-testid="scene-lanes" gate="STOP" trigger="a drill flips the switch">
+      <deck-scene-item icon="code" label="API" tag="3 served, 3 refused"></deck-scene-item>
+      <deck-scene-item icon="clock" label="Jobs" tag="3 served, 3 held"></deck-scene-item>
+      <deck-scene-item icon="database" label="Service" tag="3 served, 3 held"></deck-scene-item>
+    </deck-scene-lanes>
+    <deck-source>Fixture · no real figures</deck-source>
+  </deck-feature>
+
+  <deck-feature eyebrow="deck-scene-lanes · notes, more tokens" data-testid="scene-lanes-notes-slide">
+    <h1 slot="title">Past the limit, only the premium lane keeps moving</h1>
+    <deck-scene-lanes data-testid="scene-lanes-notes" gate="LIMIT" trigger="quota reached" passed="5" blocked="2">
+      <deck-scene-item icon="user" label="Free" note="shared pool" tag="5 served, 2 queued"></deck-scene-item>
+      <deck-scene-item icon="team" label="Team" note="per workspace" tag="5 served, 2 queued"></deck-scene-item>
+    </deck-scene-lanes>
+  </deck-feature>
+
+  <deck-feature eyebrow="deck-scene-lanes · bare" data-testid="scene-lanes-bare-slide">
+    <h1 slot="title">The gate alone, no words around it</h1>
+    <deck-scene-lanes data-testid="scene-lanes-bare" passed="2" blocked="4">
+      <deck-scene-item label="Lane A"></deck-scene-item>
+      <deck-scene-item label="Lane B"></deck-scene-item>
+      <deck-scene-item label="Lane C"></deck-scene-item>
+      <deck-scene-item label="Lane D"></deck-scene-item>
+    </deck-scene-lanes>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

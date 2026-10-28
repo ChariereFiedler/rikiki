@@ -1,0 +1,151 @@
+<!doctype html>
+<!--
+  Rikiki · diagrammes à partir de prompts · partie C (prompts 11 à 15)
+  Une illustration `deck-diagram` par prompt, écrite depuis sa phrase d'intention
+  (`rikiki intent "<phrase>"`), en intention quand une intention dit la relation, en
+  grammaire libre sinon. Aucune coordonnée. `rikiki check --steps` vérifie chaque clic.
+  Tous les chiffres sont inventés.
+-->
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rikiki · diagrammes · partie C</title>
+<link rel="stylesheet" href="../../rikiki/themes/rikiki.css">
+<script type="module" src="../../rikiki/dist/index.js"></script>
+<script type="module" src="../../rikiki/dist/deck-diagram.js"></script>
+</head>
+<body>
+<deck-root transition="slide">
+
+  <deck-cover id="ouverture" brand="rikiki · diagrammes" speaker="Partie C" duration="1 min">
+    <h1>Cinq rouages,<br><span class="accent">cinq dessins</span></h1>
+    <p class="sub">Journal, seau, entonnoir, cascade, clé : chacun se joue au clic.</p>
+    <deck-notes>Cinq idées d'ingénierie qu'on explique mal avec des boîtes en ligne.</deck-notes>
+  </deck-cover>
+
+  <!-- 11 · « On corrige le calcul et on rejoue : l'état change, pas les événements » · transform -->
+  <deck-feature id="journal" eyebrow="event sourcing · rejouer">
+    <h1 slot="title">On corrige le calcul, pas l'histoire</h1>
+    <deck-diagram intent="transform">
+      <dg-state role="before">
+        <dg-group layout="layers" direction="right">
+          <dg-box name="e1" icon="document" label="Ouvert · 0 €"></dg-box>
+          <dg-box name="e2" icon="document" label="Dépôt · +100 €"></dg-box>
+          <dg-box name="e3" icon="document" label="Retrait · −30 €"></dg-box>
+          <dg-box name="e4" icon="document" label="Dépôt · +50 €"></dg-box>
+          <dg-box name="calcul" icon="code" label="Calcul v1" note="retire deux fois le retrait" tone="danger"></dg-box>
+          <dg-box name="solde" icon="database" label="Solde" value="90 €"></dg-box>
+          <dg-link name="rejeu" from="e1 e2 e3 e4" to="calcul" flow="1"></dg-link>
+          <dg-link from="calcul" to="solde" label="recalculé"></dg-link>
+          <dg-text for="e1" side="left" label="journal" note="jamais réécrit"></dg-text>
+        </dg-group>
+      </dg-state>
+      <dg-state role="after">
+        <dg-group layout="layers" direction="right">
+          <dg-box name="e1" icon="document" label="Ouvert · 0 €"></dg-box>
+          <dg-box name="e2" icon="document" label="Dépôt · +100 €"></dg-box>
+          <dg-box name="e3" icon="document" label="Retrait · −30 €"></dg-box>
+          <dg-box name="e4" icon="document" label="Dépôt · +50 €"></dg-box>
+          <dg-box name="calcul" icon="check" label="Calcul v2" note="corrigé, puis rejoué"></dg-box>
+          <dg-box name="solde" icon="database" label="Solde" value="120 €" emphasis></dg-box>
+          <dg-link name="rejeu" from="e1 e2 e3 e4" to="calcul" flow="1"></dg-link>
+          <dg-link from="calcul" to="solde" label="recalculé"></dg-link>
+          <dg-text for="e1" side="left" label="journal" note="jamais réécrit"></dg-text>
+        </dg-group>
+      </dg-state>
+    </deck-diagram>
+    <deck-source>Illustration · chiffres inventés</deck-source>
+    <deck-notes>Le solde n'est écrit nulle part : il sort du journal. On change la fonction, on rejoue les quatre mêmes événements, le solde devient juste.</deck-notes>
+  </deck-feature>
+
+  <!-- 12 · « Les rafales passent tant qu'il reste des jetons » · grammaire libre : jauge + voies et porte -->
+  <deck-feature id="seau" eyebrow="limitation de débit · le seau à jetons">
+    <h1 slot="title">La rafale passe, le seau se vide</h1>
+    <deck-diagram layout="column" align="center" gap="airy">
+      <dg-meter name="jetons" label="Seau · +1 jeton par seconde" value="10 2 0 1" max="10" tone="ok warn danger warn"></dg-meter>
+      <dg-group layout="lanes" gap="tight">
+        <dg-lane name="lectures" icon="search" label="Lectures" flow="5" speed="fast"></dg-lane>
+        <dg-lane name="ecritures" icon="document" label="Écritures" flow="3" speed="fast"></dg-lane>
+        <dg-gate name="garde" by="jetons" label="1 requête = 1 jeton" state="open open closed shed"></dg-gate>
+        <dg-box name="api" icon="code" label="API" paint="outline"></dg-box>
+        <dg-text for="garde" side="bottom" label="sans jeton, refusée (429)" step="2"></dg-text>
+      </dg-group>
+    </deck-diagram>
+    <deck-source>Illustration · chiffres inventés</deck-source>
+    <deck-notes>Seau plein : la rafale de huit passe. Seau vide : tout est refusé. Ensuite, une requête par jeton rechargé.</deck-notes>
+  </deck-feature>
+
+  <!-- 13 · « 1000 visiteurs, 120 inscrits, 40 actifs, 8 payants » · grammaire libre : entonnoir qui se recalcule -->
+  <deck-feature id="entonnoir" eyebrow="produit · l'entonnoir d'activation">
+    <h1 slot="title">5 points à l'inscription, +40 %</h1>
+    <deck-diagram balance="free">
+      <dg-state>
+        <dg-group layout="row" gap="airy" align="center">
+          <dg-group layout="column" align="start" gap="tight">
+            <dg-bar name="visiteurs" label="Visiteurs" value="1000" tag="1 000"></dg-bar>
+            <dg-bar name="inscrits" label="Inscrits" value="120" tag="120 · 88 % perdus ici" tone="danger"></dg-bar>
+            <dg-bar name="actifs" label="Actifs" value="40" tag="40 · 33 %"></dg-bar>
+            <dg-bar name="payants" label="Payants" value="8" tag="8 · 20 %"></dg-bar>
+          </dg-group>
+          <dg-box name="fuite" icon="alert" label="perdus" value="880" note="1re marche" tone="danger" paint="outline"></dg-box>
+        </dg-group>
+      </dg-state>
+      <dg-state step="1">
+        <dg-group layout="row" gap="airy" align="center">
+          <dg-group layout="column" align="start" gap="tight">
+            <dg-bar name="visiteurs" label="Visiteurs" value="1000" tag="1 000"></dg-bar>
+            <dg-bar name="inscrits" label="Inscrits" value="170" tag="170 · 17 %, +5 pts"></dg-bar>
+            <dg-bar name="actifs" label="Actifs" value="57" tag="57 · 33 %"></dg-bar>
+            <dg-bar name="payants" label="Payants" value="11" tag="11 · 20 %"></dg-bar>
+          </dg-group>
+          <dg-box name="bout" icon="target" label="Payants" value="11" note="+40 %" emphasis></dg-box>
+        </dg-group>
+      </dg-state>
+    </deck-diagram>
+    <deck-source>Illustration · chiffres inventés</deck-source>
+    <deck-notes>La plus grosse perte est la première marche. Cinq points gagnés là se propagent à toutes les suivantes.</deck-notes>
+  </deck-feature>
+
+  <!-- 14 · « Une lib retirée casse des milliers de paquets en cascade » · propagate + cause -->
+  <deck-feature id="cascade" eyebrow="dépendances · la cascade">
+    <h1 slot="title">Trois lignes retirées, tout casse</h1>
+    <deck-diagram intent="propagate">
+      <dg-box role="origin" name="pad" icon="ban" label="pad-gauche" note="3 lignes, retirées du registre"></dg-box>
+      <dg-box role="reached" name="format" label="formateur" tag="niveau 1"></dg-box>
+      <dg-box role="reached" name="chaines" label="outils-texte" tag="niveau 1"></dg-box>
+      <dg-box role="reached" name="compilo" label="compilateur" tag="niveau 2"></dg-box>
+      <dg-box role="reached" name="linter" label="linter" tag="niveau 2"></dg-box>
+      <dg-box role="reached" name="tests" label="lanceur de tests" tag="niveau 2"></dg-box>
+      <dg-box role="reached" name="framework" label="framework web" tag="niveau 3"></dg-box>
+      <dg-box role="reached" name="milliers" label="paquets cassés" value="≈ 4 000" note="sans l'avoir choisi"></dg-box>
+      <dg-link from="pad" to="format chaines"></dg-link>
+      <dg-link from="format" to="compilo linter"></dg-link>
+      <dg-link from="chaines" to="tests"></dg-link>
+      <dg-link from="compilo" to="framework"></dg-link>
+      <dg-link from="framework linter tests" to="milliers"></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration · paquets et chiffres inventés</deck-source>
+    <deck-notes>Personne n'a choisi pad-gauche : il est arrivé par trois niveaux de dépendances.</deck-notes>
+  </deck-feature>
+
+  <!-- 15 · « Le paiement part deux fois, la banque ne débite qu'une fois » · grammaire libre : graphe et jetons -->
+  <deck-feature id="cle" eyebrow="paiement · l'idempotence">
+    <h1 slot="title">Deux envois, un seul débit</h1>
+    <deck-diagram layout="layers" direction="right">
+      <dg-box name="client" icon="user" label="Client" tag="clé A7" note="timeout, il renvoie"></dg-box>
+      <dg-box name="serveur" icon="code" label="Serveur" note="lit la clé avant tout"></dg-box>
+      <dg-box name="banque" icon="lock" label="Banque" tag="1 débit · 49 €" emphasis></dg-box>
+      <dg-box name="cles" icon="database" label="Clés vues" tag="A7 déjà vue · reçu R-42" paint="outline"></dg-box>
+      <dg-link name="envois" from="client" to="serveur" label="× 2" flow="2" step="1"></dg-link>
+      <dg-link name="debit" from="serveur" to="banque" label="× 1" flow="1" after="envois"></dg-link>
+      <dg-link name="garde" from="serveur" to="cles" dashed flow="1" after="envois"></dg-link>
+      <dg-link from="serveur" to="client" back label="2 fois le même reçu" flow="2" step="2"></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration · scénario inventé</deck-source>
+    <deck-notes>Le client ne sait pas si le premier envoi a abouti ; il renvoie. Le serveur reconnaît la clé et rend le même reçu, sans toucher à la banque.</deck-notes>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

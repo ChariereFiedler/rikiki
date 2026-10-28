@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Diagrammes en mode histoire · deuxième série</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-diagram.js"></script>
+</head>
+<body>
+<!-- Cinq autres remèdes joués à l'entrée (play="enter"), sans clic ni coordonnée · pas lus
+     par les tests, une galerie de plus. Noms, heures et valeurs inventés pour l'exemple. -->
+<deck-root>
+
+  <deck-feature id="sonde" eyebrow="Remède · synthetic monitoring">
+    <h1 slot="title">Un faux lead, chaque heure</h1>
+    <deck-diagram data-testid="sonde" play="enter" layout="row" balance="free">
+      <dg-box name="sonde" icon="spark" label="sonde" note="lead-test@acme" paint="ok"></dg-box>
+      <dg-box name="tache" icon="clock" label="tâche de fond" swap="tâche arrêtée" tone="normal danger" paint="pale" beat="event"></dg-box>
+      <dg-box name="qualif" icon="search" label="qualification" paint="pale"></dg-box>
+      <dg-box name="compte" icon="user" label="compte de test" note="chaque heure" paint="ink" proof="alerte à 11:05" beat="proof"></dg-box>
+      <dg-link name="l1" from="sonde" to="tache" steady="3s" flow="1" turn="danger" beat="spread" label="11:00"></dg-link>
+      <dg-link name="l2" from="tache" to="qualif" steady="3s"></dg-link>
+      <dg-link name="l3" from="qualif" to="compte" steady="3s"></dg-link>
+      <dg-text name="dix" for="sonde" side="bottom" label="10:00" note="reçu en 40 s" beat="steady"></dg-text>
+      <dg-text name="rien" for="compte" side="bottom" label="11:00" note="rien reçu" beat="effect"></dg-text>
+    </deck-diagram>
+    <deck-source>Illustration · sonde inventée pour l'exemple (adresse et heures fictives)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="restauration" eyebrow="Remède · sauvegardes vérifiées">
+    <h1 slot="title">Une copie qui ne se restaure pas</h1>
+    <deck-diagram data-testid="restauration" play="enter" layout="column" gap="airy">
+      <dg-group layout="row">
+        <dg-box name="base" icon="database" label="base de prod" note="2,4 Go" paint="ink"></dg-box>
+        <dg-box name="copie" icon="cloud" label="copie hors serveur" note="chaque nuit 03:00" paint="pale"></dg-box>
+        <dg-box name="jetable" icon="refresh" label="base jetable" swap="restauration en échec" tone="normal danger" paint="pale" beat="event"></dg-box>
+        <dg-box name="astreinte" icon="alert" label="astreinte" note="Léa Martin" paint="pale" proof="alerte à J+8" beat="proof"></dg-box>
+        <dg-link from="base" to="copie" steady="3s"></dg-link>
+        <dg-link from="copie" to="jetable" steady="3s"></dg-link>
+      </dg-group>
+      <dg-meter name="preuve" label="jours sans preuve de restauration" value="1 8" max="10" threshold="8" tone="ok danger" beat="spread" duration="2s"></dg-meter>
+    </deck-diagram>
+    <deck-source>Illustration · sauvegarde inventée pour l'exemple (taille, heures et personne fictives)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="escalade" eyebrow="Remède · escalade d'astreinte">
+    <h1 slot="title">3 h du matin, personne ne répond</h1>
+    <deck-diagram data-testid="escalade" play="enter" layout="row" balance="free">
+      <dg-box name="alerte" icon="alert" label="paiement en 500" note="03:02" paint="bad"></dg-box>
+      <dg-box name="paul" icon="user" label="Paul" swap="Paul · pas de réponse" note="astreinte" paint="pale" dim beat="event"></dg-box>
+      <dg-box name="relais" icon="team" label="Inès" note="remplaçante" paint="pale" beat="effect"></dg-box>
+      <dg-box name="runbook" icon="document" label="runbook paiement" note="5 étapes" paint="ink" proof="résolu à 03:24" beat="proof"></dg-box>
+      <dg-link name="appel" from="alerte" to="paul" steady="3s" flow="1" beat="event"></dg-link>
+      <dg-link from="paul" to="relais"></dg-link>
+      <dg-link name="suite" from="relais" to="runbook" flow="1" beat="effect" after="relais"></dg-link>
+      <dg-text name="minuterie" for="paul" side="bottom" label="15 min" note="sans accusé de réception" beat="spread"></dg-text>
+      <dg-text name="echecs" for="alerte" side="bottom" label="214 paiements" note="refusés en 10 min" beat="steady"></dg-text>
+    </deck-diagram>
+    <deck-source>Illustration · nuit d'astreinte inventée pour l'exemple (prénoms et heures fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="secret" eyebrow="Remède · secrets hors du dépôt">
+    <h1 slot="title">Le .env.bak ne part pas</h1>
+    <deck-diagram data-testid="secret" play="enter" layout="column" align="start">
+      <dg-group layout="row" gap="airy">
+        <dg-box name="dev" icon="code" label="git add -A" note="mar. 18:12" paint="pale"></dg-box>
+        <dg-box name="fichier" icon="lock" label="8 fichiers" swap=".env.bak · clé Stripe" tone="normal danger" paint="pale" beat="event"></dg-box>
+        <dg-box name="garde" icon="search" label="gitleaks" note="pre-commit" paint="ink"></dg-box>
+        <dg-link from="dev" to="fichier"></dg-link>
+        <dg-link name="lu" from="fichier" to="garde" flow="1" beat="spread" label="lu"></dg-link>
+      </dg-group>
+      <dg-group layout="lanes" gap="tight">
+        <dg-lane name="code" icon="code" label="code" steady="3s"></dg-lane>
+        <dg-lane name="config" icon="document" label="config" steady="3s"></dg-lane>
+        <dg-gate name="bloque" by="garde" state="open closed" beat="spread" after="lu"></dg-gate>
+        <dg-box name="github" icon="cloud" label="GitHub · public" paint="pale" proof="0 secret publié" beat="proof"></dg-box>
+      </dg-group>
+    </deck-diagram>
+    <deck-source>Illustration · commit inventé pour l'exemple (heure et contenu fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="file" eyebrow="Remède · limiter plutôt que tomber">
+    <h1 slot="title">La file déborde, l'API tient</h1>
+    <deck-diagram data-testid="file" play="enter" layout="lanes">
+      <dg-lane name="web" icon="user" label="web" note="clients" steady="3s" flow="6"></dg-lane>
+      <dg-lane name="batch" icon="clock" label="batch" note="export 14:00" steady="3s" flow="6"></dg-lane>
+      <dg-gate name="limite" label="100 req/s" state="open shed" beat="event"></dg-gate>
+      <dg-box name="api" icon="code" label="API" note="p95 180 ms" paint="ink" proof="0 erreur 500" beat="proof"></dg-box>
+    </deck-diagram>
+    <deck-source>Illustration · pic de charge inventé pour l'exemple (débits et latence fictifs)</deck-source>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

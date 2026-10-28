@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Diagramme · les douze recettes · fixture de test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-diagram.js"></script>
+</head>
+<body>
+<!-- Les douze recettes de modèles graphiques (rikiki recipe),
+     chacune remplie avec un brief qui n'est pas son exemple : frise d'incident (42), voies et
+     barrière (57), sonde à stations (43), câblage (45), topologie qui bascule (86), course
+     concurrente (55), enregistrements filtrés (47), couloirs de versions (49), escalade et
+     procédure (72), pouls et seuil (87), anneaux de portée (63), rejeu de données (15).
+     Chaque diapo est la sortie de « rikiki recipe <nom> --fill brief.json », jouée à l'entrée,
+     sans clic ni coordonnée · scripts/recipes.test.mjs vérifie que chacune garde la forme de
+     sa recette, e2e/render-check.spec.ts la passe à check --steps. Noms, heures et valeurs
+     sont inventés, et chaque diapo le dit dans son deck-source. -->
+<deck-root>
+
+  <deck-feature id="incident-band" eyebrow="Ce que la supervision ne voit pas · les rappels">
+    <h1 slot="title">La supervision verte, 11 h sans SMS</h1>
+    <deck-diagram play="enter" layout="column" align="stretch" gap="airy">
+      <dg-group layout="row" gap="airy">
+        <dg-box name="still" icon="check" label="API · 200 OK" note="sonde HTTP verte" paint="ok"></dg-box>
+        <dg-counter name="loss" value="38" unit="rendez-vous" label="manqués, estimés" tone="danger" beat="effect"></dg-counter>
+      </dg-group>
+      <dg-band name="flow" label="rappels SMS" note="30 par heure" from="16" to="36" cut="22" until="33.2" tag="dim. 22:00 · clé sms-key-2025 expirée" brace="11 h sans rappel" steady="3s" beat="event"></dg-band>
+      <dg-status for="flow" state="ok" label="lun. 09:12 · nouvelle clé" note="un patient a appelé à 08:40" side="bottom" beat="proof"></dg-status>
+    </deck-diagram>
+    <deck-source>Illustration · incident inventé pour l'exemple (cabinet, clé, heures et volumes fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="lanes-gate" eyebrow="Remède · coupe-circuit des envois">
+    <h1 slot="title">Le STOP des e-mails, testé lundi</h1>
+    <deck-diagram play="enter" layout="column" align="start">
+      <dg-group layout="row" gap="airy">
+        <dg-box name="test" icon="flag" label="essai réel" note="lun. 16:05" paint="ok"></dg-box>
+        <dg-box name="command" icon="database" label="flag mail · MARCHE" swap="flag mail · STOP" swap-icon="ban" paint="pale" tone="normal warn" beat="event" after="writes"></dg-box>
+        <dg-box name="reader" icon="code" label="can_send()" note="seul lecteur du STOP" paint="ink"></dg-box>
+        <dg-link name="writes" from="test" to="command" label="écrit" flow="1" beat="event"></dg-link>
+        <dg-link name="reads" from="command" to="reader" label="lu" flow="1" beat="spread"></dg-link>
+      </dg-group>
+      <dg-group layout="lanes" gap="tight">
+        <dg-lane name="lane-a" icon="cloud" label="newsletter" note="lot de 20 000" steady="3s"></dg-lane>
+        <dg-lane name="lane-b" icon="clock" label="relances" note="toutes les 15 min" steady="3s"></dg-lane>
+        <dg-lane name="lane-c" icon="database" label="notifications" note="factures, comptes" steady="3s"></dg-lane>
+        <dg-gate name="gate" by="reader" state="open closed" beat="spread" after="reads"></dg-gate>
+        <dg-box name="target" icon="target" label="SMTP · prod" paint="pale" proof="0 e-mail parti" beat="proof"></dg-box>
+        <dg-text name="cut" for="gate" side="bottom" label="16:05:02" note="les trois files s'arrêtent" beat="effect"></dg-text>
+      </dg-group>
+    </deck-diagram>
+    <deck-source>Illustration · essai inventé pour l'exemple (heures, files et volumes fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="probe-stations" eyebrow="Remède · devis témoin">
+    <h1 slot="title">Le devis témoin de 9 h n'arrive pas</h1>
+    <deck-diagram play="enter" layout="column" gap="airy">
+      <dg-group layout="row" gap="airy">
+        <dg-box name="probe" icon="flag" label="devis témoin" note="toutes les heures" paint="gold"></dg-box>
+        <dg-box name="station-a" icon="refresh" label="tarification" paint="pale"></dg-box>
+        <dg-box name="station-b" icon="search" label="PDF du devis" paint="pale"></dg-box>
+        <dg-box name="inbox" icon="user" label="devis-test@" paint="ink"></dg-box>
+        <dg-link from="probe" to="station-a" steady="3s"></dg-link>
+        <dg-link name="broken" from="station-a" to="station-b" steady="3s" dim beat="event"></dg-link>
+        <dg-link from="station-b" to="inbox" steady="3s"></dg-link>
+      </dg-group>
+      <dg-group layout="row" gap="airy">
+        <dg-table name="runs" label="passages" icon="clock" paint="pale" beat="spread" after="inbox-wait" rows="
+          08:00 · devis D-4410
+          09:00 · devis D-4411" swap="
+          ✓ 08:00 · reçu en 52 s
+          ✗ 09:00 · rien reçu"></dg-table>
+        <dg-box name="alert" icon="alert" label="appel à Karim" note="astreinte devis" paint="bad" proof="09:07 · avant le 1er courtier" beat="proof"></dg-box>
+      </dg-group>
+      <dg-status for="station-a" state="ok fail" label="09:01" note="barème 2027 absent" side="top" beat="event" with="broken"></dg-status>
+      <dg-status name="inbox-wait" for="inbox" state="ok wait" label="09:00" note="aucun PDF" side="top" beat="spread"></dg-status>
+    </deck-diagram>
+    <deck-source>Illustration · sonde inventée pour l'exemple (heures, barème et numéros fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="wiring" eyebrow="Remède · contrôle de planification">
+    <h1 slot="title">Un contrôle sans tâche, refusé</h1>
+    <deck-diagram play="enter" layout="layers" direction="right" gap="airy">
+      <dg-table name="items" label="contrôles dbt" icon="document" paint="pale" beat="event" rows="
+        commandes · 14
+        clients · 9
+        rgpd-purge · 3
+        stocks · 11" swap="
+        ✓ commandes · 14
+        ✓ clients · 9
+        ✗ rgpd-purge · 3
+        ✓ stocks · 11"></dg-table>
+      <dg-box name="control" icon="lock" label="garde planif" note="1 contrôle → 1 tâche" paint="gold"></dg-box>
+      <dg-box name="runner-a" icon="refresh" label="toutes les heures" paint="ink"></dg-box>
+      <dg-box name="runner-b" icon="clock" label="dim. · 03:00" paint="ink" beat="effect"></dg-box>
+      <dg-table name="report" label="dernière exécution" icon="check" paint="ok" beat="proof" rows="
+        commandes
+        clients
+        rgpd-purge
+        stocks" swap="
+        ✓ commandes · 10 h
+        ✓ clients · 10 h
+        ✓ rgpd-purge · dim.
+        ✓ stocks · 10 h"></dg-table>
+      <dg-link from="items" to="control" steady="3s"></dg-link>
+      <dg-link from="control" to="runner-a" steady="3s"></dg-link>
+      <dg-link name="wire" from="control" to="runner-b" enter="draw" flow="1" beat="effect" after="runner-b"></dg-link>
+      <dg-link from="runner-a" to="report"></dg-link>
+      <dg-link from="runner-b" to="report"></dg-link>
+      <dg-text name="rule" for="control" side="bottom" label="déploiement refusé" note="1 contrôle sans tâche" beat="event" after="items"></dg-text>
+    </deck-diagram>
+    <deck-source>Illustration · entrepôt de données inventé pour l'exemple (contrôles, nombres et horaires fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="switch-over" eyebrow="Remède · réplique et bascule">
+    <h1 slot="title">Redis tombe à 21:14, la copie sert</h1>
+    <deck-diagram play="enter" compose="body-axis" gap="tight">
+      <dg-panel name="network" layout="layers" direction="right" gap="normal" paint="none">
+        <dg-box name="clients" icon="team" label="API panier" note="2 300 req/min" paint="pale"></dg-box>
+        <dg-box name="router" icon="refresh" label="Sentinel" swap="Sentinel · redis-02" paint="gold" beat="effect" with="to-standby"></dg-box>
+        <dg-box name="primary" entity="primary" icon="database" label="redis-01" swap="redis-01 · panne" paint="ink" tone="normal danger" beat="event"></dg-box>
+        <dg-box name="standby" entity="standby" icon="database" label="redis-02 · réplique" note="réplication continue" paint="pale" tone="normal ok" beat="effect" with="to-standby"></dg-box>
+        <dg-link from="clients" to="router" steady="3s"></dg-link>
+        <dg-link name="to-primary" from="router" to="primary" route="straight" steady="3s" dim beat="effect" with="to-standby"></dg-link>
+        <dg-link name="to-standby" from="router" to="standby" route="straight" steady="2s" lever beat="effect"></dg-link>
+        <dg-status name="served" for="standby" state="ok" label="paniers servis à 21:16" side="bottom" beat="proof"></dg-status>
+      </dg-panel>
+      <dg-panel name="time" layout="axis" paint="none">
+        <dg-bar name="loss" label="RPO · 40 s" from="0" to="40" tone="danger" beat="spread"></dg-bar>
+        <dg-bar name="outage" label="RTO · 90 s" from="40" to="130" tone="warn" beat="proof" with="network.served"></dg-bar>
+        <dg-cursor name="copy" label="21:14:00 · copie" value="0" beat="steady"></dg-cursor>
+        <dg-cursor name="fall" entity="primary" label="21:14:40 · panne" value="40" beat="event" with="network.primary"></dg-cursor>
+        <dg-cursor name="return" entity="standby" label="21:16:10 · reprise" value="130" beat="effect" with="network.to-standby"></dg-cursor>
+      </dg-panel>
+    </deck-diagram>
+    <deck-source>Illustration · panne inventée pour l'exemple (serveurs, heures et débit fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="race-lock" eyebrow="Remède · verrou et clé de facture">
+    <h1 slot="title">Deux pods, un seul prélèvement</h1>
+    <deck-diagram play="enter" layout="layers" direction="right">
+      <dg-box name="old" icon="code" label="billing · pod 1" note="ancienne version" paint="pale" swap="pod 1 · ne fait rien" dim beat="effect" after="old-run"></dg-box>
+      <dg-box name="new" icon="cloud" label="billing · pod 2" note="démarré à 00:59" paint="pale" beat="event"></dg-box>
+      <dg-box name="lock" icon="lock" label="verrou libre" swap="pris par pod 2" note="advisory lock" paint="gold" beat="spread" after="new-run"></dg-box>
+      <dg-box name="output" icon="document" label="prélèvement" note="facture F-2026-0913" paint="pale"></dg-box>
+      <dg-box name="target" icon="user" label="M. Lefèvre" note="abonné n° 88213" paint="ink" proof="1 prélèvement" beat="proof"></dg-box>
+      <dg-link name="new-run" from="new" to="lock" flow="1" speed="fast" beat="spread"></dg-link>
+      <dg-link name="old-run" from="old" to="lock" steady="3s" flow="1" speed="slow" turn="danger" beat="spread" with="new-run"></dg-link>
+      <dg-link name="send" from="lock" to="output" steady="3s" flow="1" beat="effect" after="old"></dg-link>
+      <dg-link name="deliver" from="output" to="target" steady="3s" flow="1" beat="effect" after="send"></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration · facturation inventée pour l'exemple (abonné, facture et heures fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="filter-records" eyebrow="Remède · jeu de données de livraison">
+    <h1 slot="title">Vraies adresses, faux habitants</h1>
+    <deck-diagram play="enter" layout="row" gap="airy">
+      <dg-table name="source" label="production · livraisons" icon="database" paint="ink" rows="
+        Anaïs Le Gall · Brest
+        Đặng Thu Hà · Lyon
+        12 bis rue d'Alésia
+        06 12 34 56 78"></dg-table>
+      <dg-table name="filter" label="masquer" icon="lock" paint="gold" from="source" beat="event" rows="
+        Anaïs Le Gall · Brest
+        Đặng Thu Hà · Lyon
+        12 bis rue d'Alésia
+        06 12 34 56 78" swap="
+        Léa Morvan · Brest
+        Nguyễn Văn An · Lyon
+        12 bis rue d'Alésia
+        06 12 34 56 78" strike="4"></dg-table>
+      <dg-table name="copy" label="base de recette" icon="refresh" paint="pale" from="filter" beat="effect" rows="
+        Léa Morvan · Brest
+        Nguyễn Văn An · Lyon
+        12 bis rue d'Alésia" swap="
+        ✓ Léa Morvan · Brest
+        ✗ Nguyễn Văn An · Lyon
+        ✓ 12 bis rue d'Alésia"></dg-table>
+      <dg-link name="take" from="source" to="filter" label="prélever" steady="3s"></dg-link>
+      <dg-link from="filter" to="copy" label="rejouer"></dg-link>
+      <dg-status for="copy" state="fail" label="1 étiquette tronquée" note="vue en recette, pas en tournée" side="bottom" beat="proof"></dg-status>
+    </deck-diagram>
+    <deck-source>Illustration · livraisons inventées pour l'exemple (noms, villes et numéros fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="version-lanes" eyebrow="Remède · fin d'une version d'app">
+    <h1 slot="title">L'app 4 ferme sans perdre personne</h1>
+    <deck-diagram play="enter" layout="column" gap="airy">
+      <dg-group layout="row" gap="airy">
+        <dg-box name="notice" icon="flag" label="« l'app 4 ferme le 15 janv. »" note="bandeau dans l'app · 1er oct." paint="gold" beat="event"></dg-box>
+        <dg-person name="on-old" label="boutiques sur l'app 4" count="3" absent="0 3" beat="effect"></dg-person>
+        <dg-person name="on-new" label="sur l'app 5" count="3" absent="3 0" tone="accent" beat="effect" with="on-old"></dg-person>
+      </dg-group>
+      <dg-group name="time" layout="axis">
+        <dg-bar name="old" label="app 4.12" from="0" to="9" tone="muted" beat="steady" duration="2.4s"></dg-bar>
+        <dg-bar name="new" label="app 5.0" from="4" to="12" tone="ok" beat="spread"></dg-bar>
+        <dg-cursor name="sunset" label="15 janv. · app 4 fermée" value="9" beat="proof"></dg-cursor>
+      </dg-group>
+      <dg-text name="overlap" for="on-new" side="bottom" label="15 semaines côte à côte" beat="spread" with="new"></dg-text>
+    </deck-diagram>
+    <deck-source>Illustration · calendrier inventé pour l'exemple (versions, dates et boutiques fictives)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="escalation-runbook" eyebrow="Remède · astreinte de l'entrepôt">
+    <h1 slot="title">05:10, Hugo ne répond pas</h1>
+    <deck-diagram play="enter" layout="column" gap="airy">
+      <dg-group layout="row" gap="normal" link="arrow">
+        <dg-box name="watched" icon="chart" label="étiquettes colis" note="640 / h" paint="pale" tone="normal danger" swap="étiquettes · 0 / h" beat="event"></dg-box>
+        <dg-person name="oncall" label="Hugo · astreinte" count="1" absent="0 1" beat="spread"></dg-person>
+        <dg-timer name="delay" label="sans réponse" value="5" unit="min" tone="warn" beat="spread" after="oncall"></dg-timer>
+        <dg-box name="backup" icon="user" label="Léa · relais" note="appelée à 05:15" paint="ink" beat="effect"></dg-box>
+      </dg-group>
+      <dg-table name="runbook" label="procédure imprimantes" icon="document" paint="pale" beat="proof" rows="
+        vider la file zpl-02
+        basculer sur zpl-03
+        réimprimer le lot 5:00
+        prévenir le transporteur" swap="
+        ✓ vider la file zpl-02
+        ✓ basculer sur zpl-03
+        ✓ réimprimer le lot 5:00
+        ✓ prévenir le transporteur"></dg-table>
+      <dg-link from="backup" to="runbook"></dg-link>
+      <dg-link name="pings" from="watched" to="oncall" steady="3s"></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration · nuit d'entrepôt inventée pour l'exemple (heures, noms et imprimantes fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="pulse-threshold" eyebrow="Remède · battement des capteurs">
+    <h1 slot="title">Les capteurs se taisent à 14:20</h1>
+    <deck-diagram play="enter" layout="row" gap="airy">
+      <dg-group layout="column" gap="normal">
+        <dg-box name="job" icon="refresh" label="passerelle LoRa" note="212 capteurs de froid" swap="passerelle · muette" paint="pale" tone="normal danger" beat="event" with="beats"></dg-box>
+        <dg-box name="watcher" icon="search" label="veille froid" note="alerte après 6 min" paint="gold"></dg-box>
+        <dg-timer name="grace" label="délai de grâce" value="6" unit="min" tone="warn" beat="effect"></dg-timer>
+        <dg-link name="beats" from="job" to="watcher" label="mesure /2 min" steady="3s" dim beat="event"></dg-link>
+        <dg-link from="watcher" to="grace"></dg-link>
+      </dg-group>
+      <dg-group layout="column" gap="normal" align="end">
+        <dg-curve name="pulse" label="mesures par 10 min" values="5 5 5 5 5 5 2 0" max="6" threshold="3" ticks="13:10 14:20" beat="spread"></dg-curve>
+        <dg-box name="alert" icon="alert" label="alerte chambre 3" note="SMS au gérant" paint="bad" proof="14:26 · avant +4 °C" beat="proof"></dg-box>
+      </dg-group>
+      <dg-link from="grace" to="alert"></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration · chambre froide inventée pour l'exemple (heures, capteurs et seuils fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="scope-rings" eyebrow="Ce que l'on ne voit pas · l'app mobile">
+    <h1 slot="title">Le paiement marche. Et autour ?</h1>
+    <deck-diagram play="enter" compose="inset">
+      <dg-panel name="outer" label="le client" paint="outline" layout="row" gap="normal">
+        <dg-panel name="middle" label="le réseau" paint="pale" layout="row" gap="normal">
+          <dg-group name="middle-parts" layout="column" gap="tight" align="start" beat="effect" after="to-middle">
+            <dg-box icon="alert" label="la 3G" paint="none"></dg-box>
+            <dg-box icon="clock" label="le proxy" paint="none"></dg-box>
+            <dg-box icon="search" label="30 s max" paint="none"></dg-box>
+          </dg-group>
+          <dg-panel name="inner" label="l'app" paint="pale" layout="row" gap="normal">
+            <dg-box name="core" icon="code" label="écran paiement" note="24 tests UI" paint="ink"></dg-box>
+            <dg-group name="inner-parts" layout="column" gap="tight" align="start" beat="spread" after="to-inner">
+              <dg-box icon="database" label="le cache" paint="none"></dg-box>
+              <dg-box icon="refresh" label="la version" paint="none"></dg-box>
+              <dg-box icon="document" label="les droits" paint="none"></dg-box>
+            </dg-group>
+          </dg-panel>
+        </dg-panel>
+        <dg-group name="outer-parts" layout="column" gap="tight" align="start" beat="proof" after="to-all">
+          <dg-box icon="user" label="un pouce" paint="none"></dg-box>
+          <dg-box icon="question" label="le soleil" paint="none"></dg-box>
+          <dg-box icon="team" label="Android 9" paint="none"></dg-box>
+        </dg-group>
+      </dg-panel>
+      <dg-camera name="to-inner" focus="inner.core" to="inner" beat="spread"></dg-camera>
+      <dg-camera name="to-middle" to="middle" beat="effect"></dg-camera>
+      <dg-camera name="to-all" to="all" beat="proof"></dg-camera>
+    </deck-diagram>
+    <deck-source>Illustration · périmètre inventé pour l'exemple (nombre de tests et délai fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="data-replay" eyebrow="La boutique · le rejeu">
+    <h1 slot="title">Six mois de commandes, rejoués</h1>
+    <deck-diagram play="enter" compose="split" gap="tight">
+      <dg-panel name="board" layout="column" gap="normal">
+        <dg-group layout="row" gap="airy">
+          <dg-box name="period" entity="period" icon="clock" label="6 janv. 2026" swap="29 juin · ×6" paint="ink" beat="proof"></dg-box>
+          <dg-counter name="count" from="40" value="9310" unit="commandes" label="depuis l'ouverture" beat="steady" duration="4.5s"></dg-counter>
+        </dg-group>
+        <dg-curve name="series" label="commandes par quinzaine" values="40 95 180 260 240 330 410 390 470 520 610 680" max="700" ticks="janv. juin" beat="steady" with="count" duration="4.5s"></dg-curve>
+      </dg-panel>
+      <dg-panel name="milestones" layout="column">
+        <dg-table name="dates" entity="period" label="jalons" icon="flag" paint="pale" from="board.series" beat="steady" with="board.count" rows="
+          6 janv. · ouverture
+          3 mars · paiement en 3 fois
+          12 mai · Click &amp; Collect"></dg-table>
+      </dg-panel>
+    </deck-diagram>
+    <deck-source>Illustration · historique inventé pour l'exemple (quinzaines et volumes fictifs)</deck-source>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Diagramme · marques qui racontent · fixture de test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-diagram.js"></script>
+</head>
+<body>
+<!-- Six histoires jouées à l'entrée (play="enter"), sans clic ni coordonnée, chacune sur un
+     modèle graphique : terminal et conséquence, sonde qui
+     échoue, frise d'incident, enregistrements qui traversent un filtre, escalade avec
+     minuterie, bascule avec interrupteur. Chaque diapo emploie au moins deux des marques
+     dg-terminal, dg-table, dg-switch, dg-status, dg-timer, dg-band, dg-person, dg-screen,
+     dg-counter · e2e/diagram-marks.spec.ts la lit. Noms, heures et valeurs sont inventés,
+     et chaque diapo le dit dans son deck-source. -->
+<deck-root>
+
+  <deck-feature id="termine" eyebrow="Ce que Claude ne voit pas · le terminal">
+    <h1 slot="title">Claude dit « Terminé », la page est blanche</h1>
+    <deck-diagram data-testid="termine" play="enter" layout="row" link="arrow" gap="airy">
+      <dg-terminal name="claude" label="claude · ~/rodz" beat="steady" lines="
+        $ npm run deploy
+        ✓ tests : 312 passent
+        ✓ lint : aucune erreur
+        ✓ envoyé en production
+        Terminé. Autre chose ?"></dg-terminal>
+      <dg-screen name="page" label="app.rodz.io/signaux" note="Signaux du jour" count="4"></dg-screen>
+      <dg-person name="clients" label="clients en ligne" count="4" absent="0 3" beat="spread"></dg-person>
+      <dg-status for="page" state="ok fail" label="14:02 · page blanche" note="erreur 500" side="bottom" beat="event"></dg-status>
+      <dg-text for="clients" side="bottom" label="3 sur 4 partis" note="en 9 minutes" beat="effect"></dg-text>
+      <dg-text for="page" side="top" label="cette page, Claude ne l'a jamais vue" note="il n'a lu que son terminal, tout au vert" beat="proof"></dg-text>
+    </deck-diagram>
+    <deck-source>Illustration · déploiement inventé pour l'exemple (adresse, heures et nombre de clients fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="sonde" eyebrow="Remède · sonde de bout en bout">
+    <h1 slot="title">Le faux lead de 11 h n'arrive pas</h1>
+    <deck-diagram data-testid="sonde" play="enter" layout="column" gap="airy">
+      <dg-group layout="row" gap="airy">
+        <dg-box name="faux" icon="flag" label="faux lead" note="chaque heure" paint="gold"></dg-box>
+        <dg-box name="tache" icon="refresh" label="tâche de fond" paint="pale"></dg-box>
+        <dg-box name="qualif" icon="search" label="qualification" paint="pale"></dg-box>
+        <dg-box name="compte" icon="user" label="compte de test" paint="ink"></dg-box>
+        <dg-link from="faux" to="tache" steady="3s"></dg-link>
+        <dg-link name="coupe" from="tache" to="qualif" steady="3s" dim beat="event"></dg-link>
+        <dg-link from="qualif" to="compte" steady="3s"></dg-link>
+      </dg-group>
+      <dg-group layout="row" gap="airy">
+        <dg-counter name="attente" value="15" unit="min" label="sans faux lead reçu" tone="danger" beat="effect"></dg-counter>
+        <dg-box name="alerte" icon="alert" label="alerte à Peter" note="SMS d'astreinte" paint="bad" proof="11:15 · avant le 1er client" beat="proof"></dg-box>
+      </dg-group>
+      <dg-status for="tache" state="ok fail" label="11:02" note="la tâche plante" side="top" beat="event" with="coupe"></dg-status>
+      <dg-status for="compte" state="ok wait" label="11 h" note="rien reçu" side="top" beat="spread"></dg-status>
+    </deck-diagram>
+    <deck-source>Illustration · sonde inventée pour l'exemple (heures, étapes et délai fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="frise" eyebrow="Ce que Claude ne voit pas · le code">
+    <h1 slot="title">Tout est vert, et 19 h sans un lead</h1>
+    <deck-diagram data-testid="frise" play="enter" layout="column" align="stretch" gap="airy">
+      <dg-group layout="row" gap="airy">
+        <dg-box name="ci" icon="check" label="CI · 312 tests" note="tout passe" paint="ok"></dg-box>
+        <dg-counter name="perdus" value="64" unit="leads" label="perdus, estimés" tone="danger" beat="effect"></dg-counter>
+      </dg-group>
+      <dg-band name="leads" label="leads" note="un toutes les 20 min" from="6" to="34" cut="12.63" until="31.63" tag="mer. 12:38 · v2.4 en ligne" brace="19 h sans lead" steady="3s" beat="event"></dg-band>
+      <dg-status for="leads" state="ok" label="jeu. 07:52 · retour v2.3" note="un client a appelé à 07:38" side="bottom" beat="proof"></dg-status>
+    </deck-diagram>
+    <deck-source>Illustration · incident inventé pour l'exemple (dates, heures, versions et volumes fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="filtre" eyebrow="Remède · jeu de données de test">
+    <h1 slot="title">Les vrais cas difficiles, sans les vrais noms</h1>
+    <deck-diagram data-testid="filtre" play="enter" layout="row" gap="airy">
+      <dg-table name="prod" label="production" icon="database" paint="ink" rows="
+        Marie Dubois · DG
+        王伟 · 销售总监
+        Jürgen Weiß · Außendienst
+        m.dubois@acme.fr
+        (vide)"></dg-table>
+      <dg-table name="anon" label="anonymiser" icon="lock" paint="gold" from="prod" beat="event" rows="
+        Marie Dubois · DG
+        王伟 · 销售总监
+        Jürgen Weiß · Außendienst
+        m.dubois@acme.fr
+        (vide)" swap="
+        Claire Martin · DG
+        李娜 · 销售总监
+        Jörg Strauß · Außendienst
+        m.dubois@acme.fr
+        (vide)" strike="4"></dg-table>
+      <dg-table name="jetable" label="base jetable" icon="refresh" paint="pale" from="anon" beat="effect" rows="
+        Claire Martin · DG
+        李娜 · 销售总监
+        Jörg Strauß · Außendienst
+        (vide)" swap="
+        ✓ Claire Martin · DG
+        ✗ 李娜 · 销售总监
+        ✓ Jörg Strauß · Außendienst
+        ✓ (vide)"></dg-table>
+      <dg-link name="prelever" from="prod" to="anon" label="prélever" steady="3s"></dg-link>
+      <dg-link from="anon" to="jetable" label="rejouer"></dg-link>
+      <dg-status for="jetable" state="fail" label="1 bug d'encodage" note="trouvé avant la mise en ligne" side="bottom" beat="proof"></dg-status>
+    </deck-diagram>
+    <deck-source>Illustration · jeu de données inventé pour l'exemple (noms, fonctions et adresse fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="relais" eyebrow="Remède · astreinte et escalade">
+    <h1 slot="title">03:12, Peter dort : qui répond ?</h1>
+    <deck-diagram data-testid="relais" play="enter" layout="column" gap="airy">
+      <dg-group layout="row" gap="normal" link="arrow">
+        <dg-box name="sonde" icon="chart" label="checkout" note="42 commandes / h" paint="pale" tone="normal danger" swap="checkout · 500" beat="event"></dg-box>
+        <dg-person name="peter" label="Peter · astreinte" count="1" absent="0 1" beat="spread"></dg-person>
+        <dg-timer name="delai" label="sans accusé de réception" value="5" unit="min" tone="warn" beat="spread" after="peter"></dg-timer>
+        <dg-box name="ines" icon="user" label="Inès · relais" note="appelée à 03:17" paint="ink" beat="effect"></dg-box>
+      </dg-group>
+      <dg-table name="runbook" label="procédure" icon="document" paint="pale" beat="proof" rows="
+        lire les alertes
+        mettre en maintenance
+        redémarrer le conteneur
+        prévenir les clients" swap="
+        ✓ lire les alertes
+        ✓ mettre en maintenance
+        ✓ redémarrer le conteneur
+        ✓ prévenir les clients"></dg-table>
+      <dg-link from="ines" to="runbook"></dg-link>
+      <dg-link name="pings" from="sonde" to="peter" steady="3s"></dg-link>
+    </deck-diagram>
+    <deck-source>Illustration · nuit d'astreinte inventée pour l'exemple (heures, noms et délai fictifs)</deck-source>
+  </deck-feature>
+
+  <deck-feature id="bascule" eyebrow="Remède · déploiement blue/green">
+    <h1 slot="title">Basculer sur v1.9 sans couper personne</h1>
+    <deck-diagram data-testid="bascule" play="enter" layout="layers" direction="right" gap="airy">
+      <dg-box name="clients" icon="team" label="clients" note="1 240 req/min" paint="pale" proof="0 requête perdue" beat="proof"></dg-box>
+      <dg-switch name="flag" label="green" state="off on" on="ON" off="OFF" beat="effect"></dg-switch>
+      <dg-box name="traefik" icon="refresh" label="Traefik" note="lit le drapeau" paint="gold"></dg-box>
+      <dg-box name="blue" icon="database" label="blue · v1.8" note="en service" paint="pale"></dg-box>
+      <dg-box name="green" icon="database" label="green · v1.9" note="démarré à 16:20" paint="ok" beat="event"></dg-box>
+      <dg-link from="clients" to="traefik" steady="3s"></dg-link>
+      <dg-link from="flag" to="traefik" dashed></dg-link>
+      <dg-link name="vers-blue" from="traefik" to="blue" route="straight" steady="3s" dim beat="effect" with="vers-green"></dg-link>
+      <dg-link name="vers-green" from="traefik" to="green" route="straight" steady="2s" lever beat="effect" after="flag"></dg-link>
+      <dg-status for="green" state="wait ok" label="GET /health · 200" note="3 fois de suite" side="bottom" beat="spread"></dg-status>
+    </deck-diagram>
+    <deck-source>Illustration · mise à jour inventée pour l'exemple (versions, débit et heure fictifs)</deck-source>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

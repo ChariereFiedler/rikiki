@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>rikiki scene · measure</title>
+<!--
+  Opened by bin/lib/scene-measure.mjs, served from the package root, never by
+  hand. One drawing unit is one pixel here: a scene alone is its 1600-unit
+  canvas plus an EDGE margin on each side, so the stage is 1608 px wide.
+  `?theme=rikiki|siliceum` picks the stylesheet, as `rikiki init` does.
+-->
+<style>
+  body { margin: 0; background: var(--rik-surface-base, #fff); }
+  #stage { inline-size: 1608px; }
+  #stage > * { display: block; }
+</style>
+<script type="module">
+  const EDGE = 4;
+  const GENERIC_FAMILIES = new Set(['serif', 'sans-serif', 'monospace', 'system-ui', 'cursive', 'fantasy', '-apple-system']);
+  const stage = document.getElementById('stage');
+
+  const isScene = (el) => el.localName.startsWith('deck-scene') && el.localName !== 'deck-scene-item';
+  const nextFrame = () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+
+  /** The theme stylesheet, loaded before anything is measured · a scene measured
+   *  before its fonts are declared measures the fallback. */
+  function loadTheme(name) {
+    return new Promise((done, fail) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = `../../themes/${name}.css`;
+      link.onload = () => done();
+      link.onerror = () => fail(new Error(`the theme stylesheet did not load: ${link.href}`));
+      document.head.append(link);
+    });
+  }
+
+  /** The theme's two families, as its tokens name them first. */
+  function themeFamilies(element) {
+    const style = getComputedStyle(element);
+    return ['--rik-font-sans', '--rik-font-display']
+      .map((token) => (style.getPropertyValue(token).split(',')[0] ?? '').trim().replace(/^['"]|['"]$/g, ''))
+      .filter((family) => family && !GENERIC_FAMILIES.has(family.toLowerCase()));
+  }
+
+  /** A web font is fetched only once some text asks for it, and a scene measures
+   *  on a canvas, which never asks · so each family is asked for at every weight
+   *  a scene draws in, before anything is mounted. */
+  async function loadThemeFonts() {
+    const { TYPE } = await import('../../dist/scene-layout.js');
+    const families = themeFamilies(document.documentElement);
+    const faces = families.flatMap((family) =>
+      Object.values(TYPE).map(({ size, weight }) => `${weight} ${size}px "${family}"`),
+    );
+    // Failed font downloads remain visible through missingFamilies() and the
+    // page's request watcher. They must not abort a usable fallback drawing.
+    await Promise.allSettled(faces.map((face) => document.fonts.load(face)));
+  }
+
+  /** Every scene of the drawing has drawn, and none has an update queued · a
+   *  composition sets the width of its regions, which then draw again. */
+  async function settle(scenes) {
+    const MAX_PASSES = 10;
+    for (let pass = 0; pass < MAX_PASSES; pass += 1) {
+      await Promise.all(scenes.map((scene) => scene.updateComplete));
+      await nextFrame();
+      if (!scenes.some((scene) => scene.isUpdatePending)) return;
+    }
+    throw new Error(`the scene was still redrawing after ${MAX_PASSES} passes`);
+  }
+
+  function issuesOf(scene) {
+    const raw = scene.getAttribute('data-scene-issues');
+    if (!raw) return [];
+    return JSON.parse(raw).map((issue) => ({ ...issue, scene: scene.localName }));
+  }
+
+  /** How tall the drawing came out, in units · a scene alone from its viewBox,
+   *  a composition from its box, since one unit is one pixel. */
+  function drawnHeight(root) {
+    if (root.localName === 'deck-scene') return root.getBoundingClientRect().height;
+    const viewBox = root.shadowRoot?.querySelector('svg')?.getAttribute('viewBox');
+    const height = Number(viewBox?.split(' ')[3]) - 2 * EDGE;
+    return Number.isFinite(height) ? height : 0;
+  }
+
+  /** The theme families that are not there · measured by the usual trick, a
+   *  string set in the family with a fallback behind differs from the fallback. */
+  function missingFamilies(root) {
+    const context = document.createElement('canvas').getContext('2d');
+    const width = (font) => {
+      context.font = `72px ${font}`;
+      return context.measureText('mmmmmmmmmmlli1WQ').width;
+    };
+    return themeFamilies(root)
+      .filter((family) => width(`"${family}", monospace`) === width('monospace')
+        && width(`"${family}", serif`) === width('serif'));
+  }
+
+  /** Mount one candidate and read back what it drew. */
+  async function measureScene(imports, html) {
+    await Promise.all(imports.map((name) => import(`../../dist/${name}.js`)));
+    stage.innerHTML = html;
+    const root = stage.firstElementChild;
+    if (!root || !isScene(root)) throw new Error('the candidate holds no scene element');
+    const scenes = [root, ...[...root.children].filter(isScene)];
+    await Promise.all(scenes.map((scene) => customElements.whenDefined(scene.localName)));
+    await document.fonts.ready;
+    await settle(scenes);
+    return {
+      height: Math.round(drawnHeight(root)),
+      issues: scenes.flatMap(issuesOf),
+      missingFonts: [...new Set(missingFamilies(root))],
+    };
+  }
+
+  const theme = new URLSearchParams(location.search).get('theme') ?? 'rikiki';
+  window.sceneMeasureReady = loadTheme(theme)
+    .then(loadThemeFonts)
+    .then(() => document.fonts.ready)
+    .then(() => true);
+  window.measureScene = measureScene;
+</script>
+</head>
+<body>
+<div id="stage" data-testid="scene-measure-stage"></div>
+</body>
+</html>

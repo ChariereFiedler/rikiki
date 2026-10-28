@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · several scenes in one deck</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<!-- Each module bundles its own deck-scene-item · loading two is the case. -->
+<script type="module" src="../../dist/deck-scene-cards.js"></script>
+<script type="module" src="../../dist/deck-scene-steps.js"></script>
+</head>
+<body>
+<deck-root>
+
+  <deck-feature eyebrow="several scenes" data-testid="together-cards-slide">
+    <h1 slot="title">Two modules, one shared item</h1>
+    <deck-scene-cards data-testid="together-cards">
+      <deck-scene-item icon="document" label="Cards" note="the first module to load"></deck-scene-item>
+      <deck-scene-item icon="flag" label="Steps" emphasis note="the second, with its own copy of the item"></deck-scene-item>
+    </deck-scene-cards>
+  </deck-feature>
+
+  <deck-feature eyebrow="several scenes" data-testid="together-steps-slide">
+    <h1 slot="title">The second scene still draws</h1>
+    <deck-scene-steps data-testid="together-steps">
+      <deck-scene-item label="load" note="cards defines the item"></deck-scene-item>
+      <deck-scene-item label="load again" note="steps finds it defined and moves on"></deck-scene-item>
+    </deck-scene-steps>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

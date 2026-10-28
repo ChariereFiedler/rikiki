@@ -23,7 +23,7 @@ const DECKS_DEST = join(SITE_DIR, 'public', 'decks');
 // they do from examples/<name>/ inside the repository. Only index.html ships:
 // bento/source.html is the authoring view its bundle was built from, and a
 // reader never fetches it.
-const GALLERY_DECKS = ['showcase', 'bento'];
+const GALLERY_DECKS = ['showcase', 'bento', 'scenes'];
 
 // Each entry says what a browser or a reader asks for. Anything absent here is
 // absent from the published site, on purpose.

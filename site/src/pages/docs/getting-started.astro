@@ -31,8 +31,8 @@ const minDeck = `<!doctype html>
 </body>
 </html>`;
 
-const cdnDeck = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rikiki-deck@0.7.2/tokens.css">
-<script type="module" src="https://cdn.jsdelivr.net/npm/rikiki-deck@0.7.2/dist/index.js"></script>`;
+const cdnDeck = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rikiki-deck@0.8.0/tokens.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/rikiki-deck@0.8.0/dist/index.js"></script>`;
 
 const cloneCmd = `git clone https://gitlab.com/tordu-jardin/rikiki.git
 cd rikiki/rikiki
@@ -68,13 +68,15 @@ const minDeckPreview = `<deck-cover brand="my-talk">
 <p>
   Two commands, then ask in plain words. The skills carry the compositions, the
   editorial rules and the order to try fixes in; the agent writes the HTML,
-  runs <code>rikiki check</code>, and fixes what comes back.
+  runs <code>rikiki check</code>, and fixes what comes back. Two of the skills,
+  <code>rikiki-scenes</code> and <code>rikiki-illustrate</code>, draw a slide's
+  pictures from data or from an intent, never from a coordinate.
 </p>
 <CodeBlock
   label="terminal"
   lang="sh"
   code={`npm i rikiki-deck
-npx rikiki skills   # installs 3 skills into .claude/skills/`}
+npx rikiki skills   # installs 5 skills into .claude/skills/`}
 />
 <p>
   Not using Claude Code? Point whatever you use at

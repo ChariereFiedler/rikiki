@@ -37,6 +37,15 @@ const hookEx = `<deck-takeaway kicker="Take-home">
   <p class="caption on-dark">A deck is a folder.</p>
 </deck-takeaway>`;
 
+const sceneEx = `<deck-feature id="brief-to-slide">
+  <h1 slot="title">From brief to verified slide</h1>
+  <deck-scene-steps conclusion="Then look at it" conclusion-icon="flag">
+    <deck-scene-item label="Say it" note="what the room must understand"></deck-scene-item>
+    <deck-scene-item label="Write the items" note="words and numbers, no coordinates"></deck-scene-item>
+    <deck-scene-item label="Check" emphasis tag="a few seconds"></deck-scene-item>
+  </deck-scene-steps>
+</deck-feature>`;
+
 const fullDeckEx = `<!doctype html>
 <html>
 <head>
@@ -126,6 +135,31 @@ const fullDeckEx = `<!doctype html>
 </p>
 <CodeBlock label="my-talk/index.html" lang="html" code={fullDeckEx} />
 <ComponentPreview code={`${coverEx}\n${sectionEx}\n${heroEx}\n${splitEx}\n${hookEx}`} full />
+
+<h2 id="scenes">A picture for a slide</h2>
+<p>
+  When a slide needs an illustration, write what it says, not where it goes. A
+  scene is an opt-in module (<code>rikiki/dist/deck-scene-*.js</code>) filled
+  with <code>&lt;deck-scene-item&gt;</code> children; it measures every word in
+  the slide's font and plays when the slide opens. One line each:
+</p>
+<ul>
+  <li><a href="/docs/components#deck-scene-cards"><code>deck-scene-cards</code></a> · two to five options of the same rank, side by side.</li>
+  <li><a href="/docs/components#deck-scene-steps"><code>deck-scene-steps</code></a> · things in order, with an optional closing band.</li>
+  <li><a href="/docs/components#deck-scene-flow"><code>deck-scene-flow</code></a> · several inputs into one hub, and one or two outcomes.</li>
+  <li><a href="/docs/components#deck-scene-bars"><code>deck-scene-bars</code></a> · up to eight things compared by one number each.</li>
+  <li><a href="/docs/components#deck-scene-matrix"><code>deck-scene-matrix</code></a> · who stands where, in what state.</li>
+  <li><a href="/docs/components#deck-scene-ranges"><code>deck-scene-ranges</code></a> · how long each takes, on one scale.</li>
+  <li><a href="/docs/components#deck-scene-lanes"><code>deck-scene-lanes</code></a> · what happens to the same traffic when one thing changes.</li>
+  <li><a href="/docs/components#deck-scene-units"><code>deck-scene-units</code></a> · a share of a crowd, one cell per person.</li>
+</ul>
+<CodeBlock label="steps" lang="html" code={sceneEx} />
+<p>
+  <code>npx rikiki scene plan brief.json</code> picks the shape for you, and
+  <code>npx rikiki check talk.html --slides 7</code> measures only that slide.
+  For a picture that demonstrates something, see
+  <a href="/docs/components#deck-diagram"><code>&lt;deck-diagram&gt;</code></a>.
+</p>
 
 <h2 id="next">Next</h2>
 <p>When you outgrow these five:</p>

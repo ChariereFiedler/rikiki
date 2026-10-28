@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { BUILTIN_RULES } from '../bin/lib/check-registry.mjs';
 
 // The docs site documents a command line it does not own.
 //
@@ -46,8 +47,11 @@ const QUALITY_CRITERIA = /QUALITY_CRITERIA = \[([^\]]+)\]/
   .match(/'([a-z-]+)'/g)
   .map((c) => `QUALITY_${c.slice(1, -1).replaceAll('-', '_').toUpperCase()}`);
 
-/** Every diagnostic code the checker can emit, the design review included. */
+/** Every diagnostic code the checker can emit, the design review included · and
+ *  every rule of its registry, whose codes come from the tables they are written
+ *  against (the illustration rules and their richness among them). */
 const CODES = new Set([
+  ...BUILTIN_RULES.map((rule) => rule.code),
   ...[...CHECK_SOURCE.matchAll(/diagnostic\(\s*'([A-Z_]+)'/g)].map((m) => m[1]),
   ...[...QUALITY_SOURCE.matchAll(/problem\(\s*'([A-Z_]+)'/g)].map((m) => m[1]),
   ...QUALITY_CRITERIA,

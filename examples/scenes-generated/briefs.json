@@ -1,0 +1,1262 @@
+[
+  {
+    "id": "alerts-is-the-one-to-back",
+    "recipe": "options-compared",
+    "pack": "product",
+    "seed": 1,
+    "candidate": "cards",
+    "form": "cards",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Alerts is the one to back",
+      "relation": "parallel",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "focus": "Alerts",
+      "items": [
+        {
+          "label": "Mobile app",
+          "note": "the same list, in a pocket",
+          "tag": "growth",
+          "icon": "user"
+        },
+        {
+          "label": "Alerts",
+          "note": "tells you before a customer does",
+          "tag": "trust",
+          "icon": "alert"
+        },
+        {
+          "label": "Onboarding",
+          "note": "first success in ten minutes",
+          "tag": "activation",
+          "icon": "flag"
+        },
+        {
+          "label": "API",
+          "note": "what partners build on",
+          "tag": "platform",
+          "icon": "code"
+        }
+      ]
+    }
+  },
+  {
+    "id": "3-steps-from-triage-to-review",
+    "recipe": "ordered-plan",
+    "pack": "ops",
+    "seed": 2,
+    "candidate": "steps",
+    "form": "steps",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "3 steps from triage to review",
+      "relation": "sequence",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "focus": "Fix",
+      "items": [
+        {
+          "label": "Triage",
+          "note": "severity, owner, channel",
+          "tag": "10 min"
+        },
+        {
+          "label": "Fix",
+          "note": "the cause, not the culprit",
+          "tag": "hours"
+        },
+        {
+          "label": "Review",
+          "note": "written while it is fresh",
+          "tag": "3 days"
+        }
+      ]
+    }
+  },
+  {
+    "id": "outbound-brings-3-sources-together",
+    "recipe": "inputs-to-decision",
+    "pack": "sales",
+    "seed": 3,
+    "candidate": "flow",
+    "form": "flow",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Outbound brings 3 sources together",
+      "relation": "converge",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "inputs": [
+        {
+          "label": "Events",
+          "note": "met in person",
+          "icon": "calendar"
+        },
+        {
+          "label": "Referrals",
+          "note": "a customer vouched",
+          "icon": "team"
+        },
+        {
+          "label": "Partners",
+          "note": "sold alongside theirs",
+          "icon": "cloud"
+        }
+      ],
+      "hub": {
+        "label": "Outbound",
+        "note": "a cold, targeted message",
+        "icon": "search"
+      },
+      "outcomes": [
+        {
+          "label": "Inbound",
+          "tag": "warm"
+        }
+      ],
+      "focus": "Outbound"
+    }
+  },
+  {
+    "id": "campus-leads-on-offer-accepts",
+    "recipe": "metric-ranking",
+    "pack": "people",
+    "seed": 4,
+    "candidate": "bars",
+    "form": "bars",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Campus leads on offer accepts",
+      "relation": "compare-size",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "unit": "%",
+      "focus": "Campus",
+      "items": [
+        {
+          "label": "Returners",
+          "value": 57
+        },
+        {
+          "label": "Job boards",
+          "value": 52
+        },
+        {
+          "label": "Referral",
+          "value": 70
+        },
+        {
+          "label": "Agencies",
+          "value": 69
+        },
+        {
+          "label": "Campus",
+          "value": 78
+        }
+      ]
+    }
+  },
+  {
+    "id": "model-is-not-live-everywhere-yet",
+    "recipe": "status-grid",
+    "pack": "data",
+    "seed": 5,
+    "candidate": "matrix",
+    "form": "matrix",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Model is not live everywhere yet",
+      "relation": "position-2d",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "columns": [
+        "Orders",
+        "Traffic",
+        "Support"
+      ],
+      "rows": [
+        {
+          "label": "Explore",
+          "levels": [
+            "pilot",
+            "prod",
+            "test"
+          ]
+        },
+        {
+          "label": "Model",
+          "levels": [
+            "none",
+            "test",
+            "test"
+          ]
+        }
+      ],
+      "statuses": {
+        "prod": "live",
+        "pilot": "pilot",
+        "test": "in test",
+        "none": "not yet"
+      },
+      "focus": "Model"
+    }
+  },
+  {
+    "id": "3-phases-in-16-weeks",
+    "recipe": "schedule",
+    "pack": "product",
+    "seed": 6,
+    "candidate": "ranges",
+    "form": "ranges",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "3 phases in 16 weeks",
+      "relation": "span-time",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "scale": 16,
+      "unit": "weeks",
+      "rows": [
+        {
+          "label": "Design",
+          "from": 0,
+          "to": 4,
+          "tag": "4 wk"
+        },
+        {
+          "label": "Review",
+          "from": 4,
+          "to": 11,
+          "tag": "7 wk"
+        },
+        {
+          "label": "Pilot",
+          "from": 11,
+          "to": 15,
+          "tag": "4 wk"
+        }
+      ]
+    }
+  },
+  {
+    "id": "window-stops-what-is-still-on-its-way",
+    "recipe": "freeze-gate",
+    "pack": "ops",
+    "seed": 7,
+    "candidate": "lanes",
+    "form": "lanes",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Window stops what is still on its way",
+      "relation": "gate",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "gate": "WINDOW",
+      "trigger": "02:00 maintenance",
+      "passed": 4,
+      "blocked": 2,
+      "lanes": [
+        {
+          "label": "Auth",
+          "tag": "4 through, 2 held"
+        },
+        {
+          "label": "Billing",
+          "tag": "4 through, 2 held"
+        },
+        {
+          "label": "Search",
+          "tag": "4 through, 2 held"
+        }
+      ]
+    }
+  },
+  {
+    "id": "few-leads-sign",
+    "recipe": "crowd-share",
+    "pack": "sales",
+    "seed": 8,
+    "candidate": "units",
+    "form": "units",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Few leads sign",
+      "relation": "share-of-crowd",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "total": 40,
+      "focus": "leads",
+      "panels": [
+        {
+          "label": "tried",
+          "value": 24
+        },
+        {
+          "label": "leads",
+          "value": 13
+        }
+      ]
+    }
+  },
+  {
+    "id": "new-hires-still-here-rose-with-a-buddy",
+    "recipe": "before-after-crowd",
+    "pack": "people",
+    "seed": 9,
+    "candidate": "units-row",
+    "form": "composition",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "New hires still here rose with a buddy",
+      "relation": "before-after",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "before": {
+        "label": "before",
+        "value": 13,
+        "of": 50,
+        "note": "new hires still here"
+      },
+      "after": {
+        "label": "after",
+        "value": 33,
+        "of": 50,
+        "note": "new hires still here"
+      },
+      "focus": "after",
+      "verdict": {
+        "label": "33 against 13",
+        "note": "out of 50, with a buddy",
+        "icon": "target"
+      }
+    }
+  },
+  {
+    "id": "coverage-moved-from-68-to-75",
+    "recipe": "before-after-size",
+    "pack": "data",
+    "seed": 10,
+    "candidate": "bars-stack",
+    "form": "composition",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Coverage moved from 68 % to 75 %",
+      "relation": "before-after",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "unit": "%",
+      "max": 80,
+      "before": {
+        "label": "before",
+        "value": 68
+      },
+      "after": {
+        "label": "after",
+        "value": 75
+      },
+      "focus": "after",
+      "verdict": {
+        "label": "Coverage rose",
+        "note": "68 % to 75 %",
+        "icon": "trend"
+      }
+    }
+  },
+  {
+    "id": "api-changes-latency",
+    "recipe": "how-and-proof",
+    "pack": "product",
+    "seed": 11,
+    "candidate": "flow-bars",
+    "form": "composition",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "API changes latency",
+      "relation": "mechanism-proof",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "mechanism": {
+        "inputs": [
+          {
+            "label": "Billing",
+            "icon": "document"
+          },
+          {
+            "label": "Onboarding",
+            "icon": "flag"
+          },
+          {
+            "label": "Search",
+            "icon": "search"
+          }
+        ],
+        "hub": {
+          "label": "API",
+          "icon": "code"
+        },
+        "outcomes": [
+          {
+            "label": "Reports"
+          }
+        ]
+      },
+      "proof": {
+        "unit": "ms",
+        "items": [
+          {
+            "label": "Edge",
+            "value": 155
+          },
+          {
+            "label": "Cache",
+            "value": 622
+          }
+        ]
+      },
+      "focus": "Cache"
+    }
+  },
+  {
+    "id": "cost-leads-on-uptime",
+    "recipe": "result-and-verdict",
+    "pack": "ops",
+    "seed": 12,
+    "candidate": "bars",
+    "form": "bars",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Cost leads on uptime",
+      "relation": "compare-size",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "unit": "%",
+      "focus": "Cost",
+      "items": [
+        {
+          "label": "Alerts",
+          "value": 98.4
+        },
+        {
+          "label": "Runbooks",
+          "value": 98.3
+        },
+        {
+          "label": "Cost",
+          "value": 99.5
+        },
+        {
+          "label": "Deploys",
+          "value": 97.8
+        },
+        {
+          "label": "Capacity",
+          "value": 98.6
+        }
+      ],
+      "verdict": {
+        "label": "Cost sets the pace",
+        "note": "the rest follow",
+        "icon": "flag"
+      }
+    }
+  },
+  {
+    "id": "job-boards-is-the-one-to-back",
+    "recipe": "options-compared",
+    "pack": "people",
+    "seed": 30,
+    "candidate": "cards",
+    "form": "cards",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Job boards is the one to back",
+      "relation": "parallel",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "focus": "Job boards",
+      "items": [
+        {
+          "label": "Campus",
+          "note": "a pipeline, not a hire",
+          "tag": "long",
+          "icon": "flag"
+        },
+        {
+          "label": "Returners",
+          "note": "people who left on good terms",
+          "tag": "low risk",
+          "icon": "refresh"
+        },
+        {
+          "label": "Referral",
+          "note": "someone we trust vouches",
+          "tag": "fast",
+          "icon": "team"
+        },
+        {
+          "label": "Job boards",
+          "note": "wide, noisy, cheap",
+          "tag": "volume",
+          "icon": "search"
+        }
+      ]
+    }
+  },
+  {
+    "id": "3-steps-from-collect-to-publish",
+    "recipe": "ordered-plan",
+    "pack": "data",
+    "seed": 31,
+    "candidate": "steps",
+    "form": "steps",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "3 steps from collect to publish",
+      "relation": "sequence",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "focus": "Collect",
+      "items": [
+        {
+          "label": "Collect",
+          "note": "only what a question needs",
+          "tag": "daily"
+        },
+        {
+          "label": "Validate",
+          "note": "fail loud, early",
+          "tag": "hourly"
+        },
+        {
+          "label": "Publish",
+          "note": "one table, one owner",
+          "tag": "weekly"
+        }
+      ],
+      "verdict": {
+        "label": "Skip none of the 3",
+        "note": "each one answers the next",
+        "icon": "flag"
+      }
+    }
+  },
+  {
+    "id": "billing-brings-3-sources-together",
+    "recipe": "inputs-to-decision",
+    "pack": "product",
+    "seed": 32,
+    "candidate": "flow",
+    "form": "flow",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Billing brings 3 sources together",
+      "relation": "converge",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "inputs": [
+        {
+          "label": "Reports",
+          "note": "a weekly page for managers",
+          "icon": "chart"
+        },
+        {
+          "label": "Alerts",
+          "note": "tells you before a customer does",
+          "icon": "alert"
+        },
+        {
+          "label": "API",
+          "note": "what partners build on",
+          "icon": "code"
+        }
+      ],
+      "hub": {
+        "label": "Billing",
+        "note": "one invoice, no surprise",
+        "icon": "document"
+      },
+      "outcomes": [
+        {
+          "label": "Checkout",
+          "tag": "revenue"
+        }
+      ],
+      "focus": "Billing"
+    }
+  },
+  {
+    "id": "capacity-leads-on-uptime",
+    "recipe": "metric-ranking",
+    "pack": "ops",
+    "seed": 33,
+    "candidate": "bars",
+    "form": "bars",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Capacity leads on uptime",
+      "relation": "compare-size",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "unit": "%",
+      "focus": "Capacity",
+      "items": [
+        {
+          "label": "Backups",
+          "value": 99.2
+        },
+        {
+          "label": "Runbooks",
+          "value": 96
+        },
+        {
+          "label": "Alerts",
+          "value": 98.2
+        },
+        {
+          "label": "Capacity",
+          "value": 99.9
+        },
+        {
+          "label": "Access",
+          "value": 98.4
+        }
+      ]
+    }
+  },
+  {
+    "id": "outbound-is-not-live-everywhere-yet",
+    "recipe": "status-grid",
+    "pack": "sales",
+    "seed": 34,
+    "candidate": "matrix",
+    "form": "matrix",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Outbound is not live everywhere yet",
+      "relation": "position-2d",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "columns": [
+        "Spain",
+        "France",
+        "Germany",
+        "Italy"
+      ],
+      "rows": [
+        {
+          "label": "Outbound",
+          "levels": [
+            "prod",
+            "test",
+            "prod",
+            "test"
+          ]
+        },
+        {
+          "label": "Events",
+          "levels": [
+            "none",
+            "prod",
+            "test",
+            "none"
+          ]
+        },
+        {
+          "label": "Inbound",
+          "levels": [
+            "none",
+            "prod",
+            "pilot",
+            "none"
+          ]
+        }
+      ],
+      "statuses": {
+        "prod": "live",
+        "pilot": "pilot",
+        "test": "in test",
+        "none": "not yet"
+      },
+      "focus": "Outbound"
+    }
+  },
+  {
+    "id": "5-phases-in-24-weeks",
+    "recipe": "schedule",
+    "pack": "people",
+    "seed": 35,
+    "candidate": "ranges",
+    "form": "ranges",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "5 phases in 24 weeks",
+      "relation": "span-time",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "scale": 24,
+      "unit": "weeks",
+      "rows": [
+        {
+          "label": "Notice",
+          "from": 0,
+          "to": 3,
+          "tag": "3 wk"
+        },
+        {
+          "label": "Onboard",
+          "from": 3,
+          "to": 6,
+          "tag": "3 wk"
+        },
+        {
+          "label": "Offer",
+          "from": 6,
+          "to": 10,
+          "tag": "4 wk"
+        },
+        {
+          "label": "Brief",
+          "from": 9,
+          "to": 12,
+          "tag": "3 wk"
+        },
+        {
+          "label": "Interview",
+          "from": 12,
+          "to": 16,
+          "tag": "4 wk"
+        }
+      ]
+    }
+  },
+  {
+    "id": "schema-freeze-stops-what-is-still-on-its",
+    "recipe": "freeze-gate",
+    "pack": "data",
+    "seed": 36,
+    "candidate": "lanes",
+    "form": "lanes",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Schema freeze stops what is still on its way",
+      "relation": "gate",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "gate": "SCHEMA FREEZE",
+      "trigger": "migration week",
+      "passed": 4,
+      "blocked": 5,
+      "lanes": [
+        {
+          "label": "Orders",
+          "tag": "4 through, 5 held"
+        },
+        {
+          "label": "Users",
+          "tag": "4 through, 5 held"
+        }
+      ]
+    }
+  },
+  {
+    "id": "few-visitors-buy",
+    "recipe": "crowd-share",
+    "pack": "product",
+    "seed": 37,
+    "candidate": "units",
+    "form": "units",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Few visitors buy",
+      "relation": "share-of-crowd",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "total": 100,
+      "focus": "100 visitors",
+      "panels": [
+        {
+          "label": "100 visitors",
+          "value": 39,
+          "note": "the rest do not buy"
+        }
+      ]
+    }
+  },
+  {
+    "id": "recoveries-rose-with-the-runbooks",
+    "recipe": "before-after-crowd",
+    "pack": "ops",
+    "seed": 38,
+    "candidate": "bars-stack",
+    "form": "composition",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Recoveries rose with the runbooks",
+      "relation": "before-after",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "before": {
+        "label": "before",
+        "value": 28,
+        "of": 100,
+        "note": "recoveries"
+      },
+      "after": {
+        "label": "after",
+        "value": 70,
+        "of": 100,
+        "note": "recoveries"
+      },
+      "focus": "after",
+      "verdict": {
+        "label": "70 against 28",
+        "note": "out of 100, with the runbooks",
+        "icon": "target"
+      }
+    }
+  },
+  {
+    "id": "win-rate-moved-from-19-to-38",
+    "recipe": "before-after-size",
+    "pack": "sales",
+    "seed": 39,
+    "candidate": "bars-stack",
+    "form": "composition",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Win rate moved from 19 % to 38 %",
+      "relation": "before-after",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "unit": "%",
+      "max": 40,
+      "before": {
+        "label": "before",
+        "value": 19
+      },
+      "after": {
+        "label": "after",
+        "value": 38
+      },
+      "focus": "after",
+      "verdict": {
+        "label": "Win rate rose",
+        "note": "19 % to 38 %",
+        "icon": "trend"
+      }
+    }
+  },
+  {
+    "id": "returners-changes-time-to-hire",
+    "recipe": "how-and-proof",
+    "pack": "people",
+    "seed": 40,
+    "candidate": "flow-bars",
+    "form": "composition",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Returners changes time to hire",
+      "relation": "mechanism-proof",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "mechanism": {
+        "inputs": [
+          {
+            "label": "Campus",
+            "icon": "flag"
+          },
+          {
+            "label": "Referral",
+            "icon": "team"
+          },
+          {
+            "label": "Agencies",
+            "icon": "user"
+          }
+        ],
+        "hub": {
+          "label": "Returners",
+          "icon": "refresh"
+        },
+        "outcomes": [
+          {
+            "label": "Job boards"
+          }
+        ]
+      },
+      "proof": {
+        "unit": "days",
+        "items": [
+          {
+            "label": "Before",
+            "value": 64
+          },
+          {
+            "label": "Cache",
+            "value": 67
+          }
+        ]
+      },
+      "focus": "Cache"
+    }
+  },
+  {
+    "id": "explore-leads-on-coverage",
+    "recipe": "result-and-verdict",
+    "pack": "data",
+    "seed": 41,
+    "candidate": "bars",
+    "form": "bars",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Explore leads on coverage",
+      "relation": "compare-size",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "unit": "%",
+      "focus": "Explore",
+      "items": [
+        {
+          "label": "Explore",
+          "value": 65
+        },
+        {
+          "label": "Ingest",
+          "value": 49
+        },
+        {
+          "label": "Serve",
+          "value": 63
+        }
+      ],
+      "verdict": {
+        "label": "Explore sets the pace",
+        "note": "the rest follow",
+        "icon": "flag"
+      }
+    }
+  },
+  {
+    "id": "deploys-is-the-one-to-back",
+    "recipe": "options-compared",
+    "pack": "ops",
+    "seed": 59,
+    "candidate": "cards",
+    "form": "cards",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Deploys is the one to back",
+      "relation": "parallel",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "focus": "Deploys",
+      "items": [
+        {
+          "label": "Runbooks",
+          "note": "written by whoever fixed it",
+          "tag": "docs",
+          "icon": "document"
+        },
+        {
+          "label": "Deploys",
+          "note": "one button, one log",
+          "tag": "daily",
+          "icon": "refresh"
+        }
+      ]
+    }
+  },
+  {
+    "id": "4-steps-from-qualify-to-propose",
+    "recipe": "ordered-plan",
+    "pack": "sales",
+    "seed": 60,
+    "candidate": "steps",
+    "form": "steps",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "4 steps from qualify to propose",
+      "relation": "sequence",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "focus": "Pilot",
+      "items": [
+        {
+          "label": "Qualify",
+          "note": "budget, need, timing",
+          "tag": "1 call"
+        },
+        {
+          "label": "Demo",
+          "note": "their data, not ours",
+          "tag": "45 min"
+        },
+        {
+          "label": "Pilot",
+          "note": "two weeks, one team",
+          "tag": "2 weeks"
+        },
+        {
+          "label": "Propose",
+          "note": "one page, one price",
+          "tag": "3 days"
+        }
+      ],
+      "verdict": {
+        "label": "Skip none of the 4",
+        "note": "each one answers the next",
+        "icon": "flag"
+      }
+    }
+  },
+  {
+    "id": "campus-brings-3-sources-together",
+    "recipe": "inputs-to-decision",
+    "pack": "people",
+    "seed": 61,
+    "candidate": "flow",
+    "form": "flow",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Campus brings 3 sources together",
+      "relation": "converge",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "inputs": [
+        {
+          "label": "Referral",
+          "note": "someone we trust vouches",
+          "icon": "team"
+        },
+        {
+          "label": "Agencies",
+          "note": "quick, and costly",
+          "icon": "user"
+        },
+        {
+          "label": "Job boards",
+          "note": "wide, noisy, cheap",
+          "icon": "search"
+        }
+      ],
+      "hub": {
+        "label": "Campus",
+        "note": "a pipeline, not a hire",
+        "icon": "flag"
+      },
+      "outcomes": [
+        {
+          "label": "Returners",
+          "tag": "low risk"
+        }
+      ],
+      "focus": "Campus"
+    }
+  },
+  {
+    "id": "explore-is-lightest-on-freshness",
+    "recipe": "metric-ranking",
+    "pack": "data",
+    "seed": 62,
+    "candidate": "bars",
+    "form": "bars",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Explore is lightest on freshness",
+      "relation": "compare-size",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "unit": "h",
+      "focus": "Explore",
+      "items": [
+        {
+          "label": "Serve",
+          "value": 34
+        },
+        {
+          "label": "Model",
+          "value": 44
+        },
+        {
+          "label": "Monitor",
+          "value": 37
+        },
+        {
+          "label": "Explore",
+          "value": 18
+        },
+        {
+          "label": "Clean",
+          "value": 24
+        },
+        {
+          "label": "Ingest",
+          "value": 23
+        }
+      ]
+    }
+  },
+  {
+    "id": "search-is-not-live-everywhere-yet",
+    "recipe": "status-grid",
+    "pack": "product",
+    "seed": 63,
+    "candidate": "matrix",
+    "form": "matrix",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "Search is not live everywhere yet",
+      "relation": "position-2d",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "columns": [
+        "Mobile",
+        "Partners",
+        "API"
+      ],
+      "rows": [
+        {
+          "label": "Search",
+          "levels": [
+            "test",
+            "none",
+            "pilot"
+          ]
+        },
+        {
+          "label": "Onboarding",
+          "levels": [
+            "test",
+            "prod",
+            "prod"
+          ]
+        },
+        {
+          "label": "Billing",
+          "levels": [
+            "prod",
+            "prod",
+            "none"
+          ]
+        }
+      ],
+      "statuses": {
+        "prod": "live",
+        "pilot": "pilot",
+        "test": "in test",
+        "none": "not yet"
+      },
+      "focus": "Search"
+    }
+  },
+  {
+    "id": "5-phases-in-24-weeks-30",
+    "recipe": "schedule",
+    "pack": "ops",
+    "seed": 64,
+    "candidate": "ranges",
+    "form": "ranges",
+    "brief": {
+      "schema": "rikiki.scene-brief/1",
+      "claim": "5 phases in 24 weeks",
+      "relation": "span-time",
+      "source": {
+        "text": "Illustration · invented figures",
+        "nature": "illustration"
+      },
+      "scale": 24,
+      "unit": "weeks",
+      "rows": [
+        {
+          "label": "Verify",
+          "from": 0,
+          "to": 2,
+          "tag": "2 wk"
+        },
+        {
+          "label": "Retire",
+          "from": 1,
+          "to": 3,
+          "tag": "2 wk"
+        },
+        {
+          "label": "Cut over",
+          "from": 3,
+          "to": 6,
+          "tag": "3 wk"
+        },
+        {
+          "label": "Plan",
+          "from": 5,
+          "to": 7,
+          "tag": "2 wk"
+        },
+        {
+          "label": "Prepare",
+          "from": 6,
+          "to": 9,
+          "tag": "3 wk"
+        }
+      ]
+    }
+  }
+]

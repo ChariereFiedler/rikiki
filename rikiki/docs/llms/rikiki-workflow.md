@@ -187,6 +187,19 @@ not allowed to invent a fact to make a slide feel complete.
 Pick per slide, from the intent, not from the tag you remember. The recipes are
 in [§Recipes](#recipes) below. When two fit, take the one with fewer elements.
 
+When a slide needs a picture, choose its kind from what it says, before drawing
+anything, and never write a coordinate:
+
+| The picture says | Use | Start from |
+|---|---|---|
+| options of one rank, steps in order, inputs into a hub, a few bars, a status matrix, durations, lanes cut by a gate, a share of a crowd | a scene, `<deck-scene-*>` | the skill `rikiki-scenes`, then `npx rikiki scene plan brief.json` |
+| one thing demonstrated: a cause, a barrier, a bottleneck, a stock that fills, a before and after that morphs, a story played on entry | a diagram, `<deck-diagram>` | the skill `rikiki-illustrate`, then `npx rikiki intent "<sentence>"` or `npx rikiki recipe "<sentence>"` |
+| nothing above says it | a hand-drawn SVG | `rikiki check` still measures its text and its frame |
+
+`npx rikiki skills` installs both skills next to `rikiki-deck`. Run
+`rikiki check talk.html --slides <ids>` on the slides you just drew: it names
+the item that does not fit, and how many characters its field holds.
+
 ## 4 · Write the slides
 
 Start from a real file:
@@ -435,12 +448,15 @@ group by line group.
 
 ```html
 <deck-feature id="layers" eyebrow="Architecture" spread="center">
-  <h1 slot="title">The commands share one browser layer and own none of it</h1>
+  <h1 slot="title">Three commands, one browser</h1>
   <deck-mermaid>graph LR
-  CLI[rikiki CLI] --> B[browser layer]
-  B --> R[render]
-  B --> C[check]
-  B --> E[export]</deck-mermaid>
+  CLI[rikiki CLI] --> R[render]
+  CLI --> C[check]
+  CLI --> E[export]
+  R --> B[browser layer]
+  C --> B
+  E --> B
+  B --> P[Chromium]</deck-mermaid>
   <deck-notes>Lazy Playwright, a local server, the settle, and closing both on the way out.</deck-notes>
 </deck-feature>
 ```
@@ -532,6 +548,7 @@ read alone rather than presented.
 | What makes a slide worth projecting | reference §14 |
 | Themes and design tokens | reference §11 |
 | Reveals, steps and animation | reference §7 |
+| A scene, a diagram or an SVG for a slide | skills `rikiki-scenes`, `rikiki-illustrate`; the reference sections on scenes and diagrams |
 | The three ways a deck runs | reference §16 |
 | Diagnostic codes and the manifest | reference §12b |
 

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rikiki · deck-scene-matrix</title>
+<link rel="stylesheet" href="../../themes/rikiki.css">
+<script type="module" src="../../dist/index.js"></script>
+<script type="module" src="../../dist/deck-scene-matrix.js"></script>
+</head>
+<body>
+<deck-root>
+
+  <deck-feature eyebrow="deck-scene-matrix" data-testid="scene-matrix-slide">
+    <h1 slot="title">France helps choose, not yet buy</h1>
+    <deck-scene-matrix data-testid="scene-matrix"
+      columns="be cited | connected catalogue | brand app | customer account | cart handoff | agent payment | on-site advisor | reorder | customer service | advertising"
+      groups="be found:2 | be chosen:2 | sell:4 | serve:2">
+      <deck-scene-item label="France" emphasis level="prod prod prod announced prod test pilot none none prod"></deck-scene-item>
+      <deck-scene-item label="United States" level="prod prod prod prod prod prod prod prod prod prod"></deck-scene-item>
+    </deck-scene-matrix>
+    <deck-source>Fixture data · status of ten usages in two markets</deck-source>
+  </deck-feature>
+
+  <deck-feature eyebrow="deck-scene-matrix · statuses in French" data-testid="scene-matrix-fr-slide" lang="fr">
+    <h1 slot="title">Trois secteurs, quatre usages</h1>
+    <deck-scene-matrix data-testid="scene-matrix-fr"
+      columns="catalogue connecté | panier | paiement par agent | service client"
+      statuses="prod=en production | pilot=pilote | test=en test | announced=annoncé | none=rien à ce jour">
+      <deck-scene-item label="Alimentaire" level="prod prod test none"></deck-scene-item>
+      <deck-scene-item label="Mode" level="prod pilot announced none"></deck-scene-item>
+      <deck-scene-item label="Voyage" level="prod prod prod test"></deck-scene-item>
+    </deck-scene-matrix>
+  </deck-feature>
+
+</deck-root>
+</body>
+</html>

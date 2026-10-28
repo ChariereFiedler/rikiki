@@ -57,10 +57,59 @@ export function encloses(outer, inner, tolerance = 1) {
   );
 }
 
-/** The same three functions, as source, for `page.evaluate` · the inspector
- *  runs in the browser and cannot import from here. */
+/**
+ * The screen rect of an SVG box once `matrix` has moved it.
+ *
+ * `box` is what `getBBox()` returns (`x`, `y`, `width`, `height` in the
+ * element's own user space) and `matrix` what `getScreenCTM()` returns (`a` to
+ * `f`). A rotation or a skew turns the box into a quad · its four corners are
+ * mapped and the rect that holds them is returned, which is what the eye
+ * compares against the shape around it.
+ */
+export function mapBox(box, matrix) {
+  const corners = [
+    [box.x, box.y],
+    [box.x + box.width, box.y],
+    [box.x, box.y + box.height],
+    [box.x + box.width, box.y + box.height],
+  ].map(([x, y]) => ({
+    x: matrix.a * x + matrix.c * y + matrix.e,
+    y: matrix.b * x + matrix.d * y + matrix.f,
+  }));
+  const xs = corners.map((p) => p.x);
+  const ys = corners.map((p) => p.y);
+  return { left: Math.min(...xs), right: Math.max(...xs), top: Math.min(...ys), bottom: Math.max(...ys) };
+}
+
+/**
+ * The smallest of `rects` that holds `point`, or null when none does.
+ *
+ * This is how a drawn label finds the shape it was written into: of every
+ * rect around its anchor, the tightest one is the card or the pill, and the
+ * larger ones are the panels behind it. The rect returned is the caller's own
+ * object, extra fields and all.
+ */
+export function smallestContaining(rects, point) {
+  let best = null;
+  let bestArea = Number.POSITIVE_INFINITY;
+  for (const rect of rects) {
+    const holds = rect.left <= point.x && point.x <= rect.right && rect.top <= point.y && point.y <= rect.bottom;
+    if (!holds) continue;
+    const area = (rect.right - rect.left) * (rect.bottom - rect.top);
+    if (area < bestArea) {
+      best = rect;
+      bestArea = area;
+    }
+  }
+  return best;
+}
+
+/** The same functions, as source, for `page.evaluate` · the inspector runs in
+ *  the browser and cannot import from here. */
 export const BOX_GEOMETRY_READER = `({
   escapeOf: ${escapeOf},
   overlapOf: ${overlapOf},
   encloses: ${encloses},
+  mapBox: ${mapBox},
+  smallestContaining: ${smallestContaining},
 })`;

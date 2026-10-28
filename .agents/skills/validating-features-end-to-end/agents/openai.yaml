@@ -1,0 +1,4 @@
+interface:
+  display_name: "Validating Features End To End"
+  short_description: "Validating Features End To End"
+  default_prompt: "Use $validating-features-end-to-end for the requested scope in this repository."

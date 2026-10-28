@@ -21,7 +21,11 @@ npx rikiki init index.html --standalone --title "My talk"`;
 const checkCmd = `npx rikiki check index.html
 
 # the same report as JSON on stdout, for a script or an agent
-npx rikiki check index.html --json`;
+npx rikiki check index.html --json
+
+# only the slides you are working on: a number, an id, an interval
+npx rikiki check index.html --slides 4
+npx rikiki check index.html --slides 2,pricing,6-9`;
 
 const checkOutput = `! TEXT_TOO_SMALL · slide 4 (#pricing)
     text renders at 15px · the back row will not read it
@@ -55,6 +59,53 @@ npx rikiki export index.html --output talk.pdf`;
 const assembleCmd = `npx rikiki assemble deck.config.js`;
 
 const skillsCmd = `npx rikiki skills`;
+
+const sceneCmd = `# the shapes that can say the brief, written and sized
+npx rikiki scene plan brief.json
+
+# draw each one in Chromium, keep the plan, the fragments and a picture of each
+npx rikiki scene plan brief.json --measure --out plan/
+
+# the slide of the candidate you chose
+npx rikiki scene compile brief.json --candidate bars --out slide.html
+
+# how many characters each field of a shape holds, at a width
+npx rikiki scene budgets cards --width 752`;
+
+const intentCmd = `# the skeleton of the intent a sentence points at
+npx rikiki intent "Six files arrive, review handles two, the rest wait"
+
+# the skeleton of one intent, by name
+npx rikiki intent bottleneck
+
+# the sixteen intents, what each demonstrates and what it looks like
+npx rikiki intent --list`;
+
+const recipeCmd = `# the twelve recipes, their graphic model and their tempo
+npx rikiki recipe --list
+
+# the closest recipe to a sentence · its brief, its sequence, its pitfalls, its skeleton
+npx rikiki recipe "Tout est vert, et 19 h sans un lead"
+
+# the example brief as JSON, then your brief drawn as a slide
+npx rikiki recipe incident-band --brief > brief.json
+npx rikiki recipe incident-band --fill brief.json
+
+# the slide its example brief draws
+npx rikiki recipe incident-band --example`;
+
+const sceneBrief = `{
+  "schema": "rikiki.scene-brief/1",
+  "claim": "The cache cuts the build by two thirds",
+  "relation": "compare-size",
+  "items": [
+    { "label": "No cache", "value": 42 },
+    { "label": "Shared cache", "value": 14 }
+  ],
+  "unit": "min",
+  "focus": "Shared cache",
+  "source": { "text": "Invented figures", "nature": "illustration" }
+}`;
 ---
 
 <Docs
@@ -86,8 +137,8 @@ const skillsCmd = `npx rikiki skills`;
 <h2 id="prerequisites">What each command needs</h2>
 <p>
   All of them need Node <code>{nodeRange}</code>, the range the package
-  declares under <code>engines</code>. Three of them need a browser, and two
-  need a bundler. Both are optional peer dependencies: a deck that only loads
+  declares under <code>engines</code>. Three of them need a browser, as does
+  <code>scene plan --measure</code>, and two need a bundler. Both are optional peer dependencies: a deck that only loads
   the runtime never pays for them.
 </p>
 <table class="opts">
@@ -134,6 +185,16 @@ const skillsCmd = `npx rikiki skills`;
       <td><a href="#skills"><code>skills</code></a></td>
       <td>nothing else</td>
       <td>·</td>
+    </tr>
+    <tr>
+      <td><a href="#scene"><code>scene</code></a></td>
+      <td>nothing else</td>
+      <td>·</td>
+    </tr>
+    <tr>
+      <td><a href="#scene"><code>scene plan --measure</code></a></td>
+      <td><code>playwright</code> {playwrightRange}</td>
+      <td><code>{installPlaywright}</code></td>
     </tr>
   </tbody>
 </table>
@@ -256,6 +317,14 @@ const skillsCmd = `npx rikiki skills`;
       <td><code>GRAPH_NODE_OUT_OF_BOUNDS</code>, <code>GRAPH_EDGE_CROSSES_NODE</code></td>
     </tr>
     <tr>
+      <td>what a diagram demonstrates</td>
+      <td>the <code>INT_*</code> findings of a diagram written as an <a href="#intent">intent</a> · errors, each with its measurement and what was expected</td>
+    </tr>
+    <tr>
+      <td>illustrations that look alike</td>
+      <td><code>ILL_REPEATED_LOOK</code> · a warning about the deck, never an error of a slide · <code>ILL_PAIR_*</code>, <code>ILL_ZOOM_FROM_TARGET</code>, <code>ILL_ACT_DRIFT</code> · what the deck declares between its slides</td>
+    </tr>
+    <tr>
       <td>the talk and what it pulls in</td>
       <td><code>TALK_SHORTER_THAN_ANNOUNCED</code>, <code>EXTERNAL_DEPENDENCY</code></td>
     </tr>
@@ -267,6 +336,110 @@ const skillsCmd = `npx rikiki skills`;
   <code>--no-visual</code> skips that pass; the report then says the pixels
   were not measured. <code>--width</code> and <code>--height</code> set the
   canvas the deck is measured against.
+</p>
+
+<h3 id="check-diversity">Illustrations that look alike</h3>
+<p>
+  A deck can pass every rule slide by slide and still show one picture thirty
+  times with other words. <code>check</code> compares its illustrations with
+  each other, on what they are made of: their structure (the intent, the
+  layouts, the kinds of marks, how the arrows connect), their look (surfaces,
+  tones, a coarse thumbnail of the ink) and their time (clicks, what moves).
+  The distance is <code>0.5 structure + 0.3 visual + 0.2 time</code>; two
+  drawings closer than 0.15 are <code>ILL_REPEATED_LOOK</code>. The report adds
+  a <code>diversity</code> line and object (distinct structures, intents
+  covered, the largest family, the pairs alike), and
+  <code>--diversity</code> adds every distance and each drawing's nearest
+  neighbour.
+</p>
+<p>
+  A repetition that moves on is no repeat: when the later drawing keeps half of
+  the earlier one's named marks and stands at a later step of the act, adds marks
+  around them, or changes their figures or their state while keeping some as they
+  were, the pair is a motif of the deck. It is listed apart
+  (<code>progressing</code>, « motif(s) that progress ») and never warned
+  about · an incident and its remedy, a chapter that widens. What a deck
+  declares between its slides is checked too, always: <code>ILL_PAIR_TARGET</code>
+  and <code>ILL_PAIR_MARKS</code> (a <code>pair</code> whose remedy is missing,
+  comes first or drops the incident's marks), <code>ILL_ZOOM_FROM_TARGET</code>
+  (a camera that opens from a slide that is not the one before, or that does not
+  draw the mark) and <code>ILL_ACT_DRIFT</code> (one act written two ways).
+</p>
+
+<h3 id="check-richness">Illustrations with something to see</h3>
+<p>
+  A clean, varied drawing can still say nothing: three pale boxes named
+  « Service A », « Service B », « Service C ». Each illustration of the report
+  carries a <code>richness</code> out of 100, on five criteria of 20 points:
+  <code>content</code> (two precise facts of two kinds, when, which and how
+  much, and a <code>deck-source</code> on the slide), <code>demonstration</code>
+  (two devices of relation: a link, a flow, a gate, a scale, a marker, a
+  callout, a state that turns), <code>story</code> (the system running, the
+  break, the proof after it), <code>paint</code> (as many flat fills as roles,
+  up to three) and <code>result</code> (a lasting proof, or the figure in the
+  thing put forward). Each gives its measurement and how to earn the rest. A
+  criterion that does not apply is left out: a still of a share is not judged
+  as a story. More marks, colours or seconds earn nothing.
+</p>
+<p>
+  It is a measure, not a verdict: no score changes and nothing fails. The
+  report adds a <code>Richness</code> line; <code>--richness</code> prints each
+  drawing's points and says three warnings, <code>ILL_GENERIC</code> (no
+  precise fact), <code>ILL_FLAT_PAINT</code> (roles painted alike) and
+  <code>ILL_MODEL_REPEAT</code> (the same graphic model a third time in five
+  illustrated slides, unless it is a motif that moves on, as above). Measured on the story decks, they average 95; the galleries written
+  before them, 61; pictures poor on purpose, 20.
+</p>
+
+<h3 id="check-slides">Checking only some slides</h3>
+<p>
+  <code>--slides</code> measures the slides you name and leaves the others
+  alone, which turns a minute-long run on a long deck into a few seconds while
+  you work on one slide. It takes the same list as <code>render</code>:
+  a 1-based number (<code>3</code>), a slide id (<code>pricing</code>), an
+  interval (<code>4-9</code>, <code>-3</code> for the first three,
+  <code>8-</code> for the last ones) or two ends joined by <code>..</code>
+  (<code>intro..pricing</code>, each end a number or an id), separated by
+  commas. The report keeps the whole deck's <code>slideCount</code>, lists the
+  positions it measured in <code>slidesChecked</code>, and says in
+  <code>notChecked</code> that the other slides were not looked at. A name that
+  matches no slide stops before anything is measured, names what the deck
+  holds, and exits with <code>2</code>. Run the whole deck, without the flag,
+  before you ship.
+</p>
+
+<h3 id="check-policy">Choosing the rules · for the deck, some slides, some elements</h3>
+<p>
+  Every rule has a code (<code>TEXT_TOO_SMALL</code>) and a name
+  (<code>text-too-small</code>); <code>--list-checks</code> prints them all,
+  whether the deck keeps each and why. The policy lives in
+  <code>rikiki.config.json</code>, under <code>check</code>: every such file from
+  the deck's folder up applies, outermost first, until one that says
+  <code>"root": true</code> or the repository's root. <code>checks</code> drops or
+  takes back rules in order (<code>-slide-dense</code>, <code>-ill-*</code>,
+  <code>-*,content-*</code>), <code>severity</code> sets one to
+  <code>error</code>, <code>warning</code> or <code>off</code>,
+  <code>warningsAsErrors</code> fails the run on some warnings,
+  <code>limits</code> moves a threshold (<code>minTextPx</code>,
+  <code>ill.words</code>), and <code>overrides</code> do the same for the slides,
+  the kinds of slide, the tagged slides (<code>data-tags="annexe"</code>) or the
+  elements (a CSS selector) they name. On the command line,
+  <code>--checks</code>, <code>--severity rule=level</code>,
+  <code>--warnings-as-errors</code>, <code>--limit name=value</code> and
+  <code>--check-option CODE.option=value</code> speak after the files.
+</p>
+<p>
+  A deck may write an exception on itself, which only silences a warning and
+  only with its reason:
+  <code>data-check-off="slide-dense" data-check-reason="grille contractuelle"</code>
+  on <code>deck-root</code>, a slide or an element.
+  <code>--no-inline-exceptions</code> ignores them all, for a CI. Nothing is lost:
+  what the policy silences is listed under <code>suppressed</code> with what
+  silenced it and why (<code>--show-suppressed</code> in the human report), an
+  exception without a reason, naming no rule or silencing nothing is said, and
+  a page that threw or a file that did not load is reported whatever the policy
+  says. The reference shipped with the package
+  (<code>docs/llms/rikiki-reference.md</code>, « A check policy ») gives every key.
 </p>
 
 <h3 id="check-limits">What it does not test</h3>
@@ -301,7 +474,7 @@ const skillsCmd = `npx rikiki skills`;
   <thead><tr><th>Flag</th><th>Effect</th></tr></thead>
   <tbody>
     <tr><td><code>--out</code> <em>dir</em></td><td>where the pictures go · defaults to the deck name plus <code>.shots</code></td></tr>
-    <tr><td><code>--slides</code> <em>a,b</em></td><td>which slides · 1-based numbers or slide ids, in deck order · an unknown name is an error</td></tr>
+    <tr><td><code>--slides</code> <em>a,b</em></td><td>which slides · 1-based numbers, slide ids, intervals (<code>4-9</code>, <code>-3</code>, <code>8-</code>) or two ends (<code>intro..pricing</code>), in deck order · an unknown name is an error · <code>rikiki check</code> takes the same list</td></tr>
     <tr><td><code>--steps</code></td><td>one picture per revealed state · without it a stepped slide is caught in its opening state</td></tr>
     <tr><td><code>--width</code>, <code>--height</code></td><td>canvas size in pixels</td></tr>
   </tbody>
@@ -373,10 +546,120 @@ const skillsCmd = `npx rikiki skills`;
 <CodeBlock label="terminal" lang="js" code={skillsCmd} />
 <p>
   The installed skills are <code>rikiki-deck</code>,
-  <code>rikiki-theme</code> and <code>rikiki-debug</code>. They land in
+  <code>rikiki-theme</code>, <code>rikiki-debug</code>,
+  <code>rikiki-illustrate</code> and <code>rikiki-scenes</code>. They land in
   <code>.claude/skills/</code> unless <code>--dir</code> names another
   location, an existing skill is left alone unless you pass
   <code>--force</code>, and the command reports what it wrote.
+</p>
+
+<h2 id="scene">scene · from a brief to a slide</h2>
+<p>
+  Turns what a slide must prove into the animated scenes that can show it. You
+  write a brief, a JSON file that names the claim, the relation between the
+  items (<code>parallel</code>, <code>sequence</code>,
+  <code>compare-size</code>, <code>before-after</code>…), the figures and their
+  source. The shape follows from the relation, never the other way round.
+</p>
+<CodeBlock label="brief.json" lang="js" code={sceneBrief} />
+<CodeBlock label="terminal" lang="js" code={sceneCmd} />
+<p>
+  <code>rikiki scene plan</code> validates the brief, then lists each candidate
+  with its shape, whether it fits, the modules it loads and what the scene
+  lint and the measured character table say about it, followed by the shapes
+  it left out and why. Nothing here calls a model: the same brief always gives
+  the same plan, and choosing a candidate stays with you.
+  With <code>--measure</code>, each candidate is also drawn in Chromium in the
+  theme's fonts (<code>--theme rikiki|siliceum</code>), its height and the
+  problems the scenes report once drawn are added under <code>measured</code>,
+  a picture is taken, and a candidate with an error found that way no longer
+  fits. <code>--out</code> writes <code>candidates.json</code>, one
+  <code>&lt;id&gt;.html</code> fragment and, when measured, one
+  <code>&lt;id&gt;.png</code> per candidate.
+</p>
+<p>
+  <code>rikiki scene compile</code> writes the whole slide of the candidate you
+  name: the claim as its title, the scene, the source and the notes, headed by
+  a comment that lists the <code>&lt;script&gt;</code> tags to add once to the
+  deck. <code>rikiki scene budgets</code> prints the narrowest width a shape
+  draws cleanly at, and how many characters each field holds for each number
+  of items.
+</p>
+<table class="opts">
+  <thead><tr><th>Flag</th><th>Effect</th></tr></thead>
+  <tbody>
+    <tr><td><code>--json</code></td><td>plan, budgets: the result on stdout and nothing else, an invalid brief included</td></tr>
+    <tr><td><code>--out</code> <em>dir</em></td><td>plan: where the plan, the fragments and the pictures go · compile: the file the slide is written to</td></tr>
+    <tr><td><code>--measure</code></td><td>plan: draw and photograph each candidate · without <code>--out</code> the pictures go to a temporary directory, named on stderr</td></tr>
+    <tr><td><code>--candidate</code> <em>id</em></td><td>compile: the candidate to write · an unknown one is refused with the list of those the plan has</td></tr>
+    <tr><td><code>--width</code> <em>units</em></td><td>budgets: the scene's width in drawing units (default 1600, the whole canvas)</td></tr>
+  </tbody>
+</table>
+<table class="opts">
+  <thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>plan: at least one candidate fits · compile, budgets: done</td></tr>
+    <tr><td><code>1</code></td><td>plan: no candidate fits</td></tr>
+    <tr><td><code>2</code></td><td>the call cannot be carried out · a brief missing, not JSON or not valid (each error is listed by its path), an unknown candidate or shape</td></tr>
+  </tbody>
+</table>
+
+<h2 id="intent">intent · from a sentence to a diagram that proves it</h2>
+<p>
+  Prints the skeleton of a <code>deck-diagram</code> written as an intent: the
+  relation the picture demonstrates, one of sixteen (<code>cause</code>,
+  <code>barrier</code>, <code>bottleneck</code>, <code>accumulate</code>,
+  <code>transform</code>, <code>feedback</code>, <code>scale</code>,
+  <code>contain</code>, <code>parallel</code>, <code>propagate</code>,
+  <code>threshold</code>, <code>tradeoff</code>, <code>drift</code>,
+  <code>compare</code>, <code>partition</code>, <code>merge</code>), and the
+  part each mark plays in it (<code>role="…"</code>). The intent chooses the
+  layout, the one thing put forward and the order things come in, each its own
+  way, so two intents never draw alike; the skeleton holds no coordinate and no
+  duration.
+</p>
+<CodeBlock label="terminal" lang="js" code={intentCmd} />
+<p>
+  Given a sentence, it looks for the cues of each intent in it (it cuts, it
+  waits, it piles up, it loops, it spreads, past a line, at the cost of, before
+  and after) and prints the closest one; nothing calls a model, so the same
+  sentence always gives the same skeleton. Above the diagram, a comment lists
+  its roles with their bounds, the intents it composes with
+  (<code>also="…"</code>) or why it takes none, and the mistakes
+  <code>rikiki check</code> rejects, the <code>INT_*</code> findings: a gate
+  that leaves a lane out, a neck as wide as what feeds it, a loop that never
+  comes back, a crowd under ten times its unit, parts that do not add up to the
+  whole, a wave that jumps a rank, a gap that does not widen. A defect of
+  meaning is an error, whatever the drawing's score. <code>--list</code> names
+  the sixteen intents with what each demonstrates and what it looks like. A
+  sentence that tells a story rather than a relation (an incident, a remedy, a
+  zoom out) exits with <code>3</code> and names the closest
+  <a href="#recipe">recipes</a>; a sentence with no cue at all exits with
+  <code>1</code> and names the intents. With an intent found, the comment also
+  names the recipes near it.
+</p>
+
+<h2 id="recipe">recipe · a graphic model, filled from a brief</h2>
+<p>
+  Prints one of twelve recipes: a skeleton of <code>deck-diagram</code> told as a
+  story played on entry, taken from a graphic model (incident frise, lanes and a gate, a probe, wiring, a switch-over, a
+  race, records through a filter, lanes of versions, an escalation, a pulse and
+  its threshold, rings of scope, a replay of data). Its marks are named for the
+  part they play, its <code>{'{{fields}}'}</code> are the facts of a brief and its
+  beats are the sequence the model imposes. Above the skeleton, a comment lists
+  the brief to fill (each field, what it holds, an example), the sequence, what
+  <code>rikiki check</code> guarantees, when not to use it, its neighbours and
+  its pitfalls.
+</p>
+<CodeBlock label="terminal" lang="js" code={recipeCmd} />
+<p>
+  The brief comes first: the real system and its actors, its normal pace, the
+  dated event, the exact cause, the consequence counted, the proof.
+  <code>--fill</code> refuses a brief (exit <code>1</code>, each field said) when a
+  field is empty, generic, longer than its place holds, or when the brief holds
+  fewer than two precise values (a date, an hour, a number, an identifier).
+  Like <code>intent</code>, a sentence is read by its cues and nothing calls a
+  model: the same sentence always gives the same recipe.
 </p>
 
 <h2 id="next">Next</h2>

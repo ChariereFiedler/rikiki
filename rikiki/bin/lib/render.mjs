@@ -11,6 +11,7 @@ import { basename, join } from 'node:path';
 import { ExpectedError } from './cli-error.mjs';
 import { SLIDE_TITLE_READER, advanceStep, goToSlide, withDeck } from './browser.mjs';
 import { diffRender } from './diff.mjs';
+import { selectSlides } from './slide-selector.mjs';
 
 export const MANIFEST_SCHEMA = 1;
 
@@ -42,35 +43,6 @@ const readOutline = (titleReader) => {
       title: titleOf(el),
     }));
 };
-
-/** Resolve `--slides 2,intro,4` against the outline · order follows the deck,
- *  and an unknown name is an error rather than a silently missing picture. */
-export function selectSlides(outline, selector) {
-  if (!selector) return outline;
-  const wanted = selector
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
-  const chosen = new Map();
-  const unknown = [];
-  for (const token of wanted) {
-    const byNumber = /^\d+$/.test(token) ? outline.find((s) => s.index === Number(token)) : null;
-    const byId = outline.find((s) => s.id === token);
-    const slide = byNumber ?? byId;
-    if (slide) chosen.set(slide.index, slide);
-    else unknown.push(token);
-  }
-  if (unknown.length) {
-    const known = outline
-      .map((s) => (s.id ? `${s.index} (${s.id})` : String(s.index)))
-      .join(', ');
-    throw new ExpectedError(
-      `render · no slide matches ${unknown.map((u) => `"${u}"`).join(', ')}\n` +
-        `  this deck has: ${known}`,
-    );
-  }
-  return [...chosen.values()].sort((a, b) => a.index - b.index);
-}
 
 /** The gallery is a rikiki-free page on purpose · it has to open from a file
  *  manager, offline, with nothing installed. */
